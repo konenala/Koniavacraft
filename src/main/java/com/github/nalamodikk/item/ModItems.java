@@ -11,10 +11,10 @@ public class ModItems {
     public static DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, magical_industry.MOD_ID);
 
-    public static final RegistryObject<Item> MANA_DUST = ITEMS.register("mona_dust",
+    public static final RegistryObject<Item> MANA_DUST = ITEMS.register("mana_dust",
         () -> new Item(new Item.Properties()));
 
-    public static final RegistryObject<Item> MANA_INGOT = ITEMS.register("mona_ingot",
+    public static final RegistryObject<Item> MANA_INGOT = ITEMS.register("mana_ingot",
             () -> new Item(new Item.Properties()));
 
 

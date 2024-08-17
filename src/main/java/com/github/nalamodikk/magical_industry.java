@@ -1,6 +1,7 @@
 package com.github.nalamodikk;
 
 import com.github.nalamodikk.block.ModBlocks;
+import com.github.nalamodikk.item.ModCreativeModTabs;
 import com.github.nalamodikk.item.ModItems;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
@@ -43,6 +44,8 @@ public class magical_industry
 
     public magical_industry() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        ModCreativeModTabs.register(modEventBus);
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
