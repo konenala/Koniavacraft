@@ -1,6 +1,6 @@
 package com.github.nalamodikk.datagen;
 
-import com.github.nalamodikk.magical_industry;
+import com.github.nalamodikk.MagicalIndustryMod;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 public class ModItemTagGenerator extends ItemTagsProvider {
     public ModItemTagGenerator(PackOutput p_275343_, CompletableFuture<HolderLookup.Provider> p_275729_,
                                CompletableFuture<TagLookup<Block>> p_275322_, @Nullable ExistingFileHelper existingFileHelper) {
-        super(p_275343_, p_275729_, p_275322_, magical_industry.MOD_ID, existingFileHelper);
+        super(p_275343_, p_275729_, p_275322_, MagicalIndustryMod.MOD_ID, existingFileHelper);
     }
 
     @Override

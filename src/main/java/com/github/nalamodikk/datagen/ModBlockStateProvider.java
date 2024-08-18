@@ -1,6 +1,6 @@
 package com.github.nalamodikk.datagen;
 
-import com.github.nalamodikk.magical_industry;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.block.ModBlocks;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.Block;
@@ -10,7 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModBlockStateProvider extends BlockStateProvider {
     public ModBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
-        super(output, magical_industry.MOD_ID, exFileHelper);
+        super(output, MagicalIndustryMod.MOD_ID, exFileHelper);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.github.nalamodikk.block;
 
 import com.github.nalamodikk.item.ModItems;
-import com.github.nalamodikk.magical_industry;
+import com.github.nalamodikk.MagicalIndustryMod;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -16,9 +16,9 @@ import java.util.function.Supplier;
 
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(ForgeRegistries.BLOCKS, magical_industry.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.BLOCKS, MagicalIndustryMod.MOD_ID);
 
-    public static final RegistryObject<Block> MANA_BLOCK =registerBlock("mama_block",
+    public static final RegistryObject<Block> MANA_BLOCK =registerBlock("mana_block",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
 

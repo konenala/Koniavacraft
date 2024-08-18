@@ -1,7 +1,7 @@
 package com.github.nalamodikk.item;
 
 import com.github.nalamodikk.block.ModBlocks;
-import com.github.nalamodikk.magical_industry;
+import com.github.nalamodikk.MagicalIndustryMod;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -12,7 +12,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModCreativeModTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
-            DeferredRegister.create(Registries.CREATIVE_MODE_TAB , magical_industry.MOD_ID);
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB , MagicalIndustryMod.MOD_ID);
 
 public static final RegistryObject<CreativeModeTab> MAGICAL_INDUSTRY_TAB = CREATIVE_MODE_TABS.register("magical_industry_tab",
         () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.MANA_DUST.get()))
