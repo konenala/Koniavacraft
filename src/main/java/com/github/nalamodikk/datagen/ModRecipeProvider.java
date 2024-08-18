@@ -39,10 +39,24 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy(getHasName(ModItems.MANA_INGOT.get()), has(ModItems.MANA_INGOT.get()))
                 .save(pWriter);
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MANA_INGOT.get())
+                .pattern("SSS")
+                .pattern("SSS")
+                .pattern("SSS")
+                .define('S', ModItems.MANA_DUST.get())
+                .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                .save(pWriter);
+
+
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.MANA_INGOT.get(), 9)
                 .requires(ModBlocks.MANA_BLOCK.get())
                 .unlockedBy(getHasName(ModBlocks.MANA_BLOCK.get()), has(ModBlocks.MANA_BLOCK.get()))
-                .save(pWriter);
+                .save(pWriter, "mana_ingot_from_block");
+
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.MANA_DUST.get(), 9)
+                .requires(ModItems.MANA_INGOT.get())
+                .unlockedBy(getHasName(ModItems.MANA_INGOT.get()), has(ModItems.MANA_INGOT.get()))
+                .save(pWriter,"mana_dust_from_ingot");
     }
 
     protected static void oreSmelting(Consumer<FinishedRecipe> pFinishedRecipeConsumer, List<ItemLike> pIngredients, RecipeCategory pCategory, ItemLike pResult, float pExperience, int pCookingTIme, String pGroup) {
