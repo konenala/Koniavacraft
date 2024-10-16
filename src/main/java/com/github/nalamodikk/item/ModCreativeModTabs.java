@@ -18,8 +18,13 @@ public class ModCreativeModTabs {
         () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.MANA_DUST.get()))
                 .title(Component.translatable("creativetab.magical_industry_items"))
                 .displayItems((pParameters, pOutput) -> {
+
+                    pOutput.accept(ModItems.MANA_DEBUG_TOOL.get());
                     pOutput.accept(ModItems.MANA_DUST.get());
                     pOutput.accept(ModItems.MANA_INGOT.get());
+
+                    pOutput.accept(ModItems.CORRUPTED_MANA_DUST.get());
+
 
 
                 })
@@ -33,6 +38,11 @@ public class ModCreativeModTabs {
                     .displayItems((pParameters, pOutput) -> {
 
                         pOutput.accept(ModBlocks.MANA_BLOCK.get());
+                        pOutput.accept(ModBlocks.MAGIC_ORE.get());
+                        pOutput.accept(ModBlocks.DEEPSLATE_MAGIC_ORE.get());
+
+                        pOutput.accept(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
+
 
                     })
                     .build());

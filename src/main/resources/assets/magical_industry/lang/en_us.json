@@ -1,7 +1,15 @@
 {
   "item.magical_industry.mana_dust": "Mana Dust",
   "item.magical_industry.mana_ingot": "Mana Ingot",
+  "item.magical_industry.mana_debug_tool": "Mana Debug Tool",
 
+  "message.magical_industry.mana_added": "Mana increased by 10!",
+
+  "tooltip.magical_industry.mana_stored": "Mana: %1$d / %2$d",
+  "tooltip.magical_industry.mana_cost": "Mana Cost: %1$d",
+
+
+  "block.magical_industry.mana_crafting_table": "Mana Crafting Table",
 
 
   "block.magical_industry.mana_block": "Mana Block",

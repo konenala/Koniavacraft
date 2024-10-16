@@ -24,7 +24,9 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
         */
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(ModBlocks.MANA_BLOCK.get()
+                .add(ModBlocks.MANA_BLOCK.get(),
+                        ModBlocks.MAGIC_ORE.get(),
+                        ModBlocks.DEEPSLATE_MAGIC_ORE.get()
                        /* ModBlocks.RAW_SAPPHIRE_BLOCK.get(),
                         ModBlocks.SAPPHIRE_ORE.get(),
                         ModBlocks.DEEPSLATE_SAPPHIRE_ORE.get(),
@@ -37,6 +39,7 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
         this.tag(BlockTags.NEEDS_IRON_TOOL)
                // .add(ModBlocks.SAPPHIRE_BLOCK.get())
+                .add(ModBlocks.DEEPSLATE_MAGIC_ORE.get())
         ;
 
         this.tag(BlockTags.NEEDS_DIAMOND_TOOL)
@@ -45,6 +48,7 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
         this.tag(BlockTags.NEEDS_STONE_TOOL)
                // .add(ModBlocks.NETHER_SAPPHIRE_ORE.get())
+                  .add(ModBlocks.MAGIC_ORE.get())
         ;
 
         this.tag(Tags.Blocks.NEEDS_NETHERITE_TOOL)

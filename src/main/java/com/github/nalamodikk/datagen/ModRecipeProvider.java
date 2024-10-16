@@ -57,6 +57,10 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .requires(ModItems.MANA_INGOT.get())
                 .unlockedBy(getHasName(ModItems.MANA_INGOT.get()), has(ModItems.MANA_INGOT.get()))
                 .save(pWriter,"mana_dust_from_ingot");
+
+
+
+
     }
 
     protected static void oreSmelting(Consumer<FinishedRecipe> pFinishedRecipeConsumer, List<ItemLike> pIngredients, RecipeCategory pCategory, ItemLike pResult, float pExperience, int pCookingTIme, String pGroup) {

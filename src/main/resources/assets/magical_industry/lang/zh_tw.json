@@ -1,13 +1,21 @@
 {
   "item.magical_industry.mana_dust": "魔法粉",
   "item.magical_industry.mana_ingot": "魔法錠",
+  "item.magical_industry.mana_debug_tool": "魔力除錯工具",
+
+  "message.magical_industry.mana_added": "法力增加10!",
+
+  "tooltip.magical_industry.mana_stored": "魔力: %1$d / %2$d",
+  "tooltip.magical_industry.mana_cost": "魔力消耗: %1$d",
 
 
-
+  "block.magical_industry.mana_crafting_table": "魔力合成台",
 
   "block.magical_industry.mana_block": "魔法錠磚",
 
 
   "creativetab.magical_industry_items": "魔法工業-物品",
   "creativetab.magical_industry_blocks": "魔法工業-方塊"
+
+
 }

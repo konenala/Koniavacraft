@@ -26,20 +26,23 @@ public class ModBlockLootTables extends BlockLootSubProvider {
     @Override
     protected void generate() {
         this.dropSelf(ModBlocks.MANA_BLOCK.get());
+        this.dropSelf(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
       //  this.dropSelf(ModBlocks.RAW_SAPPHIRE_BLOCK.get());
         // this.dropSelf(ModBlocks.SOUND_BLOCK.get());
 
-     /*   this.add(ModBlocks.SAPPHIRE_ORE.get(),
-                block -> createCopperLikeOreDrops(ModBlocks.SAPPHIRE_ORE.get(), ModItems.RAW_SAPPHIRE.get()));
-        this.add(ModBlocks.DEEPSLATE_SAPPHIRE_ORE.get(),
-                block -> createCopperLikeOreDrops(ModBlocks.DEEPSLATE_SAPPHIRE_ORE.get(), ModItems.RAW_SAPPHIRE.get()));
-        this.add(ModBlocks.NETHER_SAPPHIRE_ORE.get(),
+       this.add(ModBlocks.MAGIC_ORE.get(),
+                block -> createCopperLikeOreDrops(ModBlocks.MAGIC_ORE.get(), ModItems.CORRUPTED_MANA_DUST.get()));
+        this.add(ModBlocks.DEEPSLATE_MAGIC_ORE.get(),
+                block -> createCopperLikeOreDrops(ModBlocks.DEEPSLATE_MAGIC_ORE.get(), ModItems.CORRUPTED_MANA_DUST.get()));
+     /*   this.add(ModBlocks.NETHER_SAPPHIRE_ORE.get(),
                 block -> createCopperLikeOreDrops(ModBlocks.NETHER_SAPPHIRE_ORE.get(), ModItems.RAW_SAPPHIRE.get()));
         this.add(ModBlocks.END_STONE_SAPPHIRE_ORE.get(),
                 block -> createCopperLikeOreDrops(ModBlocks.END_STONE_SAPPHIRE_ORE.get(), ModItems.RAW_SAPPHIRE.get()));
 
 
+
       */
+
     }
 
     protected LootTable.Builder createCopperLikeOreDrops(Block pBlock, Item item) {
