@@ -1,6 +1,10 @@
 package com.github.nalamodikk.screen;
 
 import com.github.nalamodikk.block.entity.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.recipe.ManaCraftingTableRecipe;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -9,15 +13,23 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class ManaCraftingMenu extends AbstractContainerMenu {
     private final ManaCraftingTableBlockEntity blockEntity;
     private final ContainerLevelAccess access;
     private final IItemHandler itemHandler;
     private final DataSlot manaStored = DataSlot.standalone();
+
+    public static final int OUTPUT_SLOT = 9;
+    public static final int INPUT_SLOT_START = 0;
+    public static final int INPUT_SLOT_END = 8;
+    private static final int MANA_COST_PER_CRAFT = 50;
 
     public ManaCraftingTableBlockEntity getBlockEntity() {
         return blockEntity;
@@ -44,11 +56,39 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
         }
 
         // 設置輸出槽
-        this.addSlot(new SlotItemHandler(itemHandler, 9, 124, 35) {
+        this.addSlot(new SlotItemHandler(itemHandler, OUTPUT_SLOT, 124, 35) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return false; // 輸出槽不允許手動放入物品
             }
+
+            @Override
+            public void onTake(Player player, ItemStack stack) {
+                if (blockEntity != null) {
+                    // 獲取當前配方
+                    Optional<ManaCraftingTableRecipe> recipe = blockEntity.getCurrentRecipe();
+
+                    // 確保配方存在且魔力充足
+                    if (recipe.isPresent() && blockEntity.hasSufficientMana(recipe.get().getManaCost())) {
+                        blockEntity.consumeMana(recipe.get().getManaCost()); // 消耗魔力
+
+                        // 消耗合成材料
+                        for (int i = INPUT_SLOT_START; i <= INPUT_SLOT_END; i++) {
+                            blockEntity.getItemHandler().extractItem(i, 1, false);
+                        }
+
+                    }
+
+
+                    // 自動更新合成結果
+                    blockEntity.updateCraftingResult(); // 檢查是否能夠再次合成
+                }
+
+                super.onTake(player, stack);
+            }
+
+
+
         });
 
         // 設置玩家的物品欄槽
@@ -57,7 +97,6 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
         // 同步魔力值
         this.addDataSlot(manaStored);
     }
-
 
     // 获取当前的魔力存储量
     public int getManaStored() {
@@ -73,7 +112,7 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
             ItemStack stackInSlot = slot.getItem();
             originalStack = stackInSlot.copy();
 
-            if (index < 10) { // 如果是合成槽或输出槽
+            if (index <= OUTPUT_SLOT) { // 如果是合成槽或输出槽
                 if (!this.moveItemStackTo(stackInSlot, 10, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
@@ -92,6 +131,23 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
 
         return originalStack;
     }
+
+    @Override
+    public void slotsChanged(Container container) {
+        super.slotsChanged(container);
+        if (blockEntity != null) {
+            blockEntity.updateCraftingResult(); // 更新合成結果
+
+            // 確保伺服器和客戶端同步
+            blockEntity.setChanged();
+            if (!blockEntity.getLevel().isClientSide()) {
+                BlockState state = blockEntity.getLevel().getBlockState(blockEntity.getBlockPos());
+                blockEntity.getLevel().sendBlockUpdated(blockEntity.getBlockPos(), state, state, 3);
+            }
+        }
+    }
+
+
 
     @Override
     public boolean stillValid(Player player) {
@@ -120,5 +176,4 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
             manaStored.set(currentMana);  // 更新魔力值
         }
     }
-
 }

@@ -33,7 +33,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider {
-    private final ItemStackHandler itemHandler = new ItemStackHandler(10); // 9 个合成材料 + 1 个输出槽
+    private final ItemStackHandler itemHandler = new ItemStackHandler(10) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            super.onContentsChanged(slot);
+            if (slot < 9) {
+                updateCraftingResult();
+            }
+        }
+    }; // 9 个合成材料 + 1 个输出槽
     private static final int INPUT_SLOT_START = 0;
     private static final int INPUT_SLOT_END = 8;
     private static final int OUTPUT_SLOT = 9;
@@ -47,6 +55,14 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     public ManaCraftingTableBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pPos, pBlockState);
+    }
+
+    public void setItem(int slot, ItemStack stack) {
+        itemHandler.setStackInSlot(slot, stack);
+    }
+
+    public ItemStackHandler getItemHandler() {
+        return itemHandler;
     }
 
     public void craftItem() {
@@ -69,7 +85,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
-    private Optional<ManaCraftingTableRecipe> getCurrentRecipe() {
+    public Optional<ManaCraftingTableRecipe> getCurrentRecipe() {
         SimpleContainer inventory = new SimpleContainer(9);
         for (int i = INPUT_SLOT_START; i <= INPUT_SLOT_END; i++) {
             inventory.setItem(i - INPUT_SLOT_START, this.itemHandler.getStackInSlot(i));
@@ -97,12 +113,16 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         return manaStorage.getMana();
     }
 
+    public boolean hasSufficientMana(int requiredMana) {
+        return manaStorage.getMana() >= requiredMana;
+    }
+
     // 添加魔力
     public void addMana(int amount) {
         // 添加魔力
         this.getCapability(ModCapabilities.MANA).ifPresent(mana -> {
             mana.addMana(amount);
-            System.out.println("Mana added: " + amount + ", Current Mana: " + mana.getMana());
+            // System.out.println("Mana added: " + amount + ", Current Mana: " + mana.getMana());
 
             setChanged(); // 通知伺服器端數據已更改
 
@@ -119,35 +139,37 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         updateCraftingResult();
     }
 
-
-
     // 消耗魔力
     public void consumeMana(int amount) {
         manaStorage.consumeMana(amount);
-        System.out.println("Mana consumed: " + amount + ", Current Mana: " + manaStorage.getMana());
+
+        // System.out.println("Mana consumed: " + amount + ", Current Mana: " + manaStorage.getMana());
         setChanged(); // 通知服务器数据已经更改
         if (!level.isClientSide()) {
             BlockState state = level.getBlockState(worldPosition);
             level.sendBlockUpdated(worldPosition, state, state, 3); // 触发客户端更新
-
         }
         if (!level.isClientSide()) {
             setChanged();
             BlockState state = level.getBlockState(worldPosition);
             level.sendBlockUpdated(worldPosition, state, state, 3); // 確保數據變更通知客戶端
         }
-
     }
 
-
-
-    private void updateCraftingResult() {
+    public void updateCraftingResult() {
         Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
-        if (recipe.isPresent()) {
+        if (recipe.isPresent() && hasSufficientMana(recipe.get().getManaCost())) {
             ItemStack result = recipe.get().assemble(new SimpleContainer(itemHandler.getSlots()), level.registryAccess());
             this.itemHandler.setStackInSlot(OUTPUT_SLOT, result);
         } else {
             this.itemHandler.setStackInSlot(OUTPUT_SLOT, ItemStack.EMPTY);
+        }
+
+        // 確保狀態已更新，通知客戶端
+        setChanged(); // 標記區塊狀態已更改
+        if (level != null && !level.isClientSide) {
+            BlockState state = level.getBlockState(worldPosition);
+            level.sendBlockUpdated(worldPosition, state, state, 3);
         }
     }
 

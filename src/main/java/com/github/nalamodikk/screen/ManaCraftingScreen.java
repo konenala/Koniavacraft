@@ -27,6 +27,7 @@ public class ManaCraftingScreen extends AbstractContainerScreen<ManaCraftingMenu
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
         // 渲染背景纹理
         RenderSystem.setShaderTexture(0, TEXTURE);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
         // 获取魔力条的位置
@@ -39,7 +40,6 @@ public class ManaCraftingScreen extends AbstractContainerScreen<ManaCraftingMenu
 
         // 使用 menu 中的 getManaStored() 方法获取当前的魔力存储量
         int manaStored = this.menu.getManaStored();
-        System.out.println("Debug: Current Mana Stored (GUI): " + manaStored); // 调试输出当前魔力值
         int maxMana = ManaCraftingTableBlockEntity.MAX_MANA;
         int manaHeight = (int) ((float) manaStored / maxMana * 50);
 
@@ -49,7 +49,6 @@ public class ManaCraftingScreen extends AbstractContainerScreen<ManaCraftingMenu
             guiGraphics.blit(MANA_BAR_FULL, manaBarX, manaBarY + (50 - manaHeight), 0, 0, 10, manaHeight);
         }
     }
-
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
@@ -75,7 +74,7 @@ public class ManaCraftingScreen extends AbstractContainerScreen<ManaCraftingMenu
         // 魔力条的位置和大小
         int manaBarX = this.leftPos + 10; // 设置魔力条的 X 位置
         int manaBarY = this.topPos + 15;  // 设置魔力条的 Y 位置
-        int manaBarWidth = 10;            // 魔力条的宽度
+        int manaBarWidth = 15;            // 魔力条的宽度
         int manaBarHeight = 50;           // 魔力条的高度
 
         // 检查鼠标是否在魔力条的范围内

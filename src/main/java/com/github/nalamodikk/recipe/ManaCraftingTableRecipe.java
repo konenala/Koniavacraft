@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
+public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
     private final ResourceLocation id;
     private final NonNullList<Ingredient> inputItems;  // 支持多个输入物品
     private final ItemStack output;                    // 输出物品
@@ -148,17 +148,7 @@ public abstract class ManaCraftingTableRecipe implements Recipe<SimpleContainer>
 
             int manaCost = json.get("manaCost").getAsInt();  // 读取魔力消耗值
 
-            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost) {
-                @Override
-                public ItemStack assemble(SimpleContainer pContainer, RegistryAccess pRegistryAccess) {
-                    return output.copy();
-                }
-
-                @Override
-                public ItemStack getResultItem(RegistryAccess pRegistryAccess) {
-                    return output.copy();
-                }
-            };
+            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost);
         }
 
         // 从网络缓冲区读取配方
@@ -174,17 +164,7 @@ public abstract class ManaCraftingTableRecipe implements Recipe<SimpleContainer>
             ItemStack output = buffer.readItem();
             int manaCost = buffer.readInt();  // 从缓冲区读取魔力消耗值
 
-            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost) {
-                @Override
-                public ItemStack assemble(SimpleContainer pContainer, RegistryAccess pRegistryAccess) {
-                    return output.copy();
-                }
-
-                @Override
-                public ItemStack getResultItem(RegistryAccess pRegistryAccess) {
-                    return output.copy();
-                }
-            };
+            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost);
         }
 
         // 将配方数据写入网络缓冲区
