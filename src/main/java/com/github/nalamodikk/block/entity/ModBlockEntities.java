@@ -2,6 +2,8 @@ package com.github.nalamodikk.block.entity;
 
 import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.block.ModBlocks;
+import com.github.nalamodikk.block.entity.mana_crafting.AdvancedManaCraftingTableBlockEntity;
+import com.github.nalamodikk.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -17,6 +19,10 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(ManaCraftingTableBlockEntity::new,
                             ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get()).build(null));
 
+    public static final RegistryObject<BlockEntityType<AdvancedManaCraftingTableBlockEntity>> ADVANCED_MANA_CRAFTING_TABLE_BLOCK_BE =
+            BLOCK_ENTITIES.register("advanced_mana_crafting_table_be", () ->
+                    BlockEntityType.Builder.of(AdvancedManaCraftingTableBlockEntity::new,
+                            ModBlocks.ADVANCED_MANA_CRAFTING_TABLE_BLOCK.get()).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

@@ -1,20 +1,20 @@
 package com.github.nalamodikk;
 
 import com.github.nalamodikk.block.ModBlocks;
-import com.github.nalamodikk.block.entity.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.block.entity.ModBlockEntities;
 import com.github.nalamodikk.Capability.ModCapabilities;  // 新增的导入
 import com.github.nalamodikk.item.ModCreativeModTabs;
 import com.github.nalamodikk.item.ModItems;
 import com.github.nalamodikk.recipe.ModRecipes;
-import com.github.nalamodikk.screen.ManaCraftingScreen;
+import com.github.nalamodikk.screen.ManaCrafting.AdvancedManaCraftingTableScreen;
+import com.github.nalamodikk.screen.ManaCrafting.ManaCraftingScreen;
 import com.github.nalamodikk.screen.ModMenusTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.CapabilityManager; // 用于注册 Capability
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent; // 用于附加 Capability
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -33,6 +33,7 @@ public class MagicalIndustryMod {
     public static final String MOD_ID = "magical_industry";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
+
 
     public MagicalIndustryMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -94,6 +95,6 @@ public class MagicalIndustryMod {
         public static void onClientSetup(FMLClientSetupEvent event) {
             // 客户端设置
             MenuScreens.register(ModMenusTypes.MANA_CRAFTING_MENU.get(), ManaCraftingScreen::new);
-        }
+            MenuScreens.register(ModMenusTypes.ADVANCED_MANA_CRAFTING_TABLE_MENu.get(), AdvancedManaCraftingTableScreen::new);        }
     }
 }

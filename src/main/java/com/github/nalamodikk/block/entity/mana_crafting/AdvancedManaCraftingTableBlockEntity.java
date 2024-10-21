@@ -1,10 +1,12 @@
-package com.github.nalamodikk.block.entity;
+package com.github.nalamodikk.block.entity.mana_crafting;
 
 import com.github.nalamodikk.Capability.IMana;
 import com.github.nalamodikk.Capability.ManaStorage;
 import com.github.nalamodikk.Capability.ModCapabilities;
+import com.github.nalamodikk.block.entity.ModBlockEntities;
 import com.github.nalamodikk.recipe.ManaCraftingTableRecipe;
-import com.github.nalamodikk.screen.ManaCraftingMenu;
+import com.github.nalamodikk.screen.ManaCrafting.AdvancedManaCraftingTableMenu;
+import com.github.nalamodikk.screen.ManaCrafting.ManaCraftingMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -16,9 +18,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -27,12 +29,13 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider {
+public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider {
     private final ItemStackHandler itemHandler = new ItemStackHandler(10) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -50,11 +53,13 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
     private final LazyOptional<IMana> manaOptional = LazyOptional.of(() -> manaStorage);
 
+    private boolean isAutoCrafting = false; // 是否處於自動合成模式
+
     public static final int MAX_MANA = 1000;
     private static final int MANA_COST_PER_CRAFT = 50;
 
-    public ManaCraftingTableBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pPos, pBlockState);
+    public AdvancedManaCraftingTableBlockEntity(BlockPos pPos, BlockState pBlockState) {
+        super(ModBlockEntities.ADVANCED_MANA_CRAFTING_TABLE_BLOCK_BE.get(), pPos, pBlockState);
     }
 
     public void setItem(int slot, ItemStack stack) {
@@ -122,8 +127,6 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         // 添加魔力
         this.getCapability(ModCapabilities.MANA).ifPresent(mana -> {
             mana.addMana(amount);
-            // System.out.println("Mana added: " + amount + ", Current Mana: " + mana.getMana());
-
             setChanged(); // 通知伺服器端數據已更改
 
             // 更新客戶端
@@ -142,17 +145,10 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     // 消耗魔力
     public void consumeMana(int amount) {
         manaStorage.consumeMana(amount);
-
-        // System.out.println("Mana consumed: " + amount + ", Current Mana: " + manaStorage.getMana());
         setChanged(); // 通知服务器数据已经更改
         if (!level.isClientSide()) {
             BlockState state = level.getBlockState(worldPosition);
             level.sendBlockUpdated(worldPosition, state, state, 3); // 触发客户端更新
-        }
-        if (!level.isClientSide()) {
-            setChanged();
-            BlockState state = level.getBlockState(worldPosition);
-            level.sendBlockUpdated(worldPosition, state, state, 3); // 確保數據變更通知客戶端
         }
     }
 
@@ -173,12 +169,35 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
+    public void onSlotChanged() {
+        // 檢查並更新合成結果
+        updateCraftingResult();
+    }
+
     private boolean canInsertItemIntoOutputSlot(Item item) {
         return this.itemHandler.getStackInSlot(OUTPUT_SLOT).isEmpty() || this.itemHandler.getStackInSlot(OUTPUT_SLOT).is(item);
     }
 
     private boolean canInsertAmountIntoOutputSlot(int count) {
         return this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + count <= this.itemHandler.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
+    }
+
+    // 切換自動/手動合成模式
+    public void toggleCraftingMode() {
+        isAutoCrafting = !isAutoCrafting;
+        System.out.println("Crafting mode: " + (isAutoCrafting ? "Auto" : "Manual"));
+    }
+
+    // 是否自動合成
+    public boolean isAutoCrafting() {
+        return isAutoCrafting;
+    }
+
+
+    public void tick() {
+        if (isAutoCrafting && hasRecipe()) {
+            craftItem();
+        }
     }
 
     @Override
@@ -214,18 +233,21 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.magical_industry.mana_crafting_table");
+        return Component.translatable("block.magical_industry.advanced_mana_crafting_table");
     }
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return new ManaCraftingMenu(pContainerId, pPlayerInventory, itemHandler, ContainerLevelAccess.create(this.level, this.worldPosition), this.level);
+        return new AdvancedManaCraftingTableMenu(pContainerId, pPlayerInventory, this, new SimpleContainerData(2));
     }
+
+
 
     @Override
     protected void saveAdditional(CompoundTag pTag) {
         pTag.put("inventory", itemHandler.serializeNBT());
         pTag.putInt("ManaStored", manaStorage.getMana());
+        pTag.putBoolean("IsAutoCrafting", isAutoCrafting);
         super.saveAdditional(pTag);
     }
 
@@ -234,13 +256,14 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         super.load(pTag);
         itemHandler.deserializeNBT(pTag.getCompound("inventory"));
         manaStorage.setMana(pTag.getInt("ManaStored"));
+        isAutoCrafting = pTag.getBoolean("IsAutoCrafting");
     }
 
     public static class Provider implements ICapabilityProvider {
-        private final ManaCraftingTableBlockEntity blockEntity;
+        private final AdvancedManaCraftingTableBlockEntity blockEntity;
         private final LazyOptional<IMana> manaOptional;
 
-        public Provider(ManaCraftingTableBlockEntity blockEntity) {
+        public Provider(AdvancedManaCraftingTableBlockEntity blockEntity) {
             this.blockEntity = blockEntity;
             this.manaOptional = LazyOptional.of(() -> blockEntity.manaStorage);
         }
