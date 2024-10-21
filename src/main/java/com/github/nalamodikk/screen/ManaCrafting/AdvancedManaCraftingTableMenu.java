@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class AdvancedManaCraftingTableMenu extends AbstractContainerMenu {
     private final AdvancedManaCraftingTableBlockEntity blockEntity;
@@ -36,7 +37,7 @@ public class AdvancedManaCraftingTableMenu extends AbstractContainerMenu {
         addPlayerHotbar(inv);
 
         // 添加魔力工作台的槽位
-        IItemHandler itemHandler = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(() -> new IllegalStateException("Missing item handler capability"));
+        IItemHandler itemHandler = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(new ItemStackHandler(10));
         // 9 個輸入槽
         for (int i = 0; i < 9; i++) {
             this.addSlot(new SlotItemHandler(itemHandler, i, 30 + (i % 3) * 18, 17 + (i / 3) * 18));
@@ -52,6 +53,16 @@ public class AdvancedManaCraftingTableMenu extends AbstractContainerMenu {
         // 添加數據追蹤
         this.addDataSlots(data);
     }
+    private boolean isAutoCrafting = false;
+
+    public boolean isAutoCrafting() {
+        return isAutoCrafting;
+    }
+
+    public void toggleAutoCrafting() {
+        this.isAutoCrafting = !this.isAutoCrafting;
+    }
+
 
     @Override
     public ItemStack quickMoveStack(Player pPlayer, int pIndex) {

@@ -3,8 +3,9 @@ package com.github.nalamodikk.screen.ManaCrafting;
 import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.block.entity.mana_crafting.AdvancedManaCraftingTableBlockEntity;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,6 +20,7 @@ public class AdvancedManaCraftingTableScreen extends AbstractContainerScreen<Adv
     private static final ResourceLocation TEXTURE = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/advanced_mana_crafting_table_gui.png");
     private static final ResourceLocation MANA_BAR_FULL = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final Logger LOGGER = LogManager.getLogger();
+    private Button modeToggleButton;
 
     public AdvancedManaCraftingTableScreen(AdvancedManaCraftingTableMenu container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -26,7 +28,23 @@ public class AdvancedManaCraftingTableScreen extends AbstractContainerScreen<Adv
         this.imageHeight = 166;  // GUI 界面的高度
     }
 
-
+    @Override
+    protected void init() {
+        super.init();
+        // 使用 Button.builder() 添加一个按钮来切换合成模式
+        modeToggleButton = this.addRenderableWidget(Button.builder(
+                        Component.translatable(menu.isAutoCrafting() ? "Auto" : "Manual"),
+                        button -> {
+                            // 切换合成模式
+                            menu.toggleAutoCrafting();
+                            button.setMessage(Component.translatable(menu.isAutoCrafting() ? "Auto" : "Manual"));
+                        })
+                .bounds(this.leftPos + 140, this.topPos + 20, 20, 20)
+                .tooltip((button, poseStack, mouseX, mouseY) -> {
+                    this.renderTooltip(poseStack, Component.translatable("tooltip.change_mode"), mouseX, mouseY);
+                })
+                .build());
+    }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {

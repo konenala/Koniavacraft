@@ -22,6 +22,7 @@ public class ModMenusTypes {
         Level level = inv.player.getCommandSenderWorld(); // 获取玩家所在的世界
         return new ManaCraftingMenu(windowId, inv, new ItemStackHandler(10), ContainerLevelAccess.NULL, level);
     }));
+
     public static final RegistryObject<MenuType<AdvancedManaCraftingTableMenu>> ADVANCED_MANA_CRAFTING_TABLE_MENu =
             registerMenuType("advanced_mana_crafting_table_menu", AdvancedManaCraftingTableMenu::new);
 

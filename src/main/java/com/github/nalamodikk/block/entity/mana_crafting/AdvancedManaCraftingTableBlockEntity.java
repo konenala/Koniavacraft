@@ -236,6 +236,7 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
         return Component.translatable("block.magical_industry.advanced_mana_crafting_table");
     }
 
+
     @Override
     public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         return new AdvancedManaCraftingTableMenu(pContainerId, pPlayerInventory, this, new SimpleContainerData(2));
