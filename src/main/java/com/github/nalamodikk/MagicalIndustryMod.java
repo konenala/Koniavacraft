@@ -84,6 +84,7 @@ public class MagicalIndustryMod {
     public void attachCapabilities(AttachCapabilitiesEvent<?> event) {
         if (event.getObject() instanceof ManaCraftingTableBlockEntity blockEntity) {
             event.addCapability(new ResourceLocation(MOD_ID, "mana"), new ManaCraftingTableBlockEntity.Provider(blockEntity));
+
         }
     }
 

@@ -1,12 +1,12 @@
 package com.github.nalamodikk.block.entity.mana_crafting;
 
 import com.github.nalamodikk.Capability.IMana;
+import com.github.nalamodikk.Capability.ManaCapability;
 import com.github.nalamodikk.Capability.ManaStorage;
 import com.github.nalamodikk.Capability.ModCapabilities;
 import com.github.nalamodikk.block.entity.ModBlockEntities;
 import com.github.nalamodikk.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.screen.ManaCrafting.AdvancedManaCraftingTableMenu;
-import com.github.nalamodikk.screen.ManaCrafting.ManaCraftingMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -29,7 +29,6 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,10 +52,10 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
     private final LazyOptional<IMana> manaOptional = LazyOptional.of(() -> manaStorage);
 
-    private boolean isAutoCrafting = false; // 是否處於自動合成模式
+    public static final int MAX_MANA = 5000;
+    private static final int MANA_COST_PER_CRAFT = 100;
 
-    public static final int MAX_MANA = 1000;
-    private static final int MANA_COST_PER_CRAFT = 50;
+    private boolean isAutoCrafting = false;
 
     public AdvancedManaCraftingTableBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.ADVANCED_MANA_CRAFTING_TABLE_BLOCK_BE.get(), pPos, pBlockState);
@@ -124,31 +123,25 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
 
     // 添加魔力
     public void addMana(int amount) {
-        // 添加魔力
         this.getCapability(ModCapabilities.MANA).ifPresent(mana -> {
             mana.addMana(amount);
-            setChanged(); // 通知伺服器端數據已更改
+            setChanged();
 
-            // 更新客戶端
             if (!this.level.isClientSide()) {
                 BlockState state = this.level.getBlockState(worldPosition);
-                this.level.sendBlockUpdated(this.worldPosition, state, state, 3); // 通知客戶端方塊狀態已更新
+                this.level.sendBlockUpdated(this.worldPosition, state, state, 3);
             }
-
-            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
         });
-
-        // 調用方法以更新當前的合成結果
         updateCraftingResult();
     }
 
     // 消耗魔力
     public void consumeMana(int amount) {
         manaStorage.consumeMana(amount);
-        setChanged(); // 通知服务器数据已经更改
+        setChanged();
         if (!level.isClientSide()) {
             BlockState state = level.getBlockState(worldPosition);
-            level.sendBlockUpdated(worldPosition, state, state, 3); // 触发客户端更新
+            level.sendBlockUpdated(worldPosition, state, state, 3);
         }
     }
 
@@ -160,18 +153,11 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
         } else {
             this.itemHandler.setStackInSlot(OUTPUT_SLOT, ItemStack.EMPTY);
         }
-
-        // 確保狀態已更新，通知客戶端
-        setChanged(); // 標記區塊狀態已更改
+        setChanged();
         if (level != null && !level.isClientSide) {
             BlockState state = level.getBlockState(worldPosition);
             level.sendBlockUpdated(worldPosition, state, state, 3);
         }
-    }
-
-    public void onSlotChanged() {
-        // 檢查並更新合成結果
-        updateCraftingResult();
     }
 
     private boolean canInsertItemIntoOutputSlot(Item item) {
@@ -182,30 +168,20 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
         return this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + count <= this.itemHandler.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
     }
 
-    // 切換自動/手動合成模式
-    public void toggleCraftingMode() {
-        isAutoCrafting = !isAutoCrafting;
-        System.out.println("Crafting mode: " + (isAutoCrafting ? "Auto" : "Manual"));
-    }
-
-    // 是否自動合成
     public boolean isAutoCrafting() {
         return isAutoCrafting;
     }
 
-
-    public void tick() {
-        if (isAutoCrafting && hasRecipe()) {
-            craftItem();
-        }
+    public void toggleAutoCrafting() {
+        this.isAutoCrafting = !this.isAutoCrafting;
     }
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
             return lazyItemHandler.cast();
-        } else if (cap == ModCapabilities.MANA) {
-            return manaOptional.cast();
+        } else if (cap == ManaCapability.MANA) {
+            return LazyOptional.of(() -> this.manaStorage).cast();
         }
         return super.getCapability(cap, side);
     }
@@ -236,19 +212,15 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
         return Component.translatable("block.magical_industry.advanced_mana_crafting_table");
     }
 
-
     @Override
     public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         return new AdvancedManaCraftingTableMenu(pContainerId, pPlayerInventory, this, new SimpleContainerData(2));
     }
 
-
-
     @Override
     protected void saveAdditional(CompoundTag pTag) {
         pTag.put("inventory", itemHandler.serializeNBT());
         pTag.putInt("ManaStored", manaStorage.getMana());
-        pTag.putBoolean("IsAutoCrafting", isAutoCrafting);
         super.saveAdditional(pTag);
     }
 
@@ -257,7 +229,6 @@ public class AdvancedManaCraftingTableBlockEntity extends BlockEntity implements
         super.load(pTag);
         itemHandler.deserializeNBT(pTag.getCompound("inventory"));
         manaStorage.setMana(pTag.getInt("ManaStored"));
-        isAutoCrafting = pTag.getBoolean("IsAutoCrafting");
     }
 
     public static class Provider implements ICapabilityProvider {

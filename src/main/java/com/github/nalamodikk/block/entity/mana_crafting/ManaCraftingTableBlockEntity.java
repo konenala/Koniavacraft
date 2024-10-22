@@ -1,6 +1,7 @@
 package com.github.nalamodikk.block.entity.mana_crafting;
 
 import com.github.nalamodikk.Capability.IMana;
+import com.github.nalamodikk.Capability.ManaCapability;
 import com.github.nalamodikk.Capability.ManaStorage;
 import com.github.nalamodikk.Capability.ModCapabilities;
 import com.github.nalamodikk.block.entity.ModBlockEntities;
@@ -189,12 +190,15 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
+            // 返回物品處理器
             return lazyItemHandler.cast();
-        } else if (cap == ModCapabilities.MANA) {
-            return manaOptional.cast();
+        } else if (cap == ManaCapability.MANA) {
+            // 返回魔力儲存
+            return LazyOptional.of(() -> this.manaStorage).cast();
         }
         return super.getCapability(cap, side);
     }
+
 
     @Override
     public void onLoad() {

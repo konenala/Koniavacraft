@@ -3,7 +3,10 @@
   "item.magical_industry.mana_ingot": "魔法錠",
   "item.magical_industry.mana_debug_tool": "魔力除錯工具",
 
-  "message.magical_industry.mana_added": "法力增加10!",
+
+  "message.magical_industry.mana_mode_changed": "切換到模式：%s",
+  "message.magical_industry.mana_added": "增加了 %s 魔力。當前魔力：%s",
+
 
   "tooltip.magical_industry.mana_stored": "魔力: %1$d / %2$d",
   "tooltip.magical_industry.mana_cost": "魔力消耗: %1$d",
@@ -12,12 +15,16 @@
   "block.magical_industry.mana_crafting_table": "魔力合成台",
   "block.magical_industry.advanced_mana_crafting_table": "高級魔力合成台",
 
+  "button.mode.auto": "自動模式",
+  "button.mode.manual": "手動模式",
+
 
   "block.magical_industry.mana_block": "魔法錠磚",
 
 
   "creativetab.magical_industry_items": "魔法工業-物品",
   "creativetab.magical_industry_blocks": "魔法工業-方塊"
+
 
 
 }
