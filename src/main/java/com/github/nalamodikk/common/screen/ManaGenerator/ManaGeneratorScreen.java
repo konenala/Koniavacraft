@@ -203,14 +203,15 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
             float scale = 0.8f; // 縮小字體
             poseStack.scale(scale, scale, scale);
 
-            // 計算震動效果
-            int time = (int) (System.currentTimeMillis() / 50); // 50ms 變化一次
-            int shakeX = (int) (Math.sin(time) * 4); // 左右震動範圍 ±4 像素
-            int shakeY = (int) (Math.cos(time * 1.5) * 2); // 上下震動範圍 ±2 像素
+            // 震動效果
+            long time = System.currentTimeMillis();
+            double shakeFactor = Math.sin(time * 0.015) * Math.cos(time * 0.025); // 平滑震動
+            int shakeX = (int) (shakeFactor * 3); // 左右震動 ±3px
+            int shakeY = (int) (shakeFactor * 2); // 上下震動 ±2px
 
-            // 居中計算
-            int warningX = (int) ((this.leftPos + this.imageWidth / 2) / scale) + shakeX;
-            int warningY = (int) ((this.topPos + this.imageHeight / 2 + 20) / scale) + shakeY;
+            // **這裡調整 X 和 Y 讓它貼近紅線**
+            int warningX = (int) ((this.leftPos + this.imageWidth / 2 - 40) / scale) + shakeX; // **左移 40px**
+            int warningY = (int) ((this.topPos + 90) / scale) + shakeY; // **Y 軸調到 90，讓它更貼近物品欄**
 
             // 畫出警告訊息
             pGuiGraphics.drawCenteredString(font, Component.translatable("screen.magical_industry.cannot_toggle")
