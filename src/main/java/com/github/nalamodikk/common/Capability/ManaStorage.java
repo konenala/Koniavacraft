@@ -56,9 +56,9 @@ public class ManaStorage implements IUnifiedManaHandler {
 
     @Override
     public boolean canExtract() {
-        // 這裡可以加入邏輯，判斷是否允許提取魔力，例如檢查當前的魔力值是否大於 0
-        return this.mana > 0;
+        return this.mana > 0; // 只要魔力大於 0 就允許提取
     }
+
 
 
     @Override
@@ -93,16 +93,42 @@ public class ManaStorage implements IUnifiedManaHandler {
 
     @Override
     public int extractMana(int container, int amount, ManaAction action) {
-        // 確保提取的魔力不會超過當前存儲的魔力
-        int manaExtracted = Math.min(amount, mana);
+        if (container != 0) {
+            return 0; // 只允許從 container 0 提取魔力
+        }
+        return extractMana(amount, action);
+    }
 
-        // 如果 action 是 EXECUTE，實際從 manaStorage 中扣除魔力
-        if (action == ManaAction.EXECUTE && manaExtracted > 0) {
-            mana -= manaExtracted;
+    @Override
+    public int extractMana(int amount, ManaAction action) {
+        if (amount <= 0 || mana == 0) {
+            return 0;
         }
 
-        return manaExtracted; // 返回實際提取的魔力數量
+        int manaExtracted = Math.min(amount, mana);
+
+        if (action == ManaAction.EXECUTE && manaExtracted > 0) {
+            mana -= manaExtracted;
+            onChanged(); // 確保變更被通知
+        }
+
+        return manaExtracted;
     }
+
+    @Override
+    public int receiveMana(int amount, ManaAction action) {
+        if (amount <= 0) {
+            return 0;
+        }
+        int toReceive = Math.min(amount, getMaxMana() - getMana());
+        if (action.execute() && toReceive > 0) {
+            addMana(toReceive);
+            onChanged(); // 通知數據變更
+        }
+        return toReceive;
+    }
+
+
 
 }
 

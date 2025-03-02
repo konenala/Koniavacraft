@@ -205,34 +205,43 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManaCraftingTableBlockEntity blockEntity) {
         if (!level.isClientSide) {
-            // 嘗試從相鄰方塊提取魔力
             for (Direction direction : Direction.values()) {
                 BlockEntity neighborBlockEntity = level.getBlockEntity(pos.relative(direction));
                 if (neighborBlockEntity != null) {
                     neighborBlockEntity.getCapability(ModCapabilities.MANA, direction.getOpposite()).ifPresent(neighborManaStorage -> {
-                        if (neighborManaStorage.canExtract()) {
+                        while (blockEntity.manaStorage.getNeeded() > 0 && neighborManaStorage.canExtract()) {
                             int manaToExtract = Math.min(50, neighborManaStorage.getMana());
                             int extractedMana = neighborManaStorage.extractMana(manaToExtract, ManaAction.EXECUTE);
-                            blockEntity.extractManaFromStorage(extractedMana);
+
+                            if (extractedMana > 0) {
+                                blockEntity.manaStorage.receiveMana(extractedMana, ManaAction.EXECUTE);
+                                blockEntity.setChanged();
+                                BlockState newState = level.getBlockState(pos);
+                                level.sendBlockUpdated(pos, newState, newState, 3);
+                            } else {
+                                break; // 沒有可用魔力就跳出
+                            }
                         }
                     });
                 }
             }
-
-            // 其他 tick 行為...
         }
     }
-
 
 
 
 
     public void extractManaFromStorage(int amount) {
-        int extracted = manaStorage.extractMana(amount, ManaAction.EXECUTE);
-        if (extracted > 0) {
+        int received = manaStorage.receiveMana(amount, ManaAction.EXECUTE);
+        if (received > 0) {
             setChanged();  // 確保更新到伺服器端
+            if (!level.isClientSide) {
+                BlockState state = level.getBlockState(worldPosition);
+                level.sendBlockUpdated(worldPosition, state, state, 3);
+            }
         }
     }
+
 
 
     @Override

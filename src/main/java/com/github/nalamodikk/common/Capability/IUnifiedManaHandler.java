@@ -15,8 +15,10 @@ public interface IUnifiedManaHandler {
     boolean canExtract();
 
     default int getNeeded() {
-        return Math.max(0, getMaxMana() - getMana());
+        int needed = Math.max(0, getMaxMana() - getMana());
+        return needed;
     }
+
 
     /**
      * Checks if this handler can receive mana.

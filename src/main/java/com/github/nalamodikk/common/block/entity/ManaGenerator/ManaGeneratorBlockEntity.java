@@ -353,7 +353,6 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
         } else if (cap == ForgeCapabilities.ENERGY) {
             return lazyEnergyStorage.cast();
         } else if (cap == ManaCapability.MANA) {
-            MagicalIndustryMod.LOGGER.debug("🔵 發電機的魔力 Capability 被請求於方向 {}", side);
 
             return lazyManaStorage.cast();
         }

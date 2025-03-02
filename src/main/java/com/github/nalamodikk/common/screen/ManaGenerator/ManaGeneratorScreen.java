@@ -193,15 +193,39 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
         this.renderBackground(pGuiGraphics);
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
 
-
+/**
+ * 顯示錯誤紅字
+ */
         if (showWarning && System.currentTimeMillis() - warningStartTime < 3000) {
-            int warningX = this.leftPos + 50;  // 文字 X 座標
-            int warningY = this.topPos + 70;   // 文字 Y 座標
-            pGuiGraphics.drawString(font, Component.translatable("screen.magical_industry.cannot_toggle")
+            PoseStack poseStack = pGuiGraphics.pose();
+            poseStack.pushPose();
+
+            float scale = 0.8f; // 縮小字體
+            poseStack.scale(scale, scale, scale);
+
+            // 計算震動效果
+            int time = (int) (System.currentTimeMillis() / 50); // 50ms 變化一次
+            int shakeX = (int) (Math.sin(time) * 4); // 左右震動範圍 ±4 像素
+            int shakeY = (int) (Math.cos(time * 1.5) * 2); // 上下震動範圍 ±2 像素
+
+            // 居中計算
+            int warningX = (int) ((this.leftPos + this.imageWidth / 2) / scale) + shakeX;
+            int warningY = (int) ((this.topPos + this.imageHeight / 2 + 20) / scale) + shakeY;
+
+            // 畫出警告訊息
+            pGuiGraphics.drawCenteredString(font, Component.translatable("screen.magical_industry.cannot_toggle")
                     .withStyle(ChatFormatting.RED), warningX, warningY, 0xFF0000);
+
+            poseStack.popPose();
         } else {
             showWarning = false; // 超時後隱藏紅字
         }
+
+
+        /**
+         * 這是外面了
+         *
+         */
 
         if (isHoveringManaBar(pMouseX, pMouseY)) {
             pGuiGraphics.renderTooltip(this.font, Component.translatable("tooltip.mana", this.menu.getManaStored(), this.menu.getMaxMana()), pMouseX, pMouseY);
