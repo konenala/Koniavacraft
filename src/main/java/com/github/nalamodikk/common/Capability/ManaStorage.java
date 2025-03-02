@@ -1,0 +1,108 @@
+package com.github.nalamodikk.common.Capability;
+
+import com.github.nalamodikk.common.mana.ManaAction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+
+public class ManaStorage implements IUnifiedManaHandler {
+    public static final Capability<ManaStorage> MANA = CapabilityManager.get(new CapabilityToken<>() {});
+
+    private int mana;
+    private final int capacity;
+
+    public ManaStorage(int capacity) {
+        this.capacity = capacity;
+        this.mana = 0;
+    }
+
+    public boolean isFull() {
+        return this.getMana() >= this.getMaxMana();
+    }
+
+
+    @Override
+    public void addMana(int amount) {
+        this.mana = Math.min(this.mana + amount, capacity);
+        onChanged(); // 添加魔力時通知變化
+    }
+
+    @Override
+    public void consumeMana(int amount) {
+        this.mana = Math.max(this.mana - amount, 0);
+        onChanged(); // 消耗魔力時通知變化
+    }
+
+    @Override
+    public int getMana() {
+        return mana;
+    }
+
+    @Override
+    public void setMana(int amount) {
+        this.mana = Math.min(amount, capacity);
+        onChanged(); // 設置魔力時通知變化
+    }
+
+    @Override
+    public void onChanged() {
+        // 可以加入一些狀態同步的邏輯，如果需要的話
+    }
+
+    @Override
+    public int getMaxMana() {
+        return capacity;
+    }
+
+    @Override
+    public boolean canExtract() {
+        // 這裡可以加入邏輯，判斷是否允許提取魔力，例如檢查當前的魔力值是否大於 0
+        return this.mana > 0;
+    }
+
+
+    @Override
+    public int getManaContainerCount() {
+        return 0;
+    }
+
+    @Override
+    public int getMana(int container) {
+        return 0;
+    }
+
+    @Override
+    public void setMana(int container, int mana) {
+
+    }
+
+    @Override
+    public int getMaxMana(int container) {
+        return 0;
+    }
+
+    @Override
+    public int getNeededMana(int container) {
+        return 0;
+    }
+
+    @Override
+    public int insertMana(int container, int amount, ManaAction action) {
+        return 0;
+    }
+
+    @Override
+    public int extractMana(int container, int amount, ManaAction action) {
+        // 確保提取的魔力不會超過當前存儲的魔力
+        int manaExtracted = Math.min(amount, mana);
+
+        // 如果 action 是 EXECUTE，實際從 manaStorage 中扣除魔力
+        if (action == ManaAction.EXECUTE && manaExtracted > 0) {
+            mana -= manaExtracted;
+        }
+
+        return manaExtracted; // 返回實際提取的魔力數量
+    }
+
+}
+
