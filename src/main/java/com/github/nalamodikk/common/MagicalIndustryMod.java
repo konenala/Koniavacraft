@@ -43,6 +43,10 @@ public class MagicalIndustryMod {
         GeckoLib.initialize();
         // 注册创造模式标签
         ModCreativeModTabs.register(modEventBus);
+        LOGGER.debug("這是 Debug 訊息");
+        LOGGER.info("這是 Info 訊息");
+        LOGGER.warn("這是 Warn 訊息");
+        LOGGER.error("這是 Error 訊息");
 
         // 注册物品和方块
         ModItems.register(modEventBus);

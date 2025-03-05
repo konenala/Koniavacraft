@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.custom;
+package com.github.nalamodikk.common.block.blocks;
 
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.register.ModBlockEntities;

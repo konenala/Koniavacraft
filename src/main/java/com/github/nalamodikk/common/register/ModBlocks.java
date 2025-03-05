@@ -1,7 +1,8 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.block.custom.ManaGeneratorBlock;
-import com.github.nalamodikk.common.block.custom.mana_crafting_table.ManaCraftingTableBlock;
+import com.github.nalamodikk.common.block.blocks.Conduit.ManaConduitBlock;
+import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
+import com.github.nalamodikk.common.block.blocks.mana_crafting_table.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
@@ -31,6 +32,8 @@ public class ModBlocks {
     public static final RegistryObject<Block> MANA_GENERATOR = BLOCKS.register("mana_generator",
             () -> new ManaGeneratorBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion()));
 
+    public static final RegistryObject<Block> MANA_CONDUIT = BLOCKS.register("mana_conduit",
+            () -> new ManaConduitBlock());
 
 
     // 新增魔法礦物的註冊

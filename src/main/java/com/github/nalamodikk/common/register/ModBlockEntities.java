@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.entity.Conduit.ManaConduitBlockEntity;
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -22,6 +23,9 @@ public class ModBlockEntities {
             () -> BlockEntityType.Builder.of(ManaGeneratorBlockEntity::new, ModBlocks.MANA_GENERATOR.get())
                     .build(null));
 
+    public static final RegistryObject<BlockEntityType<ManaConduitBlockEntity>> MANA_CONDUIT_BE = BLOCK_ENTITIES.register("mana_conduit",
+            () -> BlockEntityType.Builder.of(ManaConduitBlockEntity::new, ModBlocks.MANA_CONDUIT.get())
+                    .build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

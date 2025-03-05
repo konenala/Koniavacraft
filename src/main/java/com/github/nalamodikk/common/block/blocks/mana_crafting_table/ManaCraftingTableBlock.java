@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.custom.mana_crafting_table;
+package com.github.nalamodikk.common.block.blocks.mana_crafting_table;
 
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;

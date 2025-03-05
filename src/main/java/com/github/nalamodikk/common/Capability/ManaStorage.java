@@ -20,7 +20,6 @@ public class ManaStorage implements IUnifiedManaHandler {
         return this.getMana() >= this.getMaxMana();
     }
 
-
     @Override
     public void addMana(int amount) {
         this.mana = Math.min(this.mana + amount, capacity);
@@ -46,7 +45,7 @@ public class ManaStorage implements IUnifiedManaHandler {
 
     @Override
     public void onChanged() {
-        // 可以加入一些狀態同步的邏輯，如果需要的話
+        // 這裡可以加入狀態同步的邏輯（如果需要的話）
     }
 
     @Override
@@ -59,42 +58,46 @@ public class ManaStorage implements IUnifiedManaHandler {
         return this.mana > 0; // 只要魔力大於 0 就允許提取
     }
 
-
-
+    /** 這裡修正多槽位的問題，因為這個 class 只有一個 Mana 容器 */
     @Override
     public int getManaContainerCount() {
-        return 0;
+        return 1; // 這是一個單獨的 Mana 儲存容器
     }
 
     @Override
     public int getMana(int container) {
-        return 0;
+        return container == 0 ? getMana() : 0; // 只支援 container 0
     }
 
     @Override
     public void setMana(int container, int mana) {
-
+        if (container == 0) {
+            setMana(mana);
+        }
     }
 
     @Override
     public int getMaxMana(int container) {
-        return 0;
+        return container == 0 ? getMaxMana() : 0;
     }
 
     @Override
     public int getNeededMana(int container) {
-        return 0;
+        return container == 0 ? getMaxMana() - getMana() : 0;
     }
 
     @Override
     public int insertMana(int container, int amount, ManaAction action) {
-        return 0;
+        if (container != 0) {
+            return amount; // 只允許 container 0 存魔力
+        }
+        return insertMana(amount, action);
     }
 
     @Override
     public int extractMana(int container, int amount, ManaAction action) {
         if (container != 0) {
-            return 0; // 只允許從 container 0 提取魔力
+            return 0; // 只允許 container 0 提取魔力
         }
         return extractMana(amount, action);
     }
@@ -107,7 +110,7 @@ public class ManaStorage implements IUnifiedManaHandler {
 
         int manaExtracted = Math.min(amount, mana);
 
-        if (action == ManaAction.EXECUTE && manaExtracted > 0) {
+        if (action.execute() && manaExtracted > 0) {
             mana -= manaExtracted;
             onChanged(); // 確保變更被通知
         }
@@ -127,8 +130,4 @@ public class ManaStorage implements IUnifiedManaHandler {
         }
         return toReceive;
     }
-
-
-
 }
-

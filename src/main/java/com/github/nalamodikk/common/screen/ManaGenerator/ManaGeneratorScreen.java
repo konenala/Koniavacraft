@@ -209,9 +209,9 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
             int shakeX = (int) (shakeFactor * 3); // 左右震動 ±3px
             int shakeY = (int) (shakeFactor * 2); // 上下震動 ±2px
 
-            // **這裡調整 X 和 Y 讓它貼近紅線**
-            int warningX = (int) ((this.leftPos + this.imageWidth / 2 - 40) / scale) + shakeX; // **左移 40px**
-            int warningY = (int) ((this.topPos + 90) / scale) + shakeY; // **Y 軸調到 90，讓它更貼近物品欄**
+            // **調整 warningY 讓它對齊物品欄**
+            int warningX = (int) ((this.leftPos + this.imageWidth / 2) / scale) + shakeX;
+            int warningY = (int) ((this.topPos + 65) / scale) + shakeY; // **改這裡！調整 Y 軸到 85**
 
             // 畫出警告訊息
             pGuiGraphics.drawCenteredString(font, Component.translatable("screen.magical_industry.cannot_toggle")
@@ -221,6 +221,7 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
         } else {
             showWarning = false; // 超時後隱藏紅字
         }
+
 
 
         /**
