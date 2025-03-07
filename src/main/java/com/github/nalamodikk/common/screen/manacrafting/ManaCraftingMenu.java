@@ -3,6 +3,8 @@ package com.github.nalamodikk.common.screen.manacrafting;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.register.ModMenusTypes;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +20,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.Optional;
 
@@ -34,9 +37,31 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
     public static final int INPUT_SLOT_END = 8;
     private static final int MANA_COST_PER_CRAFT = 50;
 
+
     public ManaCraftingTableBlockEntity getBlockEntity() {
         return blockEntity;
     }
+
+    public static ManaCraftingMenu create(int windowId, Inventory playerInventory, FriendlyByteBuf buf) {
+        // 1️⃣ 讀取方塊位置
+        BlockPos pos = buf.readBlockPos();
+        Level level = playerInventory.player.level();
+
+        // 2️⃣ 取得 BlockEntity（⚠️ 可能是 null，要檢查！）
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof ManaCraftingTableBlockEntity manaTable) {
+            return new ManaCraftingMenu(windowId, playerInventory, manaTable.getItemHandler(),
+                    ContainerLevelAccess.create(level, pos), level);
+        }
+
+        // 3️⃣ 如果 BlockEntity 取不到，就自己創一個物品欄（⚠️ 避免 GUI 崩潰！）
+        return new ManaCraftingMenu(windowId, playerInventory, new ItemStackHandler(10),
+                ContainerLevelAccess.NULL, level);
+    }
+
+
+
+
 
     public ManaCraftingMenu(int containerId, Inventory playerInventory, IItemHandler itemHandler, ContainerLevelAccess access, Level level) {
         super(ModMenusTypes.MANA_CRAFTING_MENU.get(), containerId);
@@ -113,6 +138,8 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
         return manaStored.get();
     }
 
+
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = this.slots.get(index);
@@ -125,9 +152,13 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
 
         // 如果是合成結果槽
         if (index == OUTPUT_SLOT) {
-            if (blockEntity == null || !blockEntity.hasRecipe()) {
+            if (blockEntity == null) {
                 return ItemStack.EMPTY;
             }
+            if (!blockEntity.hasRecipe()) {
+                return ItemStack.EMPTY;
+            }
+
 
             // 嘗試將合成結果移到玩家的物品欄中
             if (!this.moveItemStackTo(stackInSlot, 10, this.slots.size(), true)) {
@@ -245,9 +276,13 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
-        if (blockEntity != null && blockEntity.getLevel() != null && !blockEntity.getLevel().isClientSide()) {
-            int currentMana = blockEntity.getManaStored();
-            manaStored.set(currentMana);  // 更新魔力值
+        if (blockEntity == null) {
+            return;
+        }
+        Level level = blockEntity.getLevel();
+        if (level != null && !level.isClientSide()) {
+            manaStored.set(blockEntity.getManaStored());
         }
     }
+
 }

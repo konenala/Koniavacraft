@@ -34,6 +34,8 @@ public class ManaConduitBlockEntity extends BlockEntity {
         }
     }
 
+
+
     private void transferMana(ManaConduitBlockEntity target) {
         int amount = Math.min(50, this.manaStorage.getMana()); // 每次最多傳 50 魔力
 
@@ -41,6 +43,8 @@ public class ManaConduitBlockEntity extends BlockEntity {
         int extracted = this.manaStorage.extractMana(amount, ManaAction.EXECUTE);
         int received = target.manaStorage.receiveMana(extracted, ManaAction.EXECUTE);
     }
+
+
 
 
     @Override

@@ -32,7 +32,7 @@ public class ModBlocks {
     public static final RegistryObject<Block> MANA_GENERATOR = BLOCKS.register("mana_generator",
             () -> new ManaGeneratorBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion()));
 
-    public static final RegistryObject<Block> MANA_CONDUIT = BLOCKS.register("mana_conduit",
+    public static final RegistryObject<Block> MANA_CONDUIT = registerBlock("mana_conduit",
             () -> new ManaConduitBlock());
 
 

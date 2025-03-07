@@ -58,6 +58,9 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pPos, pBlockState);
     }
 
+
+
+
     public void setItem(int slot, ItemStack stack) {
         itemHandler.setStackInSlot(slot, stack);
     }
@@ -65,6 +68,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     public ItemStackHandler getItemHandler() {
         return itemHandler;
     }
+
 
     public void craftItem() {
         Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
@@ -86,7 +90,11 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
-    public Optional<ManaCraftingTableRecipe>        getCurrentRecipe() {
+    public Optional<ManaCraftingTableRecipe> getCurrentRecipe() {
+        if (this.level == null) {
+            return Optional.empty();
+        }
+
         SimpleContainer inventory = new SimpleContainer(9);
         for (int i = INPUT_SLOT_START; i <= INPUT_SLOT_END; i++) {
             inventory.setItem(i - INPUT_SLOT_START, this.itemHandler.getStackInSlot(i));
@@ -94,6 +102,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
         return this.level.getRecipeManager().getRecipeFor(ManaCraftingTableRecipe.Type.INSTANCE, inventory, level);
     }
+
 
     public boolean hasRecipe() {
         Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
@@ -159,6 +168,8 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     }
 
     public void updateCraftingResult() {
+        if (level == null) return;
+
         Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
         if (recipe.isPresent() && hasSufficientMana(recipe.get().getManaCost())) {
             ItemStack result = recipe.get().assemble(new SimpleContainer(itemHandler.getSlots()), level.registryAccess());
@@ -169,7 +180,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
         // 確保狀態已更新，通知客戶端
         setChanged(); // 標記區塊狀態已更改
-        if (level != null && !level.isClientSide) {
+        if (!level.isClientSide) {
             BlockState state = level.getBlockState(worldPosition);
             level.sendBlockUpdated(worldPosition, state, state, 3);
         }
@@ -247,8 +258,12 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     @Override
     public void onLoad() {
         super.onLoad();
-        lazyItemHandler = LazyOptional.of(() -> itemHandler);
-        lazyManaStorage = LazyOptional.of(() -> manaStorage); // 確保初始化 manaStorage
+        if (lazyItemHandler == null) {
+            lazyItemHandler = LazyOptional.of(() -> itemHandler);
+        }
+        if (lazyManaStorage == null) {
+            lazyManaStorage = LazyOptional.of(() -> manaStorage);
+        }
     }
 
 
@@ -276,7 +291,13 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return new ManaCraftingMenu(pContainerId, pPlayerInventory, itemHandler, ContainerLevelAccess.create(this.level, this.worldPosition), this.level);
+        return new ManaCraftingMenu(
+                pContainerId,
+                pPlayerInventory,
+                itemHandler,
+                this.level != null ? ContainerLevelAccess.create(this.level, this.worldPosition) : ContainerLevelAccess.NULL,
+                this.level
+        );
     }
 
     @Override
