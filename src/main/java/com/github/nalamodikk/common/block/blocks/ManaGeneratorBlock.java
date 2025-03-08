@@ -4,6 +4,8 @@ import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBloc
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.util.helpers.FacingHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -27,16 +29,25 @@ import org.jetbrains.annotations.Nullable;
 public class ManaGeneratorBlock extends BaseEntityBlock {
     public ManaGeneratorBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(ACTIVE, false)); // 預設不運作
+
     }
     private final FacingHandler facingHandler = new FacingHandler();
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty ACTIVE = BooleanProperty.create("active"); // 定義運作狀態
 
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, ACTIVE); // 註冊 ACTIVE 屬性
     }
 
+
+
+    @Override
+    public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
+        return state.getValue(ACTIVE) ? 15 : 0; // 運作時發光，否則不發光
+    }
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());

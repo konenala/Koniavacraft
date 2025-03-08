@@ -5,6 +5,7 @@ import com.github.nalamodikk.common.Capability.ManaCapability;
 import com.github.nalamodikk.common.Capability.ManaStorage;
 import com.github.nalamodikk.common.Capability.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.compat.energy.UnifiedEnergyStorage;
 import com.github.nalamodikk.common.mana.ManaAction;
@@ -202,7 +203,15 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManaGeneratorBlockEntity blockEntity) {
         if (!level.isClientSide) {
+            boolean wasActive = state.getValue(ManaGeneratorBlock.ACTIVE);
+            boolean shouldBeActive = blockEntity.isWorking; // 這是發電機是否在運作
+
+            if (wasActive != shouldBeActive) { // 狀態有變化
+                level.setBlock(pos, state.setValue(ManaGeneratorBlock.ACTIVE, shouldBeActive), 3);
+            }
+
             blockEntity.sync();
+
             blockEntity.generateEnergyOrMana();
             blockEntity.outputEnergyAndMana();
             blockEntity.markUpdated(); // 標記更新

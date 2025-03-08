@@ -2,6 +2,7 @@
   "variants": {
     "": {
       "model": "magical_industry:block/mana_generator"
+
     }
   }
 }
