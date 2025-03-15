@@ -53,16 +53,30 @@ public class ManaConduitBlock extends BaseEntityBlock  {
         if (level.isClientSide) return;
 
         BlockState newState = state;
+        boolean changed = false;
 
-        // 🔥 自動檢查所有 6 個方向
         for (Direction direction : Direction.values()) {
             BlockState neighbor = level.getBlockState(pos.relative(direction));
             boolean connected = neighbor.getBlock() instanceof ManaConduitBlock;
-            newState = newState.setValue(getPropertyForDirection(direction), connected);
+
+            if (state.getValue(getPropertyForDirection(direction)) != connected) {
+                newState = newState.setValue(getPropertyForDirection(direction), connected);
+                changed = true;
+            }
         }
 
-        level.setBlock(pos, newState, 3);
+        if (changed) {
+            level.setBlock(pos, newState, 3);
+
+            // ✅ 檢查 `updateConnections()` 是否存在
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof ManaConduitBlockEntity conduit) {
+                conduit.updateConnections(); // ✅ 確保這行不會報錯
+            }
+        }
     }
+
+
 
     // 🔥 幫助函式：根據 Direction 取得對應的 BooleanProperty
     private static BooleanProperty getPropertyForDirection(Direction direction) {
@@ -75,6 +89,10 @@ public class ManaConduitBlock extends BaseEntityBlock  {
             case DOWN -> DOWN;
         };
     }
+    public static BooleanProperty getProperty(Direction direction) {
+        return getPropertyForDirection(direction);
+    }
+
 
     @Override
     @Nullable

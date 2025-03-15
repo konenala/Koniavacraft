@@ -4,7 +4,10 @@ import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.client.model.ManaGeneratorModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 
 public class ManaGeneratorRenderer extends GeoBlockRenderer<ManaGeneratorBlockEntity> {
@@ -13,11 +16,10 @@ public class ManaGeneratorRenderer extends GeoBlockRenderer<ManaGeneratorBlockEn
     }
     @Override
     public ResourceLocation getTextureLocation(ManaGeneratorBlockEntity animatable) {
-        if (animatable.getIsWorking()) {
-            return new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/block/mana_generator_active.png");
-        } else {
-            return new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/block/mana_generator.png");
-        }
+        return new ResourceLocation(MagicalIndustryMod.MOD_ID,
+                animatable.getIsWorking() ? "textures/block/mana_generator_active.png" : "textures/block/mana_generator_texture.png"
+        );
     }
+
 
 }

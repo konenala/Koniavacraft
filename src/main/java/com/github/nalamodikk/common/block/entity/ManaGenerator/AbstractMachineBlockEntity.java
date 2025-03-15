@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.entity.ManaGenerator;
 
 import com.github.nalamodikk.common.Capability.ManaCapability;
 import com.github.nalamodikk.common.Capability.ManaStorage;
-import com.github.nalamodikk.common.compat.energy.UnifiedEnergyStorage;
+import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import com.github.nalamodikk.common.mana.ManaAction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -25,7 +25,7 @@ import java.util.EnumMap;
 public abstract class AbstractMachineBlockEntity extends BlockEntity {
     protected final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
 
-    protected final UnifiedEnergyStorage energyStorage;
+    protected final ManaEnergyStorage energyStorage;
     protected final ManaStorage manaStorage;
     protected boolean supportsEnergy;
     protected boolean supportsMana;
@@ -33,7 +33,7 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity {
     protected int burnTime;
     protected int currentBurnTime;
 
-    private final LazyOptional<UnifiedEnergyStorage> lazyEnergyStorage;
+    private final LazyOptional<ManaEnergyStorage> lazyEnergyStorage;
     private final LazyOptional<ManaStorage> lazyManaStorage;
 
     public AbstractMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, boolean supportsEnergy, boolean supportsMana) {
@@ -46,7 +46,7 @@ public abstract class AbstractMachineBlockEntity extends BlockEntity {
         this.supportsEnergy = supportsEnergy;
         this.supportsMana = supportsMana;
 
-        this.energyStorage = supportsEnergy ? new UnifiedEnergyStorage(getConfigMaxEnergy()) : null;
+        this.energyStorage = supportsEnergy ? new ManaEnergyStorage(getConfigMaxEnergy()) : null;
         this.manaStorage = supportsMana ? new ManaStorage(getConfigMaxMana()) : null;
 
         this.lazyEnergyStorage = supportsEnergy ? LazyOptional.of(() -> energyStorage) : LazyOptional.empty();

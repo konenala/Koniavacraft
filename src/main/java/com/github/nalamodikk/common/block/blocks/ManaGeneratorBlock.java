@@ -1,9 +1,16 @@
 package com.github.nalamodikk.common.block.blocks;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.util.helpers.FacingHandler;
+import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,9 +29,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 public class ManaGeneratorBlock extends BaseEntityBlock {
     public ManaGeneratorBlock(Properties properties) {

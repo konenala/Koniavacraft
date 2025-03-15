@@ -6,8 +6,8 @@ import com.github.nalamodikk.common.Capability.ManaStorage;
 import com.github.nalamodikk.common.Capability.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
+import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.compat.energy.UnifiedEnergyStorage;
 import com.github.nalamodikk.common.mana.ManaAction;
 import com.github.nalamodikk.common.register.ConfigManager;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
@@ -84,7 +84,7 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
     public static final int MAX_MANA = 10000; // 或者保留 private，然後新增 getter
     public static final int MAX_ENERGY = 10000;
 
-    private final UnifiedEnergyStorage energyStorage = new UnifiedEnergyStorage(getConfigMaxEnergy());
+    private final ManaEnergyStorage energyStorage = new ManaEnergyStorage(getConfigMaxEnergy());
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
     private final ItemStackHandler fuelHandler = new ItemStackHandler(1) {
         @Override
@@ -117,7 +117,7 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WORKING_ANIM = RawAnimation.begin().thenLoop("working");
     private final LazyOptional<ItemStackHandler> lazyFuelHandler = LazyOptional.of(() -> fuelHandler);
-    private final LazyOptional<UnifiedEnergyStorage> lazyEnergyStorage = LazyOptional.of(() -> energyStorage);
+    private final LazyOptional<ManaEnergyStorage> lazyEnergyStorage = LazyOptional.of(() -> energyStorage);
     private final LazyOptional<ManaStorage> lazyManaStorage = LazyOptional.of(() -> manaStorage);
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
 
@@ -301,6 +301,7 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
             }
         }
     }
+
 
 
     private void outputEnergyAndMana() {

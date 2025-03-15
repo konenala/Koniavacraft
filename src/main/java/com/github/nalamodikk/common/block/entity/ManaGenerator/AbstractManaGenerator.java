@@ -1,7 +1,6 @@
 package com.github.nalamodikk.common.block.entity.ManaGenerator;
 
 import com.github.nalamodikk.common.Capability.ManaStorage;
-import com.github.nalamodikk.common.compat.energy.NalaEnergyStorage;
 import com.github.nalamodikk.common.util.loader.FuelRateLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
