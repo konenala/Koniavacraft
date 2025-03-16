@@ -6,6 +6,7 @@ import com.github.nalamodikk.common.Capability.ManaStorage;
 import com.github.nalamodikk.common.Capability.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
+import com.github.nalamodikk.common.block.entity.AbstractManaMachine;
 import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.mana.ManaAction;
@@ -56,7 +57,7 @@ import software.bernie.geckolib.core.object.PlayState;
 
 import java.util.EnumMap;
 
-public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEntity, GeoAnimatable, MenuProvider , IConfigurableBlock {
+public class ManaGeneratorBlockEntity extends AbstractManaMachine {
 
     public static final int MANA_STORED_INDEX = 0;
     public static final int ENERGY_STORED_INDEX = 1;
@@ -122,7 +123,7 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
 
     public ManaGeneratorBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MANA_GENERATOR_BE.get(), pos, state);
+        super(ModBlockEntities.MANA_GENERATOR_BE.get(), pos, state, MAX_MANA ,MAX_ENERGY, 1);
     }
 
     public void markUpdated() {
@@ -175,6 +176,7 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
     public ItemStackHandler getInventory() {
         return fuelHandler;
     }
+
 
     public int getCurrentMode() {
         return (currentMode == Mode.MANA) ? 0 : 1;
@@ -370,6 +372,11 @@ public class ManaGeneratorBlockEntity extends BlockEntity implements GeoBlockEnt
         return super.getCapability(cap, side);
     }
 
+
+    @Override
+    public void tickMachine() {
+
+    }
 
     @Override
     public void load(CompoundTag tag) {
