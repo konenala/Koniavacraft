@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.toolpacket;
 
-import com.github.nalamodikk.common.Capability.ManaCapability;
+import com.github.nalamodikk.common.capability.ManaCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

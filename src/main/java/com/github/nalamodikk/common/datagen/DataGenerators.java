@@ -4,12 +4,15 @@ import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DataGenerators {
@@ -23,6 +26,7 @@ public class DataGenerators {
 
         // 配方生成
         generator.addProvider(event.includeServer(), new ModRecipeProvider(packOutput));
+
 
 
         // 掉落表生成

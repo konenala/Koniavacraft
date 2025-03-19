@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.item.debug;
 
-import com.github.nalamodikk.common.Capability.ManaCapability;
+import com.github.nalamodikk.common.capability.ManaCapability;
 
 import com.github.nalamodikk.common.network.handler.NetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.ManaUpdatePacket;

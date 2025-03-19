@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.compat.JEI;
+package com.github.nalamodikk.common.compat.JEI.Machine.manacrafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModBlocks;
@@ -18,7 +18,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import java.util.List;
 
 @JeiPlugin
-public class JEIMagical_IndustryPlugin implements IModPlugin {
+public class ManaCraftingJEIPlugin implements IModPlugin {
 
     public static final ResourceLocation PLUGIN_UID = new ResourceLocation(MagicalIndustryMod.MOD_ID, "jei_plugin");
 

@@ -1,17 +1,14 @@
 package com.github.nalamodikk.common.register;
 
 
-import com.github.nalamodikk.common.Capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.Capability.ManaCapability;
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-
-import static com.github.nalamodikk.common.MagicalIndustryMod.MOD_ID;
 
 public class CapabilityHandler {
 

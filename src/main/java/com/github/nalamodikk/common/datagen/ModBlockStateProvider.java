@@ -26,12 +26,6 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
 
 
-        getVariantBuilder(ModBlocks.MANA_GENERATOR.get())
-                .forAllStates(state -> ConfiguredModel.builder()
-                        .modelFile(models().getExistingFile(modLoc("block/mana_generator")))
-                        .rotationY(((int) state.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot()) % 360)
-                        .build());
-
         blockWithItem(ModBlocks.DEEPSLATE_MAGIC_ORE);
 
 

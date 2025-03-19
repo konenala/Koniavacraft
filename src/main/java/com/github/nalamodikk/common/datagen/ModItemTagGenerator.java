@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -24,7 +25,13 @@ public class ModItemTagGenerator extends ItemTagsProvider {
 
             // 使用 pProvider 作為標籤的來源
             tag(ItemTags.create(new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana")))
-                    .add(ModItems.CORRUPTED_MANA_DUST.get()); // 將物品加入到 "mana" 標籤中
+                    .add(ModItems.CORRUPTED_MANA_DUST.get(),
+                            ModItems.MANA_DUST.get(),
+                            ModBlocks.MANA_BLOCK.get().asItem(),
+                            ModItems.MANA_INGOT.get()
+
+                    ); // 將物品加入到 "mana" 標籤中
+
         }
     }
 

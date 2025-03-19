@@ -73,6 +73,11 @@ public class FuelRecipe implements Recipe<Container> {
         return FuelRecipeType.INSTANCE;
     }
 
+    public String getItemId() {
+        return itemId;
+    }
+
+
     public int getManaRate() {
         return manaRate;
     }

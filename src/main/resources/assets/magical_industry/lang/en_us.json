@@ -6,6 +6,12 @@
   "item.magical_industry.basic_tech_wand": "Basic Tech Wand",
   "item.magical_industry.basic_tech_wand.tooltip.mode": "Mode: %s",
 
+  "jei.magical_industry.fuel.mana": "Mana Output: %s",
+  "jei.magical_industry.fuel.energy": "Energy Output: %s",
+  "jei.magical_industry.fuel.burn_time": "Burn Time: %s",
+  "jei.magical_industry.fuel": "Mana Fuel",
+
+
   "message.magical_industry.mana_added": "Added %s Mana. Current Mana: %s",
   "message.magical_industry.mana_mode_changed": "Switched to mode: %s",
   "message.magical_industry.mana_mode_add_10": "Add 10 Mana",

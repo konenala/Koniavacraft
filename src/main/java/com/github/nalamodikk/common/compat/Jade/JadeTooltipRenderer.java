@@ -12,7 +12,7 @@ import snownee.jade.api.*;
 import snownee.jade.api.config.IPluginConfig;
 import snownee.jade.api.ui.IElement;
 import net.minecraft.network.chat.Component;
-import com.github.nalamodikk.common.Capability.ManaStorage;
+import com.github.nalamodikk.common.capability.ManaStorage;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import snownee.jade.api.ui.ITooltipRenderer;
 import net.minecraft.client.renderer.Rect2i;

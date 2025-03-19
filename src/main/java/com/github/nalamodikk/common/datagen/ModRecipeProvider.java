@@ -32,6 +32,8 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
     protected void buildRecipes(Consumer<FinishedRecipe> pWriter) {
         // oreSmelting(pWriter, SAPPHIRE_SMELTABLES, RecipeCategory.MISC, ModItems.SAPPHIRE.get(), 0.25f, 200, "sapphire");
         // oreBlasting(pWriter, SAPPHIRE_SMELTABLES, RecipeCategory.MISC, ModItems.SAPPHIRE.get(), 0.25f, 100, "sapphire");
+
+        //魔力發電機生成
         FuelRecipeProvider.buildFuelRecipes(pWriter);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_BLOCK.get())

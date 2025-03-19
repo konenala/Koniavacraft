@@ -26,10 +26,10 @@ public class ModRecipes {
             TYPES.register("mana_crafting", () -> ManaCraftingTableRecipe.Type.INSTANCE);
 
     public static final RegistryObject<RecipeSerializer<FuelRecipe>> FUEL_RECIPE_SERIALIZER =
-            SERIALIZERS.register("mana_fuel", () -> FuelRecipe.FuelRecipeSerializer.INSTANCE);
+            SERIALIZERS.register("fuel", () -> FuelRecipe.FuelRecipeSerializer.INSTANCE);
 
     public static final RegistryObject<RecipeType<FuelRecipe>> FUEL_RECIPE_TYPE =
-            TYPES.register("mana_fuel", () -> FuelRecipe.FuelRecipeType.INSTANCE);
+            TYPES.register("fuel", () -> FuelRecipe.FuelRecipeType.INSTANCE);
 
     // 註冊方法
     public static void register(IEventBus eventBus) {

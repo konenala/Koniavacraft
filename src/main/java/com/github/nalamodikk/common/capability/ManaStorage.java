@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.Capability;
+package com.github.nalamodikk.common.capability;
 
 import com.github.nalamodikk.common.mana.ManaAction;
 import net.minecraftforge.common.capabilities.Capability;

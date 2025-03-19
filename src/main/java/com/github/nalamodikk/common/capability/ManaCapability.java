@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.Capability;
+package com.github.nalamodikk.common.capability;
 
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.core.Direction;

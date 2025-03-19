@@ -2,14 +2,14 @@ package com.github.nalamodikk.common;
 
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.Capability.ModCapabilities;  // 新增的导入
+import com.github.nalamodikk.common.capability.ModCapabilities;  // 新增的导入
 import com.github.nalamodikk.common.register.ModCreativeModTabs;
 import com.github.nalamodikk.common.register.ModItems;
 import com.github.nalamodikk.common.network.handler.NetworkHandler;
 import com.github.nalamodikk.common.register.ModRecipes;
 import com.github.nalamodikk.common.register.*;
 import com.github.nalamodikk.common.register.ModMenusTypes;
-import com.github.nalamodikk.common.util.loader.FuelRateLoader;
+import com.github.nalamodikk.common.recipe.fuel.loader.FuelRateLoader;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;

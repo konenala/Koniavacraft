@@ -1,19 +1,19 @@
 package com.github.nalamodikk.common.block.entity.ManaGenerator;
 
-import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.common.Capability.ManaCapability;
-import com.github.nalamodikk.common.Capability.ManaStorage;
-import com.github.nalamodikk.common.Capability.ModCapabilities;
+import com.github.nalamodikk.common.capability.ManaCapability;
+import com.github.nalamodikk.common.capability.ManaStorage;
+import com.github.nalamodikk.common.capability.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.entity.AbstractManaMachine;
 import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
+import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.mana.ManaAction;
 import com.github.nalamodikk.common.register.ConfigManager;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.sync.UnifiedSyncManager;
-import com.github.nalamodikk.common.util.loader.FuelRateLoader;
+import com.github.nalamodikk.common.recipe.fuel.loader.FuelRateLoader;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -36,7 +36,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -45,7 +44,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -95,15 +93,35 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachine {
 
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+
             if (currentMode == Mode.ENERGY) {
-                ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                // **符合 FuelRateLoader 或 ForgeHooks 內的燃料就允許**
                 FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(itemId);
                 return (fuelRate != null && fuelRate.getBurnTime() > 0) || (ForgeHooks.getBurnTime(stack, RecipeType.SMELTING) > 0);
             } else if (currentMode == Mode.MANA) {
-                return stack.is(ItemTags.create(new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana"))); // 魔力模式只允許標籤為 mana 的物品
+                // **只要符合 "mana" 標籤 或 `FuelRecipe` 內的燃料之一，就允許**
+                return stack.is(ItemTags.create(new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana"))) || isValidFuel(stack);
             }
             return false;
         }
+
+
+        private boolean isValidFuel(ItemStack stack) {
+            if (level == null) return false;
+
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            if (itemId == null) return false;
+
+            // 檢查 FuelRecipe 是否包含這個物品
+            for (FuelRecipe recipe : level.getRecipeManager().getAllRecipesFor(FuelRecipe.FuelRecipeType.INSTANCE)) {
+                if (recipe.getId().toString().equals(itemId.toString())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     };
 
     private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
@@ -150,6 +168,20 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachine {
         // 切換模式
         currentMode = (currentMode == Mode.MANA) ? Mode.ENERGY : Mode.MANA;
         markUpdated(); // 更新 UI
+    }
+
+    private int getFuelBurnTimeFromRecipe(ItemStack stack) {
+        if (level == null) return 0;
+
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (itemId == null) return 0;
+
+        for (FuelRecipe recipe : level.getRecipeManager().getAllRecipesFor(FuelRecipe.FuelRecipeType.INSTANCE)) {
+            if (recipe.getId().toString().equals(itemId.toString())) {
+                return recipe.getBurnTime();
+            }
+        }
+        return 0;
     }
 
 

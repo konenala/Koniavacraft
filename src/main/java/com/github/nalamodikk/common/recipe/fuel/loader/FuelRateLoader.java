@@ -1,5 +1,7 @@
-package com.github.nalamodikk.common.util.loader;
+package com.github.nalamodikk.common.recipe.fuel.loader;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -7,7 +9,6 @@ import com.google.gson.JsonParseException;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.GsonHelper;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber
@@ -31,12 +33,13 @@ public class FuelRateLoader extends SimpleJsonResourceReloadListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(FuelRateLoader.class);
     private static final Gson GSON = new Gson();
     private static final Map<String, FuelRate> FUEL_RATES = new HashMap<>();
-    private static final String DEFAULT_NAMESPACE = "magical_industry";
+
+    private static final String DEFAULT_NAMESPACE = MagicalIndustryMod.MOD_ID;
     private static final int DEFAULT_BURN_TIME = 200;  // 默認燃燒時間
     private static final int DEFAULT_ENERGY_RATE = 1;
 
     public FuelRateLoader() {
-        super(GSON, "recipes/fuel_rate");  // 加載 fuel_rate 目錄下的 JSON 文件
+        super(GSON, "recipes/mana_recipes/fuel");  // 確保加載 mana_recipes/fuel 目錄
     }
 
     @SubscribeEvent

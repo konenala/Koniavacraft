@@ -1,8 +1,9 @@
 package com.github.nalamodikk.common.block.entity.mana_crafting;
 
-import com.github.nalamodikk.common.Capability.ManaCapability;
-import com.github.nalamodikk.common.Capability.ManaStorage;
-import com.github.nalamodikk.common.Capability.ModCapabilities;
+import com.github.nalamodikk.common.capability.ManaCapability;
+import com.github.nalamodikk.common.capability.ManaStorage;
+import com.github.nalamodikk.common.capability.ModCapabilities;
+import com.github.nalamodikk.common.block.entity.AbstractManaMachine;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.mana.ManaAction;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
@@ -30,10 +31,12 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
 
 import java.util.Optional;
 
-public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider {
+public class ManaCraftingTableBlockEntity extends AbstractManaMachine implements MenuProvider {
     private final ItemStackHandler itemHandler = new ItemStackHandler(10) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -54,9 +57,10 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     public static final int MAX_MANA = 1000;
     private static final int MANA_COST_PER_CRAFT = 50;
 
-    public ManaCraftingTableBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pPos, pBlockState);
+    public ManaCraftingTableBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pos, state, MAX_MANA, null, 10);
     }
+
 
 
 
@@ -133,7 +137,6 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         this.getCapability(ModCapabilities.MANA).ifPresent(mana -> {
             // 使用 addMana 方法增加魔力
             mana.addMana(amount);
-            System.out.println("Mana added: " + amount + ", Current Mana: " + mana.getMana());
 
             // 通知伺服器端數據已更改
             setChanged();
@@ -149,6 +152,11 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         updateCraftingResult();
     }
 
+
+    @Override
+    public void tickMachine() {
+
+    }
 
     // 消耗魔力
     public void consumeMana(int amount) {
@@ -314,4 +322,23 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         manaStorage.setMana(pTag.getInt("ManaStored"));
     }
 
+    @Override
+    public void setDirectionConfig(Direction direction, boolean isOutput) {
+
+    }
+
+    @Override
+    public boolean isOutput(Direction direction) {
+        return false;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return null;
+    }
 }

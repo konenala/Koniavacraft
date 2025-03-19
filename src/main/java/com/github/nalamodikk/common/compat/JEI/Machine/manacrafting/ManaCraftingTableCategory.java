@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.compat.JEI;
+package com.github.nalamodikk.common.compat.JEI.Machine.manacrafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModBlocks;

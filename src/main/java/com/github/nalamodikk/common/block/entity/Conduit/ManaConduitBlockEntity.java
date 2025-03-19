@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.block.entity.Conduit;
 
-import com.github.nalamodikk.common.Capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.Capability.ManaCapability;
-import com.github.nalamodikk.common.Capability.ManaStorage;
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.capability.ManaCapability;
+import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.mana.ManaAction;
 import com.github.nalamodikk.common.mana.net.ManaNetworkManager;
