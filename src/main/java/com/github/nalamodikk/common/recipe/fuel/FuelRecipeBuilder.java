@@ -31,10 +31,10 @@ public class FuelRecipeBuilder implements FinishedRecipe {
 
 
     public void save(Consumer<FinishedRecipe> consumer) {
-        // 自動將配方保存到 "recipes/fuel_rate/" 目錄下
-        ResourceLocation saveLocation = new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_recipes/fuel" + id.getPath());
+        ResourceLocation saveLocation = new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_recipes/fuel/" + id.getPath());
         consumer.accept(new FuelRecipeBuilder(this.itemId, this.manaRate, this.energyRate, this.burnTime, saveLocation));
     }
+
 
     @Override
     public void serializeRecipeData(JsonObject json) {

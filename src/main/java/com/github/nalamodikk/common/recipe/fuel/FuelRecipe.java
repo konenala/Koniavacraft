@@ -19,6 +19,10 @@ public class FuelRecipe implements Recipe<Container> {
     private final int energyRate;
     private final int burnTime;  // 新增屬性
 
+    public ResourceLocation getItemResource() {
+        return new ResourceLocation(this.itemId);
+    }
+
 
     public FuelRecipe(ResourceLocation id, String itemId, int manaRate, int energyRate ,int burnTime) {
         this.id = id;
