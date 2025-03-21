@@ -81,32 +81,40 @@ public class FuelRateLoader extends SimpleJsonResourceReloadListener {
 
     // Method to get fuel rate for an item
     public static FuelRate getFuelRateForItem(ResourceLocation itemId) {
+        // 1️⃣ **先嘗試直接使用物品 ID 查找**
         FuelRate rate = FUEL_RATES.get(itemId.toString());
+        if (rate != null) {
+            LOGGER.info("[FuelRateLoader] ✅ 透過物品 ID 找到燃料: {} | manaRate: {} | burnTime: {}",
+                    itemId, rate.getManaRate(), rate.getBurnTime());
+            return rate;
+        }
 
-        // 使用自定義標籤查找，若無結果則進行後備處理
-        if (rate == null) {
-            for (Map.Entry<String, FuelRate> entry : FUEL_RATES.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith("tag:")) {
-                    String tagName = key.substring(4);
-                    TagKey<Item> tag = TagKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(DEFAULT_NAMESPACE, tagName));
-                    if (BuiltInRegistries.ITEM.getTag(tag).stream()
-                            .flatMap(holderSet -> holderSet.stream())
-                            .anyMatch(holder -> holder.value().builtInRegistryHolder().key().location().equals(itemId))) {
-                        return entry.getValue();
-                    }
+        // 2️⃣ **如果物品 ID 查找失敗，則嘗試標籤查找**
+        for (Map.Entry<String, FuelRate> entry : FUEL_RATES.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("tag:")) {
+                String tagName = key.substring(4);
+                TagKey<Item> tag = TagKey.create(BuiltInRegistries.ITEM.key(), new ResourceLocation(DEFAULT_NAMESPACE, tagName));
+                if (BuiltInRegistries.ITEM.getTag(tag).stream()
+                        .flatMap(holderSet -> holderSet.stream())
+                        .anyMatch(holder -> holder.value().builtInRegistryHolder().key().location().equals(itemId))) {
+                    LOGGER.info("[FuelRateLoader] ✅ 透過標籤找到燃料: {} (標籤: {}) | manaRate: {} | burnTime: {}",
+                            itemId, tagName, entry.getValue().getManaRate(), entry.getValue().getBurnTime());
+                    return entry.getValue();
                 }
             }
         }
 
-        // 後備方案，使用 ForgeHooks 獲取燃燒時間，默認生成速率為 1
+        // 3️⃣ **如果 `FuelRecipe` 內沒有對應物品，則使用 `ForgeHooks.getBurnTime()` 查找**
         int defaultBurnTime = ForgeHooks.getBurnTime(new ItemStack(BuiltInRegistries.ITEM.get(itemId)), RecipeType.SMELTING);
         if (defaultBurnTime > 0) {
+            LOGGER.info("[FuelRateLoader] 🔥 使用 ForgeHooks 獲取燃燒時間: {} | burnTime: {}", itemId, defaultBurnTime);
             return new FuelRate(0, defaultBurnTime, DEFAULT_ENERGY_RATE);
-        } else {
-//            LOGGER.warn("No custom or Forge burn time found for {}, using default values.", itemId);
-            return new FuelRate(0, DEFAULT_BURN_TIME, DEFAULT_ENERGY_RATE);
         }
+
+        // 4️⃣ **如果完全找不到數據，使用預設燃燒時間**
+        LOGGER.warn("[FuelRateLoader] ❌ 找不到燃料數據: {}，使用預設值 manaRate: 0 | burnTime: {}", itemId, DEFAULT_BURN_TIME);
+        return new FuelRate(0, DEFAULT_BURN_TIME, DEFAULT_ENERGY_RATE);
     }
 
     // Class representing fuel rate

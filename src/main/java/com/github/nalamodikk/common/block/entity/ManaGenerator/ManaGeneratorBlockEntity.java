@@ -6,6 +6,7 @@ import com.github.nalamodikk.common.capability.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.entity.AbstractManaMachine;
+import com.github.nalamodikk.common.compat.JEI.Machine.managenerator.FuelRecipeCategory;
 import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
@@ -44,6 +45,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -63,8 +66,12 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachine {
     public static final int BURN_TIME_INDEX = 3;
     public static final int CURRENT_BURN_TIME_INDEX = 4;
     public static final int DATA_COUNT = 5; // 總數據數量
+    private ResourceLocation currentFuelId;
+    private int failedFuelCooldown = 0; // 🔄 防止每 tick 瘋狂判斷錯誤燃料
+
     private int energyRate;
     private final UnifiedSyncManager syncManager = new UnifiedSyncManager(5); // 假設有 5 個需要同步的數據
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
 
 
     private static int getConfigMaxEnergy() {
@@ -223,7 +230,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachine {
         directionConfig.put(direction, isOutput);
         setChanged();  // 標記狀態已更改，以確保變更被保存
         markUpdated(); // 同步更新到客戶端
-        MagicalIndustryMod.LOGGER.info("Direction {} set to {} for block at {}", direction, isOutput ? "Output" : "Input", worldPosition);
+        MagicalIndustryMod.LOGGER.debug("Direction {} set to {} for block at {}", direction, isOutput ? "Output" : "Input", worldPosition);
 
     }
 
@@ -263,77 +270,141 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachine {
 
 
     private void generateEnergyOrMana() {
-        ItemStack fuel = fuelHandler.getStackInSlot(0);
+        // ⏳ 如果之前燃料失敗，進入冷卻狀態（你已經有這個的話可以保留）
+        if (failedFuelCooldown > 0) {
+            failedFuelCooldown--;
+            return;
+        }
 
-        // 如果燃料槽為空且燃燒時間耗盡，停止工作
-        if (fuel.isEmpty() && burnTime <= 0) {
+        // 🔄 嘗試開始新的燃燒週期
+        if (burnTime <= 0) {
+            // ✅ ⚠️ 只有在燃料槽「看起來有東西」才檢查，避免沒必要地調用 handleNewFuel()
+            ItemStack fuelStack = fuelHandler.getStackInSlot(0);
+            if (!fuelStack.isEmpty()) {
+                if (!handleNewFuel()) {
+                    isWorking = false;
+                    failedFuelCooldown = 20; // 降低洗 log 頻率
+                    return;
+                }
+            } else {
+                // 燃料槽完全為空，也不用檢查
+                isWorking = false;
+                return;
+            }
+        }
+
+        // ✅ 有燃料正在燒
+        burnTime--;
+
+        if (currentMode == Mode.ENERGY) {
+            handleEnergyGeneration();
+        } else {
+            handleManaGeneration();
+        }
+    }
+
+
+
+
+    /**
+     * 能量模式處理
+     */
+    private void handleEnergyGeneration() {
+        if (energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) {
             isWorking = false;
             return;
         }
 
-        // 如果燃燒時間耗盡，且有燃料，並且能量/魔力未滿，開始新一輪燃燒
-        if (burnTime <= 0 && !fuel.isEmpty()) {
-            // 檢查當前模式下的存儲是否已滿
-            if ((currentMode == Mode.ENERGY && energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) ||
-                    (currentMode == Mode.MANA && manaStorage.getMana() >= manaStorage.getMaxMana())) {
-                // 如果能量或魔力已滿，則不消耗燃料
-                isWorking = false;
-                return;
-            }
+        double energyToGenerate = getConfigEnergyRate();
+        energyAccumulated += energyToGenerate;
 
-            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(fuel.getItem());
-            FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(itemId);
-            int burnTimeForFuel = (fuelRate != null) ? fuelRate.getBurnTime() : ForgeHooks.getBurnTime(fuel, RecipeType.SMELTING);
-            if (burnTimeForFuel > 0) {
-                burnTime = burnTimeForFuel; // 設置燃燒時間
-                fuelHandler.extractItem(0, 1, false); // 消耗燃料
-                isWorking = true; // 設置為工作狀態
+        while (energyAccumulated >= 1.0) {
+            int energyToStore = (int) energyAccumulated;
+            energyAccumulated -= energyToStore;
+            energyStorage.receiveEnergy(energyToStore, false);
+        }
+
+        isWorking = true; // ✅ 標記正在運作！
+
+        // 觸發同步狀態
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            setChanged();
+        }
+    }
+
+
+    /**
+     * 魔力模式處理
+     */
+    private void handleManaGeneration() {
+        if (manaStorage.getMana() >= manaStorage.getMaxMana()) {
+            isWorking = false;
+            LOGGER.debug("[Mana Generator] 🛑 魔力已滿，暫停工作！");
+            return;
+        }
+
+        if (currentFuelId == null) {
+            LOGGER.warn("[Mana Generator] ❌ 當前燃料 ID 為 null，不能生產魔力！");
+            isWorking = false;
+            return;
+        }
+
+        FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(currentFuelId);
+
+        if (fuelRate == null) {
+            LOGGER.warn("[Mana Generator] ❌ 找不到燃料數據：{}", currentFuelId);
+            isWorking = false;
+            return;
+        }
+
+        manaAccumulated += fuelRate.getManaRate();
+
+        while (manaAccumulated >= 1.0) {
+            int toStore = (int) manaAccumulated;
+            manaStorage.addMana(toStore);
+            manaAccumulated -= toStore;
+        }
+
+        isWorking = true;
+    }
+
+
+    private boolean handleNewFuel() {
+        ItemStack fuelStack = fuelHandler.getStackInSlot(0).copy(); // ✅ 提早快取
+
+        if (fuelStack.isEmpty()) {
+            return false;
+        }
+
+        ResourceLocation newFuelId = BuiltInRegistries.ITEM.getKey(fuelStack.getItem());
+        if (newFuelId == null) {
+            LOGGER.warn("[Mana Generator] ❌ 物品沒有有效 ID：{}", fuelStack.getItem());
+            return false;
+        }
+
+        FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(newFuelId);
+
+        // ✅ 模式判斷 —— 魔力模式要有 manaRate > 0，能源模式要有 burnTime > 0
+        if (currentMode == Mode.MANA) {
+            if (fuelRate == null || fuelRate.getManaRate() <= 0) {
+                LOGGER.debug("[Mana Generator] ❌ 在 MANA 模式下無效燃料：{}", newFuelId);
+                return false;
+            }
+        } else if (currentMode == Mode.ENERGY) {
+            if (fuelRate == null || fuelRate.getBurnTime() <= 0) {
+                LOGGER.debug("[Mana Generator] ❌ 在 ENERGY 模式下無效燃料：{}", newFuelId);
+                return false;
             }
         }
 
-        // 燃燒時間大於 0 時生成能量或魔力
-        if (burnTime > 0) {
-            burnTime--; // 每 tick 燃燒時間減少
+        currentFuelId = newFuelId;
+        burnTime = fuelRate.getBurnTime();
+        currentBurnTime = burnTime;
+        fuelHandler.extractItem(0, 1, false);
 
-            if (currentMode == Mode.ENERGY) {
-                // 如果能量存儲已滿，停止工作
-                if (energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) {
-                    isWorking = false;
-                    return;
-                }
-
-                double energyToGenerate = getConfigEnergyRate(); // 直接移除 / 20 限制
-                energyAccumulated += energyToGenerate; // 累積生成量
-
-                while (energyAccumulated >= 1.0) { // 當累積能量達到1或以上
-                    int energyToStore = (int) energyAccumulated; // 取整數部分
-                    energyAccumulated -= energyToStore; // 減去已存儲的部分
-                    energyStorage.receiveEnergy(energyToStore, false); // 實際插入能量儲存
-                }
-
-                // 當成功插入能量時，進行同步
-                if (level != null && !level.isClientSide) {
-                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-                    setChanged(); // 確保數據更新被保存
-                }
-
-            } else if (currentMode == Mode.MANA) {
-                // 如果魔力存儲已滿，停止工作
-                if (manaStorage.getMana() >= manaStorage.getMaxMana()) {
-                    isWorking = false;
-                    return;
-                }
-
-                double manaToGenerate = getConfigManaRate(); // 直接移除 / 20 限制
-                manaAccumulated += manaToGenerate; // 累積生成量
-
-                while (manaAccumulated >= 1.0) { // 當累積魔力達到1或以上
-                    int manaToStore = (int) manaAccumulated; // 取整數部分
-                    manaAccumulated -= manaToStore; // 減去已存儲的部分
-                    manaStorage.addMana(manaToStore); // 實際插入魔力儲存
-                }
-            }
-        }
+        LOGGER.info("[Mana Generator] 🔥 開始燃燒：{} | burnTime: {} | manaRate: {}", currentFuelId, burnTime, fuelRate.getManaRate());
+        return true;
     }
 
 

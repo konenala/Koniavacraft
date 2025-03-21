@@ -12,13 +12,13 @@ public class FuelRecipeProvider {
 
 
     public static void buildFuelRecipes(Consumer<FinishedRecipe> writer) {
-        FuelRecipeBuilder.create(MagicalIndustryMod.MOD_ID, "corrupted_mana_dust", 200, 100, 300, "fuel_corrupted_mana_dust")
+        FuelRecipeBuilder.create(MagicalIndustryMod.MOD_ID, "corrupted_mana_dust", 200, 0, 300, "fuel_corrupted_mana_dust")
                 .save(writer);
 
-        FuelRecipeBuilder.create(MagicalIndustryMod.MOD_ID, "mana_dust", 400, 100, 500, "fuel_mana_dust")
+        FuelRecipeBuilder.create(MagicalIndustryMod.MOD_ID, "mana_dust", 400, 0, 500, "fuel_mana_dust")
                 .save(writer);
 
-        FuelRecipeBuilder.create(MagicalIndustryMod.MOD_ID, "mana_ingot", 800, 100, 1000, "fuel_mana_ingot")
+        FuelRecipeBuilder.create(MagicalIndustryMod.MOD_ID, "mana_ingot", 800, 0, 1000, "fuel_mana_ingot")
                 .save(writer);
     }
 
