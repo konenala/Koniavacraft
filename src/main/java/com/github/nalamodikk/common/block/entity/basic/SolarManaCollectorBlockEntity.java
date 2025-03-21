@@ -6,6 +6,8 @@ import com.github.nalamodikk.common.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,10 +25,10 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
 
     private static final int BASE_INTERVAL = 40;       // 每 40 tick 嘗試一次（2 秒）
     private static final int BASE_OUTPUT = 5;          // 每次產出 5 mana（晴天正常條件）
-    private static final int MAX_MANA = 8000;          // 儲存上限
+    private static final int MAX_MANA = 80000;          // 儲存上限
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.SOLAR_COLLECTOR_BE.get(), pos, state, MAX_MANA, BASE_INTERVAL, BASE_OUTPUT);
+        super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, MAX_MANA, BASE_INTERVAL, BASE_OUTPUT);
     }
 
     /**
@@ -58,10 +60,14 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
         return false;
     }
 
+
+
+
     @Override
     public Component getDisplayName() {
-        return null;
+        return Component.translatable("block.magical_industry.solar_mana_collector");
     }
+
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {

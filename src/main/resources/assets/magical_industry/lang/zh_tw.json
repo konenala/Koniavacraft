@@ -94,6 +94,7 @@
   "block.magical_industry.mana_crafting_table": "魔力合成台",
   "block.magical_industry.advanced_mana_crafting_table": "高級魔力合成台",
   "block.magical_industry.mana_conduit": "魔力導管",
+  "block.magical_industry.solar_mana_collector": "太陽能原能收集器",
 
   "button.mode.auto": "自動模式",
   "button.mode.manual": "手動模式",

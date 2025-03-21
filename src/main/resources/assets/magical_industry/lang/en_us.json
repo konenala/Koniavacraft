@@ -95,6 +95,7 @@
   "block.magical_industry.mana_crafting_table": "Mana Crafting Table",
   "block.magical_industry.advanced_mana_crafting_table": "Advanced Mana Crafting Table",
   "block.magical_industry.mana_conduit": "Mana Conduit",
+  "block.magical_industry.solar_mana_collector": "Solar Mana Collector",
 
   "button.mode.auto": "auto mode",
   "button.mode.manual": "manual mode",

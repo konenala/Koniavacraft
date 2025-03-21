@@ -156,6 +156,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
         }
     }
 
+    @Override
     public void drops() {
         SimpleContainer inventory = new SimpleContainer(fuelHandler.getSlots());
         for (int i = 0; i < fuelHandler.getSlots(); i++) {

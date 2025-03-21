@@ -7,7 +7,9 @@ import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -59,6 +61,11 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
         this.lazyItemHandler = LazyOptional.of(() -> itemHandler);
     }
 
+    public void drops() {
+        // 如果有 itemHandler，可循環 drop 出內容物
+        SimpleContainer inventory = new SimpleContainer(0); // 暫時沒槽，未來可擴展
+        Containers.dropContents(this.level, this.worldPosition, inventory);
+    }
 
     public abstract void tickMachine();
 

@@ -41,7 +41,7 @@ public class SolarManaCollectorBlock extends Block implements EntityBlock {
         if (!oldState.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof SolarManaCollectorBlockEntity collector) {
-
+                collector.drops(); // 如果你有 drops() 方法
             }
             super.onRemove(oldState, level, pos, newState, isMoving);
         }
