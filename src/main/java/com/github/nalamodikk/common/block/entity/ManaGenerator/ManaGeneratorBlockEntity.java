@@ -4,9 +4,8 @@ import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.blocks.ManaGeneratorBlock;
-import com.github.nalamodikk.common.block.entity.AbstractManaMachine;
-import com.github.nalamodikk.common.compat.JEI.Machine.managenerator.FuelRecipeCategory;
+import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
+import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
@@ -58,7 +57,7 @@ import software.bernie.geckolib.core.object.PlayState;
 
 import java.util.EnumMap;
 
-public class ManaGeneratorBlockEntity extends AbstractManaMachine {
+public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
 
     public static final int MANA_STORED_INDEX = 0;
     public static final int ENERGY_STORED_INDEX = 1;
@@ -340,7 +339,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachine {
     private void handleManaGeneration() {
         if (manaStorage.getMana() >= manaStorage.getMaxMana()) {
             isWorking = false;
-            LOGGER.debug("[Mana Generator] 🛑 魔力已滿，暫停工作！");
+//            LOGGER.debug("[Mana Generator] 🛑 魔力已滿，暫停工作！");
             return;
         }
 

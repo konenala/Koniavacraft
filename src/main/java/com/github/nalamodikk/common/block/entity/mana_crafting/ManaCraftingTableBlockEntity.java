@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.block.entity.mana_crafting;
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.ModCapabilities;
-import com.github.nalamodikk.common.block.entity.AbstractManaMachine;
+import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.mana.ManaAction;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
@@ -36,7 +36,7 @@ import software.bernie.geckolib.core.animation.AnimatableManager;
 
 import java.util.Optional;
 
-public class ManaCraftingTableBlockEntity extends AbstractManaMachine implements MenuProvider {
+public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock implements MenuProvider {
     private final ItemStackHandler itemHandler = new ItemStackHandler(10) {
         @Override
         protected void onContentsChanged(int slot) {

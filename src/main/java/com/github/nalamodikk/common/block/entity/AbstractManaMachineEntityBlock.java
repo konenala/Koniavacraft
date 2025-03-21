@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 
-public abstract class AbstractManaMachine extends BlockEntity
+public abstract class AbstractManaMachineEntityBlock extends BlockEntity
         implements GeoBlockEntity, GeoAnimatable, MenuProvider, IConfigurableBlock {
 
     protected final ManaEnergyStorage energyStorage;
@@ -36,8 +36,8 @@ public abstract class AbstractManaMachine extends BlockEntity
 
     protected boolean isWorking = false;
 
-    public AbstractManaMachine(BlockEntityType<?> type, BlockPos pos, BlockState state,
-                               @Nullable Integer maxMana, @Nullable Integer maxEnergy, int itemSlots) {
+    public AbstractManaMachineEntityBlock(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                          @Nullable Integer maxMana, @Nullable Integer maxEnergy, int itemSlots) {
         super(type, pos, state);
 
         // 只有當 maxEnergy 不為 null 且大於 0 時，才初始化能量存儲
@@ -62,7 +62,7 @@ public abstract class AbstractManaMachine extends BlockEntity
 
     public abstract void tickMachine();
 
-    public static void tick(Level level, BlockPos pos, BlockState state, AbstractManaMachine machine) {
+    public static void tick(Level level, BlockPos pos, BlockState state, AbstractManaMachineEntityBlock machine) {
         if (!level.isClientSide) {
             machine.tickMachine();
         }
