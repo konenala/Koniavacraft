@@ -60,6 +60,11 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
         return false;
     }
 
+    @Override
+    public void drops() {
+        SimpleContainer inventory = new SimpleContainer(0); // 目前沒槽，未來支援升級可擴充
+        Containers.dropContents(this.level, this.worldPosition, inventory);
+    }
 
 
 
