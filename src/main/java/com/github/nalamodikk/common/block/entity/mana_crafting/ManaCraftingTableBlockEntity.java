@@ -61,10 +61,6 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
         super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pos, state, MAX_MANA, null, 10);
     }
 
-
-
-
-
     public void setItem(int slot, ItemStack stack) {
         itemHandler.setStackInSlot(slot, stack);
     }
