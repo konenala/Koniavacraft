@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.capability;
 
-import com.github.nalamodikk.common.mana.ManaAction;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
 
 // 新的接口，整合了 ISimpleManaHandler 和 IStrictManaHandler
 public interface IUnifiedManaHandler {

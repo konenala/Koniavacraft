@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.mana;
+package com.github.nalamodikk.common.capability.mana;
 
 /**
  * Enum for representing the type of action to be performed on mana, such as executing or simulating.

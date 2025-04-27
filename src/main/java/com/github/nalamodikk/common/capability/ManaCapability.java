@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.capability;
 
-import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.capability.mana.IManaBlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -24,23 +24,27 @@ public class ManaCapability {
     public static class EventHandler {
         @SubscribeEvent
         public static void onAttachCapabilities(AttachCapabilitiesEvent<BlockEntity> event) {
-            if (event.getObject() instanceof ManaCraftingTableBlockEntity blockEntity) {
-                // 檢查是否已經存在該能力
-                if (!blockEntity.getCapability(ManaCapability.MANA).isPresent()) {
-                    // 創建並注入 Mana 能力
+            BlockEntity be = event.getObject();
+            if (be instanceof IManaBlockEntity manaBlock) {
+                if (!be.getCapability(ManaCapability.MANA).isPresent()) {
                     event.addCapability(
                             new ResourceLocation("magical_industry", "mana"),
-                            new ManaProvider()
+                            new ManaProvider(manaBlock.getManaStorage())
                     );
                 }
             }
         }
-    }
+}
 
+        public static class ManaProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+        private final IUnifiedManaHandler manaStorage;
+        private final LazyOptional<IUnifiedManaHandler> lazyOptional;
 
-    public static class ManaProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-        private final IUnifiedManaHandler manaStorage = (IUnifiedManaHandler) new ManaStorage(1000);
-        private final LazyOptional<IUnifiedManaHandler> lazyOptional = LazyOptional.of(() -> manaStorage);
+        // 這裡加一個建構子，讓外部自己傳 manaStorage 進來
+        public ManaProvider(IUnifiedManaHandler manaStorage) {
+            this.manaStorage = manaStorage;
+            this.lazyOptional = LazyOptional.of(() -> this.manaStorage);
+        }
 
         @Override
         public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
@@ -59,4 +63,5 @@ public class ManaCapability {
             manaStorage.setMana(nbt.getInt("mana"));
         }
     }
+
 }

@@ -25,6 +25,9 @@ public class ConfigManager {
         public final ForgeConfigSpec.IntValue defaultEnergyRate;
         public final ForgeConfigSpec.IntValue defaultManaRate;
         public final ForgeConfigSpec.IntValue manaRate;
+        public final ForgeConfigSpec.IntValue generatorOutputRate;
+        public final ForgeConfigSpec.BooleanValue useFuelBasedOutputRate;
+
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.push("mana_generator");
@@ -53,6 +56,15 @@ public class ConfigManager {
             manaRate = builder
                     .comment("魔力生成速率 (每秒)")
                     .defineInRange("manaRate", 5, 1, Integer.MAX_VALUE);
+
+            generatorOutputRate = builder
+                    .comment("每 tick 最多輸出的 RF 量")
+                    .defineInRange("generatorOutputRate", 100, 1, 10000);
+
+            useFuelBasedOutputRate = builder
+                    .comment("是否根據燃料品質決定輸出速率（true 為動態，false 為使用 config 固定值）")
+                    .define("useFuelBasedOutputRate", false);
+
 
             builder.pop();
         }

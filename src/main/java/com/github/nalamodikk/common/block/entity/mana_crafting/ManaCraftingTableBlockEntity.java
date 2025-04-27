@@ -5,7 +5,7 @@ import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.ModCapabilities;
 import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.mana.ManaAction;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
 import net.minecraft.core.BlockPos;
@@ -54,7 +54,7 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
     private LazyOptional<ManaStorage> lazyManaStorage = LazyOptional.of(() -> manaStorage);
 
-    public static final int MAX_MANA = 1000;
+    public static final int MAX_MANA = 100000;
     private static final int MANA_COST_PER_CRAFT = 50;
 
     public ManaCraftingTableBlockEntity(BlockPos pos, BlockState state) {

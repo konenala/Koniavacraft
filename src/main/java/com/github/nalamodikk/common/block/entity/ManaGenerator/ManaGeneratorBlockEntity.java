@@ -9,7 +9,7 @@ import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
 import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.mana.ManaAction;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ConfigManager;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.sync.UnifiedSyncManager;
@@ -86,8 +86,11 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
     }
 
 
-    public static final int MAX_MANA = 10000; // 或者保留 private，然後新增 getter
-    public static final int MAX_ENERGY = 10000;
+
+
+
+    public static final int MAX_MANA = 10000000; // 或者保留 private，然後新增 getter
+    public static final int MAX_ENERGY = 10000000;
 
     private final ManaEnergyStorage energyStorage = new ManaEnergyStorage(getConfigMaxEnergy());
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
@@ -315,23 +318,16 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
             return;
         }
 
-        double energyToGenerate = getConfigEnergyRate();
-        energyAccumulated += energyToGenerate;
+        double energyToGenerate = getConfigEnergyRate(); // 可配置產出值
+        int accepted = energyStorage.receiveEnergy((int) energyToGenerate, false); // 一次嘗試塞入全部能量
+        isWorking = accepted > 0;
 
-        while (energyAccumulated >= 1.0) {
-            int energyToStore = (int) energyAccumulated;
-            energyAccumulated -= energyToStore;
-            energyStorage.receiveEnergy(energyToStore, false);
-        }
-
-        isWorking = true; // ✅ 標記正在運作！
-
-        // 觸發同步狀態
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             setChanged();
         }
     }
+
 
 
     /**
@@ -407,6 +403,19 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
         return true;
     }
 
+    private int getDynamicOutputRate() {
+        if (ConfigManager.COMMON.useFuelBasedOutputRate.get()) {
+            if (currentFuelId != null) {
+                FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(currentFuelId);
+                if (fuelRate != null) {
+                    return Math.max(1, fuelRate.getBurnTime() / 2); // 可調整比例
+                }
+            }
+            return 100; // 沒有對應燃料時的 fallback 預設值
+        } else {
+            return ConfigManager.COMMON.generatorOutputRate.get();
+        }
+    }
 
 
     private void outputEnergyAndMana() {
@@ -421,7 +430,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
                 // 能量輸出
                 neighborBlockEntity.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).ifPresent(neighborEnergyStorage -> {
                     if (neighborEnergyStorage.canReceive()) {
-                        int energyToTransfer = Math.min(energyStorage.getEnergyStored(), 100);
+                        int energyToTransfer = Math.min(energyStorage.getEnergyStored(), getDynamicOutputRate());
                         if (energyToTransfer > 0) { // 防止負值錯誤
                             int acceptedEnergy = neighborEnergyStorage.receiveEnergy(energyToTransfer, false);
                             energyStorage.extractEnergy(acceptedEnergy, false);
