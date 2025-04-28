@@ -34,34 +34,8 @@ public class ManaCapability {
                 }
             }
         }
-}
-
-        public static class ManaProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-        private final IUnifiedManaHandler manaStorage;
-        private final LazyOptional<IUnifiedManaHandler> lazyOptional;
-
-        // 這裡加一個建構子，讓外部自己傳 manaStorage 進來
-        public ManaProvider(IUnifiedManaHandler manaStorage) {
-            this.manaStorage = manaStorage;
-            this.lazyOptional = LazyOptional.of(() -> this.manaStorage);
-        }
-
-        @Override
-        public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-            return cap == MANA ? lazyOptional.cast() : LazyOptional.empty();
-        }
-
-        @Override
-        public CompoundTag serializeNBT() {
-            CompoundTag tag = new CompoundTag();
-            tag.putInt("mana", manaStorage.getMana());
-            return tag;
-        }
-
-        @Override
-        public void deserializeNBT(CompoundTag nbt) {
-            manaStorage.setMana(nbt.getInt("mana"));
-        }
     }
+
+
 
 }
