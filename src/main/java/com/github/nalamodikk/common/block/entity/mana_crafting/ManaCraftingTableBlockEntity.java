@@ -177,7 +177,12 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
         Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
         if (recipe.isPresent() && hasSufficientMana(recipe.get().getManaCost())) {
             ItemStack result = recipe.get().assemble(new SimpleContainer(itemHandler.getSlots()), level.registryAccess());
-            this.itemHandler.setStackInSlot(OUTPUT_SLOT, result);
+            if (canInsertItemIntoOutputSlot(result.getItem()) &&
+                    canInsertAmountIntoOutputSlot(result.getCount())) {
+                this.itemHandler.setStackInSlot(OUTPUT_SLOT, result);
+            } else {
+                this.itemHandler.setStackInSlot(OUTPUT_SLOT, ItemStack.EMPTY);
+            }
         } else {
             this.itemHandler.setStackInSlot(OUTPUT_SLOT, ItemStack.EMPTY);
         }

@@ -21,15 +21,14 @@ public class ModRecipes {
     // 統一使用 mana_crafting 名稱
     public static final RegistryObject<RecipeSerializer<ManaCraftingTableRecipe>> MANA_CRAFTING_SERIALIZER =
             SERIALIZERS.register("mana_crafting", ManaCraftingTableRecipe.Serializer::new);
-
     public static final RegistryObject<RecipeType<ManaCraftingTableRecipe>> MANA_CRAFTING_TYPE =
             TYPES.register("mana_crafting", () -> ManaCraftingTableRecipe.Type.INSTANCE);
 
     public static final RegistryObject<RecipeSerializer<FuelRecipe>> FUEL_RECIPE_SERIALIZER =
             SERIALIZERS.register("fuel", () -> FuelRecipe.FuelRecipeSerializer.INSTANCE);
-
     public static final RegistryObject<RecipeType<FuelRecipe>> FUEL_RECIPE_TYPE =
             TYPES.register("fuel", () -> FuelRecipe.FuelRecipeType.INSTANCE);
+
 
     // 註冊方法
     public static void register(IEventBus eventBus) {

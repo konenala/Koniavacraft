@@ -84,8 +84,8 @@ public class FuelRateLoader extends SimpleJsonResourceReloadListener {
         // 1️⃣ **先嘗試直接使用物品 ID 查找**
         FuelRate rate = FUEL_RATES.get(itemId.toString());
         if (rate != null) {
-            LOGGER.info("[FuelRateLoader] ✅ 透過物品 ID 找到燃料: {} | manaRate: {} | burnTime: {}",
-                    itemId, rate.getManaRate(), rate.getBurnTime());
+//            LOGGER.info("[FuelRateLoader] ✅ 透過物品 ID 找到燃料: {} | manaRate: {} | burnTime: {}",
+//                    itemId, rate.getManaRate(), rate.getBurnTime());
             return rate;
         }
 
@@ -98,8 +98,8 @@ public class FuelRateLoader extends SimpleJsonResourceReloadListener {
                 if (BuiltInRegistries.ITEM.getTag(tag).stream()
                         .flatMap(holderSet -> holderSet.stream())
                         .anyMatch(holder -> holder.value().builtInRegistryHolder().key().location().equals(itemId))) {
-                    LOGGER.info("[FuelRateLoader] ✅ 透過標籤找到燃料: {} (標籤: {}) | manaRate: {} | burnTime: {}",
-                            itemId, tagName, entry.getValue().getManaRate(), entry.getValue().getBurnTime());
+//                    LOGGER.info("[FuelRateLoader] ✅ 透過標籤找到燃料: {} (標籤: {}) | manaRate: {} | burnTime: {}",
+//                            itemId, tagName, entry.getValue().getManaRate(), entry.getValue().getBurnTime());
                     return entry.getValue();
                 }
             }

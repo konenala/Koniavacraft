@@ -399,7 +399,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
         currentBurnTime = burnTime;
         fuelHandler.extractItem(0, 1, false);
 
-        LOGGER.info("[Mana Generator] 🔥 開始燃燒：{} | burnTime: {} | manaRate: {}", currentFuelId, burnTime, fuelRate.getManaRate());
+//        LOGGER.info("[Mana Generator] 🔥 開始燃燒：{} | burnTime: {} | manaRate: {}", currentFuelId, burnTime, fuelRate.getManaRate());
         return true;
     }
 

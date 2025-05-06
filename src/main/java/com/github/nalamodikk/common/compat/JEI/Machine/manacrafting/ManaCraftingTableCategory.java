@@ -1,6 +1,8 @@
 package com.github.nalamodikk.common.compat.JEI.Machine.manacrafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.capability.ModCapabilities;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModItems;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
@@ -8,11 +10,13 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -62,34 +66,49 @@ public class ManaCraftingTableCategory implements IRecipeCategory<ManaCraftingTa
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, ManaCraftingTableRecipe recipe, IFocusGroup focuses) {
-        // 获取配方中的输入成分列表
         NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
-        // 遍历配方中的每个输入成分，添加到 3x3 的合成槽位
-        for (int i = 0; i < ingredients.size(); i++) {
-            int xPos = 5 + (i % 3) * 18;  // 设置 x 轴位置
-            int yPos = 2 + (i / 3) * 18;  // 设置 y 轴位置
-            builder.addSlot(RecipeIngredientRole.INPUT, xPos, yPos).addIngredients(ingredients.get(i));
+        if (recipe.isShaped()) {
+            // 3x3 格擺放（照 pattern）
+            for (int i = 0; i < ingredients.size(); i++) {
+                int xPos = 5 + (i % 3) * 18;
+                int yPos = 2 + (i / 3) * 18;
+                builder.addSlot(RecipeIngredientRole.INPUT, xPos, yPos).addIngredients(ingredients.get(i));
+            }
+        } else {
+            // 無序合成：橫向擺放
+            for (int i = 0; i < ingredients.size(); i++) {
+                int xPos = 5 + i * 18;
+                builder.addSlot(RecipeIngredientRole.INPUT, xPos, 20).addIngredients(ingredients.get(i));
+            }
         }
 
-        // 添加合成结果槽位
+        // 合成結果槽位
         builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 20).addItemStack(recipe.getResultItem(null));
 
-        // 添加魔力消耗渲染部分
-        int manaCostX = 95;  // 将魔力消耗条渲染到左侧
-        int manaCostY = 45;
-        int manaCost = recipe.getManaCost();
-
-
-        builder.addSlot(RecipeIngredientRole.CATALYST, manaCostX, manaCostY)
+        // 魔力消耗提示（Catalyst 插槽，實際沒功能，只是 tooltip 顯示）
+        builder.addSlot(RecipeIngredientRole.CATALYST, 95, 45)
                 .setBackground(this.manaCostDrawable, 0, 0)
-                .addItemStack(new ItemStack(ModItems.MANA_DUST.get()))  // 使用一个象征魔力的物品
-                .addTooltipCallback((recipeSlotView, tooltip) -> {
-                    if (recipeSlotView.getRole() == RecipeIngredientRole.CATALYST) {
-                        tooltip.add(Component.translatable("tooltip.magical_industry.mana_cost", recipe.getManaCost()));
-                    }
+                .addItemStack(new ItemStack(ModItems.MANA_DUST.get()))
+                .addTooltipCallback((view, tooltip) -> {
+                    tooltip.add(Component.translatable("tooltip.magical_industry.mana_cost", recipe.getManaCost()));
                 });
+    }
 
-         }
+    @Override
+    public void draw(ManaCraftingTableRecipe recipe, IRecipeSlotsView slotsView, net.minecraft.client.gui.GuiGraphics graphics, double mouseX, double mouseY) {
+        int manaCost = recipe.getManaCost();
+        int maxManaBarWidth = 50;
+
+        int barX = 95;
+        int barY = 45;
+        int barHeight = 8;
+
+        // 畫藍色 mana 條
+        int barWidth = Math.min(maxManaBarWidth, (int)((manaCost / (float) ManaCraftingTableBlockEntity.MAX_MANA) * maxManaBarWidth));
+        graphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF00BFFF);
+
 
     }
+
+}

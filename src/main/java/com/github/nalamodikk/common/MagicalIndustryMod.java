@@ -64,7 +64,7 @@ public class MagicalIndustryMod {
         // 注册创造模式标签的内容
         modEventBus.addListener(this::addCreative);
 
-        CapabilityHandler.register();
+        RegisterCapabilityHandler.register();
 
 
         // 在模組初始化時加載魔力生成速率
@@ -76,6 +76,7 @@ public class MagicalIndustryMod {
     private void commonSetup(final FMLCommonSetupEvent event) {
         // 通用设置
         NetworkHandler.init(event);
+        ModComponents.registerAll(); // 🛠️ 註冊所有模組零件
 
 
     }

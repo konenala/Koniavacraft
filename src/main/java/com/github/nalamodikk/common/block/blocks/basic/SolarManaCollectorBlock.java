@@ -52,6 +52,8 @@ public class SolarManaCollectorBlock extends Block implements EntityBlock {
         return true;
     }
 
+
+
     @Override
     public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);

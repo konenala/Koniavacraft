@@ -11,7 +11,6 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +34,7 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
 
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
 
-        registration.addRecipeCategories(new FuelRecipeCategory(guiHelper));
+        registration.addRecipeCategories(new ManaGeneratorFuelRecipeCategory(guiHelper));
     }
 
 
@@ -43,13 +42,13 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         LOGGER.info("[JEI] 註冊 Mana Generator 為 FuelRecipeCategory 的催化劑！");
         registration.addRecipeCatalyst(
-                new ItemStack(ModBlocks.MANA_GENERATOR.get()), FuelRecipeCategory.RECIPE_TYPE
+                new ItemStack(ModBlocks.MANA_GENERATOR.get()), ManaGeneratorFuelRecipeCategory.RECIPE_TYPE
         );
     }
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addRecipeClickArea(ManaGeneratorScreen.class,30,15 ,25,45,FuelRecipeCategory.RECIPE_TYPE);
+        registration.addRecipeClickArea(ManaGeneratorScreen.class,30,15 ,25,45, ManaGeneratorFuelRecipeCategory.RECIPE_TYPE);
     }
 
     @Override
@@ -68,7 +67,7 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
         }
 
         LOGGER.info("[JEI] ✅ 找到了 {} 個燃料配方，開始註冊...", fuelRecipes.size());
-        registration.addRecipes(FuelRecipeCategory.RECIPE_TYPE, fuelRecipes);
+        registration.addRecipes(ManaGeneratorFuelRecipeCategory.RECIPE_TYPE, fuelRecipes);
         LOGGER.info("[JEI] ✅ 成功註冊 FuelRecipeCategory 配方！");
     }
 

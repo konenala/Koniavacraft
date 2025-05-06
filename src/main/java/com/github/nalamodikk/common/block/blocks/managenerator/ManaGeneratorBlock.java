@@ -65,11 +65,7 @@ public class ManaGeneratorBlock extends BaseEntityBlock {
             if (blockEntity instanceof ManaGeneratorBlockEntity) {
                 ((ManaGeneratorBlockEntity) blockEntity).drops();  // 掉落方塊內的物品
             }
-
-            // 如果是 ManaGeneratorBlockEntity，移除方塊實體
-            if (blockEntity instanceof ManaGeneratorBlockEntity) {
-                level.removeBlockEntity(pos);
-            }
+            
         }
         super.onRemove(state, level, pos, newState, isMoving);
     }

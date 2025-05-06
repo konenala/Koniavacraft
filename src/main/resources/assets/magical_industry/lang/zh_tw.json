@@ -51,7 +51,7 @@
   "screen.magical_industry.configure_side": "配置方向：%s",
   "screen.magical_industry.output": "輸出",
   "screen.magical_industry.input": "輸入",
-  "screen.magical_industry.cannot_toggle": "⚠ 發電機正在運行，無法切換模式！",
+  "screen.magical_industry.cannot_toggle": "發電機正在運行，無法切換模式！",
 
 
   "screen.magical_industry.toggle_mode": "切換模式",
@@ -86,6 +86,7 @@
   "tooltip.magical_industry.mana_conduit.line2": "可連接魔力機器和網路。",
   "tooltip.magical_industry.mana_conduit.line3": "支持多方向連接。",
   "tooltip.magical_industry.mana_conduit.hold_shift": "按住 SHIFT 獲取更多信息。",
+  "tooltip.magical_industry.not_enough_mana": "魔力不足！",
 
   "block.magical_industry.mana_block": "魔法錠磚",
   "block.magical_industry.magic_ore": "魔法礦",
@@ -94,7 +95,7 @@
   "block.magical_industry.mana_crafting_table": "魔力合成台",
   "block.magical_industry.advanced_mana_crafting_table": "高級魔力合成台",
   "block.magical_industry.mana_conduit": "魔力導管",
-  "block.magical_industry.solar_mana_collector": "太陽原能收集器",
+  "block.magical_industry.solar_mana_collector": "太陽魔法能收集器",
 
   "button.mode.auto": "自動模式",
   "button.mode.manual": "手動模式",

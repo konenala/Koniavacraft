@@ -53,7 +53,7 @@
   "screen.magical_industry.configure_side": "Configure Side: %s",
   "screen.magical_industry.output": "Output",
   "screen.magical_industry.input": "Input",
-  "screen.magical_industry.cannot_toggle": "⚠ Generator is running, cannot switch mode!",
+  "screen.magical_industry.cannot_toggle": "Generator is running, cannot switch mode!",
 
 
 
@@ -86,6 +86,8 @@
   "tooltip.magical_industry.mana_conduit.line2": "Connects to mana machines and networks.",
   "tooltip.magical_industry.mana_conduit.line3": "Supports multi-directional connections.",
   "tooltip.magical_industry.mana_conduit.hold_shift": "Hold SHIFT for more details.",
+  "tooltip.magical_industry.not_enough_mana": "Not enough mana!",
+
 
 
   "block.magical_industry.mana_block": "Mana Block",

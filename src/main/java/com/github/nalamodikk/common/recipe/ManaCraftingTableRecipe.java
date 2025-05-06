@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.recipe;
 
 import com.github.nalamodikk.common.register.ModRecipes;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
@@ -16,21 +17,22 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
     private final ResourceLocation id;
     private final NonNullList<Ingredient> inputItems;  // 支持多个输入物品
     private final ItemStack output;                    // 输出物品
     private final int manaCost;                        // 魔力消耗字段
+    private final boolean isShaped;
 
-    public ManaCraftingTableRecipe(ResourceLocation id, NonNullList<Ingredient> inputItems, ItemStack output, int manaCost) {
+    public ManaCraftingTableRecipe(ResourceLocation id, NonNullList<Ingredient> inputItems, ItemStack output, int manaCost,boolean isShaped) {
         this.id = id;
         this.inputItems = inputItems;
         this.output = output;
         this.manaCost = manaCost; // 初始化魔力消耗字段
+        this.isShaped = isShaped;
+
     }
 
     @Override
@@ -39,45 +41,53 @@ public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
             return false;
         }
 
-        // 检查容器大小
         if (inv.getContainerSize() != 9) {
             return false;
         }
 
-        List<Ingredient> remainingIngredients = new ArrayList<>(inputItems);
-    //    System.out.println("Starting match test with input items: " + inputItems);
-
-        for (int i = 0; i < 9; i++) {
-            ItemStack stackInSlot = inv.getItem(i);
-      //System.out.println("Checking slot " + i + ": " + stackInSlot);
-
-            if (stackInSlot.isEmpty()) {
-                continue;
+        if (isShaped) {
+            // 有序合成
+            for (int i = 0; i < inputItems.size(); i++) {
+                Ingredient expected = inputItems.get(i);
+                ItemStack actual = inv.getItem(i);
+                if (!expected.test(actual)) {
+                    return false;
+                }
             }
+            return true;
+        } else {
+            // 無序合成
+            List<Ingredient> remainingIngredients = new ArrayList<>(inputItems);
+            int usedSlotCount = 0;
 
-            boolean matched = false;
+            for (int i = 0; i < 9; i++) {
+                ItemStack stackInSlot = inv.getItem(i);
+                if (stackInSlot.isEmpty()) {
+                    continue;
+                }
 
-            Iterator<Ingredient> iterator = remainingIngredients.iterator();
-            while (iterator.hasNext()) {
-                Ingredient ingredient = iterator.next();
-                if (ingredient.test(stackInSlot)) {
-                //    System.out.println("Matched ingredient in slot " + i + ": " + stackInSlot);
-                    iterator.remove();
-                    matched = true;
-                    break;
+                usedSlotCount++;
+
+                boolean matched = false;
+                Iterator<Ingredient> iterator = remainingIngredients.iterator();
+                while (iterator.hasNext()) {
+                    Ingredient ingredient = iterator.next();
+                    if (ingredient.test(stackInSlot)) {
+                        iterator.remove();
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (!matched) {
+                    return false;
                 }
             }
 
-            if (!matched) {
-               // System.out.println("No match found for slot " + i);
-                return false;
-            }
+            return remainingIngredients.isEmpty() && usedSlotCount == inputItems.size();
         }
-
-        boolean allMatched = remainingIngredients.isEmpty();
-        //System.out.println("Match result: " + allMatched);
-        return allMatched;
     }
+
 
     public NonNullList<Ingredient> getInputItems() {
         return inputItems;
@@ -90,7 +100,11 @@ public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= inputItems.size();  // 检查配方空间是否足够
+        if (isShaped) {
+            return width == 3 && height == 3;
+        } else {
+            return width * height >= inputItems.size();
+        }
     }
 
     @Override
@@ -123,6 +137,11 @@ public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
         return manaCost;
     }
 
+    public boolean isShaped() {
+        return this.isShaped;
+    }
+
+
     // 自定义 Type 类
     public static class Type implements RecipeType<ManaCraftingTableRecipe> {
         public static final Type INSTANCE = new Type();
@@ -136,20 +155,51 @@ public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
         // 从 JSON 数据读取配方
         @Override
         public ManaCraftingTableRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-            JsonArray ingredients = json.getAsJsonArray("ingredients");
-            NonNullList<Ingredient> inputItems = NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
+            NonNullList<Ingredient> inputItems;
+            boolean isShaped = json.has("shaped") && json.get("shaped").getAsBoolean();
 
-            for (int i = 0; i < inputItems.size(); i++) {
-                inputItems.set(i, Ingredient.fromJson(ingredients.get(i)));
+            if (json.has("pattern")) {
+                JsonArray pattern = json.getAsJsonArray("pattern");
+                JsonObject key = json.getAsJsonObject("key");
+
+                String[] rows = new String[pattern.size()];
+                for (int i = 0; i < rows.length; i++) {
+                    rows[i] = pattern.get(i).getAsString();
+                }
+
+                Map<Character, Ingredient> symbolMap = new HashMap<>();
+                for (Map.Entry<String, JsonElement> entry : key.entrySet()) {
+                    symbolMap.put(entry.getKey().charAt(0), Ingredient.fromJson(entry.getValue()));
+                }
+
+                inputItems = NonNullList.withSize(9, Ingredient.EMPTY);
+                for (int row = 0; row < rows.length; row++) {
+                    String line = rows[row];
+                    for (int col = 0; col < line.length(); col++) {
+                        int idx = row * 3 + col;
+                        if (idx < 9) {
+                            inputItems.set(idx, symbolMap.getOrDefault(line.charAt(col), Ingredient.EMPTY));
+                        }
+                    }
+                }
+            } else {
+                JsonArray ingredients = json.getAsJsonArray("ingredients");
+                inputItems = NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
+                for (int i = 0; i < inputItems.size(); i++) {
+                    inputItems.set(i, Ingredient.fromJson(ingredients.get(i)));
+                }
             }
 
+
             JsonObject outputObj = json.getAsJsonObject("output");
-            ItemStack output = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(outputObj.get("item").getAsString())),
-                    outputObj.get("count").getAsInt());
+            String itemId = outputObj.get("item").getAsString();
+            int count = outputObj.has("count") ? outputObj.get("count").getAsInt() : 1;
+
+            ItemStack output = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemId)), count);
 
             int manaCost = json.get("manaCost").getAsInt();  // 读取魔力消耗值
 
-            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost);
+            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost, isShaped);
         }
 
         // 从网络缓冲区读取配方
@@ -163,22 +213,25 @@ public class ManaCraftingTableRecipe implements Recipe<SimpleContainer> {
             }
 
             ItemStack output = buffer.readItem();
-            int manaCost = buffer.readInt();  // 从缓冲区读取魔力消耗值
+            int manaCost = buffer.readInt();
+            boolean isShaped = buffer.readBoolean(); // <- ✨ 新增這行，讀取 isShaped！
 
-            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost);
+            return new ManaCraftingTableRecipe(recipeId, inputItems, output, manaCost, isShaped);
         }
 
         // 将配方数据写入网络缓冲区
         @Override
         public void toNetwork(FriendlyByteBuf buffer, ManaCraftingTableRecipe recipe) {
-            buffer.writeInt(recipe.inputItems.size());
+            buffer.writeInt(recipe.getIngredients().size());
 
             for (Ingredient ingredient : recipe.getIngredients()) {
                 ingredient.toNetwork(buffer);
             }
 
-            buffer.writeItemStack(recipe.output, false);
-            buffer.writeInt(recipe.getManaCost());  // 写入魔力消耗值
+            buffer.writeItemStack(recipe.getResultItem(null), false);
+            buffer.writeInt(recipe.getManaCost());
+            buffer.writeBoolean(recipe.isShaped()); // ✨ 新增這行，把isShaped寫進去
         }
+
     }
 }

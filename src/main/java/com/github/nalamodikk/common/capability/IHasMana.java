@@ -1,4 +1,7 @@
 package com.github.nalamodikk.common.capability;
 
-public class IHasMana {
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+
+public interface IHasMana {
+    IUnifiedManaHandler getManaStorage();
 }

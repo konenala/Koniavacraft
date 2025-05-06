@@ -10,11 +10,11 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class CapabilityHandler {
+public class RegisterCapabilityHandler {
 
     public static void register() {
         // 註冊到 MinecraftForge 事件總線
-        MinecraftForge.EVENT_BUS.register(new CapabilityHandler());
+        MinecraftForge.EVENT_BUS.register(new RegisterCapabilityHandler());
     }
 
     @SubscribeEvent

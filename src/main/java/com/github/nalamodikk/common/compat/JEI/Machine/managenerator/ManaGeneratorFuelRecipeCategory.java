@@ -1,7 +1,6 @@
 package com.github.nalamodikk.common.compat.JEI.Machine.managenerator;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -27,19 +26,19 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FuelRecipeCategory implements IRecipeCategory<FuelRecipe> {
+public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<FuelRecipe> {
     public static final ResourceLocation UID = new ResourceLocation(MagicalIndustryMod.MOD_ID, "fuel");
     private static final ResourceLocation TEXTURE = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/jei_fuel.png");
     private static final ResourceLocation MANA_BAR = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final ResourceLocation ENERGY_BAR = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/energy_bar_full.png");
 
     public static final RecipeType<FuelRecipe> RECIPE_TYPE = new RecipeType<>(UID, FuelRecipe.class);
-    private static final Logger LOGGER = LoggerFactory.getLogger(FuelRecipeCategory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorFuelRecipeCategory.class);
 
     private final IDrawableStatic background;
     private final IDrawable icon; // ✅ 修改類型為 IDrawable
 
-    public FuelRecipeCategory(IGuiHelper guiHelper) {
+    public ManaGeneratorFuelRecipeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createDrawable(TEXTURE, 0, 0, 182, 80); // 確保與圖片大小一致
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.MANA_GENERATOR.get()));
     }
@@ -80,14 +79,16 @@ public class FuelRecipeCategory implements IRecipeCategory<FuelRecipe> {
     @Override
     public void draw(FuelRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics graphics, double mouseX, double mouseY) {
         RenderSystem.setShaderTexture(0, TEXTURE);
-
-        // ✅ 繪製 JEI 背景（確保顯示主 GUI 貼圖）
         graphics.blit(TEXTURE, 0, 0, 0, 0, 182, 80);
         Minecraft mc = Minecraft.getInstance();
 
-        graphics.drawString(mc.font, Component.translatable("jei.magical_industry.fuel.burn_time", recipe.getBurnTime()), 55, 60, 0xFFFFFF, false);
+        int manaRate = recipe.getManaRate();     // 魔力消耗/t
+        int energyRate = recipe.getEnergyRate(); // 能量產出/t
+
+        double efficiency = manaRate > 0 ? (double) energyRate / manaRate : 0;
 
     }
+
 
 
     @Override
