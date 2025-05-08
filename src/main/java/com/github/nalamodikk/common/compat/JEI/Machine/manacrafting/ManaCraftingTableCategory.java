@@ -2,7 +2,6 @@ package com.github.nalamodikk.common.compat.JEI.Machine.manacrafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
-import com.github.nalamodikk.common.capability.ModCapabilities;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModItems;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
@@ -16,7 +15,6 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

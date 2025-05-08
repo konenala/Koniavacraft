@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.compat.JEI.Machine.managenerator;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
+import com.github.nalamodikk.common.recipe.fuel.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mezz.jei.api.constants.VanillaTypes;
@@ -15,6 +15,7 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -26,13 +27,13 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<FuelRecipe> {
-    public static final ResourceLocation UID = new ResourceLocation(MagicalIndustryMod.MOD_ID, "fuel");
+public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenFuelRecipe> {
+    public static final ResourceLocation UID = new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_fuel");
     private static final ResourceLocation TEXTURE = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/jei_fuel.png");
     private static final ResourceLocation MANA_BAR = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final ResourceLocation ENERGY_BAR = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/energy_bar_full.png");
 
-    public static final RecipeType<FuelRecipe> RECIPE_TYPE = new RecipeType<>(UID, FuelRecipe.class);
+    public static final RecipeType<ManaGenFuelRecipe> RECIPE_TYPE = new RecipeType<>(UID, ManaGenFuelRecipe.class);
     private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorFuelRecipeCategory.class);
 
     private final IDrawableStatic background;
@@ -44,7 +45,7 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<FuelReci
     }
 
     @Override
-    public RecipeType<FuelRecipe> getRecipeType() {
+    public RecipeType<ManaGenFuelRecipe> getRecipeType() {
         return RECIPE_TYPE;
     }
 
@@ -64,7 +65,7 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<FuelReci
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, FuelRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, ManaGenFuelRecipe recipe, IFocusGroup focuses) {
         ResourceLocation itemResource = recipe.getItemResource();
         ItemStack inputStack = new ItemStack(BuiltInRegistries.ITEM.get(itemResource));
 
@@ -77,14 +78,17 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<FuelReci
     }
 
     @Override
-    public void draw(FuelRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+    public void draw(ManaGenFuelRecipe recipe, IRecipeSlotsView slotsView, GuiGraphics graphics, double mouseX, double mouseY) {
         RenderSystem.setShaderTexture(0, TEXTURE);
         graphics.blit(TEXTURE, 0, 0, 0, 0, 182, 80);
         Minecraft mc = Minecraft.getInstance();
+        Font font = mc.font;
 
         int manaRate = recipe.getManaRate();     // 魔力消耗/t
         int energyRate = recipe.getEnergyRate(); // 能量產出/t
-
+        int burnTime = recipe.getBurnTime(); // ← 你要從這裡取
+        Component burnTimeText = Component.translatable("jei.magical_industry.burn_time", burnTime);
+        graphics.drawString(font, burnTimeText, 45, 27, 0x555555, false);
         double efficiency = manaRate > 0 ? (double) energyRate / manaRate : 0;
 
     }
@@ -92,7 +96,7 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<FuelReci
 
 
     @Override
-    public List<Component> getTooltipStrings(FuelRecipe recipe, IRecipeSlotsView slotsView, double mouseX, double mouseY) {
+    public List<Component> getTooltipStrings(ManaGenFuelRecipe recipe, IRecipeSlotsView slotsView, double mouseX, double mouseY) {
         List<Component> tooltips = new ArrayList<>();
 
         // 🔹 魔力條區域 (x: 10 ~ 30, y: 10 ~ 70)

@@ -13,6 +13,7 @@
   "jei.magical_industry.fuel.energy": "Energy Output: %s",
   "jei.magical_industry.fuel.burn_time": "Burn Time: %s",
   "jei.magical_industry.fuel": "Mana Fuel",
+  "jei.magical_industry.burn_time": "Burn Time: %s ticks",
 
 
   "message.magical_industry.mana_added": "Added %s Mana. Current Mana: %s",

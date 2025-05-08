@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.entity.mana_crafting;
 
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
-import com.github.nalamodikk.common.capability.ModCapabilities;
+import com.github.nalamodikk.common.register.ModCapabilities;
 import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.capability.mana.ManaAction;

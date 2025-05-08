@@ -40,8 +40,9 @@ public class ManaStorageComponent implements IGridComponent, IHasMana {
 
     @Override
     public CompoundTag getData() {
-        return null;
+        return storage.serializeNBT(); // 回傳目前儲存的 mana 狀態
     }
+
 
     @Override
     public IUnifiedManaHandler getManaStorage() {

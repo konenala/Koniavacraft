@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -12,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 
-public abstract class BaseMachineBlock extends Block implements EntityBlock {
+public abstract class BaseMachineBlock extends BaseEntityBlock {
 
     public BaseMachineBlock(Properties properties) {
         super(properties);

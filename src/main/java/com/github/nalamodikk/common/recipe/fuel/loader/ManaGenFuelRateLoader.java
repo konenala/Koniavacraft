@@ -1,7 +1,6 @@
 package com.github.nalamodikk.common.recipe.fuel.loader;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -24,13 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber
-public class FuelRateLoader extends SimpleJsonResourceReloadListener {
+public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FuelRateLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaGenFuelRateLoader.class);
     private static final Gson GSON = new Gson();
     private static final Map<String, FuelRate> FUEL_RATES = new HashMap<>();
 
@@ -38,13 +36,13 @@ public class FuelRateLoader extends SimpleJsonResourceReloadListener {
     private static final int DEFAULT_BURN_TIME = 200;  // 默認燃燒時間
     private static final int DEFAULT_ENERGY_RATE = 1;
 
-    public FuelRateLoader() {
-        super(GSON, "recipes/mana_recipes/fuel");  // 確保加載 mana_recipes/fuel 目錄
+    public ManaGenFuelRateLoader() {
+        super(GSON, "recipes/mana_recipes/mana_fuel");  // 確保加載 mana_recipes/fuel 目錄
     }
 
     @SubscribeEvent
     public static void onAddReloadListener(AddReloadListenerEvent event) {
-        event.addListener(new FuelRateLoader());
+        event.addListener(new ManaGenFuelRateLoader());
     }
 
     @Override

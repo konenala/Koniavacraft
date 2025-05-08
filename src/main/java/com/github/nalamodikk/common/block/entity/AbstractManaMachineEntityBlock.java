@@ -2,8 +2,8 @@ package com.github.nalamodikk.common.block.entity;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
-import com.github.nalamodikk.common.capability.ModCapabilities;
-import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
+import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.common.compat.energy.ForgeEnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -29,10 +29,10 @@ import software.bernie.geckolib.core.animatable.GeoAnimatable;
 public abstract class AbstractManaMachineEntityBlock extends BlockEntity
         implements GeoBlockEntity, GeoAnimatable, MenuProvider, IConfigurableBlock {
 
-    protected final ManaEnergyStorage energyStorage;
+    protected final ForgeEnergyStorage energyStorage;
     protected final ManaStorage manaStorage;
     protected final ItemStackHandler itemHandler;
-    private final LazyOptional<ManaEnergyStorage> lazyEnergyStorage;
+    private final LazyOptional<ForgeEnergyStorage> lazyEnergyStorage;
     private final LazyOptional<ManaStorage> lazyManaStorage;
     private final LazyOptional<ItemStackHandler> lazyItemHandler;
 
@@ -43,7 +43,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
         super(type, pos, state);
 
         // 只有當 maxEnergy 不為 null 且大於 0 時，才初始化能量存儲
-        this.energyStorage = (maxEnergy != null && maxEnergy > 0) ? new ManaEnergyStorage(maxEnergy) : null;
+        this.energyStorage = (maxEnergy != null && maxEnergy > 0) ? new ForgeEnergyStorage(maxEnergy) : null;
 
         // 只有當 maxMana 不為 null 且大於 0 時，才初始化魔力存儲
         this.manaStorage = (maxMana != null && maxMana > 0) ? new ManaStorage(maxMana) : null;
@@ -152,4 +152,5 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
 
     @Nullable
     @Override
-    public abstract AbstractContainerMenu createMenu(int id, Inventory inv, Player player);}
+    public abstract AbstractContainerMenu createMenu(int id, Inventory inv, Player player);
+}

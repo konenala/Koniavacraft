@@ -13,6 +13,7 @@
   "jei.magical_industry.fuel.energy": "能量產出: %s",
   "jei.magical_industry.fuel.burn_time": "燃燒時間: %s",
   "jei.magical_industry.fuel": "魔力燃料",
+  "jei.magical_industry.burn_time": "燃燒時間：%s tick",
 
 
   "message.magical_industry.mana_added": "增加了 %s 魔力。當前魔力：%s",

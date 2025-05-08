@@ -12,7 +12,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
-public class FuelRecipe implements Recipe<Container> {
+public class ManaGenFuelRecipe implements Recipe<Container> {
     private final ResourceLocation id;
     private final String itemId;
     private final int manaRate;
@@ -24,7 +24,7 @@ public class FuelRecipe implements Recipe<Container> {
     }
 
 
-    public FuelRecipe(ResourceLocation id, String itemId, int manaRate, int energyRate ,int burnTime) {
+    public ManaGenFuelRecipe(ResourceLocation id, String itemId, int manaRate, int energyRate , int burnTime) {
         this.id = id;
         this.itemId = itemId;
         this.manaRate = manaRate;
@@ -90,30 +90,30 @@ public class FuelRecipe implements Recipe<Container> {
         return energyRate;
     }
 
-    public static class FuelRecipeSerializer implements RecipeSerializer<FuelRecipe> {
+    public static class FuelRecipeSerializer implements RecipeSerializer<ManaGenFuelRecipe> {
         public static final FuelRecipeSerializer INSTANCE = new FuelRecipeSerializer();
 
         @Override
-        public FuelRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
+        public ManaGenFuelRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
             String itemId = json.getAsJsonObject("ingredient").get("item").getAsString();
             int manaRate = json.get("mana").getAsInt();
             int energyRate = json.get("energy").getAsInt();
             int burnTime = json.has("burn_time") ? json.get("burn_time").getAsInt() : 200; // 默認燃燒時間
-            return new FuelRecipe(recipeId, itemId, manaRate, energyRate, burnTime);
+            return new ManaGenFuelRecipe(recipeId, itemId, manaRate, energyRate, burnTime);
         }
 
         @Override
-        public FuelRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
+        public ManaGenFuelRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
             String itemId = buffer.readUtf();
             int manaRate = buffer.readInt();
             int energyRate = buffer.readInt();
             int burnTime = buffer.readInt();  // 新增的從 buffer 中讀取 burnTime
-            return new FuelRecipe(recipeId, itemId, manaRate, energyRate, burnTime);
+            return new ManaGenFuelRecipe(recipeId, itemId, manaRate, energyRate, burnTime);
         }
 
 
         @Override
-        public void toNetwork(FriendlyByteBuf buffer, FuelRecipe recipe) {
+        public void toNetwork(FriendlyByteBuf buffer, ManaGenFuelRecipe recipe) {
             buffer.writeUtf(recipe.itemId);
             buffer.writeInt(recipe.manaRate);
             buffer.writeInt(recipe.energyRate);
@@ -122,7 +122,7 @@ public class FuelRecipe implements Recipe<Container> {
 
     }
 
-    public static class FuelRecipeType implements RecipeType<FuelRecipe> {
+    public static class FuelRecipeType implements RecipeType<ManaGenFuelRecipe> {
         public static final FuelRecipeType INSTANCE = new FuelRecipeType();
         private FuelRecipeType() {
         }

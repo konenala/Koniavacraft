@@ -5,23 +5,23 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-public class ManaEnergyStorage implements IEnergyStorage {
+public class ForgeEnergyStorage implements IEnergyStorage {
     private BigDecimal energy; // 高精度能量存儲
     private final BigDecimal maxCapacity;
     private final int DECIMAL_DIGITS = 4;
 
     // 構造函數，支援 int, long, BigInteger
-    public ManaEnergyStorage(int capacity) {
+    public ForgeEnergyStorage(int capacity) {
         this.energy = BigDecimal.ZERO.setScale(DECIMAL_DIGITS, RoundingMode.DOWN);
         this.maxCapacity = BigDecimal.valueOf(capacity);
     }
 
-    public ManaEnergyStorage(long capacity) {
+    public ForgeEnergyStorage(long capacity) {
         this.energy = BigDecimal.ZERO.setScale(DECIMAL_DIGITS, RoundingMode.DOWN);
         this.maxCapacity = BigDecimal.valueOf(capacity);
     }
 
-    public ManaEnergyStorage(BigInteger capacity) {
+    public ForgeEnergyStorage(BigInteger capacity) {
         this.energy = BigDecimal.ZERO.setScale(DECIMAL_DIGITS, RoundingMode.DOWN);
         this.maxCapacity = new BigDecimal(capacity);
     }

@@ -2,14 +2,15 @@ package com.github.nalamodikk.common;
 
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.capability.ModCapabilities;  // 新增的导入
+import com.github.nalamodikk.common.register.ModCapabilities;  // 新增的导入
 import com.github.nalamodikk.common.register.ModCreativeModTabs;
 import com.github.nalamodikk.common.register.ModItems;
+import com.github.nalamodikk.common.register.component.ComponentBehaviorRegistry;
 import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.register.ModRecipes;
 import com.github.nalamodikk.common.register.*;
 import com.github.nalamodikk.common.register.ModMenusTypes;
-import com.github.nalamodikk.common.recipe.fuel.loader.FuelRateLoader;
+import com.github.nalamodikk.common.recipe.fuel.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.register.component.ModComponents;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -77,8 +78,9 @@ public class MagicalIndustryMod {
     private void commonSetup(final FMLCommonSetupEvent event) {
         // 通用设置
         RegisterNetworkHandler.init(event);
-        ModComponents.registerAll(); // 🛠️ 註冊所有模組零件
 
+        // ✅ 在這裡註冊行為
+        ModRegistries.registerAll();
 
     }
 
@@ -98,8 +100,6 @@ public class MagicalIndustryMod {
 
     @SubscribeEvent
     public void onAddReloadListener(AddReloadListenerEvent event) {
-        // 註冊 FuelRateLoader 作為資源重載監聽器
-        event.addListener(new FuelRateLoader());
         LOGGER.info("Successfully registered FuelRateLoader as a resource reload listener.");
     }
     // 客户端事件订阅器

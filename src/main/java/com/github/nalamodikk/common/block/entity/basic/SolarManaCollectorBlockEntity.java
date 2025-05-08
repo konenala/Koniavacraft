@@ -1,9 +1,14 @@
 package com.github.nalamodikk.common.block.entity.basic;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
+import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.entity.AbstractManaCollectorMachine;
+import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.ManaStorage;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.register.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -13,7 +18,14 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -28,6 +40,9 @@ import java.util.Map;
  */
 public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine implements IConfigurableBlock {
     private final Map<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
+    private static final int UPGRADE_SLOT_COUNT = 5;
+    private final ItemStackHandler upgradeSlot = new ItemStackHandler(UPGRADE_SLOT_COUNT);
+    private static final int BASE_GENERATE = 5;
 
     private static final int BASE_INTERVAL = 40;       // 每 40 tick 嘗試一次（2 秒）
     private static final int BASE_OUTPUT = 5;          // 每次產出 5 mana（晴天正常條件）
@@ -35,6 +50,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, MAX_MANA, BASE_INTERVAL, BASE_OUTPUT);
+
     }
 
     /**
@@ -58,12 +74,14 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
 
     @Override
     public void setDirectionConfig(Direction direction, boolean isOutput) {
+        directionConfig.put(direction, isOutput);
+        setChanged();
 
     }
 
     @Override
     public boolean isOutput(Direction direction) {
-        return false;
+        return directionConfig.getOrDefault(direction, false);
     }
 
     @Override
@@ -72,6 +90,13 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
         Containers.dropContents(this.level, this.worldPosition, inventory);
     }
 
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER) {
+            return LazyOptional.of(() -> upgradeSlot).cast();
+        }
+        return super.getCapability(cap, side);
+    }
 
 
     @Override
@@ -79,6 +104,9 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
         return Component.translatable("block.magical_industry.solar_mana_collector");
     }
 
+    public ItemStack getUpgradeItem() {
+        return upgradeSlot.getStackInSlot(0);
+    }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
@@ -92,6 +120,8 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
             out.putBoolean(dir.getName(), directionConfig.getOrDefault(dir, false));
         }
         tag.put("output_dirs", out);
+        tag.put("UpgradeSlot", upgradeSlot.serializeNBT());
+
     }
 
     @Override
@@ -101,6 +131,55 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
             CompoundTag out = tag.getCompound("output_dirs");
             for (Direction dir : Direction.values()) {
                 directionConfig.put(dir, out.getBoolean(dir.getName()));
+            }
+        }
+        if (tag.contains("UpgradeSlot")) {
+            upgradeSlot.deserializeNBT(tag.getCompound("UpgradeSlot"));
+        }
+    }
+
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, SolarManaCollectorBlockEntity be) {
+        if (level.isClientSide) return;
+
+        if (be.shouldGenerate(level, pos)) {
+            be.generateMana();
+        }
+
+        be.outputMana();
+
+    }
+
+    public boolean shouldGenerate(Level level, BlockPos pos) {
+        return level.canSeeSky(pos.above()) && level.isDay() && !level.isRaining();
+    }
+
+    public void generateMana() {
+        int bonus = 0;
+
+        for (int i = 0; i < upgradeSlot.getSlots(); i++) {
+            ItemStack stack = upgradeSlot.getStackInSlot(i);
+            if (!stack.isEmpty() && stack.is(ModItems.SOLAR_MANA_UPGRADE.get())) {
+                bonus += 5;
+            }
+        }
+
+        int totalGenerated = BASE_GENERATE + bonus;
+        this.getManaStorage().insertMana(totalGenerated, ManaAction.EXECUTE);
+    }
+
+
+
+    public void outputMana() {
+        for (Direction dir : Direction.values()) {
+            if (this.isOutput(dir)) {
+                BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(dir));
+                if (neighbor instanceof IHasMana target) {
+                    int transferred = target.getManaStorage().insertMana(5, ManaAction.EXECUTE);
+                    if (transferred > 0) {
+                        this.getManaStorage().extractMana(transferred, ManaAction.EXECUTE);
+                    }
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.item.ModuleItem;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,33 +26,28 @@ public class ModularMachineBlockEntity extends BlockEntity {
         super(ModBlockEntities.MODULAR_MACHINE_BE.get(), pos, state);
         this.componentGrid = new ComponentGrid(this.getLevel()); // 傳入世界物件
     }
+    private ItemStack lastStack = ItemStack.EMPTY; // 加在 class 裡面做快取
+
     public void tick() {
         if (level == null || level.isClientSide) return;
 
         ItemStack stack = itemHandler.getStackInSlot(0);
-        componentGrid.getAllComponents().clear(); // 清空重建
 
-        if (!stack.isEmpty()) {
-            List<IGridComponent> components = ModuleItem.getComponents(stack); // 從物品 NBT 讀元件
-            int index = 0;
-            for (IGridComponent component : components) {
-                int x = index % 3 - 1; // -1, 0, 1 (中間是0)
-                int y = index / 3 - 1;
-                componentGrid.setComponent(x, y, component);
-                index++;
+        // ✅ 只有在物品變更時才重新載入 Grid 結構
+        if (!ItemStack.isSameItemSameTags(stack, lastStack)) {
+            lastStack = stack.copy(); // 更新快取
+            if (!stack.isEmpty()) {
+                CompoundTag gridTag = stack.getOrCreateTag().getCompound("grid");
+                componentGrid.loadFromNBT(gridTag); // 差異更新
             }
         }
 
-        // Tick 所有模組內的行為
-        for (Map.Entry<BlockPos, IGridComponent> entry : componentGrid.getAllComponents().entrySet()) {
-            BlockPos pos = entry.getKey();
-            IGridComponent component = entry.getValue();
-            ComponentContext context = new ComponentContext(componentGrid, pos, component);
+        // ✅ 每 tick 執行 Grid 的行為邏輯
+        componentGrid.tick();
+    }
 
-            for (IComponentBehavior behavior : component.getBehaviors()) {
-                behavior.onTick(context);
-            }
-        }
+    public ComponentGrid getGrid() {
+        return this.componentGrid;
     }
 
 }

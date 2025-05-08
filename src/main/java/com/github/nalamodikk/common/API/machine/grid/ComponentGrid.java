@@ -1,8 +1,10 @@
 package com.github.nalamodikk.common.API.machine.grid;
 
+import com.github.nalamodikk.common.API.machine.IComponentBehavior;
 import com.github.nalamodikk.common.API.machine.IGridComponent;
 import com.github.nalamodikk.common.register.component.ComponentRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * ComponentGrid：魔法工業裝置的拼裝核心，用於管理所有已安裝模組的位置與邏輯。
@@ -23,6 +26,9 @@ import java.util.Map;
 public class ComponentGrid {
     private final Level level;
     // Logger，用於輸出資訊與除錯訊息
+    // 行為對應的累積 tick 次數，用於 tickRate 調度
+    private final Map<IComponentBehavior, Integer> tickCounterMap = new HashMap<>();
+
     private static final Logger LOGGER = LoggerFactory.getLogger("MagicalIndustry");
 
     // Grid 主體：使用 BlockPos 當 Key（僅使用 X 與 Z）儲存格子模組
@@ -42,6 +48,32 @@ public class ComponentGrid {
     }
 
 
+    public void tick() {
+        for (Map.Entry<BlockPos, IGridComponent> entry : grid.entrySet()) {
+            BlockPos pos = entry.getKey();
+            IGridComponent component = entry.getValue();
+
+            // 每個元件有一個上下文物件
+            ComponentContext context = new ComponentContext(this, pos, component);
+
+            for (IComponentBehavior behavior : component.getBehaviors()) {
+                int tickRate = behavior.getTickRate();
+
+                if (tickRate <= 0) continue; // ❌ 不允許 tickRate 小於 1（可定義 -1 為 passive）
+
+                int currentTick = tickCounterMap.getOrDefault(behavior, 0) + 1;
+
+                // ✅ 當 tick 數達到 tickRate 就執行 onTick()
+                if (currentTick >= tickRate) {
+                    behavior.onTick(context);
+                    currentTick = 0; // 重置計數器
+                }
+
+                // 更新行為計數
+                tickCounterMap.put(behavior, currentTick);
+            }
+        }
+    }
 
     public Level getLevel() {
         return this.level;
@@ -52,13 +84,14 @@ public class ComponentGrid {
      * @param pos
      * @return
      */
-    public List<BlockPos> getNeighborPositions(BlockPos pos) {
-        List<BlockPos> neighbors = new ArrayList<>();
-        neighbors.add(pos.offset(1, 0, 0));  // 東
-        neighbors.add(pos.offset(-1, 0, 0)); // 西
-        neighbors.add(pos.offset(0, 0, 1));  // 南
-        neighbors.add(pos.offset(0, 0, -1)); // 北
-        return neighbors;
+    public void forEachNeighbor(BlockPos pos, BiConsumer<BlockPos, IGridComponent> action) {
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockPos neighborPos = pos.offset(dir.getStepX(), 0, dir.getStepZ());
+            IGridComponent neighbor = getComponent(neighborPos);
+            if (neighbor != null) {
+                action.accept(neighborPos, neighbor);
+            }
+        }
     }
 
     /**
@@ -105,7 +138,8 @@ public class ComponentGrid {
 
             CompoundTag compTag = new CompoundTag();
             compTag.putInt("x", pos.getX());
-            compTag.putInt("y", pos.getZ()); // Z 當作 Grid 的 Y 軸（我們是平面）
+            compTag.putInt("y", pos.getZ()); // Z 當作 Grid 的 Y 軸（平面）
+
             compTag.putString("id", component.getId().toString());
 
             CompoundTag dataTag = new CompoundTag();
@@ -116,36 +150,77 @@ public class ComponentGrid {
         }
 
         tag.put("ComponentGrid", list);
+
+        // ✅ 加入版本號（只要這個結構有改就升級版本）
+        tag.putInt("ComponentGridVersion", 1);
     }
+
 
     /**
      * 從 NBT 載入所有拼裝模組
      */
     public void loadFromNBT(CompoundTag tag) {
-        grid.clear();
+        int version = tag.contains("ComponentGridVersion") ? tag.getInt("ComponentGridVersion") : 0;
+        if (version < 1) {
+            LOGGER.error("❌ 嘗試讀取過舊版本 ComponentGrid（version {}），請升級資料格式！", version);
+            return;
+        }
 
         ListTag list = tag.getList("ComponentGrid", Tag.TAG_COMPOUND);
+        Map<BlockPos, IGridComponent> newComponents = new HashMap<>();
+
         for (Tag element : list) {
             CompoundTag compTag = (CompoundTag) element;
-            int x = compTag.getInt("x");
-            int y = compTag.getInt("y");
-            String idStr = compTag.getString("id");
-
-            ResourceLocation id = ResourceLocation.tryParse(idStr);
-            if (id == null) {
-                LOGGER.warn("❌ 模組 ID 格式錯誤：{}", idStr);
+            ComponentRecord record = ComponentRecord.fromNBT(compTag);
+            if (record == null) {
+                LOGGER.warn("⚠️ 無法解析元件 NBT 結構：{}", compTag);
                 continue;
             }
 
-            IGridComponent component = ComponentRegistry.createComponent(id);
-            if (component != null) {
-                component.loadFromNBT(compTag.getCompound("data"));
-                setComponent(x, y, component);
+            IGridComponent oldComponent = grid.get(record.pos());
+            IGridComponent component;
+
+            if (oldComponent != null && oldComponent.getId().equals(record.id())) {
+                component = oldComponent;
             } else {
-                LOGGER.warn("⚠️ 找不到對應模組: {}", id);
+                component = ComponentRegistry.createComponent(record.id());
+                if (component == null) {
+                    LOGGER.warn("⚠️ 找不到對應模組: {}", record.id());
+                    continue;
+                }
+            }
+
+            component.loadFromNBT(record.data()); // 差異更新建議在這裡做
+            newComponents.put(record.pos(), component);
+        }
+
+        for (BlockPos pos : new ArrayList<>(grid.keySet())) {
+            if (!newComponents.containsKey(pos)) {
+                grid.get(pos).onRemoved(this, pos);
+                grid.remove(pos);
             }
         }
+
+        for (Map.Entry<BlockPos, IGridComponent> entry : newComponents.entrySet()) {
+            BlockPos pos = entry.getKey();
+            IGridComponent newComponent = entry.getValue();
+
+            if (!grid.containsKey(pos)) {
+                grid.put(pos, newComponent);
+                newComponent.onAdded(this, pos);
+            } else {
+                IGridComponent oldComponent = grid.get(pos);
+                if (oldComponent != newComponent && !oldComponent.getId().equals(newComponent.getId())) {
+                    oldComponent.onRemoved(this, pos);
+                    grid.put(pos, newComponent);
+                    newComponent.onAdded(this, pos);
+                }
+            }
+        }
+
+        LOGGER.info("✅ 差異載入完成（v{}）：{} 個模組", version, grid.size());
     }
+
 
     /**
      * 取得所有模組位置與資料（給外部用）

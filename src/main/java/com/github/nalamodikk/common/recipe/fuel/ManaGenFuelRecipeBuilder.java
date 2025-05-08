@@ -9,14 +9,14 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class FuelRecipeBuilder implements FinishedRecipe {
+public class ManaGenFuelRecipeBuilder implements FinishedRecipe {
     private final ResourceLocation id;
     private final String itemId;
     private final int manaRate;
     private final int energyRate;
     private final int burnTime; // 新增 burnTime 屬性
 
-    public FuelRecipeBuilder(String itemId, int manaRate, int energyRate, int burnTime, ResourceLocation id) {
+    public ManaGenFuelRecipeBuilder(String itemId, int manaRate, int energyRate, int burnTime, ResourceLocation id) {
         this.itemId = itemId;
         this.manaRate = manaRate;
         this.energyRate = energyRate;
@@ -24,21 +24,21 @@ public class FuelRecipeBuilder implements FinishedRecipe {
         this.id = id;
     }
 
-    public static FuelRecipeBuilder create(String namespace, String path, int manaRate, int energyRate, int burnTime, String recipeId) {
-        return new FuelRecipeBuilder(namespace + ":" + path, manaRate, energyRate, burnTime,
+    public static ManaGenFuelRecipeBuilder create(String namespace, String path, int manaRate, int energyRate, int burnTime, String recipeId) {
+        return new ManaGenFuelRecipeBuilder(namespace + ":" + path, manaRate, energyRate, burnTime,
                 new ResourceLocation(namespace, recipeId));
     }
 
 
     public void save(Consumer<FinishedRecipe> consumer) {
-        ResourceLocation saveLocation = new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_recipes/fuel/" + id.getPath());
-        consumer.accept(new FuelRecipeBuilder(this.itemId, this.manaRate, this.energyRate, this.burnTime, saveLocation));
+        ResourceLocation saveLocation = new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_recipes/mana_fuel/" + id.getPath());
+        consumer.accept(new ManaGenFuelRecipeBuilder(this.itemId, this.manaRate, this.energyRate, this.burnTime, saveLocation));
     }
 
 
     @Override
     public void serializeRecipeData(JsonObject json) {
-        json.addProperty("type", MagicalIndustryMod.MOD_ID+ ":fuel");
+        json.addProperty("type", MagicalIndustryMod.MOD_ID+ ":mana_fuel");
         JsonObject ingredient = new JsonObject();
         ingredient.addProperty("item", itemId); // 確保 "item" 屬性正確生成
         json.add("ingredient", ingredient);
@@ -54,7 +54,7 @@ public class FuelRecipeBuilder implements FinishedRecipe {
 
     @Override
     public RecipeSerializer<?> getType() {
-        return FuelRecipe.FuelRecipeSerializer.INSTANCE;
+        return ManaGenFuelRecipe.FuelRecipeSerializer.INSTANCE;
     }
 
     @Nullable

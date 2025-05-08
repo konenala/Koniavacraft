@@ -21,6 +21,11 @@ public class ModItems {
     public static final RegistryObject<Item> MANA_INGOT = ITEMS.register("mana_ingot",
             () -> new Item(new Item.Properties()));
 
+
+    public static final RegistryObject<Item> SOLAR_MANA_UPGRADE = ITEMS.register("solar_mana_upgrade",
+            () -> new Item(new Item.Properties().stacksTo(1)));
+
+
     public static final RegistryObject<Item> CORRUPTED_MANA_DUST = ITEMS.register("corrupted_mana_dust",
             () -> new Item(new Item.Properties()));
 

@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.compat.JEI.Machine.managenerator;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
+import com.github.nalamodikk.common.recipe.fuel.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorScreen;
 import mezz.jei.api.IModPlugin;
@@ -59,15 +59,15 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
             return;
         }
 
-        List<FuelRecipe> fuelRecipes = minecraft.level.getRecipeManager().getAllRecipesFor(FuelRecipe.FuelRecipeType.INSTANCE);
+        List<ManaGenFuelRecipe> manaGenFuelRecipes = minecraft.level.getRecipeManager().getAllRecipesFor(ManaGenFuelRecipe.FuelRecipeType.INSTANCE);
 
-        if (fuelRecipes.isEmpty()) {
+        if (manaGenFuelRecipes.isEmpty()) {
             LOGGER.error("[JEI] ❌ FuelRecipe 配方數量為 0，請檢查 JSON 是否正確存入 `mana_recipes/fuel/`！");
             return;
         }
 
-        LOGGER.info("[JEI] ✅ 找到了 {} 個燃料配方，開始註冊...", fuelRecipes.size());
-        registration.addRecipes(ManaGeneratorFuelRecipeCategory.RECIPE_TYPE, fuelRecipes);
+        LOGGER.info("[JEI] ✅ 找到了 {} 個燃料配方，開始註冊...", manaGenFuelRecipes.size());
+        registration.addRecipes(ManaGeneratorFuelRecipeCategory.RECIPE_TYPE, manaGenFuelRecipes);
         LOGGER.info("[JEI] ✅ 成功註冊 FuelRecipeCategory 配方！");
     }
 

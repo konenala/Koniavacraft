@@ -2,18 +2,18 @@ package com.github.nalamodikk.common.block.entity.ManaGenerator;
 
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
-import com.github.nalamodikk.common.capability.ModCapabilities;
+import com.github.nalamodikk.common.recipe.fuel.loader.ManaGenFuelRateLoader;
+import com.github.nalamodikk.common.register.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.entity.AbstractManaMachineEntityBlock;
-import com.github.nalamodikk.common.compat.energy.ManaEnergyStorage;
-import com.github.nalamodikk.common.recipe.fuel.FuelRecipe;
+import com.github.nalamodikk.common.compat.energy.ForgeEnergyStorage;
+import com.github.nalamodikk.common.recipe.fuel.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ConfigManager;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.sync.UnifiedSyncManager;
-import com.github.nalamodikk.common.recipe.fuel.loader.FuelRateLoader;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -92,7 +92,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
     public static final int MAX_MANA = 10000000; // 或者保留 private，然後新增 getter
     public static final int MAX_ENERGY = 10000000;
 
-    private final ManaEnergyStorage energyStorage = new ManaEnergyStorage(getConfigMaxEnergy());
+    private final ForgeEnergyStorage energyStorage = new ForgeEnergyStorage(getConfigMaxEnergy());
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
     private final ItemStackHandler fuelHandler = new ItemStackHandler(1) {
         @Override
@@ -106,7 +106,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
 
             if (currentMode == Mode.ENERGY) {
                 // **符合 FuelRateLoader 或 ForgeHooks 內的燃料就允許**
-                FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(itemId);
+                ManaGenFuelRateLoader.FuelRate fuelRate = ManaGenFuelRateLoader.getFuelRateForItem(itemId);
                 return (fuelRate != null && fuelRate.getBurnTime() > 0) || (ForgeHooks.getBurnTime(stack, RecipeType.SMELTING) > 0);
             } else if (currentMode == Mode.MANA) {
                 // **只要符合 "mana" 標籤 或 `FuelRecipe` 內的燃料之一，就允許**
@@ -123,7 +123,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
             if (itemId == null) return false;
 
             // 檢查 FuelRecipe 是否包含這個物品
-            for (FuelRecipe recipe : level.getRecipeManager().getAllRecipesFor(FuelRecipe.FuelRecipeType.INSTANCE)) {
+            for (ManaGenFuelRecipe recipe : level.getRecipeManager().getAllRecipesFor(ManaGenFuelRecipe.FuelRecipeType.INSTANCE)) {
                 if (recipe.getId().toString().equals(itemId.toString())) {
                     return true;
                 }
@@ -145,7 +145,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WORKING_ANIM = RawAnimation.begin().thenLoop("working");
     private final LazyOptional<ItemStackHandler> lazyFuelHandler = LazyOptional.of(() -> fuelHandler);
-    private final LazyOptional<ManaEnergyStorage> lazyEnergyStorage = LazyOptional.of(() -> energyStorage);
+    private final LazyOptional<ForgeEnergyStorage> lazyEnergyStorage = LazyOptional.of(() -> energyStorage);
     private final LazyOptional<ManaStorage> lazyManaStorage = LazyOptional.of(() -> manaStorage);
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
 
@@ -186,7 +186,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (itemId == null) return 0;
 
-        for (FuelRecipe recipe : level.getRecipeManager().getAllRecipesFor(FuelRecipe.FuelRecipeType.INSTANCE)) {
+        for (ManaGenFuelRecipe recipe : level.getRecipeManager().getAllRecipesFor(ManaGenFuelRecipe.FuelRecipeType.INSTANCE)) {
             if (recipe.getId().toString().equals(itemId.toString())) {
                 return recipe.getBurnTime();
             }
@@ -346,7 +346,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
             return;
         }
 
-        FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(currentFuelId);
+        ManaGenFuelRateLoader.FuelRate fuelRate = ManaGenFuelRateLoader.getFuelRateForItem(currentFuelId);
 
         if (fuelRate == null) {
             LOGGER.warn("[Mana Generator] ❌ 找不到燃料數據：{}", currentFuelId);
@@ -379,7 +379,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
             return false;
         }
 
-        FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(newFuelId);
+        ManaGenFuelRateLoader.FuelRate fuelRate = ManaGenFuelRateLoader.getFuelRateForItem(newFuelId);
 
         // ✅ 模式判斷 —— 魔力模式要有 manaRate > 0，能源模式要有 burnTime > 0
         if (currentMode == Mode.MANA) {
@@ -406,7 +406,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
     private int getDynamicOutputRate() {
         if (ConfigManager.COMMON.useFuelBasedOutputRate.get()) {
             if (currentFuelId != null) {
-                FuelRateLoader.FuelRate fuelRate = FuelRateLoader.getFuelRateForItem(currentFuelId);
+                ManaGenFuelRateLoader.FuelRate fuelRate = ManaGenFuelRateLoader.getFuelRateForItem(currentFuelId);
                 if (fuelRate != null) {
                     return Math.max(1, fuelRate.getBurnTime() / 2); // 可調整比例
                 }
