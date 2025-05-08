@@ -1,10 +1,12 @@
 package com.github.nalamodikk.common.block.entity.basic;
 
+import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.block.entity.AbstractManaCollectorMachine;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
@@ -16,12 +18,16 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 /**
  * ☀️ 太陽能原能收集器
  * - 僅在白天且可見天空時產生魔力
  * - 高海拔（Y > 100）加成效率（額外產能）
  */
-public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine {
+public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine implements IConfigurableBlock {
+    private final Map<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
 
     private static final int BASE_INTERVAL = 40;       // 每 40 tick 嘗試一次（2 秒）
     private static final int BASE_OUTPUT = 5;          // 每次產出 5 mana（晴天正常條件）
@@ -77,6 +83,26 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
 
+    }
+    @Override
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        CompoundTag out = new CompoundTag();
+        for (Direction dir : Direction.values()) {
+            out.putBoolean(dir.getName(), directionConfig.getOrDefault(dir, false));
+        }
+        tag.put("output_dirs", out);
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("output_dirs")) {
+            CompoundTag out = tag.getCompound("output_dirs");
+            for (Direction dir : Direction.values()) {
+                directionConfig.put(dir, out.getBoolean(dir.getName()));
+            }
+        }
     }
 
 

@@ -1,7 +1,5 @@
-package com.github.nalamodikk.common.register;
+package com.github.nalamodikk.common.register.component;
 
-
-import com.github.nalamodikk.common.API.machine.component.ComponentRegistry;
 import com.github.nalamodikk.common.API.machine.behavior.ManaStorageComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +14,6 @@ public class ModComponents {
         // 🔧 註冊 mana_core 模組
         // ComponentRegistry.register(new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_core"), ManaCoreComponent::new);
         ComponentRegistry.register(new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_storage"), ManaStorageComponent::new);
-
         // ✨ 你未來還可以繼續加下去，例如：
         // ComponentRegistry.register(new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_pump"), ManaPumpComponent::new);
         // ComponentRegistry.register(new ResourceLocation(MagicalIndustryMod.MOD_ID, "magic_output"), MagicOutputComponent::new);

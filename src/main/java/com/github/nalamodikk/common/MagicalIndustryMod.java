@@ -5,11 +5,12 @@ import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.capability.ModCapabilities;  // 新增的导入
 import com.github.nalamodikk.common.register.ModCreativeModTabs;
 import com.github.nalamodikk.common.register.ModItems;
-import com.github.nalamodikk.common.network.handler.NetworkHandler;
+import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.register.ModRecipes;
 import com.github.nalamodikk.common.register.*;
 import com.github.nalamodikk.common.register.ModMenusTypes;
 import com.github.nalamodikk.common.recipe.fuel.loader.FuelRateLoader;
+import com.github.nalamodikk.common.register.component.ModComponents;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -75,7 +76,7 @@ public class MagicalIndustryMod {
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         // 通用设置
-        NetworkHandler.init(event);
+        RegisterNetworkHandler.init(event);
         ModComponents.registerAll(); // 🛠️ 註冊所有模組零件
 
 

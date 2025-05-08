@@ -1,6 +1,6 @@
 package com.github.nalamodikk.test;
 
-import com.github.nalamodikk.common.API.IGridComponent;
+import com.github.nalamodikk.common.API.machine.IGridComponent;
 import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;

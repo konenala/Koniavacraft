@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.blockitem.ManaGeneratorBlockItem;
+import com.github.nalamodikk.common.item.ModuleItem;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import net.minecraft.world.item.Item;
@@ -29,7 +30,9 @@ public class ModItems {
     public static final RegistryObject<Item> BASIC_TECH_WAND = ITEMS.register("basic_tech_wand",
             () -> new BasicTechWandItem(new Item.Properties().stacksTo(1)));
 
-
+    // 模塊零件
+    public static final RegistryObject<Item> MODULE_ITEM = ITEMS.register("module_item",
+            () -> new ModuleItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> MANA_GENERATOR_BLOCK_ITEM = ITEMS.register("mana_generator",
             () -> new ManaGeneratorBlockItem(ModBlocks.MANA_GENERATOR.get(), new Item.Properties()));

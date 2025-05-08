@@ -1,8 +1,9 @@
 package com.github.nalamodikk.common.API.machine.grid;
 
 
-import com.github.nalamodikk.common.API.IGridComponent;
+import com.github.nalamodikk.common.API.machine.IGridComponent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.function.Consumer;
 
@@ -45,4 +46,14 @@ public class ComponentContext {
             }
         }
     }
+
+
+    public Level getLevel() {
+        return this.grid.getLevel();
+    }
+
+    public BlockPos getCenterPos() {
+        return this.pos;
+    }
+
 }

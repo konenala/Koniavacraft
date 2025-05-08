@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.register;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.Conduit.ManaConduitBlockEntity;
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.entity.basic.MachineBlock.ModularMachineBlockEntity;
 import com.github.nalamodikk.common.block.entity.basic.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,6 +33,11 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("solar_mana_collector_be",
                     () -> BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new, ModBlocks.SOLAR_MANA_COLLECTOR.get())
                             .build(null));
+
+    public static final RegistryObject<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
+            BLOCK_ENTITIES.register("modular_machine",
+                    () -> BlockEntityType.Builder.of(ModularMachineBlockEntity::new,
+                            ModBlocks.MODULAR_MACHINE_BLOCK.get()).build(null));
 
 
     public static void register(IEventBus eventBus) {

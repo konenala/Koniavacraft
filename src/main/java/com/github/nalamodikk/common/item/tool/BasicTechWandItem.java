@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.handler.NetworkHandler;
+import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.TechWandModePacket;
 import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
 import com.github.nalamodikk.common.util.helpers.BlockSelector;
@@ -13,7 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -31,7 +30,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -49,7 +47,6 @@ public class BasicTechWandItem extends Item {
     public enum TechWandMode {
         CONFIGURE_IO, // 合併輸入和輸出配置
         DIRECTION_CONFIG,
-        ADD_MANA,
         ROTATE;
 
         public TechWandMode next() {
@@ -203,7 +200,7 @@ public class BasicTechWandItem extends Item {
                     // 調試信息，確認封包被發送
                     MagicalIndustryMod.LOGGER.debug("Sending TechWandModePacket: " + (forward ? "Next" : "Previous"));
 
-                    NetworkHandler.NETWORK_CHANNEL.sendToServer(new TechWandModePacket(forward));
+                    RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new TechWandModePacket(forward));
                     event.setCanceled(true);
                 }
             }

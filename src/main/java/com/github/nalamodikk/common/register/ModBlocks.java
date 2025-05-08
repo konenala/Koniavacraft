@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.block.blocks.Conduit.ManaConduitBlock;
+import com.github.nalamodikk.common.block.blocks.basic.MachineBlock.ModularMachineBlock;
 import com.github.nalamodikk.common.block.blocks.basic.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.blocks.mana_crafting_table.ManaCraftingTableBlock;
@@ -38,6 +39,11 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> SOLAR_MANA_COLLECTOR  = registerBlock("solar_mana_collector",
             () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()));
+
+    // 模塊化機器
+    public static final RegistryObject<Block> MODULAR_MACHINE_BLOCK = registerBlock("modular_machine",
+            () -> new ModularMachineBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()));
+
 
     // 新增魔法礦物的註冊
     public static final RegistryObject<Block> MAGIC_ORE = registerBlock("magic_ore",

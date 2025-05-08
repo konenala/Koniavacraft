@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.screen.ManaGenerator;
 import com.github.nalamodikk.client.screenAPI.UniversalTexturedButton;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.ToggleModePacket;
-import com.github.nalamodikk.common.network.handler.NetworkHandler;
+import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -59,7 +59,7 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
 
                     // 允許發送封包
                     BlockPos blockPos = this.menu.getBlockEntityPos();
-                    NetworkHandler.NETWORK_CHANNEL.sendToServer(new ToggleModePacket(blockPos));
+                    RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new ToggleModePacket(blockPos));
                 }
         );
 

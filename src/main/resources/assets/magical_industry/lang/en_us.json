@@ -5,6 +5,9 @@
   "item.magical_industry.corrupted_mana_dust": "Corrupted Mana Dust",
   "item.magical_industry.basic_tech_wand": "Basic Tech Wand",
   "item.magical_industry.basic_tech_wand.tooltip.mode": "Mode: %s",
+  "item.magical_industry.module.magical_industry.mana_storage": "Mana Storage Module",
+  "item.magical_industry.module.magical_industry.mana_producer": "Mana Producer Module",
+
 
   "jei.magical_industry.fuel.mana": "Mana Output: %s",
   "jei.magical_industry.fuel.energy": "Energy Output: %s",
@@ -87,6 +90,7 @@
   "tooltip.magical_industry.mana_conduit.line3": "Supports multi-directional connections.",
   "tooltip.magical_industry.mana_conduit.hold_shift": "Hold SHIFT for more details.",
   "tooltip.magical_industry.not_enough_mana": "Not enough mana!",
+  "tooltip.magical_industry.module.mana": "Mana Cost: %s/tick",
 
 
 
@@ -98,6 +102,7 @@
   "block.magical_industry.advanced_mana_crafting_table": "Advanced Mana Crafting Table",
   "block.magical_industry.mana_conduit": "Mana Conduit",
   "block.magical_industry.solar_mana_collector": "Solar Mana Collector",
+  "block.magical_industry.modular_machine": "Modular Machine",
 
   "button.mode.auto": "auto mode",
   "button.mode.manual": "manual mode",
@@ -105,8 +110,8 @@
 
 
 
-  "creativetab.magical_industry_items": "Magical Industry Items",
-  "creativetab.magical_industry_blocks": "Magical Industry Blocks"
-
+  "creativetab.magical_industry_items": "Magical Industry - Items",
+  "creativetab.magical_industry_blocks": "Magical Industry - Blocks",
+  "creativetab.magical_industry_modules": "Magical Industry - Modules"
 
 }

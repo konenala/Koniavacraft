@@ -1,12 +1,14 @@
 package com.github.nalamodikk.common.API.machine.grid;
 
-import com.github.nalamodikk.common.API.IGridComponent;
-import com.github.nalamodikk.common.API.machine.component.ComponentRegistry;
+import com.github.nalamodikk.common.API.machine.IGridComponent;
+import com.github.nalamodikk.common.register.component.ComponentRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +21,17 @@ import java.util.Map;
  * ComponentGrid：魔法工業裝置的拼裝核心，用於管理所有已安裝模組的位置與邏輯。
  */
 public class ComponentGrid {
-
+    private final Level level;
     // Logger，用於輸出資訊與除錯訊息
     private static final Logger LOGGER = LoggerFactory.getLogger("MagicalIndustry");
 
     // Grid 主體：使用 BlockPos 當 Key（僅使用 X 與 Z）儲存格子模組
     private final Map<BlockPos, IGridComponent> grid = new HashMap<>();
 
+    public ComponentGrid(Level level) {
+        this.level = level;
+        // 其他初始化
+    }
     /**
      * 放入模組到指定位置（x, y）
      */
@@ -33,6 +39,12 @@ public class ComponentGrid {
         BlockPos pos = new BlockPos(x, 0, y); // 固定 Y 為 0，視為平面座標
         grid.put(pos, component);
         component.onAdded(this, pos);
+    }
+
+
+
+    public Level getLevel() {
+        return this.level;
     }
 
     /**
@@ -119,16 +131,20 @@ public class ComponentGrid {
             int y = compTag.getInt("y");
             String idStr = compTag.getString("id");
 
-            IGridComponent component = ComponentRegistry.get(idStr);
+            ResourceLocation id = ResourceLocation.tryParse(idStr);
+            if (id == null) {
+                LOGGER.warn("❌ 模組 ID 格式錯誤：{}", idStr);
+                continue;
+            }
+
+            IGridComponent component = ComponentRegistry.createComponent(id);
             if (component != null) {
                 component.loadFromNBT(compTag.getCompound("data"));
                 setComponent(x, y, component);
             } else {
-                LOGGER.warn("⚠️ 找不到對應模組: {}", idStr);
+                LOGGER.warn("⚠️ 找不到對應模組: {}", id);
             }
         }
-
-        LOGGER.info("✅ 成功從 NBT 載入 ComponentGrid（{} 模組）", grid.size());
     }
 
     /**

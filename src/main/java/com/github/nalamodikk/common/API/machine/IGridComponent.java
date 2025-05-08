@@ -1,9 +1,11 @@
-package com.github.nalamodikk.common.API;
+package com.github.nalamodikk.common.API.machine;
 
 import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
+
+import java.util.List;
 
 public interface IGridComponent {
     // 唯一 ID，例如 magicalindustry:mana_core
@@ -22,5 +24,9 @@ public interface IGridComponent {
     void loadFromNBT(CompoundTag tag);
 
     CompoundTag getData(); // ✅ 你自己加的
+    default List<IComponentBehavior> getBehaviors() {
+        return List.of(); // 沒有預設行為
+    }
+
 
 }

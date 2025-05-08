@@ -1,14 +1,18 @@
 package com.github.nalamodikk.common.API.machine.behavior;
 
-import com.github.nalamodikk.common.API.IGridComponent;
+import com.github.nalamodikk.common.API.machine.IComponentBehavior;
+import com.github.nalamodikk.common.API.machine.IGridComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
+import com.github.nalamodikk.common.register.component.ComponentBehaviorRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.List;
 
 public class ManaStorageComponent implements IGridComponent, IHasMana {
     private final ManaStorage storage = new ManaStorage(1000); // 預設容量：1000 mana
@@ -28,6 +32,10 @@ public class ManaStorageComponent implements IGridComponent, IHasMana {
         if (tag.contains("mana")) {
             storage.deserializeNBT(tag.getCompound("mana"));
         }
+    }
+    @Override
+    public List<IComponentBehavior> getBehaviors() {
+        return List.of(ComponentBehaviorRegistry.get("mana_producer")); // 要先註冊喔
     }
 
     @Override

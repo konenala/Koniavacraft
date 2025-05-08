@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.API;
+package com.github.nalamodikk.common.API.machine;
 
 
 import com.github.nalamodikk.common.API.machine.grid.ComponentContext;

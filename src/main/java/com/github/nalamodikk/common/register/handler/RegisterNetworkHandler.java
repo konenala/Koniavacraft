@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.network.handler;
+package com.github.nalamodikk.common.register.handler;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.NetworkEvent;
@@ -24,7 +23,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public class NetworkHandler {
+public class RegisterNetworkHandler {
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel NETWORK_CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(MagicalIndustryMod.MOD_ID, "main"),
@@ -36,7 +35,7 @@ public class NetworkHandler {
 
     public static void init(final FMLCommonSetupEvent event) {
         // 使用 FMLCommonSetupEvent 進行封包的統一註冊
-        event.enqueueWork(NetworkHandler::registerPackets);
+        event.enqueueWork(RegisterNetworkHandler::registerPackets);
     }
 
     public static void registerPackets() {

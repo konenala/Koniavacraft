@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.screen.tool;
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.handler.NetworkHandler;
+import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.ConfigDirectionUpdatePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -120,7 +120,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
             blockEntity.setChanged();
 
             // 發送封包來同步方向配置到伺服器
-            NetworkHandler.NETWORK_CHANNEL.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newConfig));
+            RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newConfig));
 
             // 顯示玩家通知
             Minecraft.getInstance().player.displayClientMessage(Component.translatable(

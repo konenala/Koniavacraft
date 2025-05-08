@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.capability.mana.net;
+package com.github.nalamodikk.common.network.ManaNetwork.net;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.Conduit.ManaConduitBlockEntity;

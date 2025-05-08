@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.screen.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.handler.NetworkHandler;
+import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.register.ModMenusTypes;
 import net.minecraft.core.Direction;
@@ -81,7 +81,7 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
             // 只在客戶端發送封包到伺服器
             for (Direction direction : Direction.values()) {
                 boolean newConfig = this.currentConfig.get(direction);
-                NetworkHandler.NETWORK_CHANNEL.sendToServer(new ConfigDirectionUpdatePacket(this.blockEntity.getBlockPos(), direction, newConfig));
+                RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new ConfigDirectionUpdatePacket(this.blockEntity.getBlockPos(), direction, newConfig));
             }
         }
 

@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.item.debug;
 
 import com.github.nalamodikk.common.capability.ManaCapability;
 
-import com.github.nalamodikk.common.network.handler.NetworkHandler;
+import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.toolpacket.ModeChangePacket;
 import net.minecraft.core.BlockPos;
@@ -64,7 +64,7 @@ public class ManaDebugToolItem extends Item {
 
                     // 發送同步封包到所有玩家
                     ManaUpdatePacket packet = new ManaUpdatePacket(pos, manaStorage.getMana());
-                    NetworkHandler.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
+                    RegisterNetworkHandler.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
                 });
 
                 return InteractionResult.SUCCESS;
@@ -86,7 +86,7 @@ public class ManaDebugToolItem extends Item {
 
                 // 發送封包同步到伺服器
                 int modeIndex = heldItem.getOrCreateTag().getInt(TAG_MODE_INDEX);
-                NetworkHandler.NETWORK_CHANNEL.sendToServer(new ModeChangePacket(modeIndex));
+                RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new ModeChangePacket(modeIndex));
 
                 player.displayClientMessage(Component.translatable("message.magical_industry.mana_mode_changed", manaDebugToolItem.getCurrentModeDescription(heldItem)), true);
                 event.setCanceled(true); // 阻止玩家切換物品欄位

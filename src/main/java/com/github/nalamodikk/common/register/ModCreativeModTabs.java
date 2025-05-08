@@ -1,6 +1,8 @@
 package com.github.nalamodikk.common.register;
 
+import com.github.nalamodikk.common.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.item.ModuleItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -45,12 +47,27 @@ public class ModCreativeModTabs {
                         pOutput.accept(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
                         pOutput.accept(ModItems.MANA_GENERATOR_BLOCK_ITEM.get());
                         pOutput.accept(ModBlocks.SOLAR_MANA_COLLECTOR.get());
+                        pOutput.accept(ModBlocks.MODULAR_MACHINE_BLOCK.get());
 
                         pOutput.accept(ModBlocks.MANA_CONDUIT.get());
 
 
                     })
                     .build());
+
+    public static final RegistryObject<CreativeModeTab> MAGICAL_INDUSTRY_MODULE_TAB = CREATIVE_MODE_TABS.register("magical_industry_module_tab",
+            () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.MODULE_ITEM.get()))
+                    .title(Component.translatable("creativetab.magical_industry_modules"))
+                            .displayItems((parameters, output) -> {
+                                ComponentRegistry.getAllComponentIds().forEach(componentId -> {
+                                    ItemStack stack = new ItemStack(ModItems.MODULE_ITEM.get());
+                                    stack.getOrCreateTag().putString(ModuleItem.KEY_COMPONENT_ID, componentId.toString());
+                                    output.accept(stack);
+                                });
+                            })
+                            .build()
+            );
+
 
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

@@ -5,6 +5,9 @@
   "item.magical_industry.corrupted_mana_dust": "汙穢的魔力粉",
   "item.magical_industry.basic_tech_wand": "基礎科技魔杖",
   "item.magical_industry.basic_tech_wand.tooltip.mode": "模式: %s",
+  "item.magical_industry.module.magical_industry.mana_storage": "魔力儲存模組",
+  "item.magical_industry.module.magical_industry.mana_producer": "魔力產生器模組",
+
 
   "jei.magical_industry.fuel.mana": "魔力產出: %s",
   "jei.magical_industry.fuel.energy": "能量產出: %s",
@@ -87,6 +90,7 @@
   "tooltip.magical_industry.mana_conduit.line3": "支持多方向連接。",
   "tooltip.magical_industry.mana_conduit.hold_shift": "按住 SHIFT 獲取更多信息。",
   "tooltip.magical_industry.not_enough_mana": "魔力不足！",
+  "tooltip.magical_industry.module.mana": "每刻消耗魔力：%s",
 
   "block.magical_industry.mana_block": "魔法錠磚",
   "block.magical_industry.magic_ore": "魔法礦",
@@ -96,12 +100,15 @@
   "block.magical_industry.advanced_mana_crafting_table": "高級魔力合成台",
   "block.magical_industry.mana_conduit": "魔力導管",
   "block.magical_industry.solar_mana_collector": "太陽魔法能收集器",
+  "block.magical_industry.modular_machine": "模塊化機器",
 
   "button.mode.auto": "自動模式",
   "button.mode.manual": "手動模式",
 
   "creativetab.magical_industry_items": "魔法工業-物品",
-  "creativetab.magical_industry_blocks": "魔法工業-方塊"
+  "creativetab.magical_industry_blocks": "魔法工業-方塊",
+  "creativetab.magical_industry_modules": "魔法工業-模塊零件"
+
 
 
 }
