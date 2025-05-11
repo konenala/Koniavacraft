@@ -1,22 +1,13 @@
-package com.github.nalamodikk.common.block.entity.basic.MachineBlock;
+package com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBlock;
 
-import com.github.nalamodikk.common.API.machine.IComponentBehavior;
-import com.github.nalamodikk.common.API.machine.IGridComponent;
-import com.github.nalamodikk.common.API.machine.grid.ComponentContext;
-import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
-import com.github.nalamodikk.common.capability.IHasMana;
-import com.github.nalamodikk.common.item.ModuleItem;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.ItemStackHandler;
-
-import java.util.List;
-import java.util.Map;
 
 public class ModularMachineBlockEntity extends BlockEntity {
     private ComponentGrid componentGrid;

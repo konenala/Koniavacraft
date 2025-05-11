@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.register.component;
+package com.github.nalamodikk.common.ComponentSystem.register.component;
 
-import com.github.nalamodikk.common.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.resources.ResourceLocation;
 

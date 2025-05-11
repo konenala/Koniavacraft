@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.API.machine.grid;
+package com.github.nalamodikk.common.ComponentSystem.API.machine.grid;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

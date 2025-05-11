@@ -1,7 +1,7 @@
 
 package com.github.nalamodikk.common.commands;
 
-import com.github.nalamodikk.common.block.entity.basic.MachineBlock.ModularMachineBlockEntity;
+import com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBlock.ModularMachineBlockEntity;
 import com.github.nalamodikk.common.util.ComponentDebugger;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;

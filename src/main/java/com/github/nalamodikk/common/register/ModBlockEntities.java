@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.register;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.Conduit.ManaConduitBlockEntity;
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.common.block.entity.basic.MachineBlock.ModularMachineBlockEntity;
+import com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBlock.ModularMachineBlockEntity;
 import com.github.nalamodikk.common.block.entity.basic.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;

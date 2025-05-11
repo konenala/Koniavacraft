@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.register.component;
+package com.github.nalamodikk.common.ComponentSystem.register.component;
 
-import com.github.nalamodikk.common.API.machine.behavior.ManaStorageComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ManaStorageComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.resources.ResourceLocation;
 

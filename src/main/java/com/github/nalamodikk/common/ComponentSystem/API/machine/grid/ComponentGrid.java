@@ -1,22 +1,20 @@
-package com.github.nalamodikk.common.API.machine.grid;
+package com.github.nalamodikk.common.ComponentSystem.API.machine.grid;
 
-import com.github.nalamodikk.common.API.machine.IComponentBehavior;
-import com.github.nalamodikk.common.API.machine.IGridComponent;
-import com.github.nalamodikk.common.register.component.ComponentRegistry;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -219,6 +217,15 @@ public class ComponentGrid {
         }
 
         LOGGER.info("✅ 差異載入完成（v{}）：{} 個模組", version, grid.size());
+    }
+
+    public <T> T findFirstComponent(Class<T> type) {
+        for (IGridComponent component : grid.values()) {
+            if (type.isInstance(component)) {
+                return type.cast(component);
+            }
+        }
+        return null;
     }
 
 

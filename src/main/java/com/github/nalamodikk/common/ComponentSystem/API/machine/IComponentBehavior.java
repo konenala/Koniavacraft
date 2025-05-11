@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.API.machine;
+package com.github.nalamodikk.common.ComponentSystem.API.machine;
 
 
-import com.github.nalamodikk.common.API.machine.grid.ComponentContext;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 import net.minecraft.nbt.CompoundTag;
 
 /**
@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
  * 它提供一個 onTick 方法，每 tick 會被呼叫
  */
 public interface IComponentBehavior {
+
 
     /**
      * 每個 tick 都會對模組呼叫這個方法
@@ -26,4 +27,14 @@ public interface IComponentBehavior {
     default void init(CompoundTag data) {
         // 可被子類覆寫的初始化方法
     }
+
+
+    default void saveToNBT(CompoundTag tag) {
+        // 可被子類覆寫的儲存方法
+    }
+
+    default void loadFromNBT(CompoundTag tag) {
+        // 可被子類覆寫的讀取方法
+    }
+
 }

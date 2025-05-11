@@ -1,9 +1,9 @@
 package com.github.nalamodikk.common.item;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.register.ModItems;
-import com.github.nalamodikk.common.register.component.ComponentRegistry;
+import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.util.helpers.ComponentNameHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.ListTag;

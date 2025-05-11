@@ -1,16 +1,14 @@
-package com.github.nalamodikk.common.block.blocks.basic.MachineBlock;
+package com.github.nalamodikk.common.ComponentSystem.block.blocks.MachineBlock;
 
-import com.github.nalamodikk.common.block.entity.basic.MachineBlock.ModularMachineBlockEntity;
+import com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBlock.ModularMachineBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.jetbrains.annotations.Nullable;
 
 public class ModularMachineBlock extends BaseEntityBlock {

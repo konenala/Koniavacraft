@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.register.component;
+package com.github.nalamodikk.common.ComponentSystem.register.component;
 
-import com.github.nalamodikk.common.API.machine.IComponentBehavior;
-import com.github.nalamodikk.common.API.machine.behavior.ManaProducerBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.behavior.ManaProducerBehavior;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 
 import java.util.HashMap;
@@ -34,10 +34,7 @@ public class ComponentBehaviorRegistry {
         return BEHAVIORS.containsKey(id);
     }
 
-    public static void registerAll() {
-        register("mana_producer", new ManaProducerBehavior());
-        // register("speed_boost", new SpeedBoostBehavior());
-    }
+
 
     private ComponentBehaviorRegistry() {}
 }

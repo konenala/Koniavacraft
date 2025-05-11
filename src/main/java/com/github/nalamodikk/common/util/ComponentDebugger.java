@@ -1,15 +1,13 @@
 package com.github.nalamodikk.common.util;
 
-import com.github.nalamodikk.common.API.machine.IGridComponent;
-import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
-import com.github.nalamodikk.common.API.machine.grid.ComponentRecord;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentRecord;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 
 import java.io.FileWriter;

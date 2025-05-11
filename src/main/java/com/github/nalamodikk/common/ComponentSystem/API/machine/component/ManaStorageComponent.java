@@ -1,13 +1,13 @@
-package com.github.nalamodikk.common.API.machine.behavior;
+package com.github.nalamodikk.common.ComponentSystem.API.machine.component;
 
-import com.github.nalamodikk.common.API.machine.IComponentBehavior;
-import com.github.nalamodikk.common.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
-import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
-import com.github.nalamodikk.common.register.component.ComponentBehaviorRegistry;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
+import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentBehaviorRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

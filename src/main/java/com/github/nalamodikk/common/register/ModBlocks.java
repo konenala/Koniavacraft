@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.block.blocks.Conduit.ManaConduitBlock;
-import com.github.nalamodikk.common.block.blocks.basic.MachineBlock.ModularMachineBlock;
+import com.github.nalamodikk.common.ComponentSystem.block.blocks.MachineBlock.ModularMachineBlock;
 import com.github.nalamodikk.common.block.blocks.basic.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.blocks.mana_crafting_table.ManaCraftingTableBlock;

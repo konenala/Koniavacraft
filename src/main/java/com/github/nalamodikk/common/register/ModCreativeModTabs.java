@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.register.component.ComponentRegistry;
+import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.ModuleItem;
 import net.minecraft.core.registries.Registries;

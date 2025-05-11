@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.API.machine.grid;
+package com.github.nalamodikk.common.ComponentSystem.API.machine.grid;
 
 
-import com.github.nalamodikk.common.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 

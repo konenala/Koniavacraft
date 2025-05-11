@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.API.machine;
+package com.github.nalamodikk.common.ComponentSystem.API.machine;
 
-import com.github.nalamodikk.common.API.machine.grid.ComponentGrid;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;

@@ -1,12 +1,11 @@
-package com.github.nalamodikk.common.API.machine.behavior;
+package com.github.nalamodikk.common.ComponentSystem.API.machine.behavior;
 
-import com.github.nalamodikk.common.API.machine.IComponentBehavior;
-import com.github.nalamodikk.common.API.machine.grid.ComponentContext;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.util.ParticleUtil;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;

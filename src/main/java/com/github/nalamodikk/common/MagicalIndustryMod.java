@@ -5,13 +5,10 @@ import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.register.ModCapabilities;  // 新增的导入
 import com.github.nalamodikk.common.register.ModCreativeModTabs;
 import com.github.nalamodikk.common.register.ModItems;
-import com.github.nalamodikk.common.register.component.ComponentBehaviorRegistry;
 import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.register.ModRecipes;
 import com.github.nalamodikk.common.register.*;
 import com.github.nalamodikk.common.register.ModMenusTypes;
-import com.github.nalamodikk.common.recipe.fuel.loader.ManaGenFuelRateLoader;
-import com.github.nalamodikk.common.register.component.ModComponents;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
