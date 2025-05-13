@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.util.helpers;
+package com.github.nalamodikk.common.ComponentSystem.util.helpers;
 
 
 import net.minecraft.nbt.CompoundTag;

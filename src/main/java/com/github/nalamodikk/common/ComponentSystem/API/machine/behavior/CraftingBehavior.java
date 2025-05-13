@@ -10,7 +10,7 @@ import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.ComponentSystem.recipe.component.AssemblyRecipe;
 import com.github.nalamodikk.common.ComponentSystem.recipe.component.AssemblyRecipeManager;
-import com.github.nalamodikk.common.util.GridIOHelper;
+import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridIOHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;

@@ -1,8 +1,9 @@
-package com.github.nalamodikk.common.util;
+package com.github.nalamodikk.common.ComponentSystem.util;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentRecord;
+import com.github.nalamodikk.common.util.NBTJsonConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;

@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.util.helpers;
+package com.github.nalamodikk.common.ComponentSystem.util.helpers;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;

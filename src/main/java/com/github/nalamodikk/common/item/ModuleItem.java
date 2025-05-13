@@ -1,18 +1,15 @@
 package com.github.nalamodikk.common.item;
 
 import com.github.nalamodikk.client.renderer.item.DynamicModuleItemRenderer;
-import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ManaStorageComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.register.ModItems;
-import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
-import com.github.nalamodikk.common.util.helpers.ComponentNameHelper;
-import com.github.nalamodikk.common.util.helpers.ModuleItemHelper;
+import com.github.nalamodikk.common.ComponentSystem.util.helpers.ComponentNameHelper;
+import com.github.nalamodikk.common.ComponentSystem.util.helpers.ModuleItemHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -22,11 +19,9 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

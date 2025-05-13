@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.util;
+package com.github.nalamodikk.common.ComponentSystem.util.helpers;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ItemInputComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ItemOutputComponent;

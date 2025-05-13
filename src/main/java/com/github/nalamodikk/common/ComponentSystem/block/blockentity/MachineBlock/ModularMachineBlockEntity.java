@@ -3,12 +3,10 @@ package com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBl
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
-import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.item.ModuleItem;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.util.GridIOHelper;
-import com.github.nalamodikk.common.util.helpers.GridLayoutHelper;
-import com.github.nalamodikk.common.util.helpers.ModuleItemHelper;
+import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridIOHelper;
+import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridLayoutHelper;
+import com.github.nalamodikk.common.ComponentSystem.util.helpers.ModuleItemHelper;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -55,7 +53,7 @@ public class ModularMachineBlockEntity extends BlockEntity {
         // ✅ 這段不能少，否則每次都會重建
         int layoutSignature = computeGridSignature(newLayout);
         if (layoutSignature != lastLayoutHash) {
-            LOGGER.debug("【rebuildGridFromItemHandler】🔁 Layout changed! Signature = {}", layoutSignature);
+            LOGGER.info("【rebuildGridFromItemHandler】🔁 Layout changed! Signature = {}", layoutSignature);
             componentGrid.syncTo(newLayout);
             lastLayoutHash = layoutSignature;
         }
@@ -138,7 +136,7 @@ public class ModularMachineBlockEntity extends BlockEntity {
 
         int layoutSignature = computeGridSignature(newLayout); // ✅ 關鍵判斷點
         if (layoutSignature != lastLayoutHash) {
-            LOGGER.debug("【public void tick 】🔁 Layout changed! Signature = {}", layoutSignature);
+            LOGGER.info("【public void tick 】🔁 Layout changed! Signature = {}", layoutSignature);
 
             componentGrid.syncTo(newLayout);                    // ✅ 只在 layout 真正變動時 sync
             lastLayoutHash = layoutSignature;
