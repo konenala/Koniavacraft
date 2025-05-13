@@ -26,13 +26,14 @@ public class ComponentGrid {
     private final Level level;
     // Logger，用於輸出資訊與除錯訊息
     private static final Logger LOGGER = LoggerFactory.getLogger("MagicalIndustry");
-
+    private final Map<BlockPos, ComponentContext> contextMap = new HashMap<>();
+    private final Map<BlockPos, ComponentContext> contextCache = new HashMap<>();
+    private final Map<String, IGridComponent> componentIdMap = new HashMap<>();
     // 行為對應的累積 tick 次數，用於 tickRate 調度
     private final Map<IComponentBehavior, Integer> tickCounterMap = new HashMap<>();
-
-
     // Grid 主體：使用 BlockPos 當 Key（僅使用 X 與 Z）儲存格子模組
     private final Map<BlockPos, IGridComponent> grid = new HashMap<>();
+
 
     public ComponentGrid(Level level) {
         this.level = level;
@@ -98,9 +99,19 @@ public class ComponentGrid {
      * 從指定位置移除模組
      */
     public void removeComponent(int x, int y) {
-        BlockPos pos = new BlockPos(x, 0, y);
-        IGridComponent removed = grid.remove(pos);
-        if (removed != null) removed.onRemoved(this, pos);
+        removeComponent(new BlockPos(x, 0, y));
+    }
+
+    public void removeComponent(BlockPos pos) {
+        IGridComponent component = grid.remove(pos);
+        if (component != null) {
+            component.onRemoved(this, pos); // ← 繼續保留你的版本設計
+            for (IComponentBehavior behavior : component.getBehaviors()) {
+                tickCounterMap.remove(behavior);
+            }
+            contextMap.remove(pos);
+            contextCache.remove(pos);
+        }
     }
 
     /**
@@ -237,7 +248,7 @@ public class ComponentGrid {
                 }
             }
         }
-
+        cleanupTickMap();
         // ✅ 重置所有行為的 tick 狀態（避免殘留）
         tickCounterMap.clear();
     }
@@ -275,6 +286,16 @@ public class ComponentGrid {
         LOGGER.debug("🔍 Layout Signature = {} | entries = {}", hash, joined);
         return hash;
     }
+
+    // ComponentGrid.java
+    private void cleanupTickMap() {
+        tickCounterMap.keySet().removeIf(behavior ->
+                grid.values().stream()
+                        .flatMap(comp -> comp.getBehaviors().stream())
+                        .noneMatch(active -> active == behavior)
+        );
+    }
+
 
     /**
      * 取得所有模組位置與資料（給外部用）
