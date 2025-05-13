@@ -7,6 +7,8 @@
   "item.magical_industry.basic_tech_wand.tooltip.mode": "Mode: %s",
   "item.magical_industry.module.magical_industry.mana_storage": "Mana Storage Module",
   "item.magical_industry.module.magical_industry.mana_producer": "Mana Producer Module",
+  "item.magical_industry.module.magical_industry.item_input": "Item Input Module",
+  "item.magical_industry.module.magical_industry.item_output": "Item Output Module",
 
 
   "jei.magical_industry.fuel.mana": "Mana Output: %s",
@@ -32,6 +34,11 @@
 
   "message.magical_industry.screen.generator_working": "Generator is working. Mode switching is disabled.",
 
+  "message.magical_industry.machine.restored_count": "Restored previous setup. Returned %s module(s) to you.",
+  "message.magical_industry.machine.no_history": "No previous setup to restore.",
+
+
+
   "message.magical_industry.add_mana_success": "Added 10 mana!",
   "message.magical_industry.block_rotated_facing": "Block rotated! (FACING)",
   "message.magical_industry.block_rotated_horizontal": "Block rotated! (HORIZONTAL_FACING)",
@@ -43,6 +50,9 @@
   "message.magical_industry.config_button_clicked": "Configuration button clicked!",
   "message.magical_industry.config_changed": "Configuration for side %s has been changed to %s.",
   "message.magical_industry.wrench.conduit_mode": "Set %s to %s",
+  "message.magical_industry.machine.cleared_count": "Returned %s module item(s).",
+  "message.magical_industry.machine.nothing_to_clear": "No module items to return.",
+  "message.magical_industry.machine.no_space": "No available module slot.",
 
   "direction.magical_industry.up": "Up",
   "direction.magical_industry.down": "Down",
@@ -92,6 +102,14 @@
   "tooltip.magical_industry.mana_conduit.hold_shift": "Hold SHIFT for more details.",
   "tooltip.magical_industry.not_enough_mana": "Not enough mana!",
   "tooltip.magical_industry.module.mana": "Mana Cost: %s/tick",
+  "tooltip.magical_industry.machine.cleared": "Cleared inserted component item.",
+
+  "tooltip.magical_industry.module.item_input": "Provides input slots for assembling machines.",
+  "tooltip.magical_industry.module.item_output": "Provides output slots for assembling machines.",
+  "tooltip.magical_industry.module.mana_storage": "Stores and supplies mana energy to adjacent components.",
+  "tooltip.magical_industry.machine.grid_size": "Grid contains %s components.",
+  "tooltip.magical_industry.machine.grid_entry": "• [%s] %s",
+  "tooltip.magical_industry.machine.inserted": "Component item inserted into the modular machine.",
 
 
 

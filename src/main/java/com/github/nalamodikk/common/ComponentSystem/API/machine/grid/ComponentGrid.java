@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -24,10 +25,11 @@ import java.util.function.BiConsumer;
 public class ComponentGrid {
     private final Level level;
     // Logger，用於輸出資訊與除錯訊息
+    private static final Logger LOGGER = LoggerFactory.getLogger("MagicalIndustry");
+
     // 行為對應的累積 tick 次數，用於 tickRate 調度
     private final Map<IComponentBehavior, Integer> tickCounterMap = new HashMap<>();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("MagicalIndustry");
 
     // Grid 主體：使用 BlockPos 當 Key（僅使用 X 與 Z）儲存格子模組
     private final Map<BlockPos, IGridComponent> grid = new HashMap<>();
@@ -175,49 +177,23 @@ public class ComponentGrid {
                 continue;
             }
 
-            IGridComponent oldComponent = grid.get(record.pos());
-            IGridComponent component;
-
-            if (oldComponent != null && oldComponent.getId().equals(record.id())) {
-                component = oldComponent;
-            } else {
-                component = ComponentRegistry.createComponent(record.id());
-                if (component == null) {
-                    LOGGER.warn("⚠️ 找不到對應模組: {}", record.id());
-                    continue;
-                }
+            IGridComponent component = ComponentRegistry.createComponent(record.id());
+            if (component == null) {
+                LOGGER.warn("⚠️ 找不到對應模組: {}", record.id());
+                continue;
             }
 
-            component.loadFromNBT(record.data()); // 差異更新建議在這裡做
+            component.loadFromNBT(record.data());
             newComponents.put(record.pos(), component);
         }
 
-        for (BlockPos pos : new ArrayList<>(grid.keySet())) {
-            if (!newComponents.containsKey(pos)) {
-                grid.get(pos).onRemoved(this, pos);
-                grid.remove(pos);
-            }
-        }
+        // ✅ 不做 layout signature 比對，直接 sync
+        syncTo(newComponents);
 
-        for (Map.Entry<BlockPos, IGridComponent> entry : newComponents.entrySet()) {
-            BlockPos pos = entry.getKey();
-            IGridComponent newComponent = entry.getValue();
-
-            if (!grid.containsKey(pos)) {
-                grid.put(pos, newComponent);
-                newComponent.onAdded(this, pos);
-            } else {
-                IGridComponent oldComponent = grid.get(pos);
-                if (oldComponent != newComponent && !oldComponent.getId().equals(newComponent.getId())) {
-                    oldComponent.onRemoved(this, pos);
-                    grid.put(pos, newComponent);
-                    newComponent.onAdded(this, pos);
-                }
-            }
-        }
-
-        LOGGER.info("✅ 差異載入完成（v{}）：{} 個模組", version, grid.size());
+        LOGGER.info("✅ 拼裝還原完成（v{}）：{} 個模組", version, newComponents.size());
     }
+
+
 
     public <T> T findFirstComponent(Class<T> type) {
         for (IGridComponent component : grid.values()) {
@@ -228,6 +204,77 @@ public class ComponentGrid {
         return null;
     }
 
+    public void syncTo(Map<BlockPos, IGridComponent> newComponents) {
+        // ✅ 先移除舊的元件（如果新 layout 沒有）
+        for (BlockPos pos : new ArrayList<>(grid.keySet())) {
+            if (!newComponents.containsKey(pos)) {
+                IGridComponent old = grid.get(pos);
+                old.onRemoved(this, pos);
+                grid.remove(pos);
+            }
+        }
+
+        // ✅ 再加入新元件（若不同則 clone 再放入 grid）
+        for (Map.Entry<BlockPos, IGridComponent> entry : newComponents.entrySet()) {
+            BlockPos pos = entry.getKey();
+            IGridComponent incoming = entry.getValue();
+
+            // clone 一份新的元件（確保不共用記憶體）
+            IGridComponent newComponent = ComponentRegistry.createComponent(incoming.getId());
+            if (newComponent != null) {
+                newComponent.loadFromNBT(incoming.getData().copy());
+
+                if (!grid.containsKey(pos)) {
+                    grid.put(pos, newComponent);
+                    newComponent.onAdded(this, pos);
+                } else {
+                    IGridComponent old = grid.get(pos);
+                    if (!old.getId().equals(newComponent.getId())) {
+                        old.onRemoved(this, pos);
+                        grid.put(pos, newComponent);
+                        newComponent.onAdded(this, pos);
+                    }
+                }
+            }
+        }
+
+        // ✅ 重置所有行為的 tick 狀態（避免殘留）
+        tickCounterMap.clear();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public <T extends IComponentBehavior> T findBehavior(Class<T> type) {
+        for (IGridComponent component : grid.values()) {
+            for (IComponentBehavior behavior : component.getBehaviors()) {
+                if (type.isInstance(behavior)) {
+                    return (T) behavior;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void clear() {
+        for (Map.Entry<BlockPos, IGridComponent> entry : grid.entrySet()) {
+            entry.getValue().onRemoved(this, entry.getKey());
+        }
+        grid.clear();
+        tickCounterMap.clear();
+    }
+
+    private static int computeGridSignature(Map<BlockPos, IGridComponent> layout) {
+        List<String> entries = layout.entrySet().stream()
+                .map(e -> e.getKey().getX() + "," + e.getKey().getY() + "," + e.getKey().getZ() + "@" + e.getValue().getId())
+                .sorted()
+                .toList();
+
+        String joined = String.join(",", entries);
+        int hash = joined.hashCode();
+
+        LOGGER.debug("🔍 Layout Signature = {} | entries = {}", hash, joined);
+        return hash;
+    }
 
     /**
      * 取得所有模組位置與資料（給外部用）

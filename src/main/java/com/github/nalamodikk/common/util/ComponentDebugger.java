@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,14 +21,13 @@ public class ComponentDebugger {
     public static void exportToFile(ComponentGrid grid, MinecraftServer server, String fileName) {
         JsonObject data = exportGridAsJson(grid);
         try {
-            FileWriter writer = new FileWriter(server.getWorldPath(null).resolve(fileName).toFile());
+            FileWriter writer = new FileWriter(server.getWorldPath(LevelResource.ROOT).resolve(fileName).toFile());
             GSON.toJson(data, writer);
             writer.close();
         } catch (IOException e) {
-            throw new RuntimeException("寫入拼裝資料到 " + fileName + " 時失敗", e);
+            throw new RuntimeException("Failed to write assembly data to " + fileName, e);
         }
     }
-
     /**
      * 將 ComponentGrid 中的所有元件匯出為 JSON 結構
      */

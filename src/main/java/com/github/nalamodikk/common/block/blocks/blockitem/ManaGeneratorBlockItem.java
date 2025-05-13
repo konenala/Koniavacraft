@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.blocks.blockitem;
 
-import com.github.nalamodikk.client.renderer.ManaGeneratorBlockItemRenderer;
+import com.github.nalamodikk.client.renderer.managen.ManaGeneratorBlockItemRenderer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;

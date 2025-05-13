@@ -1,23 +1,23 @@
-package com.github.nalamodikk.client.model;
+package com.github.nalamodikk.client.model.managen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.blocks.blockitem.ManaGeneratorBlockItem;
+import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
-public class ManaGeneratorBlockItemModel extends GeoModel<ManaGeneratorBlockItem> {
+public class ManaGeneratorModel extends GeoModel<ManaGeneratorBlockEntity> {
     @Override
-    public ResourceLocation getModelResource(ManaGeneratorBlockItem animatable) {
+    public ResourceLocation getModelResource(ManaGeneratorBlockEntity animatable) {
         return new ResourceLocation(MagicalIndustryMod.MOD_ID, "geo/mana_generator.geo.json");
     }
 
     @Override
-    public ResourceLocation getTextureResource(ManaGeneratorBlockItem animatable) {
+    public ResourceLocation getTextureResource(ManaGeneratorBlockEntity animatable) {
         return new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/block/mana_generator_texture.png");
     }
 
     @Override
-    public ResourceLocation getAnimationResource(ManaGeneratorBlockItem animatable) {
+    public ResourceLocation getAnimationResource(ManaGeneratorBlockEntity animatable) {
         return new ResourceLocation(MagicalIndustryMod.MOD_ID, "animations/mana_generator.animation.json");
     }
 }

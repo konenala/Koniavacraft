@@ -2,8 +2,10 @@ package com.github.nalamodikk.common.ComponentSystem.API.machine.behavior;
 
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IControllableBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.ComponentSystem.recipe.component.AssemblyRecipe;
@@ -11,16 +13,23 @@ import com.github.nalamodikk.common.ComponentSystem.recipe.component.AssemblyRec
 import com.github.nalamodikk.common.util.GridIOHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CraftingBehavior implements IComponentBehavior {
+public class CraftingBehavior implements IComponentBehavior, IControllableBehavior {
     private int cooldown = 0;
+    private boolean enabled = true; // 預設啟用
 
     @Override
     public void onTick(ComponentContext context) {
+        Level level = context.getLevel();
+        if (level == null || level.isClientSide) return;
+
+        if (!enabled) return;
+
         if (cooldown > 0) {
             cooldown--;
             return;
@@ -81,7 +90,7 @@ public class CraftingBehavior implements IComponentBehavior {
         boolean inserted = GridIOHelper.insertIntoAnyOutputSlot(context.grid(), result);
         if (inserted) {
             cooldown = recipe.getCooldownTicks();
-            System.out.println("[CraftingBehavior] Produced: " + result.getItem().getDescriptionId() + ", Mana: " + manaRequired);
+            MagicalIndustryMod.LOGGER.info("✅ Crafted {}, Mana used: {}", result.getDisplayName().getString(), manaRequired);
         }
     }
 
@@ -92,16 +101,30 @@ public class CraftingBehavior implements IComponentBehavior {
 
     @Override
     public void init(CompoundTag data) {
-        // 可用來設定預設 recipe ID 之類的功能（未使用）
+        this.enabled = data.getBoolean("enabled"); // 如果沒有也預設 true
     }
+
 
     @Override
     public void saveToNBT(CompoundTag tag) {
+        tag.putBoolean("enabled", enabled);
         tag.putInt("cooldown", cooldown);
     }
 
     @Override
     public void loadFromNBT(CompoundTag tag) {
+        this.enabled = tag.contains("enabled") ? tag.getBoolean("enabled") : true;
         cooldown = tag.getInt("cooldown");
     }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
 }

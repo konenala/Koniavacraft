@@ -21,7 +21,13 @@ public class ComponentRegistry {
     public static IGridComponent createComponent(ResourceLocation id) {
         Supplier<IGridComponent> supplier = JAVA_REGISTRY.get(id);
         if (supplier != null) {
-            MagicalIndustryMod.LOGGER.debug("🔧 從 Java 建立元件：{}", id);
+            // 取得呼叫來源（呼叫 createComponent 的上一層）
+            StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+            String caller = (stack.length > 2) ? stack[2].getClassName() + "#" + stack[2].getMethodName() : "unknown";
+
+            MagicalIndustryMod.LOGGER.debug("🔧 從 Java 建立元件：{} | 來源: {}", id, caller);
+
+
             return supplier.get();
         }
 

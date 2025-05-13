@@ -3,36 +3,33 @@ package com.github.nalamodikk.common.ComponentSystem.register.component;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.behavior.ManaProducerBehavior;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ComponentBehaviorRegistry {
 
-    private static final Map<String, IComponentBehavior> BEHAVIORS = new HashMap<>();
+    // 原始版本是儲存行為實例，我們改為儲存 "tag → 行為" 的工廠函式
+    private static final Map<String, Function<CompoundTag, IComponentBehavior>> FACTORIES = new HashMap<>();
 
-    public static void register(String id, IComponentBehavior behavior) {
-        if (BEHAVIORS.containsKey(id)) {
+    public static void register(String id, Function<CompoundTag, IComponentBehavior> factory) {
+        if (FACTORIES.containsKey(id)) {
             MagicalIndustryMod.LOGGER.warn("⚠️ 行為 ID '{}' 已被註冊，將覆蓋原本行為", id);
         }
-        BEHAVIORS.put(id, behavior);
+        FACTORIES.put(id, factory);
     }
 
-    public static IComponentBehavior get(String id) {
-        IComponentBehavior behavior = BEHAVIORS.get(id);
-        if (behavior == null) {
-            throw new IllegalArgumentException("❌ 找不到行為: " + id);
-        }
-        return behavior;
+    public static IComponentBehavior create(String id, CompoundTag data) {
+        Function<CompoundTag, IComponentBehavior> factory = FACTORIES.get(id);
+        if (factory == null) throw new IllegalArgumentException("❌ 找不到行為工廠: " + id);
+        return factory.apply(data);
     }
 
-    public static IComponentBehavior getOrNull(String id) {
-        return BEHAVIORS.get(id);
-    }
 
-    public static boolean has(String id) {
-        return BEHAVIORS.containsKey(id);
-    }
+
+
 
 
 

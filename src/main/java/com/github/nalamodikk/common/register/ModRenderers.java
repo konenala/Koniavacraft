@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.client.renderer.ManaGeneratorRenderer;
+import com.github.nalamodikk.client.renderer.managen.ManaGeneratorRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 
 public class ModRenderers {

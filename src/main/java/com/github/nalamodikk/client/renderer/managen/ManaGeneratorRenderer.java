@@ -1,13 +1,10 @@
-package com.github.nalamodikk.client.renderer;
+package com.github.nalamodikk.client.renderer.managen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.client.model.ManaGeneratorModel;
+import com.github.nalamodikk.client.model.managen.ManaGeneratorModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockState;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 
 public class ManaGeneratorRenderer extends GeoBlockRenderer<ManaGeneratorBlockEntity> {

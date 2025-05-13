@@ -29,6 +29,9 @@ public class ManaProducerBehavior implements IComponentBehavior {
 
     @Override
     public void onTick(ComponentContext context) {
+        Level level = context.getLevel();
+        if (level == null || level.isClientSide) return;
+
         AtomicInteger manaToDistribute = new AtomicInteger(this.manaPerTick);
 
         MagicalIndustryMod.LOGGER.debug("🔍 Tick start, trying to find neighbors...");
@@ -44,7 +47,6 @@ public class ManaProducerBehavior implements IComponentBehavior {
         });
 
         // ✅ 粒子效果：只在伺服器世界 + 有指定粒子 ID 才執行
-        Level level = context.getLevel();
         if (!level.isClientSide && particleId != null && level instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(
                     ParticleUtil.getById(particleId),  // ← 用你 JSON 設定的粒子名稱

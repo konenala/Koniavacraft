@@ -11,6 +11,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
+import static com.github.nalamodikk.common.item.ModuleItem.createModuleItem;
+
 public class ModCreativeModTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB , MagicalIndustryMod.MOD_ID);
@@ -60,8 +62,7 @@ public class ModCreativeModTabs {
                     .title(Component.translatable("creativetab.magical_industry_modules"))
                             .displayItems((parameters, output) -> {
                                 ComponentRegistry.getAllComponentIds().forEach(componentId -> {
-                                    ItemStack stack = new ItemStack(ModItems.MODULE_ITEM.get());
-                                    stack.getOrCreateTag().putString(ModuleItem.KEY_COMPONENT_ID, componentId.toString());
+                                    ItemStack stack = createModuleItem(componentId); // ✅ 改這裡
                                     output.accept(stack);
                                 });
                             })

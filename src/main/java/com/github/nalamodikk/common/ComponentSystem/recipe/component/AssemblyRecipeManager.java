@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -11,6 +12,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.io.InputStreamReader;
 import java.util.*;
@@ -19,6 +21,7 @@ public class AssemblyRecipeManager extends SimplePreparableReloadListener<Map<Re
     private static final Map<ResourceLocation, AssemblyRecipe> RECIPES = new HashMap<>();
     public static final AssemblyRecipeManager INSTANCE = new AssemblyRecipeManager();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     private AssemblyRecipeManager() {}
 
@@ -33,7 +36,7 @@ public class AssemblyRecipeManager extends SimplePreparableReloadListener<Map<Re
                 ResourceLocation id = new ResourceLocation(location.getNamespace(), location.getPath().substring(prefix.length()));
                 map.put(id, json);
             } catch (Exception e) {
-                MagicalIndustryMod.LOGGER.error("❌ Failed to read assembly recipe JSON: {}", location, e);
+                LOGGER.error("❌ Failed to read assembly recipe JSON: {}", location, e);
             }
         });
 
@@ -48,11 +51,11 @@ public class AssemblyRecipeManager extends SimplePreparableReloadListener<Map<Re
                 AssemblyRecipe recipe = AssemblyRecipe.fromJson(id, json);
                 RECIPES.put(id, recipe);
             } catch (Exception e) {
-                MagicalIndustryMod.LOGGER.error("❌ Failed to parse recipe {}: {}", id, e.getMessage());
+                LOGGER.error("❌ Failed to parse recipe {}: {}", id, e.getMessage());
             }
         });
 
-        MagicalIndustryMod.LOGGER.info("✅ Loaded {} assembly recipes", RECIPES.size());
+        LOGGER.info("✅ Loaded {} assembly recipes", RECIPES.size());
     }
 
     public static Collection<AssemblyRecipe> getAllRecipes() {

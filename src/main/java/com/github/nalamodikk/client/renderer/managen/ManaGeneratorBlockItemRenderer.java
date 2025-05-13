@@ -1,6 +1,6 @@
-package com.github.nalamodikk.client.renderer;
+package com.github.nalamodikk.client.renderer.managen;
 
-import com.github.nalamodikk.client.model.ManaGeneratorBlockItemModel;
+import com.github.nalamodikk.client.model.managen.ManaGeneratorBlockItemModel;
 import com.github.nalamodikk.common.block.blocks.blockitem.ManaGeneratorBlockItem;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 

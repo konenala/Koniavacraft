@@ -15,7 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 
 public class ManaStorageComponent implements IGridComponent, IHasMana {
-    private final ManaStorage storage = new ManaStorage(1000); // 預設容量：1000 mana
+    private final ManaStorage storage = new ManaStorage(1000); // 預設容量
+    private CompoundTag behaviorData = new CompoundTag(); // ⭐ 來自物品的行為設定
 
     @Override
     public ResourceLocation getId() {
@@ -25,6 +26,7 @@ public class ManaStorageComponent implements IGridComponent, IHasMana {
     @Override
     public void saveToNBT(CompoundTag tag) {
         tag.put("mana", storage.serializeNBT());
+        tag.put("behavior", behaviorData); // ⭐ 一併儲存行為參數
     }
 
     @Override
@@ -32,17 +34,22 @@ public class ManaStorageComponent implements IGridComponent, IHasMana {
         if (tag.contains("mana")) {
             storage.deserializeNBT(tag.getCompound("mana"));
         }
-    }
-    @Override
-    public List<IComponentBehavior> getBehaviors() {
-        return List.of(ComponentBehaviorRegistry.get("mana_producer")); // 要先註冊喔
+        if (tag.contains("behavior")) {
+            behaviorData = tag.getCompound("behavior"); // ⭐ 還原來自物品的資料
+        }
     }
 
     @Override
     public CompoundTag getData() {
-        return storage.serializeNBT(); // 回傳目前儲存的 mana 狀態
+        CompoundTag data = storage.serializeNBT();
+        data.put("behavior", behaviorData.copy()); // ⭐ 提供給 Grid 儲存
+        return data;
     }
 
+    @Override
+    public List<IComponentBehavior> getBehaviors() {
+        return List.of(ComponentBehaviorRegistry.create("mana_producer", behaviorData.copy()));
+    }
 
     @Override
     public IUnifiedManaHandler getManaStorage() {
@@ -54,4 +61,9 @@ public class ManaStorageComponent implements IGridComponent, IHasMana {
 
     @Override
     public void onRemoved(ComponentGrid grid, BlockPos pos) {}
+
+    /** ⭐ 由 ModuleItem 呼叫，提供初始值用 */
+    public void setBehaviorData(CompoundTag behaviorData) {
+        this.behaviorData = behaviorData;
+    }
 }

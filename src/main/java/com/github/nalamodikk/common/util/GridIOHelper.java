@@ -3,6 +3,8 @@ package com.github.nalamodikk.common.util;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ItemInputComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ItemOutputComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -10,6 +12,21 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class GridIOHelper {
+    public static void readOrInitFromNBT(ComponentGrid grid, CompoundTag tag) {
+        if (tag.contains("grid", Tag.TAG_COMPOUND)) {
+            grid.loadFromNBT(tag.getCompound("grid"));
+        } else {
+            grid.clear(); // ✅ 若你有清空方法，這樣可以重設拼裝狀態
+        }
+    }
+
+    public static void writeToNBTIfPresent(ComponentGrid grid, CompoundTag tag) {
+        CompoundTag gridTag = new CompoundTag();
+        grid.saveToNBT(gridTag);
+        if (!gridTag.isEmpty()) {
+            tag.put("grid", gridTag);
+        }
+    }
 
     /**
      * 取得 Grid 中所有 ItemInputComponent（可選條件過濾）

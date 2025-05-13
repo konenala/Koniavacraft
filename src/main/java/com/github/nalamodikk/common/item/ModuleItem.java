@@ -1,11 +1,15 @@
 package com.github.nalamodikk.common.item;
 
+import com.github.nalamodikk.client.renderer.item.DynamicModuleItemRenderer;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.component.ManaStorageComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.register.ModItems;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.util.helpers.ComponentNameHelper;
+import com.github.nalamodikk.common.util.helpers.ModuleItemHelper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -17,37 +21,40 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class ModuleItem extends Item {
 
     public static final String KEY_COMPONENT_ID = "component_id";
     public static final String KEY_COMPONENTS = "components";
+    private static final Map<CompoundTag, List<IGridComponent>> COMPONENT_CACHE = new HashMap<>();
 
     public ModuleItem(Properties properties) {
         super(properties);
     }
 
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return new DynamicModuleItemRenderer();
+            }
+        });
+    }
+
     @Nonnull
     public static List<IGridComponent> getComponents(ItemStack stack) {
-        List<IGridComponent> components = new ArrayList<>();
-        CompoundTag tag = stack.getTag();
-        if (tag == null || !tag.contains(KEY_COMPONENTS)) return components;
-
-        ListTag list = tag.getList(KEY_COMPONENTS, Tag.TAG_STRING);
-        for (int i = 0; i < list.size(); i++) {
-            ResourceLocation id = ResourceLocation.tryParse(list.getString(i));
-            if (id != null) {
-                IGridComponent component = ComponentRegistry.createComponent(id);
-                if (component != null) components.add(component);
-            }
-        }
-
-        return components;
+        return ModuleItemHelper.getComponents(stack); // ✅ 呼叫真正快取邏輯
     }
 
     @Override
@@ -85,16 +92,10 @@ public class ModuleItem extends Item {
 
     @Nullable
     public static IGridComponent getComponentFromItem(ItemStack stack) {
-        ResourceLocation componentId = getComponentId(stack);
-        if (componentId == null) return null;
-
-        IGridComponent component = ComponentRegistry.createComponent(componentId);
-        if (component == null) {
-            MagicalIndustryMod.LOGGER.warn("⚠️ 無法從 ModuleItem 找到元件建構器: {}", componentId);
-        }
-
-        return component;
+        List<IGridComponent> list = ModuleItemHelper.getComponents(stack);
+        return list.isEmpty() ? null : list.get(0); // ✅ 使用快取並 clone
     }
+
 
 
     public static ItemStack createModuleItem(ResourceLocation... ids) {
@@ -103,7 +104,10 @@ public class ModuleItem extends Item {
         for (ResourceLocation id : ids) {
             list.add(StringTag.valueOf(id.toString()));
         }
+
         stack.getOrCreateTag().put(KEY_COMPONENTS, list);
+        ModuleItemHelper.normalizeStackNBT(stack);
+
         return stack;
     }
 
