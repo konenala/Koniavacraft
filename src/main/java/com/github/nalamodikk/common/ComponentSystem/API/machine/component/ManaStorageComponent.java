@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.ComponentSystem.API.machine.component;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.BaseGridComponent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
@@ -14,7 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public class ManaStorageComponent implements IGridComponent, IHasMana {
+public class ManaStorageComponent  extends BaseGridComponent implements IGridComponent, IHasMana {
     private final ManaStorage storage = new ManaStorage(1000); // 預設容量
     private CompoundTag behaviorData = new CompoundTag(); // ⭐ 來自物品的行為設定
 
@@ -41,10 +42,12 @@ public class ManaStorageComponent implements IGridComponent, IHasMana {
 
     @Override
     public CompoundTag getData() {
-        CompoundTag data = storage.serializeNBT();
-        data.put("behavior", behaviorData.copy()); // ⭐ 提供給 Grid 儲存
-        return data;
+        // ❗ 只返回物品初始時的 NBT，而不是 storage 現況
+        CompoundTag tag = new CompoundTag();
+        tag.put("behavior", behaviorData.copy()); // ⭐ 一定要 copy，否則會交叉污染
+        return tag;
     }
+
 
     @Override
     public List<IComponentBehavior> getBehaviors() {

@@ -22,11 +22,18 @@ import java.util.*;
 public class ModularMachineBlockEntity extends BlockEntity {
     private ComponentGrid componentGrid;
     private final int ItemStackHandlerSize = 25;
-    private final ItemStackHandler itemHandler = new ItemStackHandler(ItemStackHandlerSize); // 玩家放模組物品
+    private final ItemStackHandler itemHandler = new ItemStackHandler(ItemStackHandlerSize) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            super.onContentsChanged(slot);
+            needRebuild = true; // 每次玩家放東西就要求下次 tick 重建
+        }
+    };
     private int lastHash = -1;
     private  final Deque<MachineSnapshot> history = new ArrayDeque<>();
     private int lastLayoutHash = -1;
     public static final Logger LOGGER = LogUtils.getLogger();
+    private boolean needRebuild = true;
 
     public ModularMachineBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MODULAR_MACHINE_BE.get(), pos, state);
@@ -48,12 +55,20 @@ public class ModularMachineBlockEntity extends BlockEntity {
         }
 
         int width = GridLayoutHelper.getRecommendedWidth(itemHandler);
-        Map<BlockPos, IGridComponent> newLayout = GridLayoutHelper.buildFlatLayout(components, width);
+        Map<BlockPos, IGridComponent> newLayout = new HashMap<>();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+        for (int i = 0; i < components.size(); i++) {
+            int x = i % width;
+            int z = i / width;
+            pos.set(x, 0, z);
+            newLayout.put(pos.immutable(), components.get(i));
+        }
 
         // ✅ 這段不能少，否則每次都會重建
         int layoutSignature = computeGridSignature(newLayout);
         if (layoutSignature != lastLayoutHash) {
-            LOGGER.info("【rebuildGridFromItemHandler】🔁 Layout changed! Signature = {}", layoutSignature);
+            LOGGER.debug("🔁 Layout changed! Signature = {}", layoutSignature);
             componentGrid.syncTo(newLayout);
             lastLayoutHash = layoutSignature;
         }
@@ -118,49 +133,34 @@ public class ModularMachineBlockEntity extends BlockEntity {
         return copy;
     }
 
-
     public void tick() {
         if (level == null || level.isClientSide) return;
 
-        Map<BlockPos, IGridComponent> newLayout = new HashMap<>();
-        int z = 0;
-
-        for (int i = 0; i < itemHandler.getSlots(); i++) {
-            ItemStack stack = itemHandler.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
-
-            for (IGridComponent component : ModuleItemHelper.getComponentsRaw(stack)) {
-                newLayout.put(new BlockPos(0, 0, z++), component);
-            }
+        if (needRebuild) {
+            rebuildGridFromItemHandler(); // 執行拼裝比對 + sync
+            needRebuild = false;
         }
 
-        int layoutSignature = computeGridSignature(newLayout); // ✅ 關鍵判斷點
-        if (layoutSignature != lastLayoutHash) {
-            LOGGER.info("【public void tick 】🔁 Layout changed! Signature = {}", layoutSignature);
-
-            componentGrid.syncTo(newLayout);                    // ✅ 只在 layout 真正變動時 sync
-            lastLayoutHash = layoutSignature;
-        }
-
-        componentGrid.tick();
+        componentGrid.tick(); // 正常行為執行
     }
+
 
 
 
 
     private static int computeGridSignature(Map<BlockPos, IGridComponent> layout) {
-        List<String> entries = layout.entrySet().stream()
-                .map(e -> e.getKey().getX() + "," + e.getKey().getY() + "," + e.getKey().getZ() + "@" + e.getValue().getId())
-                .sorted()
+        List<String> sortedEntries = layout.entrySet().stream()
+                .sorted(Comparator.comparingInt((Map.Entry<BlockPos, IGridComponent> e) -> e.getKey().getY())
+                        .thenComparingInt(e -> e.getKey().getX())
+                        .thenComparingInt(e -> e.getKey().getZ()))
+                .map(e -> e.getKey().getX() + "," + e.getKey().getY() + "," + e.getKey().getZ() + "@" + e.getValue().getId().toString())
                 .toList();
 
-        String joined = String.join(",", entries);
-        int hash = joined.hashCode();
+        String signatureString = String.join("|", sortedEntries);
 
-
-//        LOGGER.debug("🔍 Layout Signature = {} | entries = {}", hash, joined);
-        return hash;
+        return signatureString.hashCode();
     }
+
 
 
 
@@ -187,18 +187,27 @@ public class ModularMachineBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("items", itemHandler.serializeNBT());
+        tag.put("grid", componentGrid.serializeNBT());
+
         GridIOHelper.writeToNBTIfPresent(componentGrid, tag);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains("items")) {
-            itemHandler.deserializeNBT(tag.getCompound("items")); // ✅ 還原模組欄位
-        }
-        GridIOHelper.readOrInitFromNBT(componentGrid, tag);
 
+        if (tag.contains("items")) {
+            itemHandler.deserializeNBT(tag.getCompound("items"));
+        }
+
+        if (tag.contains("grid")) {
+            componentGrid.deserializeNBT(tag.getCompound("grid")); // ✅ 還原所有行為的內部狀態
+        }
+
+        this.rebuildGridFromItemHandler(); // 拼裝 layout 對照更新
     }
+
+
 
     private static class MachineSnapshot {
         final Map<BlockPos, IGridComponent> gridState;

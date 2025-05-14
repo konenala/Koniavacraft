@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.ComponentSystem.API.machine.component;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.BaseGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.MagicalIndustryMod;
@@ -12,8 +13,9 @@ import net.minecraftforge.items.ItemStackHandler;
 /**
  * 可拼裝的輸入模組，每放一個升級模組可增加輸入槽位。
  */
-public class ItemInputComponent implements IGridComponent {
+public class ItemInputComponent extends BaseGridComponent implements IGridComponent {
     private final ItemStackHandler itemHandler = new ItemStackHandler(1); // 預設一格
+    private CompoundTag behaviorData = new CompoundTag(); // ⬅️ 來自物品的設定
 
     @Override
     public ResourceLocation getId() {
@@ -38,10 +40,14 @@ public class ItemInputComponent implements IGridComponent {
     public void onRemoved(ComponentGrid grid, BlockPos pos) {
         // 目前不需要釋放什麼東西，保留擴充點
     }
+    public void setBehaviorData(CompoundTag behaviorData) {
+        this.behaviorData = behaviorData;
+    }
 
     @Override
     public void saveToNBT(CompoundTag tag) {
         tag.put("items", itemHandler.serializeNBT());
+        tag.put("behavior", behaviorData);
     }
 
     @Override
@@ -49,11 +55,16 @@ public class ItemInputComponent implements IGridComponent {
         if (tag.contains("items")) {
             itemHandler.deserializeNBT(tag.getCompound("items"));
         }
+        if (tag.contains("behavior")) {
+            behaviorData = tag.getCompound("behavior");
+        }
     }
 
     @Override
     public CompoundTag getData() {
-        return itemHandler.serializeNBT();
+        CompoundTag tag = new CompoundTag();
+        tag.put("behavior", behaviorData.copy()); // ⭐ 記得要 copy，避免交叉污染
+        return tag;
     }
 
     /**

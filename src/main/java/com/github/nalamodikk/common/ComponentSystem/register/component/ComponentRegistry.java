@@ -25,7 +25,14 @@ public class ComponentRegistry {
             StackTraceElement[] stack = Thread.currentThread().getStackTrace();
             String caller = (stack.length > 2) ? stack[2].getClassName() + "#" + stack[2].getMethodName() : "unknown";
 
-            MagicalIndustryMod.LOGGER.debug("🔧 從 Java 建立元件：{} | 來源: {}", id, caller);
+            boolean noisy =
+                    !caller.contains("cloneComponentList")  // 過濾 clone
+                            && !caller.contains("getComponents")       // 過濾快取讀取
+                            && !caller.contains("getComponentsRaw");    // 過濾手動取用
+
+            if (noisy) {
+                MagicalIndustryMod.LOGGER.debug("🔧 從 Java 建立元件：{} | 來源: {}", id, caller);
+            }
 
 
             return supplier.get();

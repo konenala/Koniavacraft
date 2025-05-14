@@ -14,12 +14,12 @@ import java.util.List;
  */
 public class AssemblyRecipe {
     private final ResourceLocation id;
-    private final List<Ingredient> inputItems;
     private final ItemStack output;
     private final int manaCost;
     private final int cooldownTicks;
+    private final List<CountedIngredient> inputItems;
 
-    public AssemblyRecipe(ResourceLocation id, List<Ingredient> inputItems, ItemStack output, int manaCost, int cooldownTicks) {
+    public AssemblyRecipe(ResourceLocation id, List<CountedIngredient> inputItems, ItemStack output, int manaCost, int cooldownTicks) {
         this.id = id;
         this.inputItems = inputItems;
         this.output = output;
@@ -31,7 +31,7 @@ public class AssemblyRecipe {
         return id;
     }
 
-    public List<Ingredient> getInputItems() {
+    public List<CountedIngredient> getInputItems() {
         return inputItems;
     }
 
@@ -51,10 +51,10 @@ public class AssemblyRecipe {
      * 工具函式：讀 JSON 建構配方
      */
     public static AssemblyRecipe fromJson(ResourceLocation id, JsonObject json) {
-        List<Ingredient> inputs = new ArrayList<>();
+        List<CountedIngredient> inputs = new ArrayList<>();
         JsonArray inputArray = json.getAsJsonArray("inputs");
         for (int i = 0; i < inputArray.size(); i++) {
-            inputs.add(Ingredient.fromJson(inputArray.get(i)));
+            inputs.add(CountedIngredient.fromJson(inputArray.get(i)));
         }
 
         ItemStack output = ItemStack.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json.get("output"))
@@ -66,4 +66,5 @@ public class AssemblyRecipe {
 
         return new AssemblyRecipe(id, inputs, output, mana, cooldown);
     }
+
 }

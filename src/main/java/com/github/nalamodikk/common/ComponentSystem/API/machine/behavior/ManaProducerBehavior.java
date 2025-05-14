@@ -7,6 +7,7 @@ import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.util.ParticleUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
@@ -56,6 +57,10 @@ public class ManaProducerBehavior implements IComponentBehavior {
                     2, 0.1, 0.1, 0.1, 0.0
             );
         }
+    }
+    @Override
+    public ResourceLocation getId() {
+        return new ResourceLocation("magical_industry", "mana_producer");
     }
 
 

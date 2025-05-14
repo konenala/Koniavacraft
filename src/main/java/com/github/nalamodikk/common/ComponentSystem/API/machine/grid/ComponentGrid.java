@@ -7,17 +7,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * ComponentGrid：魔法工業裝置的拼裝核心，用於管理所有已安裝模組的位置與邏輯。
@@ -29,16 +29,27 @@ public class ComponentGrid {
     private final Map<BlockPos, ComponentContext> contextMap = new HashMap<>();
     private final Map<BlockPos, ComponentContext> contextCache = new HashMap<>();
     private final Map<String, IGridComponent> componentIdMap = new HashMap<>();
-    // 行為對應的累積 tick 次數，用於 tickRate 調度
-    private final Map<IComponentBehavior, Integer> tickCounterMap = new HashMap<>();
+    // 改為記錄每個位置（BlockPos）上每個行為 id 的 tick 計數
     // Grid 主體：使用 BlockPos 當 Key（僅使用 X 與 Z）儲存格子模組
     private final Map<BlockPos, IGridComponent> grid = new HashMap<>();
-
+    private int lastLayoutHash = 0;
+    private static String lastSignatureString = null;
+    private static final Map<Map<BlockPos, IGridComponent>, Integer> SIGNATURE_CACHE = new WeakHashMap<>();
 
     public ComponentGrid(Level level) {
         this.level = level;
         // 其他初始化
     }
+
+    public void addComponent(BlockPos pos, IGridComponent component) {
+        grid.put(pos, component);
+        component.onAdded(this, pos);
+
+        ComponentContext context = new ComponentContext(this, pos, component);
+        contextMap.put(pos, context);
+        contextCache.put(pos, context); // optional 快取，如果你有用的話
+    }
+
     /**
      * 放入模組到指定位置（x, y）
      */
@@ -48,33 +59,37 @@ public class ComponentGrid {
         component.onAdded(this, pos);
     }
 
+    public void trySyncTo(Map<BlockPos, IGridComponent> newLayout) {
+        int currentHash = computeGridSignature(newLayout);
+        if (currentHash == lastLayoutHash) return;
+
+        LOGGER.debug("【ComponentGrid】🔁 Layout changed! Signature = {}", currentHash);
+        syncTo(newLayout);
+        lastLayoutHash = currentHash;
+    }
 
     public void tick() {
         for (Map.Entry<BlockPos, IGridComponent> entry : grid.entrySet()) {
             BlockPos pos = entry.getKey();
             IGridComponent component = entry.getValue();
 
-            // 每個元件有一個上下文物件
-            ComponentContext context = new ComponentContext(this, pos, component);
+            // 🧠 使用快取的 ComponentContext
+            ComponentContext context = contextCache.computeIfAbsent(pos, p -> new ComponentContext(this, p, component));
 
             for (IComponentBehavior behavior : component.getBehaviors()) {
+                String behaviorId = behavior.getId().toString(); // 對每個行為要求必須實作 getId()
                 int tickRate = behavior.getTickRate();
+                if (tickRate <= 0) continue;
 
-                if (tickRate <= 0) continue; // ❌ 不允許 tickRate 小於 1（可定義 -1 為 passive）
-
-                int currentTick = tickCounterMap.getOrDefault(behavior, 0) + 1;
-
-                // ✅ 當 tick 數達到 tickRate 就執行 onTick()
-                if (currentTick >= tickRate) {
+                // 取得此位置的所有 tick 記錄
+                if (context.shouldTick(behaviorId, tickRate)) {
                     behavior.onTick(context);
-                    currentTick = 0; // 重置計數器
                 }
 
-                // 更新行為計數
-                tickCounterMap.put(behavior, currentTick);
             }
         }
     }
+
 
     public Level getLevel() {
         return this.level;
@@ -105,15 +120,95 @@ public class ComponentGrid {
     public void removeComponent(BlockPos pos) {
         IGridComponent component = grid.remove(pos);
         if (component != null) {
-            component.onRemoved(this, pos); // ← 繼續保留你的版本設計
-            for (IComponentBehavior behavior : component.getBehaviors()) {
-                tickCounterMap.remove(behavior);
+            component.onRemoved(this, pos);
+            ComponentContext context = contextMap.remove(pos);
+            if (context != null) {
+                context.resetTickStates(); // 🧹 清除內部 tick 記憶
             }
-            contextMap.remove(pos);
             contextCache.remove(pos);
+
         }
     }
 
+    /**
+     * 保存模塊NBT
+     * @return
+     */
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
+
+        for (Map.Entry<BlockPos, IGridComponent> entry : grid.entrySet()) {
+            CompoundTag componentTag = new CompoundTag();
+            componentTag.put("pos", NbtUtils.writeBlockPos(entry.getKey()));
+            componentTag.putString("id", entry.getValue().getId().toString());
+            componentTag.put("data", entry.getValue().getData().copy());
+            list.add(componentTag);
+        }
+
+        tag.put("components", list);
+        return tag;
+    }
+
+    public void deserializeNBT(CompoundTag tag) {
+        this.clear();
+
+        if (tag.contains("components", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("components", Tag.TAG_COMPOUND);
+
+            for (Tag t : list) {
+                CompoundTag componentTag = (CompoundTag) t;
+                BlockPos pos = NbtUtils.readBlockPos(componentTag.getCompound("pos"));
+                ResourceLocation id = new ResourceLocation(componentTag.getString("id"));
+                CompoundTag data = componentTag.getCompound("data");
+
+                IGridComponent component = ComponentRegistry.createComponent(id);
+                if (component != null) {
+                    component.loadFromNBT(data);
+                    this.addComponent(pos, component); // 呼叫 onAdded, 建立 context
+                }
+            }
+        }
+    }
+
+
+
+    public static int computeGridSignature(Map<BlockPos, IGridComponent> layout) {
+        List<String> sortedEntries = layout.entrySet().stream()
+                .sorted(Comparator.comparingInt((Map.Entry<BlockPos, IGridComponent> e) -> e.getKey().getY())
+                        .thenComparingInt(e -> e.getKey().getX())
+                        .thenComparingInt(e -> e.getKey().getZ()))
+                .map(e -> e.getKey().getX() + "," + e.getKey().getY() + "," + e.getKey().getZ() + "@" + e.getValue().getSignatureString())
+                .toList();
+
+        String signatureString = String.join("|", sortedEntries);
+
+
+        if (lastSignatureString != null && !lastSignatureString.equals(signatureString)) {
+            LOGGER.debug("[Signature DEBUG] Layout changed!");
+            String[] last = lastSignatureString.split("\\|");
+            String[] now = signatureString.split("\\|");
+            int len = Math.max(last.length, now.length);
+            for (int i = 0; i < len; i++) {
+                String prev = (i < last.length) ? last[i] : "<none>";
+                String curr = (i < now.length) ? now[i] : "<none>";
+                if (!Objects.equals(prev, curr)) {
+                    LOGGER.debug("[Diff] {}: {} => {}", i, prev, curr);
+                }
+            }
+        }
+
+        if (!sortedEntries.isEmpty()) {
+            LOGGER.debug("[Layout Signature Debug] ---");
+            for (String s : sortedEntries) {
+                LOGGER.debug("[Layout] {}", s);
+            }
+        }
+
+
+        lastSignatureString = signatureString;
+        return signatureString.hashCode();
+    }
     /**
      * 取得指定格子的模組（可能為 null）
      */
@@ -248,9 +343,6 @@ public class ComponentGrid {
                 }
             }
         }
-        cleanupTickMap();
-        // ✅ 重置所有行為的 tick 狀態（避免殘留）
-        tickCounterMap.clear();
     }
 
 
@@ -271,30 +363,11 @@ public class ComponentGrid {
             entry.getValue().onRemoved(this, entry.getKey());
         }
         grid.clear();
-        tickCounterMap.clear();
     }
 
-    private static int computeGridSignature(Map<BlockPos, IGridComponent> layout) {
-        List<String> entries = layout.entrySet().stream()
-                .map(e -> e.getKey().getX() + "," + e.getKey().getY() + "," + e.getKey().getZ() + "@" + e.getValue().getId())
-                .sorted()
-                .toList();
 
-        String joined = String.join(",", entries);
-        int hash = joined.hashCode();
 
-        LOGGER.debug("🔍 Layout Signature = {} | entries = {}", hash, joined);
-        return hash;
-    }
 
-    // ComponentGrid.java
-    private void cleanupTickMap() {
-        tickCounterMap.keySet().removeIf(behavior ->
-                grid.values().stream()
-                        .flatMap(comp -> comp.getBehaviors().stream())
-                        .noneMatch(active -> active == behavior)
-        );
-    }
 
 
     /**

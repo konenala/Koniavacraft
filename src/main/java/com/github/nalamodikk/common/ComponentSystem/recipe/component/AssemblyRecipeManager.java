@@ -58,28 +58,44 @@ public class AssemblyRecipeManager extends SimplePreparableReloadListener<Map<Re
         LOGGER.info("✅ Loaded {} assembly recipes", RECIPES.size());
     }
 
-    public static Collection<AssemblyRecipe> getAllRecipes() {
-        return RECIPES.values();
+    public static List<AssemblyRecipe> getAllRecipes() {
+        return new ArrayList<>(RECIPES.values());
     }
+
 
     public static @Nullable AssemblyRecipe findMatchingRecipe(List<ItemStack> inputs) {
         outer:
         for (AssemblyRecipe recipe : RECIPES.values()) {
-            List<Ingredient> required = recipe.getInputItems();
-            if (required.size() != inputs.size()) continue;
+            List<CountedIngredient> required = recipe.getInputItems();
 
-            List<ItemStack> temp = new ArrayList<>(inputs);
+            // ⚠️ 配方需要的材料格數不能大於實際輸入材料格數（支援 >=，可擴展）
+            if (required.size() > inputs.size()) continue;
 
-            for (Ingredient ingredient : required) {
+            // 複製輸入避免污染原資料
+            List<ItemStack> tempInputs = new ArrayList<>();
+            for (ItemStack original : inputs) {
+                tempInputs.add(original.copy());
+            }
+
+            for (CountedIngredient counted : required) {
                 boolean matched = false;
-                for (ItemStack stack : temp) {
-                    if (ingredient.test(stack)) {
-                        temp.remove(stack);
+
+                for (ItemStack stack : tempInputs) {
+                    if (counted.getIngredient().test(stack) && stack.getCount() >= counted.getCount()) {
+                        // ✅ 消耗對應數量
+                        stack.shrink(counted.getCount());
+
+                        // 若已用光，從清單中移除
+                        if (stack.isEmpty()) {
+                            tempInputs.remove(stack);
+                        }
+
                         matched = true;
                         break;
                     }
                 }
-                if (!matched) continue outer;
+
+                if (!matched) continue outer; // 有一個對不上就跳過這個配方
             }
 
             return recipe;
@@ -87,4 +103,5 @@ public class AssemblyRecipeManager extends SimplePreparableReloadListener<Map<Re
 
         return null;
     }
+
 }

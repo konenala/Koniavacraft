@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.ComponentSystem.API.machine.component;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.BaseGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.MagicalIndustryMod;
@@ -12,7 +13,7 @@ import net.minecraftforge.items.ItemStackHandler;
 /**
  * 可拼裝的輸出模組，每放一個升級模組可增加輸出槽位。
  */
-public class ItemOutputComponent implements IGridComponent {
+public class ItemOutputComponent  extends BaseGridComponent implements IGridComponent {
     private final ItemStackHandler itemHandler = new ItemStackHandler(1); // 預設 1 格輸出槽
 
     @Override
@@ -51,8 +52,9 @@ public class ItemOutputComponent implements IGridComponent {
 
     @Override
     public CompoundTag getData() {
-        return itemHandler.serializeNBT();
+        return new CompoundTag(); // ❗ 沒有特殊參數，回傳空即可
     }
+
 
     public ItemStackHandler getItemHandler() {
         return itemHandler;

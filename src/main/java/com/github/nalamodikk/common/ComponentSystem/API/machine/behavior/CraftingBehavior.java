@@ -3,89 +3,116 @@ package com.github.nalamodikk.common.ComponentSystem.API.machine.behavior;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IControllableBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
+import com.github.nalamodikk.common.ComponentSystem.recipe.component.*;
+import com.github.nalamodikk.common.ComponentSystem.util.AssemblyRecipeUtil;
+import com.github.nalamodikk.common.ComponentSystem.util.RecipeUtils;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
-import com.github.nalamodikk.common.ComponentSystem.recipe.component.AssemblyRecipe;
-import com.github.nalamodikk.common.ComponentSystem.recipe.component.AssemblyRecipeManager;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridIOHelper;
+import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.ItemStackHandler;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CraftingBehavior implements IComponentBehavior, IControllableBehavior {
+public class CraftingBehavior implements IComponentBehavior, IControllableBehavior,ICustomRecipeProvider  {
     private int cooldown = 0;
     private boolean enabled = true; // 預設啟用
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     @Override
     public void onTick(ComponentContext context) {
         Level level = context.getLevel();
-        if (level == null || level.isClientSide) return;
-
-        if (!enabled) return;
+        if (level == null || level.isClientSide || !enabled) return;
 
         if (cooldown > 0) {
             cooldown--;
             return;
         }
 
-        // 取得所有輸入材料
+        // 收集所有輸入物品（合併自所有輸入端）
         List<ItemStack> inputs = new ArrayList<>();
-        GridIOHelper.getAllInputs(context.grid()).forEach(input -> {
-            ItemStackHandler handler = input.getItemHandler();
-            for (int i = 0; i < handler.getSlots(); i++) {
-                if (!handler.getStackInSlot(i).isEmpty()) {
-                    inputs.add(handler.getStackInSlot(i));
-                }
-            }
-        });
-
-        if (inputs.isEmpty()) return;
-
-        AssemblyRecipe recipe = AssemblyRecipeManager.findMatchingRecipe(inputs);
-        if (recipe == null) return;
-
-        // 嘗試扣 mana
-        int manaRequired = recipe.getManaCost();
-        IHasMana manaTarget = context.grid().findFirstComponent(IHasMana.class);
-        if (manaTarget.getManaStorage().extractMana(manaRequired, ManaAction.SIMULATE) < manaRequired) {
-            return;
-        }
-
-        // 準備扣除材料
         List<ItemStackHandler> inputHandlers = GridIOHelper.getAllInputs(context.grid()).stream()
-                .map(i -> i.getItemHandler()).toList();
-
-        List<ItemStack> toRemove = new ArrayList<>(inputs);
+                .map(i -> i.getItemHandler())
+                .toList();
 
         for (ItemStackHandler handler : inputHandlers) {
             for (int i = 0; i < handler.getSlots(); i++) {
                 ItemStack stack = handler.getStackInSlot(i);
-                for (int j = 0; j < toRemove.size(); j++) {
-                    ItemStack req = toRemove.get(j);
-                    if (ItemStack.isSameItemSameTags(stack, req) && stack.getCount() >= req.getCount()) {
-                        handler.extractItem(i, req.getCount(), false);
-                        toRemove.remove(j);
-                        break;
-                    }
+                if (!stack.isEmpty()) {
+                    inputs.add(stack.copy()); // ✅ 深複製避免污染
                 }
-                if (toRemove.isEmpty()) break;
             }
-            if (toRemove.isEmpty()) break;
         }
 
-        if (!toRemove.isEmpty()) return; // 原料無法完全扣除（應該不會發生）
+        if (inputs.isEmpty()) return;
 
-        // 扣 mana（正式）
+        // 嘗試尋找配方
+        List<AssemblyRecipe> recipes = generateRecipes(context.grid());
+
+
+        AssemblyRecipe recipe = AssemblyRecipeUtil.findMatchingRecipe(recipes, inputs);
+        if (recipe == null) {
+            LOGGER.debug("[CraftingBehavior] No matching recipe. Inputs = {}",
+                    inputs.stream().map(ItemStack::toString).toList());
+            return;
+        }
+
+        // 嘗試預扣 mana
+        int manaRequired = recipe.getManaCost();
+        IHasMana manaTarget = context.grid().findFirstComponent(IHasMana.class);
+        if (manaTarget == null || manaTarget.getManaStorage().extractMana(manaRequired, ManaAction.SIMULATE) < manaRequired) {
+            return;
+        }
+
+        // 材料比對與實際扣除（從所有欄位扣料）
+        for (CountedIngredient counted : recipe.getInputItems()) {
+            int remaining = counted.getCount();
+
+            for (ItemStackHandler handler : inputHandlers) {
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    ItemStack stack = handler.getStackInSlot(i);
+                    if (counted.getIngredient().test(stack)) {
+                        int remove = Math.min(stack.getCount(), remaining);
+                        handler.extractItem(i, remove, false);
+                        remaining -= remove;
+                        if (remaining <= 0) break;
+                    }
+                }
+                if (remaining <= 0) break;
+            }
+
+            if (remaining > 0) {
+                int available = counted.getCount() - remaining;
+
+                LOGGER.warn(
+                        "❌ Failed to consume required ingredient from grid [{}]: {} x{} (only found {}). Recipe = {}",
+                        context.grid().hashCode(),
+                        counted.getIngredient(),
+                        counted.getCount(),
+                        available,
+                        recipe.getId()
+                );
+                return;
+            }
+
+        }
+
+        // 扣除 mana（正式）
         manaTarget.getManaStorage().extractMana(manaRequired, ManaAction.EXECUTE);
 
-        // 丟入產物
+        // 放入產物
         ItemStack result = recipe.getOutput().copy();
         boolean inserted = GridIOHelper.insertIntoAnyOutputSlot(context.grid(), result);
         if (inserted) {
@@ -125,6 +152,31 @@ public class CraftingBehavior implements IComponentBehavior, IControllableBehavi
     @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+
+    @Deprecated
+    public static boolean matchInputs(List<ItemStack> inputs, List<Ingredient> ingredients) {
+        return RecipeUtils.legacyMatchInputs(inputs, ingredients);
+    }
+
+    @Override
+    public List<AssemblyRecipe> generateRecipes(ComponentGrid grid) {
+        List<AssemblyRecipe> result = new ArrayList<>();
+
+        for (IGridComponent component : grid.getAllComponents().values()) {
+            if (component instanceof IRecipeContributor contributor) {
+                result.addAll(contributor.getLocalRecipes(grid));
+            }
+        }
+
+        return result;
+    }
+
+
+    @Override
+    public ResourceLocation getId() {
+        return new ResourceLocation("magical_industry", "crafting");
     }
 
 }

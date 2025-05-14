@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.ComponentSystem.API.machine;
 
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * 所有模組行為都要實作這個介面
@@ -10,7 +11,10 @@ import net.minecraft.nbt.CompoundTag;
  */
 public interface IComponentBehavior {
 
-
+    default ResourceLocation getId() {
+        // 預設回傳 null（讓你 IDE 提示你應該要實作）
+        return null;
+    }
     /**
      * 每個 tick 都會對模組呼叫這個方法
      *

@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavi
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IControllableBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.behavior.CraftingBehavior;
+import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.BaseGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentContext;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentBehaviorRegistry;
@@ -14,7 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public class AutoCrafterComponent implements IGridComponent {
+public class AutoCrafterComponent extends BaseGridComponent implements IGridComponent {
+    private CompoundTag behaviorData = new CompoundTag(); // ⬅️ 設定是否啟用自動合成
 
     private boolean guiToggle = true; // 預設啟用，可由 GUI 改變
 
@@ -34,21 +36,22 @@ public class AutoCrafterComponent implements IGridComponent {
 
     @Override
     public void saveToNBT(CompoundTag tag) {
-        tag.putBoolean("enabled", guiToggle);
+        tag.put("behavior", behaviorData);
     }
 
     @Override
     public void loadFromNBT(CompoundTag tag) {
-        this.guiToggle = tag.getBoolean("enabled");
+        if (tag.contains("behavior")) {
+            behaviorData = tag.getCompound("behavior");
+        }
     }
 
     @Override
     public CompoundTag getData() {
         CompoundTag tag = new CompoundTag();
-        tag.putBoolean("enabled", guiToggle);
+        tag.put("behavior", behaviorData.copy());
         return tag;
     }
-
     @Override
     public List<IComponentBehavior> getBehaviors() {
         CompoundTag tag = new CompoundTag();
@@ -57,7 +60,9 @@ public class AutoCrafterComponent implements IGridComponent {
         return List.of(behavior);
     }
 
-
+    public void setBehaviorData(CompoundTag behaviorData) {
+        this.behaviorData = behaviorData;
+    }
     public void toggle() {
         this.guiToggle = !guiToggle;
     }
@@ -77,4 +82,5 @@ public class AutoCrafterComponent implements IGridComponent {
             behavior.setEnabled(guiToggle);
         }
     }
+
 }

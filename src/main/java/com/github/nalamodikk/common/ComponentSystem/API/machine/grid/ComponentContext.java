@@ -5,6 +5,8 @@ import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -14,12 +16,18 @@ public class ComponentContext {
     private final ComponentGrid grid;
     private final BlockPos pos;
     private final IGridComponent self;
+    private final Map<String, Integer> tickStates = new HashMap<>();
 
     public ComponentContext(ComponentGrid grid, BlockPos pos, IGridComponent self) {
         this.grid = grid;
         this.pos = pos;
         this.self = self;
     }
+
+    public void resetTickStates() {
+        tickStates.clear();
+    }
+
 
     public ComponentGrid grid() {
         return grid;
@@ -54,6 +62,17 @@ public class ComponentContext {
 
     public BlockPos getCenterPos() {
         return this.pos;
+    }
+
+    public boolean shouldTick(String behaviorId, int tickRate) {
+        int current = tickStates.getOrDefault(behaviorId, 0) + 1;
+        if (current >= tickRate) {
+            tickStates.put(behaviorId, 0);
+            return true;
+        } else {
+            tickStates.put(behaviorId, current);
+            return false;
+        }
     }
 
 }
