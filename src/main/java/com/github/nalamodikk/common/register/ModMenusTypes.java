@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.register;
 
+import com.github.nalamodikk.common.ComponentSystem.screen.ModularMachineMenu;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
@@ -20,15 +21,21 @@ public class ModMenusTypes {
 
     public static final RegistryObject<MenuType<ManaCraftingMenu>> MANA_CRAFTING_MENU =
             MENUS.register("mana_crafting",
-                    () -> IForgeMenuType.create((windowId, inv, buf) -> ManaCraftingMenu.create(windowId, inv, buf)));
+                    () -> IForgeMenuType.create(ManaCraftingMenu::create));
 
     public static final RegistryObject<MenuType<ManaGeneratorMenu>> MANA_GENERATOR_MENU =
             MENUS.register("mana_generator_menu",
-                    () -> IForgeMenuType.create((windowId, inv, buf) -> new ManaGeneratorMenu(windowId, inv, buf)));
+                    () -> IForgeMenuType.create(ManaGeneratorMenu::new));
 
     public static final RegistryObject<MenuType<UniversalConfigMenu>> UNIVERSAL_CONFIG =
             MENUS.register("universal_config",
-                    () -> IForgeMenuType.create((windowId, inv, buf) -> new UniversalConfigMenu(windowId, inv, buf)));
+                    () -> IForgeMenuType.create(UniversalConfigMenu::new));
+
+    public static final RegistryObject<MenuType<ModularMachineMenu>> MODULAR_MACHINE_MENU =
+            MENUS.register("modular_machine",
+                    () -> IForgeMenuType.create(ModularMachineMenu::create));
+
+
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

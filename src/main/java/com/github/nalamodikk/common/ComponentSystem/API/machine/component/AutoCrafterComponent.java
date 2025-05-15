@@ -37,12 +37,17 @@ public class AutoCrafterComponent extends BaseGridComponent implements IGridComp
     @Override
     public void saveToNBT(CompoundTag tag) {
         tag.put("behavior", behaviorData);
+        tag.putBoolean("enabled", guiToggle); // ✅ 儲存 GUI 狀態
+
     }
 
     @Override
     public void loadFromNBT(CompoundTag tag) {
         if (tag.contains("behavior")) {
             behaviorData = tag.getCompound("behavior");
+        }
+        if (tag.contains("enabled")) {
+            guiToggle = tag.getBoolean("enabled"); // ✅ 還原 GUI 狀態
         }
     }
 

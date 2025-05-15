@@ -83,6 +83,9 @@ public class ModularMachineBlockEntity extends BlockEntity implements IConfigura
     }
 
 
+    public ComponentGrid getComponentGrid() {
+        return componentGrid;
+    }
 
 
     public int restoreSnapshot(ServerPlayer player) {

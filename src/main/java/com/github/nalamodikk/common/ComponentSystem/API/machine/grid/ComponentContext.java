@@ -27,6 +27,9 @@ public class ComponentContext {
     public void resetTickStates() {
         tickStates.clear();
     }
+    public IGridComponent getComponent() {
+        return self;
+    }
 
 
     public ComponentGrid grid() {

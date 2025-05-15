@@ -84,6 +84,9 @@
   "button.magical_industry.toggle_mode.tooltip_auto": "Automatic Mode",
   "button.magical_industry.toggle_mode.tooltip_manual": "Manual Mode",
   "button.magical_industry.configure_io": "Configure Input/Output",
+  "button.magical_industry.toggle_auto_crafting": "Toggle",
+  "button.magical_industry.auto_crafting_enabled": "AutoCrafting: Enabled",
+  "button.magical_industry.auto_crafting_disabled": "AutoCrafting: Disabled",
 
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "Saved Block Position: (%s, %s, %s)",

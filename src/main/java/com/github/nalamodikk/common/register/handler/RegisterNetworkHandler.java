@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register.handler;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.ComponentSystem.network.ToggleAutoCraftingMessage;
 import com.github.nalamodikk.common.network.ToggleModePacket;
 import com.github.nalamodikk.common.network.toolpacket.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.toolpacket.ManaUpdatePacket;
@@ -24,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 public class RegisterNetworkHandler {
+
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel NETWORK_CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(MagicalIndustryMod.MOD_ID, "main"),
@@ -56,6 +58,9 @@ public class RegisterNetworkHandler {
         NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ConfigDirectionUpdatePacket.class, ConfigDirectionUpdatePacket::encode, ConfigDirectionUpdatePacket::decode, PacketHandler::handleConfigDirectionUpdate);
         NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ModeChangePacket.class, ModeChangePacket::toBytes, ModeChangePacket::new, ModeChangePacket::handle);
         NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), TechWandModePacket.class, TechWandModePacket::encode, TechWandModePacket::decode, TechWandModePacket::handle);
+        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ToggleAutoCraftingMessage.class, ToggleAutoCraftingMessage::encode, ToggleAutoCraftingMessage::decode, ToggleAutoCraftingMessage::handle
+        );
+
     }
 
     private static void registerClientPackets(AtomicInteger packetId) {

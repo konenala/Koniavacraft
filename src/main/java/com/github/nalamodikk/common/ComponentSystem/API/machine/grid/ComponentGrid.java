@@ -50,6 +50,17 @@ public class ComponentGrid {
         contextCache.put(pos, context); // optional 快取，如果你有用的話
     }
 
+    @SuppressWarnings("unchecked")
+    public <T extends IGridComponent> void forEachComponent(Class<T> filter, BiConsumer<BlockPos, T> consumer) {
+        for (Map.Entry<BlockPos, ComponentContext> entry : contextMap.entrySet()) {
+            IGridComponent component = entry.getValue().getComponent();
+            if (filter.isInstance(component)) {
+                consumer.accept(entry.getKey(), (T) component);
+            }
+        }
+    }
+
+
     /**
      * 放入模組到指定位置（x, y）
      */
@@ -301,14 +312,15 @@ public class ComponentGrid {
 
 
 
-    public <T> T findFirstComponent(Class<T> type) {
+    public <T> Optional<T> findFirstComponent(Class<T> type) {
         for (IGridComponent component : grid.values()) {
             if (type.isInstance(component)) {
-                return type.cast(component);
+                return Optional.of(type.cast(component));
             }
         }
-        return null;
+        return Optional.empty();
     }
+
 
     public void syncTo(Map<BlockPos, IGridComponent> newComponents) {
         // ✅ 先移除舊的元件（如果新 layout 沒有）

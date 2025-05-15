@@ -81,6 +81,9 @@
   "button.magical_industry.toggle_mode.tooltip_auto": "自動模式",
   "button.magical_industry.toggle_mode.tooltip_manual": "手動模式",
   "button.magical_industry.configure_io": "配置輸入/輸出",
+  "button.magical_industry.toggle_auto_crafting": "切換",
+  "button.magical_industry.auto_crafting_enabled": "自動合成：已啟用",
+  "button.magical_industry.auto_crafting_disabled": "自動合成：已停用",
 
   "tooltip.magical_industry.module.item_input": "提供機器輸入槽位",
   "tooltip.magical_industry.module.item_output": "提供機器輸出槽位",

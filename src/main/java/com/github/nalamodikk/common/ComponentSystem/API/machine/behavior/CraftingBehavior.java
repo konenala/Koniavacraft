@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CraftingBehavior implements IComponentBehavior, IControllableBehavior,ICustomRecipeProvider  {
     private int cooldown = 0;
@@ -71,10 +72,15 @@ public class CraftingBehavior implements IComponentBehavior, IControllableBehavi
 
         // 嘗試預扣 mana
         int manaRequired = recipe.getManaCost();
-        IHasMana manaTarget = context.grid().findFirstComponent(IHasMana.class);
-        if (manaTarget == null || manaTarget.getManaStorage().extractMana(manaRequired, ManaAction.SIMULATE) < manaRequired) {
+        Optional<IHasMana> manaTargetOpt = context.grid().findFirstComponent(IHasMana.class);
+        if (manaTargetOpt.isEmpty()) return;
+
+        IHasMana manaTarget = manaTargetOpt.get();
+        if (manaTarget.getManaStorage().extractMana(manaRequired, ManaAction.SIMULATE) < manaRequired) {
             return;
         }
+
+
 
         // 材料比對與實際扣除（從所有欄位扣料）
         for (CountedIngredient counted : recipe.getInputItems()) {
@@ -116,10 +122,17 @@ public class CraftingBehavior implements IComponentBehavior, IControllableBehavi
         ItemStack result = recipe.getOutput().copy();
 
         boolean inserted = GridIOHelper.insertIntoAnyOutputSlot(context.grid(), result);
-        if (inserted) {
-            cooldown = recipe.getCooldownTicks();
-            MagicalIndustryMod.LOGGER.info("✅ Crafted {}, Mana used: {}", result.getDisplayName().getString(), manaRequired);
+
+        if (!inserted) {
+            LOGGER.debug("[CraftingBehavior] Failed to insert result into any output slot: {}", result);
+            return;
         }
+
+        cooldown = recipe.getCooldownTicks();
+        MagicalIndustryMod.LOGGER.info("✅ Crafted {}, Mana used: {}", result.getDisplayName().getString(), manaRequired);
+
+
+
     }
 
     @Override
