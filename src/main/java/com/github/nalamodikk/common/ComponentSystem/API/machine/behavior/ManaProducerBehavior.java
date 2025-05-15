@@ -60,7 +60,7 @@ public class ManaProducerBehavior implements IComponentBehavior {
     }
     @Override
     public ResourceLocation getId() {
-        return new ResourceLocation("magical_industry", "mana_producer");
+        return new ResourceLocation(MagicalIndustryMod.MOD_ID, "mana_producer");
     }
 
 

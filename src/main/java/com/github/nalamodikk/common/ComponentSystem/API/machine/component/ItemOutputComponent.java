@@ -15,6 +15,7 @@ import net.minecraftforge.items.ItemStackHandler;
  */
 public class ItemOutputComponent  extends BaseGridComponent implements IGridComponent {
     private final ItemStackHandler itemHandler = new ItemStackHandler(1); // 預設 1 格輸出槽
+    private CompoundTag behaviorData = new CompoundTag();
 
     @Override
     public ResourceLocation getId() {
@@ -41,6 +42,9 @@ public class ItemOutputComponent  extends BaseGridComponent implements IGridComp
     @Override
     public void saveToNBT(CompoundTag tag) {
         tag.put("items", itemHandler.serializeNBT());
+        tag.put("behavior", behaviorData); // ✅ 儲存設定
+
+
     }
 
     @Override
@@ -48,11 +52,21 @@ public class ItemOutputComponent  extends BaseGridComponent implements IGridComp
         if (tag.contains("items")) {
             itemHandler.deserializeNBT(tag.getCompound("items"));
         }
+        if (tag.contains("behavior")) {
+            behaviorData = tag.getCompound("behavior"); // ✅ 還原設定
+       }
     }
 
     @Override
     public CompoundTag getData() {
-        return new CompoundTag(); // ❗ 沒有特殊參數，回傳空即可
+        CompoundTag tag = new CompoundTag();
+        tag.put("behavior", behaviorData.copy()); // ✅ 提供行為的初始參數
+        return tag;
+    }
+
+
+    public void setBehaviorData(CompoundTag behaviorData) {
+        this.behaviorData = behaviorData;
     }
 
 

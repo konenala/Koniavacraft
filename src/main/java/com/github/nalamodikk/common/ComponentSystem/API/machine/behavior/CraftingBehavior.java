@@ -114,6 +114,7 @@ public class CraftingBehavior implements IComponentBehavior, IControllableBehavi
 
         // 放入產物
         ItemStack result = recipe.getOutput().copy();
+
         boolean inserted = GridIOHelper.insertIntoAnyOutputSlot(context.grid(), result);
         if (inserted) {
             cooldown = recipe.getCooldownTicks();
@@ -176,7 +177,7 @@ public class CraftingBehavior implements IComponentBehavior, IControllableBehavi
 
     @Override
     public ResourceLocation getId() {
-        return new ResourceLocation("magical_industry", "crafting");
+        return new ResourceLocation(MagicalIndustryMod.MOD_ID, "crafting");
     }
 
 }

@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBlock;
 
+import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
@@ -9,6 +10,7 @@ import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridLayoutHelpe
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.ModuleItemHelper;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -19,8 +21,10 @@ import org.slf4j.Logger;
 
 import java.util.*;
 
-public class ModularMachineBlockEntity extends BlockEntity {
+public class ModularMachineBlockEntity extends BlockEntity implements IConfigurableBlock {
     private ComponentGrid componentGrid;
+    private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
+
     private final int ItemStackHandlerSize = 25;
     private final ItemStackHandler itemHandler = new ItemStackHandler(ItemStackHandlerSize) {
         @Override
@@ -37,7 +41,10 @@ public class ModularMachineBlockEntity extends BlockEntity {
 
     public ModularMachineBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MODULAR_MACHINE_BE.get(), pos, state);
-        this.componentGrid = new ComponentGrid(this.getLevel()); // 傳入世界物件
+        this.componentGrid = new ComponentGrid(this.getLevel());// 傳入世界物件
+        for (Direction dir : Direction.values()) {
+            directionConfig.put(dir, false);
+        }
     }
     private ItemStack lastStack = ItemStack.EMPTY; // 加在 class 裡面做快取
 
@@ -190,6 +197,13 @@ public class ModularMachineBlockEntity extends BlockEntity {
         tag.put("grid", componentGrid.serializeNBT());
 
         GridIOHelper.writeToNBTIfPresent(componentGrid, tag);
+
+        CompoundTag dirTag = new CompoundTag();
+        for (Map.Entry<Direction, Boolean> entry : directionConfig.entrySet()) {
+            dirTag.putBoolean(entry.getKey().getName(), entry.getValue());
+        }
+        tag.put("direction_config", dirTag);
+
     }
 
     @Override
@@ -203,6 +217,16 @@ public class ModularMachineBlockEntity extends BlockEntity {
         if (tag.contains("grid")) {
             componentGrid.deserializeNBT(tag.getCompound("grid")); // ✅ 還原所有行為的內部狀態
         }
+
+        if (tag.contains("direction_config")) {
+            CompoundTag dirTag = tag.getCompound("direction_config");
+            for (Direction dir : Direction.values()) {
+                if (dirTag.contains(dir.getName())) {
+                    directionConfig.put(dir, dirTag.getBoolean(dir.getName()));
+                }
+            }
+        }
+
 
         this.rebuildGridFromItemHandler(); // 拼裝 layout 對照更新
     }
@@ -223,6 +247,15 @@ public class ModularMachineBlockEntity extends BlockEntity {
                 itemsBefore.add(currentItems.getStackInSlot(i).copy());
             }
         }
+    }
+    @Override
+    public void setDirectionConfig(Direction direction, boolean isOutput) {
+        directionConfig.put(direction, isOutput);
+    }
+
+    @Override
+    public boolean isOutput(Direction direction) {
+        return directionConfig.getOrDefault(direction, false);
     }
 
 
