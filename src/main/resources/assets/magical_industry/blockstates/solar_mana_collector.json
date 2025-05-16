@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "magical_industry:block/collector/solar_mana_collector", "y": 180 },
+    "facing=south": { "model": "magical_industry:block/collector/solar_mana_collector", "y": 0 },
+    "facing=west":  { "model": "magical_industry:block/collector/solar_mana_collector", "y": 90 },
+    "facing=east":  { "model": "magical_industry:block/collector/solar_mana_collector", "y": 270 }
+  }
+}

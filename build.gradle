@@ -1,17 +1,31 @@
+buildscript {
+    repositories {
+
+    }
+
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7.+'
+    }
+}
+
+
+
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
-version = minecraft_version+'-'+mod_version
-group = 'com.github.nalamodikk'
+version = "v${mod_version}-mc${minecraft_version} [FML ${forge_version}]"
+group = mod_group_id
 
 base {
-    archivesName = 'magical_industry'
+    archivesName = mod_id
 }
+apply plugin: 'org.spongepowered.mixin'
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -116,6 +130,37 @@ repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
+
+    maven {
+        url "https://maven2.bai.lol"
+        content {
+            includeGroup "lol.bai"
+            includeGroup "mcp.mobius.waila"
+        }
+    }
+
+    maven { // TOP
+        name 'tterrag maven'
+        url "https://maven.tterrag.com/"
+    }
+
+    maven {
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+
+
+    maven {
+        name = 'GeckoLib'
+        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
+    }
+
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
     // flatDir {
@@ -137,12 +182,35 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
+    compileOnly   fg.deobf("curse.maven:the-one-probe-245211:${top_id}")
+    runtimeOnly    fg.deobf("curse.maven:the-one-probe-245211:${top_id}")
+
+    compileOnly  fg.deobf("mcp.mobius.waila:wthit-api:forge-${wthitVersion}")
+
+    // run against the full jar
+    compileOnly  fg.deobf("mcp.mobius.waila:wthit:forge-${wthitVersion}")
+    compileOnly  fg.deobf("lol.bai:badpackets:forge-${badpacketsVersion}")
+
+    runtimeOnly   fg.deobf("mcp.mobius.waila:wthit:forge-${wthitVersion}")
+    runtimeOnly   fg.deobf("lol.bai:badpackets:forge-${badpacketsVersion}")
+
+    compileOnly  fg.deobf("curse.maven:jade-324717:${jade_id}")
+    runtimeOnly   fg.deobf("curse.maven:jade-324717:${jade_id}")
+
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+    implementation("com.eliotlash.mclib:mclib:20")
+
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
     // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
     // compile against the JEI API but do not include it at runtime
+
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    testAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation 'org.spongepowered:mixin:0.8.5'
     compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"))
     compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"))
     // at runtime, use the full JEI jar for Forge
@@ -153,10 +221,19 @@ dependencies {
     // The group id is ignored when searching -- in this case, it is "blank"
     // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
 
+    // JUnit 5 測試用
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
+
+test {
+    useJUnitPlatform()
+}
+
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
@@ -175,6 +252,30 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }
+}
+
+tasks.register('copyGeneratedResources', Copy) {
+    group = 'build'
+    description = 'Copy generated resources to src/generated'
+
+    // 複製來源目錄
+    from('build/resources/main/data/magical_industry/recipes/fuel_rates') {
+        include '**/*' // 包含所有文件
+    }
+    from('build/resources/main/data/magical_industry/rate') {
+        include '**/*' // 包含所有文件
+    }
+
+    // 目標目錄
+    into('src/generated/resources/data/magical_industry') // 複製到 src/generated 下相應的路徑
+
+    // 確保構建過程先完成資源生成
+    dependsOn 'processResources'
+}
+
+// 確保在 processResources 之後執行
+tasks.named('processResources').configure {
+    finalizedBy 'copyGeneratedResources'
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
