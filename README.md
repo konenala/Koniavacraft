@@ -40,6 +40,10 @@
 ## ❤️ 支持作者
 
 你的鼓勵與喜歡，就是我持續創作的動力。
-你可以在 CurseForge 給我一個喜歡、留言、或幫我推薦給朋友！
+你可以在 [CurseForge](https://www.curseforge.com/minecraft/mc-mods/magical-industry) 或 [Modrinth](https://modrinth.com/mod/magical-industry) 上給我一個喜歡、留言，或幫我推薦給朋友！
+> 📢 **注意：本專案的正式版本請參考 `master` 分支。**
+>
+> `dev/test7` 是作者的開發分支，內容可能尚未穩定。  
+> 如果你只是要玩模組、打包使用，請使用 `master` 的內容。
 
 ---
