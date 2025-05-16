@@ -1,4 +1,4 @@
-# MIT License (for v0.1 ~ v0.3)
+# MIT License (for v0.0.1.0 ~ v0.0.1.1)
 
 Copyright (c) [your_name_or_team_here]
 
