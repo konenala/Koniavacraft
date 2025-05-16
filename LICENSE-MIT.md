@@ -1,6 +1,6 @@
 # MIT License (for v0.0.1.0 ~ v0.0.1.1)
 
-Copyright (c) [your_name_or_team_here]
+Copyright (c) Konenala21
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
