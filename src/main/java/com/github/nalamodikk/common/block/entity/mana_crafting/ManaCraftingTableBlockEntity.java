@@ -49,16 +49,17 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
     private static final int INPUT_SLOT_START = 0;
     private static final int INPUT_SLOT_END = 8;
     private static final int OUTPUT_SLOT = 9;
+    private static final int DEFAULT_INPUT_SLOTS = 10;
 
     private LazyOptional<IItemHandler> lazyItemHandler = LazyOptional.empty();
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
     private LazyOptional<ManaStorage> lazyManaStorage = LazyOptional.of(() -> manaStorage);
 
-    public static final int MAX_MANA = 100000;
+    public static final int MAX_MANA = 10000;
     private static final int MANA_COST_PER_CRAFT = 50;
 
-    public ManaCraftingTableBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pos, state, MAX_MANA, null, 10);
+    public ManaCraftingTableBlockEntity(BlockPos pos, BlockState state ) {
+        super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pos, state, MAX_MANA, null, DEFAULT_INPUT_SLOTS);
     }
 
     public void setItem(int slot, ItemStack stack) {

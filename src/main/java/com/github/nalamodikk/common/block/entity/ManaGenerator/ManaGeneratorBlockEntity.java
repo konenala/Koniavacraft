@@ -89,8 +89,8 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
 
 
 
-    public static final int MAX_MANA = 10000000; // 或者保留 private，然後新增 getter
-    public static final int MAX_ENERGY = 10000000;
+    public static final int MAX_MANA = 10000; // 或者保留 private，然後新增 getter
+    public static final int MAX_ENERGY = 10000;
 
     private final ForgeEnergyStorage energyStorage = new ForgeEnergyStorage(getConfigMaxEnergy());
     private final ManaStorage manaStorage = new ManaStorage(MAX_MANA);
