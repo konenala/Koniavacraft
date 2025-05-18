@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.blocks.managenerator;
 
-import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.util.helpers.FacingHandler;
 import net.minecraft.core.BlockPos;

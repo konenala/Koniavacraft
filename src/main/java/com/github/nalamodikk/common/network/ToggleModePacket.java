@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.network;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.ManaGenerator.ManaGeneratorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;

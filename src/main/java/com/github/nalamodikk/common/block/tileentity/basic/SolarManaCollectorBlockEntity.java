@@ -1,9 +1,7 @@
-package com.github.nalamodikk.common.block.entity.basic;
+package com.github.nalamodikk.common.block.tileentity.basic;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
-import com.github.nalamodikk.common.block.entity.AbstractManaCollectorMachine;
-import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.AbstractManaCollectorMachine;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;

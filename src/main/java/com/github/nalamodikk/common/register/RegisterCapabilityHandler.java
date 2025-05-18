@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaCapability;
-import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;

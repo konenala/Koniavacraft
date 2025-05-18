@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.entity.Conduit;
+package com.github.nalamodikk.common.block.tileentity.Conduit;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaCapability;

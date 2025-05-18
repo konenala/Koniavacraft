@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.entity;
+package com.github.nalamodikk.common.block.tileentity;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;

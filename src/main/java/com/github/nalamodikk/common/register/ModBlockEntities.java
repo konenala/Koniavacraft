@@ -1,11 +1,11 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.entity.Conduit.ManaConduitBlockEntity;
-import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.Conduit.ManaConduitBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBlock.ModularMachineBlockEntity;
-import com.github.nalamodikk.common.block.entity.basic.SolarManaCollectorBlockEntity;
-import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.basic.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

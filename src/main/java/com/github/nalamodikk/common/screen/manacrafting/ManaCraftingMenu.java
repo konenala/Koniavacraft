@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.screen.manacrafting;
 
-import com.github.nalamodikk.common.block.entity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.register.ModMenusTypes;
 import net.minecraft.core.BlockPos;

@@ -1,7 +1,7 @@
 package com.github.nalamodikk.client.model.managen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.entity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.tileentity.ManaGenerator.ManaGeneratorBlockEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
