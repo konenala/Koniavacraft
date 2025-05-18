@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.network.ManaNetwork.net;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.tileentity.Conduit.ManaConduitBlockEntity;
+import com.github.nalamodikk.common.block.TileEntity.Conduit.ManaConduitBlockEntity;
 import net.minecraft.world.level.Level;
 
 import java.util.*;

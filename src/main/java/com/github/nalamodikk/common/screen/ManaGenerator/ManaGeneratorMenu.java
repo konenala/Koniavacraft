@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.screen.ManaGenerator;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.tileentity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.TileEntity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.register.ModMenusTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

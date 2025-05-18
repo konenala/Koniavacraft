@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.tileentity.ManaGenerator;
+package com.github.nalamodikk.common.block.TileEntity.ManaGenerator;
 
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
@@ -6,7 +6,7 @@ import com.github.nalamodikk.common.recipe.fuel.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.register.ModCapabilities;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
-import com.github.nalamodikk.common.block.tileentity.AbstractManaMachineEntityBlock;
+import com.github.nalamodikk.common.block.TileEntity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.compat.energy.ForgeEnergyStorage;
 import com.github.nalamodikk.common.recipe.fuel.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;

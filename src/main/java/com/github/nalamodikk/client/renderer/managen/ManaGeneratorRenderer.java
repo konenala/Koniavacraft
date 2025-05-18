@@ -1,7 +1,7 @@
 package com.github.nalamodikk.client.renderer.managen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.tileentity.ManaGenerator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.TileEntity.ManaGenerator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.client.model.managen.ManaGeneratorModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;

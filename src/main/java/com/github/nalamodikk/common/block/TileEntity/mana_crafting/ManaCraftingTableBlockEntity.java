@@ -1,9 +1,9 @@
-package com.github.nalamodikk.common.block.tileentity.mana_crafting;
+package com.github.nalamodikk.common.block.TileEntity.mana_crafting;
 
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.register.ModCapabilities;
-import com.github.nalamodikk.common.block.tileentity.AbstractManaMachineEntityBlock;
+import com.github.nalamodikk.common.block.TileEntity.AbstractManaMachineEntityBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;

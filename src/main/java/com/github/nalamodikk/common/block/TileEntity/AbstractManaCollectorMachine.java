@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.tileentity;
+package com.github.nalamodikk.common.block.TileEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;

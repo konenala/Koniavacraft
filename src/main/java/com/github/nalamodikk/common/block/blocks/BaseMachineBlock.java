@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.blocks;
 
-import com.github.nalamodikk.common.block.tileentity.AbstractManaMachineEntityBlock;
+import com.github.nalamodikk.common.block.TileEntity.AbstractManaMachineEntityBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
