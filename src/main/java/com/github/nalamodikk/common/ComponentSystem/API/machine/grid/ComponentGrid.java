@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.ComponentSystem.API.machine.grid;
 
+import com.github.nalamodikk.common.ComponentSystem.API.IComponentGuiProvider;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
@@ -11,6 +12,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +80,17 @@ public class ComponentGrid {
         syncTo(newLayout);
         lastLayoutHash = currentHash;
     }
+
+
+    public void openComponentGui(Player player) {
+        for (ComponentContext ctx : contextMap.values()) {
+            if (ctx.getComponent() instanceof IComponentGuiProvider provider) {
+                provider.openGui(player); // 呼叫元件自己處理的 GUI 打開邏輯
+                return;
+            }
+        }
+    }
+
 
     public void tick() {
         for (Map.Entry<BlockPos, IGridComponent> entry : grid.entrySet()) {

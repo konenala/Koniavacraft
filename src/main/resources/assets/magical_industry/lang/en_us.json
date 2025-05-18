@@ -68,6 +68,7 @@
   "screen.magical_industry.output": "Output",
   "screen.magical_industry.input": "Input",
   "screen.magical_industry.cannot_toggle": "Generator is running, cannot switch mode!",
+  "screen.magical_industry.modular_machine_config": "Modular Machine Assembly Interface",
 
 
 

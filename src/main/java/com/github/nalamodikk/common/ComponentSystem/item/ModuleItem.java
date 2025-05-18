@@ -1,6 +1,8 @@
-package com.github.nalamodikk.common.item;
+package com.github.nalamodikk.common.ComponentSystem.item;
 
 import com.github.nalamodikk.client.renderer.item.DynamicModuleItemRenderer;
+import com.github.nalamodikk.common.ComponentSystem.API.IModuleComponentProvider;
+import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.register.ModItems;
@@ -27,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ModuleItem extends Item {
+public class ModuleItem extends Item implements IModuleComponentProvider {
 
     public static final String KEY_COMPONENT_ID = "component_id";
     public static final String KEY_COMPONENTS = "components";
@@ -106,4 +108,9 @@ public class ModuleItem extends Item {
         return stack;
     }
 
+    @Override
+    public IGridComponent getComponent(ItemStack stack) {
+        String id = stack.getOrCreateTag().getString("component");
+        return ComponentRegistry.createComponent(new ResourceLocation(id));
+    }
 }

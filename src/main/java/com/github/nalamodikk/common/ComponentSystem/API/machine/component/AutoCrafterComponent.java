@@ -1,5 +1,8 @@
 package com.github.nalamodikk.common.ComponentSystem.API.machine.component;
 
+import com.github.nalamodikk.client.screenAPI.gui.api.IGuiDataContext;
+import com.github.nalamodikk.client.screenAPI.gui.api.IGuiElementProvider;
+import com.github.nalamodikk.client.screenAPI.gui.api.IGuiLayoutBuilder;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IComponentBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IControllableBehavior;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
@@ -15,10 +18,19 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public class AutoCrafterComponent extends BaseGridComponent implements IGridComponent {
+public class AutoCrafterComponent extends BaseGridComponent implements IGridComponent, IGuiElementProvider {
     private CompoundTag behaviorData = new CompoundTag(); // ⬅️ 設定是否啟用自動合成
 
     private boolean guiToggle = true; // 預設啟用，可由 GUI 改變
+
+    public boolean isEnabled() {
+        return guiToggle;
+    }
+
+    public void setEnabled(boolean value) {
+        this.guiToggle = value;
+    }
+
 
     @Override
     public ResourceLocation getId() {
@@ -88,4 +100,17 @@ public class AutoCrafterComponent extends BaseGridComponent implements IGridComp
         }
     }
 
+    @Override
+    public void provideGuiElements(IGuiLayoutBuilder builder, IGuiDataContext context) {
+        // ➤ 假設 itemHandler slot 0 是輸入
+        builder.addSlot("input", 0, context.getItemHandler(), 20, 20, "tooltip.magical_industry.input_slot");
+
+        // ➤ 加一個切換按鈕
+        builder.addToggle("autocraft_toggle", "tooltip.magical_industry.autocraft_toggle", isEnabled(), () -> {
+            setEnabled(!isEnabled());
+        });
+
+        // ➤ 加個標籤說明
+        builder.addLabel("tooltip.magical_industry.auto_crafter_label", 10, 5);
+    }
 }

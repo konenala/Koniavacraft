@@ -2,7 +2,6 @@ package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.item.ModuleItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -11,7 +10,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
-import static com.github.nalamodikk.common.item.ModuleItem.createModuleItem;
+import static com.github.nalamodikk.common.ComponentSystem.item.ModuleItem.createModuleItem;
 
 public class ModCreativeModTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =

@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -48,7 +50,7 @@ public class ModularMachineBlock extends BaseEntityBlock {
         if (!(be instanceof ModularMachineBlockEntity machine)) return InteractionResult.PASS;
 
         ItemStack held = player.getItemInHand(hand);
-        ItemStackHandler handler = machine.getInternalHandler();
+        ItemStackHandler handler = machine.getItemHandler();
 
         // 🌀 撤銷模式：蹲下 + 手持任意物品
         if (player.isShiftKeyDown() && held.isEmpty()) {
@@ -63,29 +65,29 @@ public class ModularMachineBlock extends BaseEntityBlock {
         }
 
 
-        // 潛行 + 空手：清空所有模組 + 退還
-//        if (player.isShiftKeyDown() && held.isEmpty()) {
-//            int count = 0;
-//
-//            for (int i = 0; i < handler.getSlots(); i++) {
-//                ItemStack toReturn = handler.getStackInSlot(i);
-//                if (!toReturn.isEmpty()) {
-//                    ItemStack copy = toReturn.copy();
-//                    boolean success = player.getInventory().add(copy);
-//                    if (!success) player.spawnAtLocation(copy);
-//                    handler.setStackInSlot(i, ItemStack.EMPTY);
-//                    count++;
-//                }
-//            }
-//
-//            if (count > 0) {
-//                player.displayClientMessage(Component.translatable("message.magical_industry.machine.cleared_count", count), true);
-//            } else {
-//                player.displayClientMessage(Component.translatable("message.magical_industry.machine.nothing_to_clear"), true);
-//            }
-//
-//            return InteractionResult.SUCCESS;
-//        }
+//         潛行 + 空手：清空所有模組 + 退還
+        if (player.isShiftKeyDown() && held.isEmpty()) {
+            int count = 0;
+
+            for (int i = 0; i < handler.getSlots(); i++) {
+                ItemStack toReturn = handler.getStackInSlot(i);
+                if (!toReturn.isEmpty()) {
+                    ItemStack copy = toReturn.copy();
+                    boolean success = player.getInventory().add(copy);
+                    if (!success) player.spawnAtLocation(copy);
+                    handler.setStackInSlot(i, ItemStack.EMPTY);
+                    count++;
+                }
+            }
+
+            if (count > 0) {
+                player.displayClientMessage(Component.translatable("message.magical_industry.machine.cleared_count", count), true);
+            } else {
+                player.displayClientMessage(Component.translatable("message.magical_industry.machine.nothing_to_clear"), true);
+            }
+
+            return InteractionResult.SUCCESS;
+        }
 
 
         // 空手右鍵：顯示目前拼裝資訊

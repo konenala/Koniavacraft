@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.ComponentSystem.block.blockentity.MachineBl
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
+import com.github.nalamodikk.common.ComponentSystem.item.ModuleItem;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridIOHelper;
@@ -17,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -25,19 +27,32 @@ public class ModularMachineBlockEntity extends BlockEntity implements IConfigura
     private ComponentGrid componentGrid;
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
 
-    private final int ItemStackHandlerSize = 25;
+    private final int ItemStackHandlerSize = 9;
     private final ItemStackHandler itemHandler = new ItemStackHandler(ItemStackHandlerSize) {
         @Override
         protected void onContentsChanged(int slot) {
             super.onContentsChanged(slot);
+            setChanged();
             needRebuild = true; // 每次玩家放東西就要求下次 tick 重建
         }
+
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            return stack.getItem() instanceof ModuleItem; // ✅ 只接受你自訂的模組物品
+        }
     };
+
     private int lastHash = -1;
     private  final Deque<MachineSnapshot> history = new ArrayDeque<>();
     private int lastLayoutHash = -1;
     public static final Logger LOGGER = LogUtils.getLogger();
     private boolean needRebuild = true;
+
+    public ItemStackHandler getItemHandler() {
+        return itemHandler;
+    }
+
+
 
     public ModularMachineBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MODULAR_MACHINE_BE.get(), pos, state);
@@ -48,9 +63,7 @@ public class ModularMachineBlockEntity extends BlockEntity implements IConfigura
     }
     private ItemStack lastStack = ItemStack.EMPTY; // 加在 class 裡面做快取
 
-    public ItemStackHandler getInternalHandler() {
-        return this.itemHandler;
-    }
+
 
     public void rebuildGridFromItemHandler() {
         List<IGridComponent> components = new ArrayList<>();
