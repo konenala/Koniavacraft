@@ -61,14 +61,14 @@ public class ModularMachineScreenBuilder implements IGuiLayoutBuilder {
     @Override
     public void addSlot(String id, int localSlot, IItemHandler handler, int x, int y, String tooltipKey) {
         int slotIndex = localSlot; // 如果你不處理 offset，可以這樣暫代
-
-        GuiSlotElement slot = new GuiSlotElement(
-                handler,
-                slotIndex,
-                x, y,
-                Component.translatable(tooltipKey)
-        );
-        this.elements.add(slot);
+//
+//        GuiSlotElement slot = new GuiSlotElement(
+//                handler,
+//                slotIndex,
+//                x, y,
+//                Component.translatable(tooltipKey)
+//        );
+//        this.elements.add(slot);
     }
 
     public void addSlot(int slotIndex, int localSlotId, ItemStackHandler handler, String tooltipKey) {

@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.block.TileEntity.basic;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.TileEntity.AbstractManaCollectorMachine;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.ManaStorage;
@@ -9,8 +10,10 @@ import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.register.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -41,6 +44,10 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
     private static final int UPGRADE_SLOT_COUNT = 5;
     private final ItemStackHandler upgradeSlot = new ItemStackHandler(UPGRADE_SLOT_COUNT);
     private static final int BASE_GENERATE = 5;
+    private int tickCounter = 0;
+
+    private int lastGeneratedAmount = 0;
+
 
     private static final int BASE_INTERVAL = 40;       // 每 40 tick 嘗試一次（2 秒）
     private static final int BASE_OUTPUT = 5;          // 每次產出 5 mana（晴天正常條件）
@@ -136,23 +143,43 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
         }
     }
 
-
     public static void serverTick(Level level, BlockPos pos, BlockState state, SolarManaCollectorBlockEntity be) {
-        if (level.isClientSide) return;
+        be.tickCounter++;
 
-        if (be.shouldGenerate(level, pos)) {
-            be.generateMana();
+        // 每 40 tick 嘗試產生 mana
+        if (be.tickCounter >= 40) {
+            be.tickCounter = 0;
+
+            if (be.shouldGenerate(level, pos)) {
+                int manaGenerated = be.generateMana();
+                // 已經自動記錄到 lastGeneratedAmount，可省略
+            }
+
         }
 
-        be.outputMana();
+        // 🎆 粒子特效（client only，表示正在運作）
+        if (level.isClientSide) {
+            level.addParticle(ParticleTypes.ENCHANT,
+                    pos.getX() + 0.5 + Mth.nextDouble(level.random, -0.2, 0.2),
+                    pos.getY() + 1.1,
+                    pos.getZ() + 0.5 + Mth.nextDouble(level.random, -0.2, 0.2),
+                    0, 0.05, 0
+            );
+        }
+
+        // 🧪 Debug log（每 200 tick 顯示一次）
+        if (!level.isClientSide && level.getGameTime() % 200 == 0) {
+            MagicalIndustryMod.LOGGER.debug("SolarManaCollector generated {} mana at {}", be.lastGeneratedAmount, pos);
+        }
 
     }
+
 
     public boolean shouldGenerate(Level level, BlockPos pos) {
         return level.canSeeSky(pos.above()) && level.isDay() && !level.isRaining();
     }
 
-    public void generateMana() {
+    public int generateMana() {
         int bonus = 0;
 
         for (int i = 0; i < upgradeSlot.getSlots(); i++) {
@@ -164,6 +191,9 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
 
         int totalGenerated = BASE_GENERATE + bonus;
         this.getManaStorage().insertMana(totalGenerated, ManaAction.EXECUTE);
+        this.lastGeneratedAmount = totalGenerated; // 記錄下這次產出
+
+        return totalGenerated;
     }
 
 

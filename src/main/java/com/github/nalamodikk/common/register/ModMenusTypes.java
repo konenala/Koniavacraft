@@ -1,6 +1,5 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.ComponentSystem.screen.ModularMachineMenu;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
@@ -31,9 +30,6 @@ public class ModMenusTypes {
             MENUS.register("universal_config",
                     () -> IForgeMenuType.create(UniversalConfigMenu::new));
 
-    public static final RegistryObject<MenuType<ModularMachineMenu>> MODULAR_MACHINE_MENU =
-            MENUS.register("modular_machine",
-                    () -> IForgeMenuType.create(ModularMachineMenu::create));
 
 
 
