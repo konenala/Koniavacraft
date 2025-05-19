@@ -26,7 +26,7 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
     private final ItemStack wandItem;
 
     public UniversalConfigMenu(int id, Inventory playerInventory, BlockEntity blockEntity, ItemStack wandItem) {
-        super(ModMenusTypes.UNIVERSAL_CONFIG.get(), id);
+        super(ModMenusTypes.UNIVERSAL_CONFIG_MENU.get(), id);
         this.blockEntity = blockEntity;
         this.player = playerInventory.player;
         this.wandItem = wandItem;

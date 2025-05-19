@@ -2,10 +2,9 @@ package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
+import com.github.nalamodikk.common.screen.manacollector.SolarManaCollectorMenu;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -26,10 +25,13 @@ public class ModMenusTypes {
             MENUS.register("mana_generator_menu",
                     () -> IForgeMenuType.create(ManaGeneratorMenu::new));
 
-    public static final RegistryObject<MenuType<UniversalConfigMenu>> UNIVERSAL_CONFIG =
+    public static final RegistryObject<MenuType<UniversalConfigMenu>> UNIVERSAL_CONFIG_MENU =
             MENUS.register("universal_config",
                     () -> IForgeMenuType.create(UniversalConfigMenu::new));
 
+    public static final RegistryObject<MenuType<SolarManaCollectorMenu>> SOLAR_MANA_COLLECTOR_MENU =
+            MENUS.register("solar_mana_collector",
+                    () -> IForgeMenuType.create(SolarManaCollectorMenu::new));
 
 
 

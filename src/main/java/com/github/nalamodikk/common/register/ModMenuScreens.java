@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register;
 
 
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorScreen;
+import com.github.nalamodikk.common.screen.manacollector.SolarManaCollectorScreen;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingScreen;
 import com.github.nalamodikk.common.screen.tool.UniversalConfigScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -11,7 +12,8 @@ public class ModMenuScreens {
         // 註冊菜單屏幕
         MenuScreens.register(ModMenusTypes.MANA_CRAFTING_MENU.get(), ManaCraftingScreen::new);
         MenuScreens.register(ModMenusTypes.MANA_GENERATOR_MENU.get(), ManaGeneratorScreen::new);
-        MenuScreens.register(ModMenusTypes.UNIVERSAL_CONFIG.get(), UniversalConfigScreen::new);
+        MenuScreens.register(ModMenusTypes.UNIVERSAL_CONFIG_MENU.get(), UniversalConfigScreen::new);
+        MenuScreens.register(ModMenusTypes.SOLAR_MANA_COLLECTOR_MENU.get(), SolarManaCollectorScreen::new);
 
 
     }
