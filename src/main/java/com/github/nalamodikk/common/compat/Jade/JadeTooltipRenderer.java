@@ -39,7 +39,7 @@ public class JadeTooltipRenderer {
             if (blockEntity != null) {
                 // 獲取 Mana 數據並添加到 data 中
                 blockEntity.getCapability(ManaStorage.MANA).ifPresent(manaStorage -> {
-                    data.putInt("mana", manaStorage.getMana());
+                    data.putInt("mana", manaStorage.getManaStored());
                 });
                 // 獲取 FE 數據並添加到 data 中
                 blockEntity.getCapability(ForgeCapabilities.ENERGY).ifPresent(energyStorage -> {

@@ -41,7 +41,7 @@ public class ManaProducerBehavior implements IComponentBehavior {
 
             if (neighbor instanceof IHasMana manaHolder) {
                 int inserted = manaHolder.getManaStorage().insertMana(manaPerTick, ManaAction.EXECUTE);
-                MagicalIndustryMod.LOGGER.debug("✅ 傳送 mana: {} (剩餘: {})", inserted, manaHolder.getManaStorage().getMana());
+                MagicalIndustryMod.LOGGER.debug("✅ 傳送 mana: {} (剩餘: {})", inserted, manaHolder.getManaStorage().getManaStored());
             } else {
                 MagicalIndustryMod.LOGGER.warn("❌ 鄰居不是 IHasMana → {}", neighbor.getClass().getSimpleName());
             }

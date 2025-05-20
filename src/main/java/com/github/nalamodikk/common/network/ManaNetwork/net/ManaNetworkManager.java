@@ -70,7 +70,7 @@ public class ManaNetworkManager {
 
         for (ManaConduitBlockEntity conduit : receivers) {
             int currentMana = conduit.getMana();
-            int targetMana = Math.min(conduit.getManaStorage().getMaxMana(), currentMana + perReceiver);
+            int targetMana = Math.min(conduit.getManaStorage().getMaxManaStored(), currentMana + perReceiver);
             conduit.setMana(targetMana);
         }
 

@@ -265,7 +265,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
     private void sync() {
         // 將能量和魔力的狀態同步到 UnifiedSyncManager 中
         syncManager.set(ENERGY_STORED_INDEX, energyStorage.getEnergyStored());
-        syncManager.set(MANA_STORED_INDEX, manaStorage.getMana());
+        syncManager.set(MANA_STORED_INDEX, manaStorage.getManaStored());
         syncManager.set(MODE_INDEX, currentMode == Mode.MANA ? 0 : 1);
         syncManager.set(BURN_TIME_INDEX, burnTime);
         syncManager.set(CURRENT_BURN_TIME_INDEX, currentBurnTime);
@@ -334,7 +334,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
      * 魔力模式處理
      */
     private void handleManaGeneration() {
-        if (manaStorage.getMana() >= manaStorage.getMaxMana()) {
+        if (manaStorage.getManaStored() >= manaStorage.getMaxManaStored()) {
             isWorking = false;
 //            LOGGER.debug("[Mana Generator] 🛑 魔力已滿，暫停工作！");
             return;
@@ -441,7 +441,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
                 // 魔力輸出
                 neighborBlockEntity.getCapability(ModCapabilities.MANA, direction.getOpposite()).ifPresent(neighborManaStorage -> {
                     if (neighborManaStorage.canReceive()) {
-                        int manaToTransfer = Math.min(manaStorage.getMana(), 50);
+                        int manaToTransfer = Math.min(manaStorage.getManaStored(), 50);
                         if (manaToTransfer > 0) { // 防止負值錯誤
                             int acceptedMana = neighborManaStorage.receiveMana(manaToTransfer, ManaAction.get(false));
                             manaStorage.extractMana(acceptedMana, ManaAction.get(false));
@@ -541,7 +541,7 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock {
         tag.put("DirectionConfig", directionTag);
 
         // 保存其他屬性
-        tag.putInt("ManaStored", manaStorage.getMana());
+        tag.putInt("ManaStored", manaStorage.getManaStored());
         tag.putInt("EnergyStored", energyStorage.getEnergyStored());
         tag.putBoolean("IsWorking", isWorking);
         tag.putInt("CurrentMode", currentMode == Mode.MANA ? 0 : 1);

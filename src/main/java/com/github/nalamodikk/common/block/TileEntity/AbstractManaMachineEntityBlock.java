@@ -28,6 +28,11 @@ import software.bernie.geckolib.core.animatable.GeoAnimatable;
 
 public abstract class AbstractManaMachineEntityBlock extends BlockEntity
         implements GeoBlockEntity, GeoAnimatable, MenuProvider, IConfigurableBlock {
+    /**
+     * 每個產出週期預設產出的 mana 數量。
+     * 子類可以覆寫 {@link #computeManaAmount()} 來計算升級或 bonus。
+     */
+    protected int manaPerCycle = 0;
 
     protected final ForgeEnergyStorage energyStorage;
     protected final ManaStorage manaStorage;
@@ -61,13 +66,76 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
         this.lazyItemHandler = LazyOptional.of(() -> itemHandler);
     }
 
+    public void setManaPerCycle(int amount) {
+        this.manaPerCycle = amount;
+    }
+
+    public int getManaPerCycle() {
+        return this.manaPerCycle;
+    }
+
+
     public void drops() {
         // 如果有 itemHandler，可循環 drop 出內容物
         SimpleContainer inventory = new SimpleContainer(0); // 暫時沒槽，未來可擴展
         Containers.dropContents(this.level, this.worldPosition, inventory);
     }
 
-    public abstract void tickMachine();
+    /**
+     * 判斷是否要執行 tick。預設只在伺服端執行。
+     * 可由子類覆寫加入其他條件（例如開關、結構驗證等）
+     *
+     * @return 是否執行 tick
+     */
+    protected boolean shouldRunTick() {
+        return this.level != null && !this.level.isClientSide;
+    }
+
+    /**
+     * 執行前檢查：是否可以進行 mana 生產。
+     * 預設為 mana 未滿才執行。
+     *
+     * 可由子類擴充額外條件（例如紅石訊號、是否啟動等）
+     *
+     * @return 是否通過檢查
+     */
+    protected boolean preGenerateCheck() {
+        return this.manaStorage.getManaStored() < this.manaStorage.getMaxManaStored();
+    }
+
+    /**
+     * 計算這一輪應該產出的 mana 數量。
+     * 預設為固定值 {@code manaPerCycle}。
+     *
+     * 子類可依照升級模組、天氣時間等情況回傳不同值。
+     *
+     * @return 本輪應產出的 mana 數量
+     */
+    protected int computeManaAmount() {
+        return this.manaPerCycle;
+    }
+
+    /**
+     * 在成功產出 mana 後觸發的 hook。
+     * 預設為空方法，子類可 override 播放粒子、音效、記錄 log 等。
+     *
+     * @param amount 本次產出的 mana 數值
+     */
+
+    protected void onGenerate(int amount) {
+        // 預設不做事
+    }
+
+
+    public void tickMachine() {
+        if (!shouldRunTick()) return;
+
+        if (preGenerateCheck()) {
+            int amount = computeManaAmount();
+            manaStorage.addMana(amount);
+            onGenerate(amount);
+        }
+    }
 
     public static void tick(Level level, BlockPos pos, BlockState state, AbstractManaMachineEntityBlock machine) {
         if (!level.isClientSide) {
@@ -76,14 +144,14 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
     }
 
     public void consumeMana(int amount) {
-        if (manaStorage.getMana() >= amount) {
+        if (manaStorage.getManaStored() >= amount) {
             manaStorage.consumeMana(amount);
             setChanged();
         }
     }
 
     public void generateMana(int amount) {
-        if (manaStorage.getMana() + amount <= manaStorage.getMaxMana()) {
+        if (manaStorage.getManaStored() + amount <= manaStorage.getMaxManaStored()) {
             manaStorage.addMana(amount);
             setChanged();
         }
@@ -92,15 +160,17 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
     @Override
     public void load(@NotNull CompoundTag tag) {
         super.load(tag);
-
-        if (manaStorage != null) {
-            manaStorage.setMana(tag.getInt("ManaStored"));
+        if (tag.contains("ManaStored")) {
+            if (manaStorage != null) {
+                manaStorage.setMana(tag.getInt("ManaStored")); // ✅ 安全讀取
+            }
         }
 
-        if (energyStorage != null) {
+        if(tag.contains("EnergyStored")){
+             if (energyStorage != null) {
             energyStorage.receiveEnergy(tag.getInt("EnergyStored"), false);
         }
-
+    }
         itemHandler.deserializeNBT(tag.getCompound("Inventory"));
         isWorking = tag.getBoolean("IsWorking");
     }
@@ -109,9 +179,8 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag) {
         super.saveAdditional(tag);
-
         if (manaStorage != null) {
-            tag.putInt("ManaStored", manaStorage.getMana());
+            tag.putInt("ManaStored", manaStorage.getManaStored()); // ✅ 直接寫入
         }
 
         if (energyStorage != null) {
@@ -139,7 +208,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity
     }
 
     public int getManaStored() {
-        return manaStorage.getMana();
+        return manaStorage.getManaStored();
     }
 
     public int getEnergyStored() {

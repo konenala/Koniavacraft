@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register;
 
 
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorScreen;
+import com.github.nalamodikk.common.screen.UpgradeScreen;
 import com.github.nalamodikk.common.screen.manacollector.SolarManaCollectorScreen;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingScreen;
 import com.github.nalamodikk.common.screen.tool.UniversalConfigScreen;
@@ -14,6 +15,7 @@ public class ModMenuScreens {
         MenuScreens.register(ModMenusTypes.MANA_GENERATOR_MENU.get(), ManaGeneratorScreen::new);
         MenuScreens.register(ModMenusTypes.UNIVERSAL_CONFIG_MENU.get(), UniversalConfigScreen::new);
         MenuScreens.register(ModMenusTypes.SOLAR_MANA_COLLECTOR_MENU.get(), SolarManaCollectorScreen::new);
+        MenuScreens.register(ModMenusTypes.UPGRADE_MENU.get(), UpgradeScreen::new);
 
 
     }

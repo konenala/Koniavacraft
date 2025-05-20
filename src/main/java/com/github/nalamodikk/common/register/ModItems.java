@@ -5,6 +5,8 @@ import com.github.nalamodikk.common.block.blocks.blockitem.ManaGeneratorBlockIte
 import com.github.nalamodikk.common.ComponentSystem.item.ModuleItem;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
+import com.github.nalamodikk.common.item.upgrade.UpgradeItem;
+import com.github.nalamodikk.common.upgrade.UpgradeType;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -25,6 +27,11 @@ public class ModItems {
     public static final RegistryObject<Item> SOLAR_MANA_UPGRADE = ITEMS.register("solar_mana_upgrade",
             () -> new Item(new Item.Properties().stacksTo(1)));
 
+    public static final RegistryObject<Item> SPEED_UPGRADE = ITEMS.register("speed_upgrade",
+            () -> new UpgradeItem(UpgradeType.SPEED, new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> EFFICIENCY_UPGRADE = ITEMS.register("efficiency_upgrade",
+            () -> new UpgradeItem(UpgradeType.EFFICIENCY, new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> CORRUPTED_MANA_DUST = ITEMS.register("corrupted_mana_dust",
             () -> new Item(new Item.Properties()));

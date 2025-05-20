@@ -1,4 +1,4 @@
-package com.github.nalamodikk.client.screenAPI.gui.slot.helper;
+package com.github.nalamodikk.client.screenAPI.gui.slot;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;

@@ -44,6 +44,19 @@ public class GenericButtonWithTooltip extends AbstractButton {
         this.hovering = false; // 初始為不懸停
     }
 
+
+    public GenericButtonWithTooltip(
+            int x, int y, int width, int height,
+            Component message,
+            ResourceLocation texture,
+            int texWidth, int texHeight,
+            OnPress onPress,
+            TooltipSupplier.Positioned tooltipPositioned
+    ) {
+        this(x, y, width, height, message, texture, texWidth, texHeight, onPress,
+                () -> tooltipPositioned.getTooltip(0, 0)); // 包成舊的 tooltipSupplier
+    }
+
     /**
      * Updates the button's texture to a new texture.
      *

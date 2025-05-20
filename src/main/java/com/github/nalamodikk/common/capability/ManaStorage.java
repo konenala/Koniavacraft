@@ -19,7 +19,7 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     }
 
     public boolean isFull() {
-        return this.getMana() >= this.getMaxMana();
+        return this.getManaStored() >= this.getMaxManaStored();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     }
 
     @Override
-    public int getMana() {
+    public int getManaStored() {
         return mana;
     }
 
@@ -51,7 +51,7 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     }
 
     @Override
-    public int getMaxMana() {
+    public int getMaxManaStored() {
         return capacity;
     }
 
@@ -67,8 +67,8 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     }
 
     @Override
-    public int getMana(int container) {
-        return container == 0 ? getMana() : 0; // 只支援 container 0
+    public int getManaStored(int container) {
+        return container == 0 ? getManaStored() : 0; // 只支援 container 0
     }
 
     @Override
@@ -79,13 +79,13 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     }
 
     @Override
-    public int getMaxMana(int container) {
-        return container == 0 ? getMaxMana() : 0;
+    public int getMaxManaStored(int container) {
+        return container == 0 ? getMaxManaStored() : 0;
     }
 
     @Override
     public int getNeededMana(int container) {
-        return container == 0 ? getMaxMana() - getMana() : 0;
+        return container == 0 ? getMaxManaStored() - getManaStored() : 0;
     }
 
     @Override
@@ -125,7 +125,7 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
         if (amount <= 0) {
             return 0;
         }
-        int toReceive = Math.min(amount, getMaxMana() - getMana());
+        int toReceive = Math.min(amount, getMaxManaStored() - getManaStored());
         if (action.execute() && toReceive > 0) {
             addMana(toReceive);
             onChanged(); // 通知數據變更

@@ -34,6 +34,7 @@ public class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new, ModBlocks.SOLAR_MANA_COLLECTOR.get())
                             .build(null));
 
+
     public static final RegistryObject<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
             BLOCK_ENTITIES.register("modular_machine",
                     () -> BlockEntityType.Builder.of(ModularMachineBlockEntity::new,

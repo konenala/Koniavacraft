@@ -56,7 +56,7 @@ public class ManaConduitBlockEntity extends BlockEntity {
 
                 neighborMana.ifPresent(handler -> {
                     if (handler.canExtract()) { // ✅ 只有當設備可提取 Mana 時才執行
-                        int extractAmount = Math.min(50, handler.getMana()); // 🔥 每次最多提取 50 Mana
+                        int extractAmount = Math.min(50, handler.getManaStored()); // 🔥 每次最多提取 50 Mana
                         int extracted = handler.extractMana(extractAmount, ManaAction.EXECUTE);
 
                         if (extracted > 0) {
@@ -82,7 +82,7 @@ public class ManaConduitBlockEntity extends BlockEntity {
     }
 
     public int getMana() {
-        return this.manaStorage.getMana();
+        return this.manaStorage.getManaStored();
     }
 
     public void applyManaUpdate() {
@@ -101,7 +101,7 @@ public class ManaConduitBlockEntity extends BlockEntity {
 
     public void transferManaToNeighbors() {
         if (level == null || level.isClientSide) return;
-        if (manaStorage.getMana() <= 0) return;
+        if (manaStorage.getManaStored() <= 0) return;
 
         for (Direction direction : Direction.values()) {
             BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
@@ -111,14 +111,14 @@ public class ManaConduitBlockEntity extends BlockEntity {
 
                 neighborMana.ifPresent(handler -> {
                     int needed = handler.getNeeded();
-                    MagicalIndustryMod.LOGGER.debug("[ManaConduit] 嘗試傳輸 Mana: 目前={} 目標設備需求={}", manaStorage.getMana(), needed);
+                    MagicalIndustryMod.LOGGER.debug("[ManaConduit] 嘗試傳輸 Mana: 目前={} 目標設備需求={}", manaStorage.getManaStored(), needed);
 
                     if (needed > 0) {
-                        int transferAmount = Math.min(50, manaStorage.getMana());
+                        int transferAmount = Math.min(50, manaStorage.getManaStored());
                         int extracted = manaStorage.extractMana(transferAmount, ManaAction.EXECUTE);
                         int leftover = handler.insertMana(extracted, ManaAction.EXECUTE);
 
-                        MagicalIndustryMod.LOGGER.debug("[ManaConduit] 扣除 Mana: {}, 剩餘={}", extracted, manaStorage.getMana());
+                        MagicalIndustryMod.LOGGER.debug("[ManaConduit] 扣除 Mana: {}, 剩餘={}", extracted, manaStorage.getManaStored());
 
                         if (leftover > 0) {
                             manaStorage.addMana(leftover);

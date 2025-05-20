@@ -54,7 +54,7 @@ public class ManaDebugToolItem extends Item {
                     // 向玩家顯示訊息
                     Player player = context.getPlayer();
                     if (player instanceof ServerPlayer serverPlayer) {
-                        serverPlayer.displayClientMessage(Component.translatable("message.magical_industry.mana_added", manaToAdd, manaStorage.getMana()), true);
+                        serverPlayer.displayClientMessage(Component.translatable("message.magical_industry.mana_added", manaToAdd, manaStorage.getManaStored()), true);
                     }
 
                     // 確保狀態已更新並同步到所有客戶端
@@ -63,7 +63,7 @@ public class ManaDebugToolItem extends Item {
                     level.sendBlockUpdated(pos, state, state, 3);
 
                     // 發送同步封包到所有玩家
-                    ManaUpdatePacket packet = new ManaUpdatePacket(pos, manaStorage.getMana());
+                    ManaUpdatePacket packet = new ManaUpdatePacket(pos, manaStorage.getManaStored());
                     RegisterNetworkHandler.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
                 });
 

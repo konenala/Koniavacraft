@@ -117,15 +117,15 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
     }
 
     public boolean hasEnoughMana(int requiredMana) {
-        return manaStorage.getMana() >= requiredMana;
+        return manaStorage.getManaStored() >= requiredMana;
     }
 
     public int getManaStored() {
-        return manaStorage.getMana();
+        return manaStorage.getManaStored();
     }
 
     public boolean hasSufficientMana(int requiredMana) {
-        return manaStorage.getMana() >= requiredMana;
+        return manaStorage.getManaStored() >= requiredMana;
     }
 
     // 添加魔力
@@ -231,7 +231,7 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
                 if (neighborBlockEntity != null) {
                     neighborBlockEntity.getCapability(ModCapabilities.MANA, direction.getOpposite()).ifPresent(neighborManaStorage -> {
                         while (blockEntity.manaStorage.getNeeded() > 0 && neighborManaStorage.canExtract()) {
-                            int manaToExtract = Math.min(50, neighborManaStorage.getMana());
+                            int manaToExtract = Math.min(50, neighborManaStorage.getManaStored());
                             int extractedMana = neighborManaStorage.extractMana(manaToExtract, ManaAction.EXECUTE);
 
                             if (extractedMana > 0) {
@@ -313,7 +313,7 @@ public class ManaCraftingTableBlockEntity extends AbstractManaMachineEntityBlock
     @Override
     protected void saveAdditional(CompoundTag pTag) {
         pTag.put("inventory", itemHandler.serializeNBT());
-        pTag.putInt("ManaStored", manaStorage.getMana());
+        pTag.putInt("ManaStored", manaStorage.getManaStored());
         super.saveAdditional(pTag);
     }
 

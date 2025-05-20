@@ -4,7 +4,11 @@ import com.github.nalamodikk.common.block.TileEntity.basic.SolarManaCollectorBlo
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -17,6 +21,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -83,7 +89,7 @@ public class SolarManaCollectorBlock extends BaseEntityBlock  {
     public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof SolarManaCollectorBlockEntity collector) {
-            return (int) (15 * ((float) collector.getManaStorage().getMana() / collector.getManaStorage().getMaxMana()));
+            return (int) (15 * ((float) collector.getManaStorage().getManaStored() / collector.getManaStorage().getMaxManaStored()));
         }
         return 0;
     }
@@ -92,7 +98,23 @@ public class SolarManaCollectorBlock extends BaseEntityBlock  {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), SolarManaCollectorBlockEntity::serverTick);
+        return blockEntityType == ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get() ? (lvl, pos, blockState, be) -> ((SolarManaCollectorBlockEntity) be).tickMachine()
+                : null;
+    }
+
+
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!level.isClientSide) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+
+            if (blockEntity instanceof SolarManaCollectorBlockEntity collector) {
+                // ✅ 開啟 Container（安全寫法）
+                NetworkHooks.openScreen((ServerPlayer) player, collector, pos);
+            }
+        }
+        return InteractionResult.SUCCESS;
     }
 
 

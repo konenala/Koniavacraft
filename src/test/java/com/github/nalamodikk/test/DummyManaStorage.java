@@ -8,7 +8,7 @@ public class DummyManaStorage implements IUnifiedManaHandler {
     private int mana = 0;
     private final int capacity = 1000;
 
-    @Override public int getMana() { return mana; }
+    @Override public int getManaStored() { return mana; }
 
     @Override public void setMana(int amount) { this.mana = amount; }
 
@@ -22,7 +22,7 @@ public class DummyManaStorage implements IUnifiedManaHandler {
 
     @Override public void onChanged() {}
 
-    @Override public int getMaxMana() { return capacity; }
+    @Override public int getMaxManaStored() { return capacity; }
 
     @Override public boolean canExtract() { return false; }
 
@@ -40,11 +40,11 @@ public class DummyManaStorage implements IUnifiedManaHandler {
 
     @Override public int getManaContainerCount() { return 1; }
 
-    @Override public int getMana(int container) { return mana; }
+    @Override public int getManaStored(int container) { return mana; }
 
     @Override public void setMana(int container, int mana) { this.mana = mana; }
 
-    @Override public int getMaxMana(int container) { return capacity; }
+    @Override public int getMaxManaStored(int container) { return capacity; }
 
     @Override public int getNeededMana(int container) { return capacity - mana; }
 

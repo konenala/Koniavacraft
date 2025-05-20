@@ -69,6 +69,8 @@
   "screen.magical_industry.input": "Input",
   "screen.magical_industry.cannot_toggle": "Generator is running, cannot switch mode!",
   "screen.magical_industry.modular_machine_config": "Modular Machine Assembly Interface",
+  "screen.magical_industry.upgrade_button.tooltip": "Open Upgrade Module Interface",
+  "screen.magical_industry.upgrade.title": "Upgrade Module Manager",
 
 
 

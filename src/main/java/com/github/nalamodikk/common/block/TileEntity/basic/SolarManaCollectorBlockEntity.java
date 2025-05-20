@@ -1,26 +1,30 @@
 package com.github.nalamodikk.common.block.TileEntity.basic;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.TileEntity.AbstractManaCollectorMachine;
+import com.github.nalamodikk.common.block.TileEntity.AbstractManaCollectorBlock;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.register.ModItems;
+import com.github.nalamodikk.common.screen.manacollector.SolarManaCollectorMenu;
+import com.github.nalamodikk.common.sync.MachineSyncManager;
+import com.github.nalamodikk.common.upgrade.UpgradeInventory;
+import com.github.nalamodikk.common.upgrade.api.IUpgradeableMachine;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -28,6 +32,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 
@@ -39,24 +44,39 @@ import java.util.Map;
  * - 僅在白天且可見天空時產生魔力
  * - 高海拔（Y > 100）加成效率（額外產能）
  */
-public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine implements IConfigurableBlock {
+public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock implements IConfigurableBlock , MenuProvider , IUpgradeableMachine {
     private final Map<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
-    private static final int UPGRADE_SLOT_COUNT = 5;
+    private static final int UPGRADE_SLOT_COUNT = 4;
     private final ItemStackHandler upgradeSlot = new ItemStackHandler(UPGRADE_SLOT_COUNT);
     private static final int BASE_GENERATE = 5;
-    private int tickCounter = 0;
+    private final UpgradeInventory upgrades = new UpgradeInventory(UPGRADE_SLOT_COUNT);
+    private final MachineSyncManager syncManager;
 
     private int lastGeneratedAmount = 0;
+    public static final Logger LOGGER = LogUtils.getLogger();
 
 
     private static final int BASE_INTERVAL = 40;       // 每 40 tick 嘗試一次（2 秒）
     private static final int BASE_OUTPUT = 5;          // 每次產出 5 mana（晴天正常條件）
-    private static final int MAX_MANA = 80000;          // 儲存上限
+    private static final int MAX_MANA = 800;          // 儲存上限
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, MAX_MANA, BASE_INTERVAL, BASE_OUTPUT);
+        this.syncManager = new MachineSyncManager();
 
     }
+
+
+    @Override
+    public UpgradeInventory getUpgradeInventory() {
+        return upgrades;
+    }
+
+    @Override
+    public BlockEntity getBlockEntity() {
+        return this;
+    }
+
 
     /**
      * 判斷是否符合太陽能條件：
@@ -66,16 +86,71 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
      */
     @Override
     protected boolean canGenerate() {
-        if (!level.isDay()) return false;
-        if (level.isRaining()) return false;
-        if (!level.canSeeSky(worldPosition.above())) return false;
-        return true;
+        return level.isDay() && !level.isRaining() && level.canSeeSky(worldPosition.above());
+    }
+
+    public boolean isGenerating() {
+        return canGenerate();
+    }
+
+
+    @Override
+    protected int computeManaAmount() {
+        int bonus = 0;
+        for (int i = 0; i < upgradeSlot.getSlots(); i++) {
+            ItemStack stack = upgradeSlot.getStackInSlot(i);
+            if (!stack.isEmpty() && stack.is(ModItems.SOLAR_MANA_UPGRADE.get())) {
+                bonus += 5;
+            }
+        }
+        int total = BASE_GENERATE + bonus;
+        lastGeneratedAmount = total;
+        return total;
     }
 
     @Override
-    public @Nullable AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        return null;
+    protected void onGenerate(int baseAmount) {
+        if (!level.isClientSide) {
+
+            int amount = baseAmount * getEfficiencyMultiplier();
+            int interval = 200 / getSpeedMultiplier();
+
+            if (level.getGameTime() % interval == 0) {
+                LOGGER.debug("SolarManaCollector generated {} mana at {}", amount, worldPosition);
+
+                // 儲存 mana 到自己
+                int inserted = this.getManaStorage().insertMana(amount, ManaAction.EXECUTE);
+                if (inserted > 0) {
+                    setChanged(); // 通知 Forge NBT / 同步
+                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                }
+
+                // 嘗試輸出
+                outputMana(inserted);
+            }
+
+            // 播 client 粒子（不管是否成功產生）
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.ENCHANT,
+                        worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 1.1,
+                        worldPosition.getZ() + 0.5,
+                        2, 0.2, 0.1, 0.2, 0.0);
+            }
+        }
     }
+
+
+    public int getMaxMana() {
+        return MAX_MANA;
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        return new SolarManaCollectorMenu(id, inv, this);
+    }
+
+
 
     @Override
     public void setDirectionConfig(Direction direction, boolean isOutput) {
@@ -120,12 +195,14 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
     @Override
     public void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
+
         CompoundTag out = new CompoundTag();
         for (Direction dir : Direction.values()) {
             out.putBoolean(dir.getName(), directionConfig.getOrDefault(dir, false));
         }
         tag.put("output_dirs", out);
         tag.put("UpgradeSlot", upgradeSlot.serializeNBT());
+        tag.put("Mana", manaStorage.serializeNBT()); // ✅ 用物件自己寫入
 
     }
 
@@ -141,64 +218,11 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
         if (tag.contains("UpgradeSlot")) {
             upgradeSlot.deserializeNBT(tag.getCompound("UpgradeSlot"));
         }
-    }
-
-    public static void serverTick(Level level, BlockPos pos, BlockState state, SolarManaCollectorBlockEntity be) {
-        be.tickCounter++;
-
-        // 每 40 tick 嘗試產生 mana
-        if (be.tickCounter >= 40) {
-            be.tickCounter = 0;
-
-            if (be.shouldGenerate(level, pos)) {
-                int manaGenerated = be.generateMana();
-                // 已經自動記錄到 lastGeneratedAmount，可省略
-            }
-
+        if (tag.contains("Mana")) {
+            manaStorage.deserializeNBT(tag.getCompound("Mana")); // ✅ 讀出來給 manaStorage
         }
-
-        // 🎆 粒子特效（client only，表示正在運作）
-        if (level.isClientSide) {
-            level.addParticle(ParticleTypes.ENCHANT,
-                    pos.getX() + 0.5 + Mth.nextDouble(level.random, -0.2, 0.2),
-                    pos.getY() + 1.1,
-                    pos.getZ() + 0.5 + Mth.nextDouble(level.random, -0.2, 0.2),
-                    0, 0.05, 0
-            );
-        }
-
-        // 🧪 Debug log（每 200 tick 顯示一次）
-        if (!level.isClientSide && level.getGameTime() % 200 == 0) {
-            MagicalIndustryMod.LOGGER.debug("SolarManaCollector generated {} mana at {}", be.lastGeneratedAmount, pos);
-        }
-
     }
-
-
-    public boolean shouldGenerate(Level level, BlockPos pos) {
-        return level.canSeeSky(pos.above()) && level.isDay() && !level.isRaining();
-    }
-
-    public int generateMana() {
-        int bonus = 0;
-
-        for (int i = 0; i < upgradeSlot.getSlots(); i++) {
-            ItemStack stack = upgradeSlot.getStackInSlot(i);
-            if (!stack.isEmpty() && stack.is(ModItems.SOLAR_MANA_UPGRADE.get())) {
-                bonus += 5;
-            }
-        }
-
-        int totalGenerated = BASE_GENERATE + bonus;
-        this.getManaStorage().insertMana(totalGenerated, ManaAction.EXECUTE);
-        this.lastGeneratedAmount = totalGenerated; // 記錄下這次產出
-
-        return totalGenerated;
-    }
-
-
-
-    public void outputMana() {
+    public void outputMana(int amount) {
         for (Direction dir : Direction.values()) {
             if (this.isOutput(dir)) {
                 BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(dir));
@@ -216,6 +240,8 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorMachine 
     public ManaStorage getManaStorage() {
         return this.manaStorage;
     }
+
+
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

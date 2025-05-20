@@ -25,6 +25,7 @@ public class ModCreativeModTabs {
                     pOutput.accept(ModItems.BASIC_TECH_WAND.get());
                     pOutput.accept(ModItems.MANA_DUST.get());
                     pOutput.accept(ModItems.MANA_INGOT.get());
+                    pOutput.accept(ModItems.SOLAR_MANA_UPGRADE.get());
 
                     pOutput.accept(ModItems.CORRUPTED_MANA_DUST.get());
 

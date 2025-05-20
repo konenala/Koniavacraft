@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * 抽象基底：原能收集機器（非燃燒型）
  * 提供固定時間間隔內自動產生魔力（Mana）的基礎邏輯
  */
-public abstract class AbstractManaCollectorMachine extends AbstractManaMachineEntityBlock {
+public abstract class AbstractManaCollectorBlock extends AbstractManaMachineEntityBlock {
 
     protected int tickCounter = 0;              // 計時器：用來記錄 tick 間隔
     protected final int intervalTick;           // 幾 tick 執行一次產能邏輯
@@ -24,8 +24,8 @@ public abstract class AbstractManaCollectorMachine extends AbstractManaMachineEn
      * @param intervalTick 幾 tick 執行一次產出邏輯
      * @param manaPerCycle 每次產出的魔力量
      */
-    public AbstractManaCollectorMachine(BlockEntityType<?> type, BlockPos pos, BlockState state,
-                                        int maxMana, int intervalTick, int manaPerCycle) {
+    public AbstractManaCollectorBlock(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                      int maxMana, int intervalTick, int manaPerCycle) {
         super(type, pos, state, maxMana, 0, 0); // 無能量儲存、無物品槽（非燃燒型）
         this.intervalTick = intervalTick;
         this.manaPerCycle = manaPerCycle;
@@ -36,29 +36,33 @@ public abstract class AbstractManaCollectorMachine extends AbstractManaMachineEn
      */
     @Override
     public void tickMachine() {
-        if (level == null || level.isClientSide) return; // 確保只在伺服端執行
+        if (level == null || level.isClientSide) return;
 
-        // 如果已經儲存滿了魔力，停止運作
-        if (manaStorage.getMana() >= manaStorage.getMaxMana()) {
+        if (manaStorage.getManaStored() >= manaStorage.getMaxManaStored()) {
             isWorking = false;
             return;
         }
 
-        tickCounter++; // 每 tick 累加一次
+        tickCounter++;
 
         if (tickCounter >= intervalTick) {
-            tickCounter = 0; // 重置計時器
+            tickCounter = 0;
 
-            if (canGenerate()) { // 由子類別定義是否可以產出魔力（例如天氣、地形）
-                manaStorage.addMana(manaPerCycle); // 加入魔力儲存
-                isWorking = true; // 設定為工作狀態
-                setChanged(); // 通知 Minecraft 狀態有變化（存檔 / render）
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); // 觸發客戶端同步
+            if (canGenerate()) {
+                int amount = computeManaAmount(); // 子類可以客製 bonus
+                manaStorage.addMana(amount);
+
+                isWorking = true;
+                setChanged();
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                onGenerate(amount); // 播粒子之類
+
             } else {
-                isWorking = false; // 若不能生產則標記為停止
+                isWorking = false;
             }
         }
     }
+
 
     /**
      * 子類別需實作此方法來判斷是否符合條件可產能
