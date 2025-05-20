@@ -54,9 +54,19 @@ public class UpgradeMenu extends AbstractContainerMenu {
 
 
     @Override
-    public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
-        return null;
+    public ItemStack quickMoveStack(Player player, int index) {
+        if (index < 0 || index >= this.slots.size()) return ItemStack.EMPTY;
+
+        Slot slot = this.slots.get(index);
+        if (slot == null || !slot.hasItem()) return ItemStack.EMPTY;
+
+        ItemStack original = slot.getItem();
+        ItemStack copy = original.copy();
+
+
+        return copy; // ✅ 一定不能 return null
     }
+
 
     @Override
     public boolean stillValid(Player player) {
