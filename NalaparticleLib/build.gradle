@@ -1,10 +1,13 @@
 buildscript {
+    ext.kotlin_version = '2.0.0'
     repositories {
+        mavenCentral()
 
     }
 
     dependencies {
         classpath 'org.spongepowered:mixingradle:0.7.+'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -26,6 +29,7 @@ base {
     archivesName = mod_id
 }
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'kotlin'
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -171,11 +175,10 @@ repositories {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
     }
+    mavenCentral()
 
 }
-dependencies {
-    implementation project(':NalaparticleLib')
-}
+
 
 dependencies {
     // Specify the version of Minecraft to use.
@@ -227,6 +230,7 @@ dependencies {
     // JUnit 5 測試用
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
@@ -366,4 +370,7 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(JavaExec) {
     environment 'file.encoding', 'UTF-8'
+}
+kotlin {
+    jvmToolchain(17)
 }

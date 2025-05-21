@@ -6,10 +6,9 @@ import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.register.ModItems;
 import com.github.nalamodikk.common.screen.manacollector.SolarManaCollectorMenu;
-import com.github.nalamodikk.common.sync.MachineSyncManager;
 import com.github.nalamodikk.common.upgrade.UpgradeInventory;
+import com.github.nalamodikk.common.upgrade.UpgradeType;
 import com.github.nalamodikk.common.upgrade.api.IUpgradeableMachine;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -24,13 +23,13 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
@@ -47,10 +46,10 @@ import java.util.Map;
 public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock implements IConfigurableBlock , MenuProvider , IUpgradeableMachine {
     private final Map<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
     private static final int UPGRADE_SLOT_COUNT = 4;
-    private final ItemStackHandler upgradeSlot = new ItemStackHandler(UPGRADE_SLOT_COUNT);
     private static final int BASE_GENERATE = 5;
     private final UpgradeInventory upgrades = new UpgradeInventory(UPGRADE_SLOT_COUNT);
-    private final MachineSyncManager syncManager;
+    private final LazyOptional<IItemHandler> upgradeHandler = LazyOptional.of(() -> new InvWrapper(upgrades));
+    private boolean isCurrentlyGenerating = false;
 
     private int lastGeneratedAmount = 0;
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -62,7 +61,6 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, MAX_MANA, BASE_INTERVAL, BASE_OUTPUT);
-        this.syncManager = new MachineSyncManager();
 
     }
 
@@ -96,14 +94,10 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
     @Override
     protected int computeManaAmount() {
-        int bonus = 0;
-        for (int i = 0; i < upgradeSlot.getSlots(); i++) {
-            ItemStack stack = upgradeSlot.getStackInSlot(i);
-            if (!stack.isEmpty() && stack.is(ModItems.SOLAR_MANA_UPGRADE.get())) {
-                bonus += 5;
-            }
-        }
-        int total = BASE_GENERATE + bonus;
+        int efficiencyLevel = upgrades.getUpgradeCount(UpgradeType.EFFICIENCY);
+        double multiplier = 1.0 + efficiencyLevel * 0.1; // 每個效率升級 +10%
+
+        int total = (int) (BASE_GENERATE * multiplier);
         lastGeneratedAmount = total;
         return total;
     }
@@ -111,33 +105,48 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     @Override
     protected void onGenerate(int baseAmount) {
         if (!level.isClientSide) {
+            int amount = baseAmount;
 
-            int amount = baseAmount * getEfficiencyMultiplier();
-            int interval = 200 / getSpeedMultiplier();
+            int speedLevel = upgrades.getUpgradeCount(UpgradeType.SPEED);
+            int interval = Math.max(10, 200 - speedLevel * 20); // 每個速度升級快 20tick，最少 10tick
 
+            if (!level.isClientSide && level.getGameTime() % 50 == 0) {
+                boolean newState = canGenerate();
+                if (newState != isCurrentlyGenerating) {
+                    isCurrentlyGenerating = newState;
+                    setChanged();
+                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                }
+            }
             if (level.getGameTime() % interval == 0) {
                 LOGGER.debug("SolarManaCollector generated {} mana at {}", amount, worldPosition);
 
-                // 儲存 mana 到自己
                 int inserted = this.getManaStorage().insertMana(amount, ManaAction.EXECUTE);
                 if (inserted > 0) {
-                    setChanged(); // 通知 Forge NBT / 同步
+                    setChanged();
                     level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
                 }
 
-                // 嘗試輸出
                 outputMana(inserted);
-            }
 
-            // 播 client 粒子（不管是否成功產生）
-            if (level instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.ENCHANT,
-                        worldPosition.getX() + 0.5,
-                        worldPosition.getY() + 1.1,
-                        worldPosition.getZ() + 0.5,
-                        2, 0.2, 0.1, 0.2, 0.0);
+                // Server 端粒子
+                if (level instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.ENCHANT,
+                            worldPosition.getX() + 0.5,
+                            worldPosition.getY() + 1.1,
+                            worldPosition.getZ() + 0.5,
+                            2, 0.2, 0.1, 0.2, 0.0);
+                }
             }
         }
+    }
+
+    public boolean isCurrentlyGenerating() {
+        return isCurrentlyGenerating;
+    }
+
+    public void setCurrentlyGenerating(boolean value) {
+        this.isCurrentlyGenerating = value;
     }
 
 
@@ -173,7 +182,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return LazyOptional.of(() -> upgradeSlot).cast();
+            return upgradeHandler.cast();
         }
         return super.getCapability(cap, side);
     }
@@ -184,9 +193,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         return Component.translatable("block.magical_industry.solar_mana_collector");
     }
 
-    public ItemStack getUpgradeItem() {
-        return upgradeSlot.getStackInSlot(0);
-    }
+
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
@@ -201,7 +208,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
             out.putBoolean(dir.getName(), directionConfig.getOrDefault(dir, false));
         }
         tag.put("output_dirs", out);
-        tag.put("UpgradeSlot", upgradeSlot.serializeNBT());
+        tag.put("Upgrades", upgrades.serializeNBT()); // ✅ 用你自己的 UpgradeInventory 寫入
         tag.put("Mana", manaStorage.serializeNBT()); // ✅ 用物件自己寫入
 
     }
@@ -215,13 +222,14 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
                 directionConfig.put(dir, out.getBoolean(dir.getName()));
             }
         }
-        if (tag.contains("UpgradeSlot")) {
-            upgradeSlot.deserializeNBT(tag.getCompound("UpgradeSlot"));
+        if (tag.contains("Upgrades")) {
+            upgrades.deserializeNBT(tag.getCompound("Upgrades")); // ✅ 正確讀回來
         }
         if (tag.contains("Mana")) {
             manaStorage.deserializeNBT(tag.getCompound("Mana")); // ✅ 讀出來給 manaStorage
         }
     }
+
     public void outputMana(int amount) {
         for (Direction dir : Direction.values()) {
             if (this.isOutput(dir)) {
@@ -241,6 +249,16 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         return this.manaStorage;
     }
 
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        upgradeHandler.invalidate();
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+    }
 
 
     @Override

@@ -63,8 +63,25 @@ public class UpgradeMenu extends AbstractContainerMenu {
         ItemStack original = slot.getItem();
         ItemStack copy = original.copy();
 
+        // 升級欄位範圍（index 0 ~ 3）
+        if (index < 4) {
+            if (!this.moveItemStackTo(original, 4, this.slots.size(), true)) {
+                return ItemStack.EMPTY;
+            }
+        } else {
+            if (!this.moveItemStackTo(original, 0, 4, false)) {
+                return ItemStack.EMPTY;
+            }
+        }
 
-        return copy; // ✅ 一定不能 return null
+        if (original.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+
+        slot.onTake(player, original);
+        return copy;
     }
 
 

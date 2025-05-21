@@ -38,18 +38,19 @@ public class ModMenusTypes {
             MENUS.register("solar_mana_collector",
                     () -> IForgeMenuType.create(SolarManaCollectorMenu::new));
 
+    // 註冊時提供簡化版本，只處理標準情境（方塊開 GUI）
     public static final RegistryObject<MenuType<UpgradeMenu>> UPGRADE_MENU =
             MENUS.register("upgrade_menu", () ->
                     IForgeMenuType.create((id, playerInv, extraData) -> {
+                        // 若你之後要支援多來源，這段要能區分來源類型
                         BlockPos pos = extraData.readBlockPos();
-                        Level level = playerInv.player.level();
+                        BlockEntity be = playerInv.player.level().getBlockEntity(pos);
 
-                        BlockEntity be = level.getBlockEntity(pos);
                         if (be instanceof IUpgradeableMachine machine) {
                             return new UpgradeMenu(id, playerInv, machine.getUpgradeInventory(), machine);
                         }
 
-                        throw new IllegalStateException("UpgradeMenu: No IUpgradeableMachine at " + pos);
+                        return null;
                     }));
 
 

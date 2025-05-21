@@ -54,6 +54,8 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
                 uiMaxMana = value;
             }
         });
+
+
         // --- Capability 同步部分 ---
         blockEntity.getCapability(ManaCapability.MANA).ifPresent(mana -> {
             syncManager.addDataSlot(new DataSlot() {
@@ -93,6 +95,18 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
     public int getMaxMana() {
         return uiMaxMana;
     }
+    private final DataSlot generatingSlot = new DataSlot() {
+        @Override
+        public int get() {
+            return blockEntity.isCurrentlyGenerating() ? 1 : 0;
+        }
+
+        @Override
+        public void set(int value) {
+            blockEntity.setCurrentlyGenerating(value != 0);
+        }
+    };
+
 
 
 
@@ -136,4 +150,7 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
     }
 
 
+    public DataSlot getGeneratingSlot() {
+        return generatingSlot;
+    }
 }

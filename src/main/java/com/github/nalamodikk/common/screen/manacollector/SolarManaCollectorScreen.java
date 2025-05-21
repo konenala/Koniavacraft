@@ -35,28 +35,32 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         // 背景
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
-        // 太陽圖示：來源區塊 (176, 2) 大小 39x38
-        int sunSrcX = 176;
-        int sunSrcY = 2;
-        int sunW = 39;
-        int sunH = 38;
+        // 太陽圖示資料
+        final int sunSrcX = 176;
+        final int sunSrcY = 2;
+        final int sunW = 39;
+        final int sunH = 38;
+        final int targetX = this.leftPos + 69;
+        final int targetY = this.topPos + 24;
 
-        int targetX = this.leftPos + 69;
-        int targetY = this.topPos + 24;
+        // 是否正在發電（同步值）
+        boolean generating = menu.getGeneratingSlot().get() != 0;
 
-        // 是否要變暗
-        if (!menu.getBlockEntity().isGenerating()) {
+        // 如果沒在發電 → 降低亮度（變灰）
+        if (!generating) {
             guiGraphics.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         }
 
-        // 渲染太陽
+        // 繪製太陽圖示
         guiGraphics.blit(TEXTURE, targetX, targetY, sunSrcX, sunSrcY, sunW, sunH);
 
-        // 恢復顏色
+        // 恢復顏色避免影響其他元素
         guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        drawManaBar(guiGraphics, 11, 19); // 魔力條的位置偏移（可以根據需要調整）
 
+        // 魔力條繪製
+        drawManaBar(guiGraphics, 11, 19); // 偏移位置可自行調整
     }
+
     private boolean isHoveringManaBar(int mouseX, int mouseY) {
         int manaBarX = this.leftPos + 11;
         int manaBarY = this.topPos + 19;
