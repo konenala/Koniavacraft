@@ -173,9 +173,6 @@ repositories {
     }
 
 }
-dependencies {
-    implementation project(':NalaparticleLib')
-}
 
 dependencies {
     // Specify the version of Minecraft to use.
