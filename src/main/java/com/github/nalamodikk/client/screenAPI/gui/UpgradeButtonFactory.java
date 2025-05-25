@@ -4,7 +4,7 @@ import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.OpenUpgradeGuiPacket;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
+import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

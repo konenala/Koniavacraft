@@ -1,25 +1,12 @@
 package com.github.nalamodikk.common.screen;
 
-import com.github.nalamodikk.client.screenAPI.DynamicTooltip;
-import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
-import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
 import com.github.nalamodikk.client.screenAPI.UniversalTexturedButton;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.OpenUpgradeGuiPacket;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraftforge.network.NetworkHooks;
-
-import java.util.List;
 
 public class UpgradeScreen extends AbstractContainerScreen<UpgradeMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/upgrade_gui.png");

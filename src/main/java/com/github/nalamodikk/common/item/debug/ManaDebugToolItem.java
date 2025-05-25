@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.item.debug;
 
 import com.github.nalamodikk.common.capability.ManaCapability;
 
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
+import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.toolpacket.ModeChangePacket;
 import net.minecraft.core.BlockPos;

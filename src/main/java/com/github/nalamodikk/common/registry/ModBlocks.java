@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.register;
+package com.github.nalamodikk.common.registry;
 
 import com.github.nalamodikk.common.block.blocks.Conduit.ManaConduitBlock;
 import com.github.nalamodikk.common.ComponentSystem.block.blocks.MachineBlock.ModularMachineBlock;

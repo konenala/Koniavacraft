@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.blocks.basic;
 
 import com.github.nalamodikk.common.block.TileEntity.basic.SolarManaCollectorBlockEntity;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;

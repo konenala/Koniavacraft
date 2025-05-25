@@ -1,14 +1,14 @@
 package com.github.nalamodikk.common;
 
-import com.github.nalamodikk.common.register.ModBlocks;
-import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.register.ModCapabilities;  // 新增的导入
-import com.github.nalamodikk.common.register.ModCreativeModTabs;
-import com.github.nalamodikk.common.register.ModItems;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
-import com.github.nalamodikk.common.register.ModRecipes;
-import com.github.nalamodikk.common.register.*;
-import com.github.nalamodikk.common.register.ModMenusTypes;
+import com.github.nalamodikk.common.registry.ModBlocks;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModCapabilities;  // 新增的导入
+import com.github.nalamodikk.common.registry.ModCreativeModTabs;
+import com.github.nalamodikk.common.registry.ModItems;
+import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
+import com.github.nalamodikk.common.registry.ModRecipes;
+import com.github.nalamodikk.common.registry.*;
+import com.github.nalamodikk.common.registry.ModMenusTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;

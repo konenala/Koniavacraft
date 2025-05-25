@@ -1,9 +1,8 @@
 package com.github.nalamodikk.common.screen;
 
 import com.github.nalamodikk.client.screenAPI.gui.slot.UpgradeSlot;
-import com.github.nalamodikk.common.register.ModMenusTypes;
+import com.github.nalamodikk.common.registry.ModMenusTypes;
 import com.github.nalamodikk.common.upgrade.api.IUpgradeableMachine;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;

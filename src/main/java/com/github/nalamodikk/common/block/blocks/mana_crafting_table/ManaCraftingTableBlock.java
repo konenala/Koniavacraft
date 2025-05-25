@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.blocks.mana_crafting_table;
 
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
 import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;

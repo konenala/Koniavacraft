@@ -1,6 +1,5 @@
-package com.github.nalamodikk.common.register;
+package com.github.nalamodikk.common.registry;
 
-import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentBehaviorRegistry;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ModBehaviors;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ModComponents;
 

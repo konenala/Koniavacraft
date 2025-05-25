@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.compat.JEI.Machine.manacrafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.common.registry.ModBlocks;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingScreen;
 import mezz.jei.api.IModPlugin;

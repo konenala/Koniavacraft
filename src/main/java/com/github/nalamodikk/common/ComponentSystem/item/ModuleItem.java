@@ -5,7 +5,7 @@ import com.github.nalamodikk.common.ComponentSystem.API.IModuleComponentProvider
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
-import com.github.nalamodikk.common.register.ModItems;
+import com.github.nalamodikk.common.registry.ModItems;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.ComponentNameHelper;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.ModuleItemHelper;
 import net.minecraft.ChatFormatting;

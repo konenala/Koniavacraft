@@ -2,9 +2,9 @@ package com.github.nalamodikk.common.screen.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
+import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.ConfigDirectionUpdatePacket;
-import com.github.nalamodikk.common.register.ModMenusTypes;
+import com.github.nalamodikk.common.registry.ModMenusTypes;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;

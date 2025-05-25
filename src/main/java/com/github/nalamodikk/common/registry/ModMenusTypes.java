@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.register;
+package com.github.nalamodikk.common.registry;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorMenu;
@@ -9,7 +9,6 @@ import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
 import com.github.nalamodikk.common.upgrade.api.IUpgradeableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

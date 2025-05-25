@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.screen.manacrafting;
 
 import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
-import com.github.nalamodikk.common.register.ModMenusTypes;
+import com.github.nalamodikk.common.registry.ModMenusTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;

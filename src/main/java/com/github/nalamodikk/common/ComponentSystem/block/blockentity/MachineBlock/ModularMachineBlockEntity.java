@@ -5,7 +5,7 @@ import com.github.nalamodikk.common.ComponentSystem.API.machine.IGridComponent;
 import com.github.nalamodikk.common.ComponentSystem.API.machine.grid.ComponentGrid;
 import com.github.nalamodikk.common.ComponentSystem.item.ModuleItem;
 import com.github.nalamodikk.common.ComponentSystem.register.component.ComponentRegistry;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridIOHelper;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.GridLayoutHelper;
 import com.github.nalamodikk.common.ComponentSystem.util.helpers.ModuleItemHelper;

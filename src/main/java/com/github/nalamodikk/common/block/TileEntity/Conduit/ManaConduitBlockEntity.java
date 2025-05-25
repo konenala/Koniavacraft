@@ -6,7 +6,7 @@ import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.network.ManaNetwork.net.ManaNetworkManager;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;

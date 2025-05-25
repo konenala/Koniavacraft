@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.blocks.Conduit;
 
 import com.github.nalamodikk.common.block.TileEntity.Conduit.ManaConduitBlockEntity;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;

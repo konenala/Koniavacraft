@@ -2,11 +2,9 @@ package com.github.nalamodikk.common.screen.manacollector;
 
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
-import com.github.nalamodikk.client.screenAPI.gui.slot.BigSlot;
-import com.github.nalamodikk.client.screenAPI.gui.slot.helper.BigSlotItemHandler;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.OpenUpgradeGuiPacket;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
+import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;

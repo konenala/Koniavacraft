@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.register;
+package com.github.nalamodikk.common.registry;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.resources.ResourceLocation;

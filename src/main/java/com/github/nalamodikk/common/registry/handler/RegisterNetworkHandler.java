@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.register.handler;
+package com.github.nalamodikk.common.registry.handler;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;

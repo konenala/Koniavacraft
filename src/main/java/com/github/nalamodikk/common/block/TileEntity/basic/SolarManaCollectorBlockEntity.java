@@ -5,7 +5,7 @@ import com.github.nalamodikk.common.block.TileEntity.AbstractManaCollectorBlock;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.registry.ModBlockEntities;
 import com.github.nalamodikk.common.screen.manacollector.SolarManaCollectorMenu;
 import com.github.nalamodikk.common.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.upgrade.UpgradeType;

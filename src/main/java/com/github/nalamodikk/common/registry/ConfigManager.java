@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.register;
+package com.github.nalamodikk.common.registry;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;

@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.screen.manacollector;
 
 import com.github.nalamodikk.common.block.TileEntity.basic.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.capability.ManaCapability;
-import com.github.nalamodikk.common.register.ModMenusTypes;
+import com.github.nalamodikk.common.registry.ModMenusTypes;
 import com.github.nalamodikk.common.sync.MachineSyncManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;

@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
+import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
 import com.github.nalamodikk.common.network.toolpacket.TechWandModePacket;
 import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
 import com.github.nalamodikk.common.util.helpers.BlockSelector;

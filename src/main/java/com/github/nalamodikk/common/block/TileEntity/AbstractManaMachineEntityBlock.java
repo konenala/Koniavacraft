@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.TileEntity;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
-import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.common.registry.ModCapabilities;
 import com.github.nalamodikk.common.compat.energy.ForgeEnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
