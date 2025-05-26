@@ -1,26 +1,16 @@
-package com.github.nalamodikk.common.registry.handler;
+package com.github.nalamodikk.common.register.handler;
 
-import com.github.nalamodikk.common.API.IConfigurableBlock;
+
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.ComponentSystem.network.ToggleAutoCraftingMessage;
-import com.github.nalamodikk.common.network.OpenUpgradeGuiPacket;
-import com.github.nalamodikk.common.network.ToggleModePacket;
-import com.github.nalamodikk.common.network.toolpacket.ConfigDirectionUpdatePacket;
-import com.github.nalamodikk.common.network.toolpacket.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.toolpacket.ModeChangePacket;
-import com.github.nalamodikk.common.network.toolpacket.TechWandModePacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -54,14 +44,14 @@ public class RegisterNetworkHandler {
     }
 
     private static void registerCommonPackets(AtomicInteger packetId) {
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ToggleModePacket.class, ToggleModePacket::encode, ToggleModePacket::decode, ToggleModePacket::handle);
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ConfigDirectionUpdatePacket.class, ConfigDirectionUpdatePacket::encode, ConfigDirectionUpdatePacket::decode, ConfigDirectionUpdatePacket::handle);
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ConfigDirectionUpdatePacket.class, ConfigDirectionUpdatePacket::encode, ConfigDirectionUpdatePacket::decode, PacketHandler::handleConfigDirectionUpdate);
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ModeChangePacket.class, ModeChangePacket::toBytes, ModeChangePacket::new, ModeChangePacket::handle);
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), TechWandModePacket.class, TechWandModePacket::encode, TechWandModePacket::decode, TechWandModePacket::handle);
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ToggleAutoCraftingMessage.class, ToggleAutoCraftingMessage::encode, ToggleAutoCraftingMessage::decode, ToggleAutoCraftingMessage::handle);
-        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), OpenUpgradeGuiPacket.class, OpenUpgradeGuiPacket::toBytes, OpenUpgradeGuiPacket::new, OpenUpgradeGuiPacket::handle
-        );
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ToggleModePacket.class, ToggleModePacket::encode, ToggleModePacket::decode, ToggleModePacket::handle);
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ConfigDirectionUpdatePacket.class, ConfigDirectionUpdatePacket::encode, ConfigDirectionUpdatePacket::decode, ConfigDirectionUpdatePacket::handle);
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ConfigDirectionUpdatePacket.class, ConfigDirectionUpdatePacket::encode, ConfigDirectionUpdatePacket::decode, PacketHandler::handleConfigDirectionUpdate);
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ModeChangePacket.class, ModeChangePacket::toBytes, ModeChangePacket::new, ModeChangePacket::handle);
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), TechWandModePacket.class, TechWandModePacket::encode, TechWandModePacket::decode, TechWandModePacket::handle);
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), ToggleAutoCraftingMessage.class, ToggleAutoCraftingMessage::encode, ToggleAutoCraftingMessage::decode, ToggleAutoCraftingMessage::handle);
+//        NETWORK_CHANNEL.registerMessage(packetId.getAndIncrement(), OpenUpgradeGuiPacket.class, OpenUpgradeGuiPacket::toBytes, OpenUpgradeGuiPacket::new, OpenUpgradeGuiPacket::handle
+//        );
 
     }
 

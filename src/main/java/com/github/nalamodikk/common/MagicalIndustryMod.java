@@ -1,125 +1,81 @@
 package com.github.nalamodikk.common;
 
-import com.github.nalamodikk.common.registry.ModBlocks;
-import com.github.nalamodikk.common.registry.ModBlockEntities;
-import com.github.nalamodikk.common.registry.ModCapabilities;  // 新增的导入
-import com.github.nalamodikk.common.registry.ModCreativeModTabs;
-import com.github.nalamodikk.common.registry.ModItems;
-import com.github.nalamodikk.common.registry.handler.RegisterNetworkHandler;
-import com.github.nalamodikk.common.registry.ModRecipes;
-import com.github.nalamodikk.common.registry.*;
-import com.github.nalamodikk.common.registry.ModMenusTypes;
-import com.mojang.logging.LogUtils;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import com.github.nalamodikk.common.register.ModCreativeModTabs;
+import com.github.nalamodikk.common.register.ModItems;
 import org.slf4j.Logger;
-import software.bernie.geckolib.GeckoLib;
 
-// The value here should match an entry in the META-INF/mods.toml file
+import com.mojang.logging.LogUtils;
+
+import net.minecraft.client.Minecraft;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+
+// The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(MagicalIndustryMod.MOD_ID)
-public class MagicalIndustryMod {
+public class MagicalIndustryMod
+{
     // Define mod id in a common place for everything to reference
     public static final String MOD_ID = "magical_industry";
     // Directly reference a slf4j logger
-    public static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
+    // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace
 
-
-    public MagicalIndustryMod() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        ConfigManager.registerConfigs();
-
-        GeckoLib.initialize();
-        // 注册创造模式标签
-        ModCreativeModTabs.register(modEventBus);
-        LOGGER.debug("這是 Debug 訊息");
-        LOGGER.info("這是 Info 訊息");
-        LOGGER.warn("這是 Warn 訊息");
-        LOGGER.error("這是 Error 訊息");
-
-        // 注册物品和方块
-        ModItems.register(modEventBus);
-        ModBlocks.register(modEventBus);
-        modEventBus.register(ModCapabilities.class);
-
-        // 注册菜单类型和方块实体和配方
-        ModMenusTypes.register(modEventBus);
-        ModBlockEntities.register(modEventBus);
-        ModRecipes.register(modEventBus);
-
-        // 注册模组的生命周期事件
+    // The constructor for the mod class is the first code that is run when your mod is loaded.
+    // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
+    public MagicalIndustryMod(IEventBus modEventBus, ModContainer modContainer)
+    {
+        // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+        ModItems.register(modEventBus);
+        ModCreativeModTabs.register(modEventBus);
+        // Register ourselves for server and other game events we are interested in.
+        // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
+        // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
+        NeoForge.EVENT_BUS.register(this);
 
-        // 注册创造模式标签的内容
-        modEventBus.addListener(this::addCreative);
-
-        RegisterCapabilityHandler.register();
+        // Register the item to a creative tab
 
 
-        // 在模組初始化時加載魔力生成速率
-
-        // 注册 MinecraftForge 的事件总线
-        MinecraftForge.EVENT_BUS.register(this);
+        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        // 通用设置
-        RegisterNetworkHandler.init(event);
-
-        // ✅ 在這裡註冊行為
-        ModRegistries.registerAll();
+    private void commonSetup(final FMLCommonSetupEvent event)
+    {
+        // Some common setup code
+        LOGGER.info("HELLO FROM COMMON SETUP");
 
     }
 
 
-    // 添加物品到创造模式标签
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        // 在这里添加物品到相应的创造模式标签
-    }
 
-    // 服务器启动事件
+    // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
+    public void onServerStarting(ServerStartingEvent event)
+    {
+        // Do something when the server starts
         LOGGER.info("HELLO from server starting");
     }
 
-
-
-    @SubscribeEvent
-    public void onAddReloadListener(AddReloadListenerEvent event) {
-        LOGGER.info("Successfully registered FuelRateLoader as a resource reload listener.");
-    }
-    // 客户端事件订阅器
-    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents {
+    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
+    @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientModEvents
+    {
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            // 客户端设置
-            ModMenuScreens.registerScreens();
-            ModRenderers.registerBlockEntityRenderers();
-
-            //   BlockEntityRenderers.register(ModBlockEntities.MANA_GENERATOR_BE.get(), ManaGeneratorRenderer::new);
+        public static void onClientSetup(FMLClientSetupEvent event)
+        {
+            // Some client setup code
+            LOGGER.info("HELLO FROM CLIENT SETUP");
+            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }
-
-        @SubscribeEvent
-        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-           // event.registerBlockEntityRenderer(ModBlockEntities.MANA_GENERATOR_BE.get(), rendererContext -> new ManaGeneratorRenderer());
-
-        }
-
     }
-
-
-
-
 }

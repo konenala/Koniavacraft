@@ -1,14 +1,13 @@
 package com.github.nalamodikk.common.capability;
 
 import com.github.nalamodikk.common.capability.mana.ManaAction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+import org.jetbrains.annotations.UnknownNullability;
+
 
 public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<CompoundTag> {
-    public static final Capability<ManaStorage> MANA = CapabilityManager.get(new CapabilityToken<>() {});
 
     private int mana;
     private final int capacity;
@@ -133,16 +132,18 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
         return toReceive;
     }
 
+
+
     @Override
-    public CompoundTag serializeNBT() {
+    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("Mana", this.mana);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         this.mana = nbt.getInt("Mana");
-    }
 
+    }
 }
