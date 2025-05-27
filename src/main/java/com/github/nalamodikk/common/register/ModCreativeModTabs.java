@@ -25,6 +25,16 @@ public class ModCreativeModTabs {
 
                     })
                     .build());
+ public static final Supplier<CreativeModeTab> MAGICAL_INDUSTRY_BLOCKS_TAB =  CREATIVE_MODE_TABS.register("magical_industry_blocks_tab",
+            ()-> CreativeModeTab.builder().icon(()-> new ItemStack(ModItems.MANA_DUST.get()))
+                    .title(Component.translatable("creativetab.magical_industry_blocks"))
+                    .displayItems((parameters, output) -> {
+                        output.accept(ModItems.MANA_DUST);
+                        output.accept(ModItems.CORRUPTED_MANA_DUST);
+                        output.accept(ModItems.MANA_INGOT);
+
+                    })
+                    .build());
 
     public static void register(IEventBus eventBus){
         CREATIVE_MODE_TABS.register(eventBus);

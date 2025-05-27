@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common;
 
+import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModCreativeModTabs;
 import com.github.nalamodikk.common.register.ModItems;
 import org.slf4j.Logger;
@@ -33,9 +34,16 @@ public class MagicalIndustryMod
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public MagicalIndustryMod(IEventBus modEventBus, ModContainer modContainer)
     {
+
+
+        // debug test
+        LOGGER.debug("這是一條 DEBUG 測試訊息");
+        LOGGER.info("這是一條 INFO 測試訊息");
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
         ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
+
         ModCreativeModTabs.register(modEventBus);
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.

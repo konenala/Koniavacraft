@@ -2,7 +2,7 @@ package com.github.nalamodikk.client.event;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.ManaDebugToolItem;
-import com.github.nalamodikk.common.network.packet.ModeChangePacket;
+import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;

@@ -1,0 +1,145 @@
+package com.github.nalamodikk.common.block.TileEntity.mana_crafting;
+
+// ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.capability.ManaCapability;
+import com.github.nalamodikk.common.capability.ManaStorage;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
+import com.github.nalamodikk.common.register.ModBlockEntities;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.minecraft.nbt.CompoundTag;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.stream.IntStream;
+
+public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider {
+    public static final int MAX_MANA = 10000;
+
+    public static final int INPUT_SLOT_COUNT = 9;
+    public static final int OUTPUT_SLOT = 9;
+    public static final int TOTAL_SLOTS = 10;
+
+    private final ItemStackHandler itemHandler = new ItemStackHandler(TOTAL_SLOTS);
+    private final IUnifiedManaHandler manaStorage = new ManaStorage(MAX_MANA);
+
+    public ManaCraftingTableBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), pos, state);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, ManaCraftingTableBlockEntity be) {
+        be.extractManaFromNeighbors();
+        be.updateCraftingResult();
+    }
+
+    private void extractManaFromNeighbors() {
+        for (var direction : net.minecraft.core.Direction.values()) {
+            BlockPos neighborPos = worldPosition.relative(direction);
+            if (!level.hasChunkAt(neighborPos)) continue;
+
+            BlockEntity neighbor = level.getBlockEntity(neighborPos);
+            if (neighbor == null) continue;
+
+            IUnifiedManaHandler neighborMana = ManaCapability.MANA.getCapability(level, neighborPos, null, neighbor, null);
+            if (neighborMana == null) continue;
+
+            int simulated = neighborMana.extractMana(50, ManaAction.get(true));
+            if (simulated > 0) {
+                int extracted = neighborMana.extractMana(50, ManaAction.get(false));
+                manaStorage.receiveMana(extracted, ManaAction.get(false));
+                setChanged();
+            }
+        }
+    }
+
+
+
+    private void updateCraftingResult() {
+        if (level == null || level.isClientSide()) return;
+
+    }
+
+    public void craftItem() {
+
+    }
+
+    public ItemStackHandler getItemHandler() {
+        return itemHandler;
+    }
+
+    public IUnifiedManaHandler getManaStorage() {
+        return manaStorage;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("block.magical_industry.mana_crafting_table");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        return new ManaCraftingMenu(id, inv, this);
+    }
+
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        itemHandler.deserializeNBT(registries, tag.getCompound("Items"));
+        if (manaStorage instanceof ManaStorage storage) {
+            storage.setMana(tag.getInt("Mana"));
+        }
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("Items", itemHandler.serializeNBT(registries));
+        if (manaStorage instanceof ManaStorage storage) {
+            tag.putInt("Mana", storage.getManaStored());
+        }
+    }
+
+
+    public void drops() {
+        if (this.level == null || this.level.isClientSide) return;
+
+        // 取得該方塊實體內部的物品處理器
+        IItemHandler handler = this.getItemHandler();
+        if (handler == null) return;
+
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            ItemStack stack = handler.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(this.level, this.worldPosition.getX(), this.worldPosition.getY(), this.worldPosition.getZ(), stack);
+            }
+        }
+    }
+
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        if (level != null)
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
+
+
+}

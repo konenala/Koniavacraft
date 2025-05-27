@@ -1,7 +1,7 @@
 // ✅ NeoForge 1.21+ 官方推薦封包系統：CustomPacketPayload + RegisterPayloadHandlerEvent + StreamCodec
 // 專用於 modeIndex 模式切換封包
 
-package com.github.nalamodikk.common.network.packet;
+package com.github.nalamodikk.common.network.packet.manatool;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.ManaDebugToolItem;

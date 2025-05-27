@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.item;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaCapability;
+import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class ManaDebugToolItem extends Item {
     public static final String TAG_MODE_INDEX = "ModeIndex";
@@ -59,7 +61,7 @@ public class ManaDebugToolItem extends Item {
 
             if (manaStorage != null) {
                 ItemStack stack = context.getItemInHand();
-                int modeIndex = stack.getOrCreateTag().getInt(TAG_MODE_INDEX);
+                int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
                 int manaToAdd = MANA_AMOUNTS[modeIndex];
                 manaStorage.addMana(manaToAdd);
 
@@ -70,15 +72,13 @@ public class ManaDebugToolItem extends Item {
                 }
 
                 BlockEntity blockEntity = level.getBlockEntity(pos);
-                if (blockEntity != null) {
-                    blockEntity.setChanged();
-                }
+                if (blockEntity != null) blockEntity.setChanged();
                 BlockState state = level.getBlockState(pos);
                 level.sendBlockUpdated(pos, state, state, 3);
 
-                ManaUpdatePacket packet = new ManaUpdatePacket(pos, manaStorage.getManaStored());
-                RegisterNetworkHandler.NETWORK_CHANNEL.send(
-                        PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
+                // ⚠️ 請自行確認 ManaUpdatePacket 是否已改寫為 NeoForge Payload 風格
+                PacketDistributor.sendToPlayer((ServerPlayer) context.getPlayer(),
+                        new ManaUpdatePacket(pos, manaStorage.getManaStored()));
 
                 return InteractionResult.SUCCESS;
             }
@@ -86,20 +86,23 @@ public class ManaDebugToolItem extends Item {
         return super.useOn(context);
     }
 
-
-
     public void cycleMode(ItemStack stack, boolean forward) {
-        int modeIndex = stack.getOrCreateTag().getInt(TAG_MODE_INDEX);
+        int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
         if (forward) {
             modeIndex = (modeIndex + 1) % MANA_AMOUNTS.length;
         } else {
             modeIndex = (modeIndex - 1 + MANA_AMOUNTS.length) % MANA_AMOUNTS.length;
         }
-        stack.getOrCreateTag().putInt(TAG_MODE_INDEX, modeIndex);
+        stack.set(ManaDebugToolItem.MODE_INDEX, modeIndex);
     }
 
+
     public String getCurrentModeKey(ItemStack stack) {
-        int modeIndex = stack.getOrCreateTag().getInt(TAG_MODE_INDEX);
+        int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
         return MODES[modeIndex];
     }
+
+
+
+
 }
