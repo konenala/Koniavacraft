@@ -2,6 +2,7 @@ package com.github.nalamodikk.client.event;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.ManaDebugToolItem;
+import com.github.nalamodikk.common.network.packet.ModeChangePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -22,12 +23,13 @@ public class ManaToolInputEvents {
             ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
             if (heldItem.getItem() instanceof ManaDebugToolItem manaDebugToolItem) {
-                double scrollDelta = event.getScrollDeltaY();
-                manaDebugToolItem.cycleMode(heldItem, scrollDelta > 0);
 
-                int modeIndex = ManaDebugToolItem.getModeIndex(heldItem);
-                ManaDebugToolItem.setModeIndex(heldItem, modeIndex + 1);
-                RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new ModeChangePacket(modeIndex));
+                // 拿到「變更後」的模式
+                double scrollDelta = event.getScrollDeltaY();
+                boolean forward = scrollDelta > 0;
+
+                manaDebugToolItem.cycleMode(heldItem, forward); // 客戶端本地先切
+                ModeChangePacket.sendToServer(forward);         // 發送方向封包
 
                 player.displayClientMessage(Component.translatable(
                         "message.magical_industry.mana_mode_changed",
@@ -38,4 +40,5 @@ public class ManaToolInputEvents {
             }
         }
     }
+
 }
