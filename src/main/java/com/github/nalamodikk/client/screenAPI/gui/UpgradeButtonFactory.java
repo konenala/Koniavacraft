@@ -1,4 +1,9 @@
 package com.github.nalamodikk.client.screenAPI.gui;
+/**
+ * 用來創建升級按鈕並綁定封包邏輯
+ * 當時設計目的是讓某個機器 GUI 可以呼叫這個按鈕以開啟升級畫面
+ * 尚未接入任何實際畫面
+ */
 
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
