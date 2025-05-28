@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.screen.tool;
+package com.github.nalamodikk.common.screen.shared;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;

@@ -1,7 +1,6 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -10,8 +9,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-
-import javax.annotation.Nullable;
 
 
 @EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)

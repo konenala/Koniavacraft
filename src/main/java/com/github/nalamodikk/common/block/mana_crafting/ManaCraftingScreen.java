@@ -1,7 +1,6 @@
-package com.github.nalamodikk.common.screen.manacrafting;
+package com.github.nalamodikk.common.block.mana_crafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;

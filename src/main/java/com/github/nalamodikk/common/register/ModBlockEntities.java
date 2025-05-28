@@ -1,7 +1,8 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -19,10 +20,10 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(ManaCraftingTableBlockEntity::new,
                             ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get()).build(null));
 
-//    public static final Supplier<BlockEntityType<ManaGeneratorBlockEntity>> MANA_GENERATOR_BE =
-//            BLOCK_ENTITY_TYPES.register("mana_generator", () ->
-//                    BlockEntityType.Builder.of(ManaGeneratorBlockEntity::new,
-//                            ModBlocks.MANA_GENERATOR.get()).build());
+    public static final Supplier<BlockEntityType<ManaGeneratorBlockEntity>> MANA_GENERATOR_BE =
+            BLOCK_ENTITY_TYPES.register("mana_generator", () ->
+                    BlockEntityType.Builder.of(ManaGeneratorBlockEntity::new,
+                            ModBlocks.MANA_GENERATOR.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ManaConduitBlockEntity>> MANA_CONDUIT_BE =
 //            BLOCK_ENTITY_TYPES.register("mana_conduit", () ->

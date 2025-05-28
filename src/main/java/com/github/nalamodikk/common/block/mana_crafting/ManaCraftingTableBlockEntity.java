@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.TileEntity.mana_crafting;
+package com.github.nalamodikk.common.block.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
 import com.github.nalamodikk.common.API.IManaCraftingMachine;
@@ -7,16 +7,13 @@ import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
-import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -26,16 +23,12 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider, IManaCraftingMachine {
     public static final int MAX_MANA = 10000;

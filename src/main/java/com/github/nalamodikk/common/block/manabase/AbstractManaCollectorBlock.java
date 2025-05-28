@@ -1,19 +1,11 @@
-package com.github.nalamodikk.common.block.TileEntity;
+package com.github.nalamodikk.common.block.manabase;
 
 import com.github.nalamodikk.common.capability.ManaStorage;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * 專用於純魔力收集器類型的基底類別，不支援能量 / 物品 / 流體。

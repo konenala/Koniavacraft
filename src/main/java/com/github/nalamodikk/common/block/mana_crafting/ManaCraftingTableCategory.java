@@ -1,8 +1,6 @@
-package com.github.nalamodikk.common.compat.JEI.Machine.manacrafting;
+package com.github.nalamodikk.common.block.mana_crafting;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
-import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModItems;
 import mezz.jei.api.constants.VanillaTypes;

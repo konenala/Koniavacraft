@@ -1,17 +1,11 @@
-package com.github.nalamodikk.common.recipe;
+package com.github.nalamodikk.common.block.mana_crafting;
 
 import com.github.nalamodikk.common.register.ModRecipes;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Function5;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -91,8 +85,6 @@ public record ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient
     public ItemStack getResultItem(HolderLookup.Provider registries) {
         return result.copy();
     }
-
-
 
     @Override
     public RecipeSerializer<?> getSerializer() {

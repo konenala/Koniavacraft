@@ -2,7 +2,8 @@ package com.github.nalamodikk.common.register;
 
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.blocks.mana_crafting.ManaCraftingTableBlock;
+import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlock;
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlock;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -27,8 +28,8 @@ public class ModBlocks {
     public static final DeferredBlock<Block> MANA_CRAFTING_TABLE_BLOCK =
             registerBlock("mana_crafting_table", () -> new ManaCraftingTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_WOOD)));
 
-//    public static final DeferredBlock<Block> MANA_GENERATOR =
-//            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+    public static final DeferredBlock<Block> MANA_GENERATOR =
+            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
 //    public static final DeferredBlock<Block> MANA_CONDUIT =
 //            registerBlock("mana_conduit", () -> new ManaConduitBlock());

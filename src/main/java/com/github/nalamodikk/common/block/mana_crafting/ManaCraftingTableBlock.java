@@ -1,6 +1,5 @@
-package com.github.nalamodikk.common.block.blocks.mana_crafting;
+package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.block.TileEntity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.TileEntity;
+package com.github.nalamodikk.common.block.manabase;
 
 import com.github.nalamodikk.common.capability.ManaStorage;
 import net.minecraft.core.BlockPos;
@@ -13,13 +13,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -69,6 +65,9 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
     /** 每次生成魔力的間隔 tick 數 */
     protected int intervalTick;
 
+    /** 最大存儲能量*/
+    protected final int maxEnergy;
+
     /**
      * 建構子
      *
@@ -80,15 +79,17 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
      * @param intervalTick 每幾 tick 執行一次生產行為
      * @param manaPerCycle 每次執行時生產的魔力量
      */
-    public AbstractManaMachineEntityBlock(BlockEntityType<?> type, BlockPos pos, BlockState state, boolean hasEnergy, int maxMana, int intervalTick, int manaPerCycle) {
+    public AbstractManaMachineEntityBlock(BlockEntityType<?> type, BlockPos pos, BlockState state, boolean hasEnergy,int maxEnergy, int maxMana, int intervalTick, int manaPerCycle) {
         super(type, pos, state);
         this.hasEnergy = hasEnergy;
         this.manaStorage = maxMana > 0 ? new ManaStorage(maxMana) : null;
-        this.energyStorage = hasEnergy ? new EnergyStorage(10000) : null;
+        this.energyStorage = hasEnergy ? new EnergyStorage(maxEnergy) : null;
         this.itemHandler = createHandler();
         this.fluidTank = createFluidTank();
         this.intervalTick = intervalTick;
         this.manaPerCycle = manaPerCycle;
+        this.maxEnergy = maxEnergy;
+
     }
 
     public int getProgress() { return progress; }
@@ -100,6 +101,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
     public @Nullable EnergyStorage getEnergyStorage() { return energyStorage; }
     public @Nullable ItemStackHandler getItemHandler() { return itemHandler; }
     public @Nullable FluidTank getFluidTank() { return fluidTank; }
+    public int getMaxEnergyCapacity() {return maxEnergy;}
 
     /**
      * 建立物品槽，可由子類覆寫。

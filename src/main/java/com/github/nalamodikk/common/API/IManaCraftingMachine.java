@@ -1,10 +1,10 @@
 package com.github.nalamodikk.common.API;
 
-import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
+import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
 
 import java.util.Optional;
 
-public interface IManaCraftingMachine {
+public interface IManaCraftingMachine extends IManaUsingMachine{
     int getManaStored();
     boolean hasSufficientMana(int cost);
     void consumeMana(int cost);
