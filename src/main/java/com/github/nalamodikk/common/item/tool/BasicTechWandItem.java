@@ -1,18 +1,35 @@
 // 已重構 BasicTechWandItem：使用 NeoForge DataComponent API + Packet + 滾輪切換 + 儲存方向提示
+/**
+ * 🔧 BasicTechWandItem
+ *
+ * 本類是自訂的科技魔杖物品，繼承自 Minecraft 的 Item 類別。
+ * 其邏輯透過 `useOn()` 方法在玩家右鍵方塊時自動觸發，
+ * 無需事件訂閱（不需使用 @SubscribeEvent 或 EventBus）。
+ *
+ * 此物品可搭配 TechWandMode 進行模式切換操作，
+ * 如：輸入輸出配置、方向設定、自轉行為等。
+ *
+ * ✅ 此類需註冊至 ModItems，讓遊戲認得它是一個有效物品。
+ */
+
 package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.manatool.TechWandModePacket;
 import com.github.nalamodikk.common.register.ModDataComponents;
+import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
+import com.github.nalamodikk.common.utils.CapabilityUtils;
 import com.github.nalamodikk.common.utils.data.TechDataComponents;
-import com.github.nalamodikk.common.utils.helpers.BlockSelector;
+import com.github.nalamodikk.common.utils.helpers.BlockSelectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -23,7 +40,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -67,7 +83,7 @@ public class BasicTechWandItem extends Item {
         Level level = player.level();
         if (level.isClientSide) return;
 
-        BlockPos target = BlockSelector.getTargetBlock(player, 5.0);
+        BlockPos target = BlockSelectorUtils.getTargetBlock(player, 5.0);
         if (target == null) {
             player.displayClientMessage(Component.translatable("message.magical_industry.no_block_selected"), true);
             return;
@@ -110,16 +126,20 @@ public class BasicTechWandItem extends Item {
                 }
                 case CONFIGURE_IO -> {
                     if (player instanceof ServerPlayer sp) {
-                        NetworkHooks.openScreen(sp, new SimpleMenuProvider(
+                        var manaStorage = CapabilityUtils.getMana(sp.level(), be.getBlockPos(), null);
+                        if (manaStorage != null) {
+                            ManaUpdatePacket.sendManaUpdate(sp, be.getBlockPos(), manaStorage.getManaStored());
+                        }
+
+                        sp.openMenu(new SimpleMenuProvider(
                                 (id, inv, p) -> new UniversalConfigMenu(id, inv, be, stack),
                                 Component.translatable("screen.magical_industry.configure_io")
-                        ), buf -> {
-                            buf.writeBlockPos(be.getBlockPos());
-                            buf.writeItem(stack);
-                        });
+                        ), be.getBlockPos());
                     }
                     return InteractionResult.SUCCESS;
                 }
+
+
 
                 case ROTATE -> {
                     BlockState state = level.getBlockState(pos);
@@ -164,5 +184,31 @@ public class BasicTechWandItem extends Item {
         tooltipComponents.add(Component.translatable("tooltip.magical_industry.mode",
                 Component.translatable("mode.magical_industry." + getMode(stack).getSerializedName())));
         TechDataComponents.appendSavedDirectionTooltip(stack, tooltipComponents);
+    }
+
+    public enum TechWandMode implements StringRepresentable {
+        CONFIGURE_IO,
+        DIRECTION_CONFIG,
+        ROTATE;
+
+        public TechWandMode next() {
+            return values()[(this.ordinal() + 1) % values().length];
+        }
+
+        public TechWandMode previous() {
+            return values()[(this.ordinal() - 1 + values().length) % values().length];
+        }
+
+        public TechWandMode cycle(boolean forward) {
+            TechWandMode[] values = values();
+            int index = this.ordinal();
+            int nextIndex = (index + (forward ? 1 : -1) + values.length) % values.length;
+            return values[nextIndex];
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name(); // 或 .toLowerCase() 也可以配合本地化
+        }
     }
 }

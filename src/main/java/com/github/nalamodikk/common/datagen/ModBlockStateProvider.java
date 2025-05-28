@@ -21,9 +21,15 @@ public class ModBlockStateProvider extends BlockStateProvider {
     @Override
     protected void registerStatesAndModels() {
         blockWithItem(ModBlocks.MANA_BLOCK);
-        blockWithItem(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
-//        blockWithItem(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
+        blockWithItem(ModBlocks.DEEPSLATE_MAGIC_ORE);
+        blockWithItem(ModBlocks.MAGIC_ORE);
 
+
+
+        getVariantBuilder(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
+                .partialState().modelForState()
+                .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/mana_crafting_table")))
+                .addModel();
 
     }
 

@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
-public class FacingHandler {
+public class DirectionIOController {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public static BlockState getFacingState(BlockState state, BlockPlaceContext context) {

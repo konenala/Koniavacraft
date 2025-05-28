@@ -19,6 +19,15 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
         this.mana = 0;
     }
 
+    public boolean canInsert() {
+        return allowInsert && this.mana < this.capacity;
+    }
+
+    @Override
+    public boolean canExtract() {
+        return allowExtract && this.mana > 0;
+    }
+
     public void setAllowInsert(boolean value) {
         this.allowInsert = value;
     }
@@ -26,6 +35,8 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     public void setAllowExtract(boolean value) {
         this.allowExtract = value;
     }
+
+
 
     public boolean isFull() {
         return this.getManaStored() >= this.getMaxManaStored();
@@ -64,10 +75,7 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
         return capacity;
     }
 
-    @Override
-    public boolean canExtract() {
-        return this.mana > 0; // 只要魔力大於 0 就允許提取
-    }
+
 
     /** 這裡修正多槽位的問題，因為這個 class 只有一個 Mana 容器 */
     @Override
@@ -96,6 +104,14 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
     public int getNeededMana(int container) {
         return container == 0 ? getMaxManaStored() - getManaStored() : 0;
     }
+
+    public int getNeededMana() {
+        return getMaxManaStored() - getManaStored(); // 單槽版本等同 container 0
+    }
+    public float getFillRatio() {
+        return (float) this.mana / this.capacity;
+    }
+
 
     @Override
     public int insertMana(int container, int amount, ManaAction action) {

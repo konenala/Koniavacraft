@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
+import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -18,6 +19,9 @@ public class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ManaCraftingMenu>> MANA_CRAFTING_MENU =
             registerMenuType("mana_crafting", ManaCraftingMenu::create);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<UniversalConfigMenu>> UNIVERSAL_CONFIG_MENU =
+            registerMenuType("universal_config", UniversalConfigMenu::new);
 
 
 

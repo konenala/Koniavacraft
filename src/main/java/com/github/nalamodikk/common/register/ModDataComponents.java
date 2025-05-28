@@ -1,10 +1,10 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.item.tool.TechWandMode;
+import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
+import com.github.nalamodikk.common.utils.CodecsLibrary;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
@@ -25,13 +25,13 @@ import java.util.Map;
 public class ModDataComponents {
 
 
-    public static final DataComponentType<TechWandMode> TECH_WAND_MODE =
-            DataComponentType.<TechWandMode>builder()
-                    .persistent(StringRepresentable.fromEnum(TechWandMode::values))
+    public static final DataComponentType<BasicTechWandItem.TechWandMode> TECH_WAND_MODE =
+            DataComponentType.<BasicTechWandItem.TechWandMode>builder()
+                    .persistent(StringRepresentable.fromEnum(BasicTechWandItem.TechWandMode::values))
                     .networkSynchronized(
                             ByteBufCodecs.stringUtf8(255).map(
-                                    s -> Enum.valueOf(TechWandMode.class, s),
-                                    TechWandMode::name
+                                    s -> Enum.valueOf(BasicTechWandItem.TechWandMode.class, s),
+                                    BasicTechWandItem.TechWandMode::name
                             )
                     )
                     .build();
@@ -71,6 +71,12 @@ public class ModDataComponents {
                     }
             );
 
+    public static final DataComponentType<EnumMap<Direction, Boolean>> CONFIGURED_DIRECTIONS =
+            DataComponentType.<EnumMap<Direction, Boolean>>builder()
+                    .persistent(CodecsLibrary.DIRECTION_BOOLEAN_MAP)              // 儲存用（NBT）
+                    .networkSynchronized(CodecsLibrary.DIRECTION_BOOLEAN_CODEC)   // 封包同步用
+                    .build();
+
 
     public static final DataComponentType<Map<Direction, Boolean>> SAVED_DIRECTIONS =
             DataComponentType.<Map<Direction, Boolean>>builder()
@@ -85,6 +91,7 @@ public class ModDataComponents {
             helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mode_index"), ManaDebugToolItem.MODE_INDEX);
             helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "tech_wand_mode"), TECH_WAND_MODE);
             helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "saved_directions"), SAVED_DIRECTIONS);
+            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "configured_directions"), CONFIGURED_DIRECTIONS);
 
         });
     }

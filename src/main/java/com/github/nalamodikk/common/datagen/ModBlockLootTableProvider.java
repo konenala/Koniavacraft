@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.common.register.ModItems;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -33,8 +34,12 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
         dropSelf(ModBlocks.MANA_BLOCK.get());
 
-        // dropSelf(ModBlocks.MAGIC_BLOCK.get());
 
+        // dropSelf(ModBlocks.MAGIC_BLOCK.get());
+        this.add(ModBlocks.MAGIC_ORE.get(),
+                block -> createMultipleOreDrops(ModBlocks.MAGIC_ORE.get(), ModItems.CORRUPTED_MANA_DUST.get(),1,8));
+        this.add(ModBlocks.DEEPSLATE_MAGIC_ORE.get(),
+                block -> createMultipleOreDrops(ModBlocks.DEEPSLATE_MAGIC_ORE.get(), ModItems.CORRUPTED_MANA_DUST.get(),2,9));
 
     }
 

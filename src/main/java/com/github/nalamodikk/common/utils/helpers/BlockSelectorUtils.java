@@ -10,7 +10,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class BlockSelector {
+public class BlockSelectorUtils {
 
     public static BlockPos getTargetBlock(Player player, double maxDistance) {
         // 獲取玩家當前世界
