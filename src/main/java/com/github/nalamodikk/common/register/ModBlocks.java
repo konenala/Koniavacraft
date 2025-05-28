@@ -27,15 +27,15 @@ public class ModBlocks {
     public static final DeferredBlock<Block> MANA_CRAFTING_TABLE_BLOCK =
             registerBlock("mana_crafting_table", () -> new ManaCraftingTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_WOOD)));
 
-    public static final DeferredBlock<Block> MANA_GENERATOR =
-            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+//    public static final DeferredBlock<Block> MANA_GENERATOR =
+//            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
 //    public static final DeferredBlock<Block> MANA_CONDUIT =
 //            registerBlock("mana_conduit", () -> new ManaConduitBlock());
 
-    public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
-            registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
-
+//    public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
+//            registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+//
 
     public static final DeferredBlock<Block> MAGIC_ORE =
             registerBlock("magic_ore", () -> new DropExperienceBlock(UniformInt.of(3, 6), BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)

@@ -1,6 +1,5 @@
-package com.github.nalamodikk.common.item;
+package com.github.nalamodikk.common.item.debug;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
@@ -10,9 +9,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.util.ExtraCodecs;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;

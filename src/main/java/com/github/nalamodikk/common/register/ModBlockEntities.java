@@ -17,22 +17,22 @@ public class ModBlockEntities {
     public static final Supplier<BlockEntityType<ManaCraftingTableBlockEntity>> MANA_CRAFTING_TABLE_BLOCK_BE =
             BLOCK_ENTITY_TYPES.register("mana_crafting_table_be", () ->
                     BlockEntityType.Builder.of(ManaCraftingTableBlockEntity::new,
-                            ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get()).build());
+                            ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get()).build(null));
 
-    public static final Supplier<BlockEntityType<ManaGeneratorBlockEntity>> MANA_GENERATOR_BE =
-            BLOCK_ENTITY_TYPES.register("mana_generator", () ->
-                    BlockEntityType.Builder.of(ManaGeneratorBlockEntity::new,
-                            ModBlocks.MANA_GENERATOR.get()).build());
+//    public static final Supplier<BlockEntityType<ManaGeneratorBlockEntity>> MANA_GENERATOR_BE =
+//            BLOCK_ENTITY_TYPES.register("mana_generator", () ->
+//                    BlockEntityType.Builder.of(ManaGeneratorBlockEntity::new,
+//                            ModBlocks.MANA_GENERATOR.get()).build());
 
 //    public static final Supplier<BlockEntityType<ManaConduitBlockEntity>> MANA_CONDUIT_BE =
 //            BLOCK_ENTITY_TYPES.register("mana_conduit", () ->
 //                    BlockEntityType.Builder.of(ManaConduitBlockEntity::new,
 //                            ModBlocks.MANA_CONDUIT.get()).build());
-
-    public static final Supplier<BlockEntityType<SolarManaCollectorBlockEntity>> SOLAR_MANA_COLLECTOR_BE =
-            BLOCK_ENTITY_TYPES.register("solar_mana_collector_be", () ->
-                    BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new,
-                            ModBlocks.SOLAR_MANA_COLLECTOR.get()).build());
+//
+//    public static final Supplier<BlockEntityType<SolarManaCollectorBlockEntity>> SOLAR_MANA_COLLECTOR_BE =
+//            BLOCK_ENTITY_TYPES.register("solar_mana_collector_be", () ->
+//                    BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new,
+//                            ModBlocks.SOLAR_MANA_COLLECTOR.get()).build());
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->

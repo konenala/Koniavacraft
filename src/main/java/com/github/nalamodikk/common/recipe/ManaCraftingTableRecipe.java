@@ -212,7 +212,7 @@ public record ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient
             return ID;
         }
     }
-    public class ManaCraftingInput extends SimpleContainer implements RecipeInput {
+    public static class ManaCraftingInput extends SimpleContainer implements RecipeInput {
         public ManaCraftingInput(int size) {
             super(size);
         }

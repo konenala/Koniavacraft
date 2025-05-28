@@ -91,6 +91,7 @@
   "button.magical_industry.auto_crafting_enabled": "AutoCrafting: Enabled",
   "button.magical_industry.auto_crafting_disabled": "AutoCrafting: Disabled",
 
+
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "Saved Block Position: (%s, %s, %s)",
   "tooltip.magical_industry.no_saved_block": "No block saved",

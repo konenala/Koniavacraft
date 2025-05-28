@@ -92,6 +92,7 @@
   "tooltip.magical_industry.module.item_output": "提供機器輸出槽位",
   "tooltip.magical_industry.module.mana_storage": "儲存與供應魔力",
 
+
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "已保存方塊位置: (%s, %s, %s)",
   "tooltip.magical_industry.no_saved_block": "未保存任何方塊",

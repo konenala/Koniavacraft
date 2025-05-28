@@ -1,20 +1,28 @@
 package com.github.nalamodikk.common.block.TileEntity.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
+import com.github.nalamodikk.common.API.IManaCraftingMachine;
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
+import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,7 +37,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider {
+public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider, IManaCraftingMachine {
     public static final int MAX_MANA = 10000;
 
     public static final int INPUT_SLOT_COUNT = 9;
@@ -70,7 +78,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
 
 
-    private void updateCraftingResult() {
+    public void updateCraftingResult() {
         if (level == null || level.isClientSide()) return;
 
     }
@@ -92,10 +100,15 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         return Component.translatable("block.magical_industry.mana_crafting_table");
     }
 
-    @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        return new ManaCraftingMenu(id, inv, this);
+    public @Nullable AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        if (level == null) {
+            assert false : "Level is null in createMenu(), this should not happen.";
+            MagicalIndustryMod.LOGGER.error("Level is null in createMenu() at position {}", worldPosition);
+            return null;
+        }
+
+        return new ManaCraftingMenu(id, inv, itemHandler, ContainerLevelAccess.create(level, worldPosition), level);
     }
 
 
@@ -139,7 +152,55 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         if (level != null)
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
+    @Override
+    public int getManaStored() {
+        return manaStorage.getManaStored();
+    }
+
+    @Override
+    public boolean hasSufficientMana(int cost) {
+        return manaStorage.getManaStored() >= cost;
+    }
+
+    @Override
+    public void consumeMana(int cost) {
+        manaStorage.extractMana(cost, ManaAction.get(false));
+    }
 
 
+    /**
+     * 取得目前配方的 RecipeHolder（包含配方本體與 ID）
+     */
+    public Optional<RecipeHolder<ManaCraftingTableRecipe>> getCurrentRecipeHolder() {
+        if (level == null) return Optional.empty();
 
+        ManaCraftingTableRecipe.ManaCraftingInput input = new ManaCraftingTableRecipe.ManaCraftingInput(9);
+        for (int i = 0; i < 9; i++) {
+            input.setItem(i, itemHandler.getStackInSlot(i));
+        }
+
+        return level.getRecipeManager()
+                .getRecipeFor(ManaCraftingTableRecipe.Type.INSTANCE, input, level);
+    }
+
+    /**
+     * 取得目前配方的本體（不含 ID）
+     */
+    @Override
+    public Optional<ManaCraftingTableRecipe> getCurrentRecipe() {
+        return getCurrentRecipeHolder().map(RecipeHolder::value);
+    }
+
+    /**
+     * 取得目前配方的 ResourceLocation ID
+     */
+    public Optional<ResourceLocation> getCurrentRecipeId() {
+        return getCurrentRecipeHolder().map(RecipeHolder::id);
+    }
+
+
+    @Override
+    public boolean hasRecipe() {
+        return getCurrentRecipe().isPresent();
+    }
 }

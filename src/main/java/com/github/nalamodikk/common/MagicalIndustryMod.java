@@ -1,8 +1,6 @@
 package com.github.nalamodikk.common;
 
-import com.github.nalamodikk.common.register.ModBlocks;
-import com.github.nalamodikk.common.register.ModCreativeModTabs;
-import com.github.nalamodikk.common.register.ModItems;
+import com.github.nalamodikk.common.register.*;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -27,7 +25,7 @@ public class MagicalIndustryMod
     // Define mod id in a common place for everything to reference
     public static final String MOD_ID = "magical_industry";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -43,7 +41,9 @@ public class MagicalIndustryMod
         modEventBus.addListener(this::commonSetup);
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
-
+        ModRecipes.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModMenuTypes.register(modEventBus);
         ModCreativeModTabs.register(modEventBus);
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
@@ -76,12 +76,11 @@ public class MagicalIndustryMod
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents
-    {
+    public static class ClientModEvents {
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
+        public static void onClientSetup(FMLClientSetupEvent event) {
             // Some client setup code
+
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }

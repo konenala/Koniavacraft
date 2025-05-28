@@ -1,7 +1,7 @@
 package com.github.nalamodikk.client.event;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.item.ManaDebugToolItem;
+import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

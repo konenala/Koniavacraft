@@ -11,10 +11,20 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
 
     private int mana;
     private final int capacity;
+    protected boolean allowInsert = true;
+    protected boolean allowExtract = true;
 
     public ManaStorage(int capacity) {
         this.capacity = capacity;
         this.mana = 0;
+    }
+
+    public void setAllowInsert(boolean value) {
+        this.allowInsert = value;
+    }
+
+    public void setAllowExtract(boolean value) {
+        this.allowExtract = value;
     }
 
     public boolean isFull() {
