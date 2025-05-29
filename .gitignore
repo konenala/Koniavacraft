@@ -86,3 +86,10 @@ forge*changelog.txt
 /src/generated/resources/data/minecraft/tags/blocks/needs_stone_tool.json
 /src/generated/resources/data/minecraft/tags/blocks/mineable/pickaxe.json
 /.vscode/tasks.json
+/src/generated/resources/data/magical_industry/recipes/mana_recipes/mana_fuel/fuel_corrupted_mana_dust.json
+/src/generated/resources/data/magical_industry/recipes/mana_recipes/mana_fuel/fuel_mana_dust.json
+/src/generated/resources/data/magical_industry/recipes/mana_recipes/mana_fuel/fuel_mana_ingot.json
+/src/generated/resources/data/magical_industry/loot_tables/blocks/mana_conduit.json
+/src/generated/resources/data/magical_industry/loot_tables/blocks/modular_machine.json
+/src/main/java/com/github/nalamodikk1.zip
+/src/generated/resources/data/magical_industry/loot_tables/blocks/solar_mana_collector.json
