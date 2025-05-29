@@ -10,6 +10,7 @@ import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.Nullable;
@@ -38,15 +39,18 @@ public class ManaGenFuelRecipeBuilder implements RecipeBuilder {
 
     @Override
     public void save(RecipeOutput output) {
-        Item resultItem = ingredient.getItems()[0].getItem();
+        ItemStack[] stacks = ingredient.getItems();
+        if (stacks.length == 0) {
+            throw new IllegalStateException("[DataGen] ❌ FuelRecipeBuilder ingredient 為空，無法決定輸出物品！");
+        }
+
+        Item resultItem = stacks[0].getItem();
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
                 MagicalIndustryMod.MOD_ID,
                 FUEL_RECIPE_PATH_PREFIX + BuiltInRegistries.ITEM.getKey(resultItem).getPath() + "_fuel"
         );
 
-
-
-        save(output, id); // ✅ 呼叫你下面那個 save(output, id)
+        save(output, id);
     }
 
 
@@ -66,7 +70,11 @@ public class ManaGenFuelRecipeBuilder implements RecipeBuilder {
 
     @Override
     public Item getResult() {
-        return ingredient.getItems()[0].getItem(); // 這只是為了滿足 RecipeBuilder 的要求
+        ItemStack[] stacks = ingredient.getItems();
+        if (stacks.length == 0) {
+            throw new IllegalStateException("ManaGenFuelRecipeBuilder: ingredient is empty, cannot determine result item!");
+        }
+        return stacks[0].getItem();
     }
 }
 

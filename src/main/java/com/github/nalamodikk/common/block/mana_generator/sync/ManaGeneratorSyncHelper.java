@@ -27,6 +27,10 @@ public class ManaGeneratorSyncHelper {
         return syncManager.getContainerData();
     }
 
+    public void setModeIndex(int modeIndex) {
+        syncManager.set(MODE_INDEX, modeIndex);
+    }
+
     public UnifiedSyncManager getRawSyncManager() {
         return syncManager;
     }

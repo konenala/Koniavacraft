@@ -39,7 +39,7 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
     public static final int DEFAULT_INTERVAL = 1;
 
     public ManaGenFuelRateLoader() {
-        super(GSON, "recipes/mana_recipes/mana_fuel");  // 確保加載 mana_recipes/fuel 目錄
+        super(GSON, "recipe/mana_recipes/mana_fuel");  // 確保加載 mana_recipes/fuel 目錄
     }
 
     @SubscribeEvent

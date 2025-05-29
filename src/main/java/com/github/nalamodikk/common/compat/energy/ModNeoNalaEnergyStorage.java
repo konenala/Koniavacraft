@@ -1,12 +1,16 @@
 package com.github.nalamodikk.common.compat.energy;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.math.BigInteger;
 
-public class ModNeoNalaEnergyStorage implements IEnergyStorage {
+public class ModNeoNalaEnergyStorage implements IEnergyStorage, INBTSerializable<CompoundTag> {
     private static final int DECIMAL_DIGITS = 4;
     private BigDecimal energy;
     private final BigDecimal capacity;
@@ -23,8 +27,6 @@ public class ModNeoNalaEnergyStorage implements IEnergyStorage {
         if (!simulate) energy = energy.add(accepted);
         return accepted.intValue();
     }
-
-
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
@@ -47,6 +49,32 @@ public class ModNeoNalaEnergyStorage implements IEnergyStorage {
         return capacity;
     }
 
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("Energy", energy.toPlainString());
+        tag.putString("Capacity", capacity.toPlainString());
+        return tag;
+    }
+
+
+    public void deserializeNBT(CompoundTag tag) {
+        this.energy = new BigDecimal(tag.getString("Energy")).setScale(DECIMAL_DIGITS, RoundingMode.DOWN);
+        // 若你有計畫支援容量動態變化，再取消以下註解
+        // this.capacity = new BigDecimal(tag.getString("Capacity")).setScale(DECIMAL_DIGITS, RoundingMode.DOWN);
+    }
+
+    // 為了支援新版 HolderLookup.Provider，但實際上你不需要它，這是為了 NeoForge 相容
+    @Override
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        return serializeNBT(); // 呼叫無 provider 的版本
+    }
+
+
+    @Override
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        if (nbt instanceof CompoundTag compoundTag)
+            deserializeNBT(compoundTag);
+    }
 
 
 }

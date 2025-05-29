@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
+import com.github.nalamodikk.common.block.mana_generator.jei.ManaGeneratorJEIPlugin;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -34,21 +35,28 @@ public class ModRecipes {
 
 
     // 魔力發電機 -manaGen
-    private static final RecipeType<ManaGenFuelRecipe> MANA_FUEL_TYPE_INSTANCE =
-            new RecipeType<>() {
+    // 這是給 RecipeManager 用的 Vanilla RecipeType（不要引用 JEI Plugin，那是顛倒邏輯！）
+    private static final RecipeType<ManaGenFuelRecipe> MANA_FUEL_TYPE_INSTANCE = new RecipeType<>() {
+        @Override
+        public String toString() {
+            return MagicalIndustryMod.MOD_ID + ":mana_fuel";
+        }
+    };
+
+    // ✅ 給 Minecraft 用的 RecipeType（RecipeManager 用這個）
+    public static final DeferredHolder<RecipeType<?>, RecipeType<ManaGenFuelRecipe>> MANA_FUEL_TYPE =
+            TYPES.register("mana_fuel", () -> new RecipeType<>() {
                 @Override
                 public String toString() {
                     return MagicalIndustryMod.MOD_ID + ":mana_fuel";
                 }
-            };
+            });
 
-    // 註冊 RecipeType（供 RecipeManager 使用）
-    public static final DeferredHolder<RecipeType<?>, RecipeType<ManaGenFuelRecipe>> MANA_FUEL_TYPE =
-            TYPES.register("mana_fuel", () -> MANA_FUEL_TYPE_INSTANCE);
-
-    // 註冊 RecipeSerializer（用來讀取 json / 網路同步）
+    // ✅ 給 Minecraft 用的 RecipeSerializer（讀 json 用這個）
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ManaGenFuelRecipe>> MANA_FUEL_SERIALIZER =
             SERIALIZERS.register("mana_fuel", () -> ManaGenFuelRecipe.FuelRecipeSerializer.INSTANCE);
+
+
 
 
     // 綁定用註冊方法

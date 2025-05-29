@@ -28,13 +28,19 @@ public class ManaGeneratorStateManager {
         return currentMode;
     }
 
-    public void toggleMode(int burnTime) {
+    public boolean toggleMode(int burnTime) {
         if (isWorking || burnTime > 0) {
             MagicalIndustryMod.LOGGER.info("⚠ 無法切換模式，發電機正在運行中！");
-            return;
+            return false;
         }
         currentMode = (currentMode == Mode.MANA) ? Mode.ENERGY : Mode.MANA;
+        return true;
     }
+
+    public void setModeIndex(int index) {
+        this.currentMode = (index == 0) ? Mode.MANA : Mode.ENERGY;
+    }
+
 
     public boolean isModeMana() {
         return currentMode == Mode.MANA;

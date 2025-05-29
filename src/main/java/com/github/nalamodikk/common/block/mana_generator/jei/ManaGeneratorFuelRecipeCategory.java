@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.mana_generator.jei;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.common.register.ModRecipes;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -17,15 +18,16 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenFuelRecipe> {
@@ -33,22 +35,42 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/jei_fuel.png");
     private static final ResourceLocation MANA_BAR = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final ResourceLocation ENERGY_BAR =  ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/energy_bar_full.png");
+    public static  mezz.jei.api.recipe.RecipeType<ManaGenFuelRecipe> JEI_RECIPE_TYPE =
+            new mezz.jei.api.recipe.RecipeType<>(UID, ManaGenFuelRecipe.class);
+    private static final int RECIPE_WIDTH = 182;
+    private static final int RECIPE_HEIGHT = 80;
 
-    public static final RecipeType<ManaGenFuelRecipe> RECIPE_TYPE = new RecipeType<>(UID, ManaGenFuelRecipe.class);
+    @Override
+    public int getWidth() {
+        return RECIPE_WIDTH;
+    }
+
+    @Override
+    public int getHeight() {
+        return RECIPE_HEIGHT;
+    }
+
+
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorFuelRecipeCategory.class);
 
     private final IDrawableStatic background;
+
+
+
     private final IDrawable icon; // ✅ 修改類型為 IDrawable
 
     public ManaGeneratorFuelRecipeCategory(IGuiHelper guiHelper) {
-        this.background = guiHelper.createDrawable(TEXTURE, 0, 0, 182, 80); // 確保與圖片大小一致
+        this.background = guiHelper.createDrawable(TEXTURE, 0, 0, 182, 80);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.MANA_GENERATOR.get()));
     }
 
     @Override
     public RecipeType<ManaGenFuelRecipe> getRecipeType() {
-        return RECIPE_TYPE;
+        return JEI_RECIPE_TYPE;
     }
+
 
     @Override
     public Component getTitle() {
