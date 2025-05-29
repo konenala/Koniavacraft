@@ -53,7 +53,7 @@ public class ManaCraftingTableBlock extends BaseEntityBlock  {
                                               Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ManaGeneratorBlockEntity generator) {
+            if (blockEntity instanceof ManaCraftingTableBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
                         new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
                         pos
