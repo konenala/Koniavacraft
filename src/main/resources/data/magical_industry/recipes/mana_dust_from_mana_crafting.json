@@ -1,13 +1,11 @@
-  {
-    "type": "magical_industry:mana_crafting",
-    "ingredients": [
-      {
-        "item": "minecraft:diamond"
-      }
-    ],
-    "output": {
-      "item": "magical_industry:mana_dust",
-      "count": 1
-    },
-    "manaCost": 500
+{
+  "type": "magical_industry:mana_crafting",
+  "isShaped": false,
+  "manaCost": 5000,
+  "ingredients": [
+    { "item": "minecraft:diamond" }
+  ],
+  "result": {
+    "item": "magical_industry:mana_dust"
   }
+}

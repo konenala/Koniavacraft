@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.register;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
-import com.github.nalamodikk.common.utils.CodecsLibrary;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

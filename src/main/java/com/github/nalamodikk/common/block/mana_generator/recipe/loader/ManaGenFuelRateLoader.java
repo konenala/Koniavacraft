@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.mana_generator.recipe.loader;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.utils.FuelRegistryHelper;
+import com.github.nalamodikk.common.utils.logic.FuelRegistryHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

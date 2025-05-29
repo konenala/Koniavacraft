@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.utils;
+package com.github.nalamodikk.common.utils.nbt;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import net.minecraft.core.registries.BuiltInRegistries;

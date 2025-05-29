@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.network.packet;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.common.utils.CodecsLibrary;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

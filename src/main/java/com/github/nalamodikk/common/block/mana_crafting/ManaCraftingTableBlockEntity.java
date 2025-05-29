@@ -4,10 +4,13 @@ package com.github.nalamodikk.common.block.mana_crafting;
 import com.github.nalamodikk.common.API.IManaCraftingMachine;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.register.ModCapability;
+import net.minecraft.core.Direction;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
@@ -50,14 +53,16 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     }
 
     private void extractManaFromNeighbors() {
-        for (var direction : net.minecraft.core.Direction.values()) {
+        for (Direction direction : Direction.values()) {
             BlockPos neighborPos = worldPosition.relative(direction);
             if (!level.hasChunkAt(neighborPos)) continue;
 
             BlockEntity neighbor = level.getBlockEntity(neighborPos);
             if (neighbor == null) continue;
 
-            IUnifiedManaHandler neighborMana = ManaCapability.MANA.getCapability(level, neighborPos, null, neighbor, null);
+            // 安全查詢 Mana 能力（使用 NeoForge 提供的 Level API）
+            IUnifiedManaHandler neighborMana = level.getCapability(ModCapability.MANA, neighborPos, direction.getOpposite());
+
             if (neighborMana == null) continue;
 
             int simulated = neighborMana.extractMana(50, ManaAction.get(true));
@@ -68,6 +73,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
             }
         }
     }
+
 
 
 

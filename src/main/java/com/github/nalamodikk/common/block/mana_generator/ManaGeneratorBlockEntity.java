@@ -8,7 +8,7 @@
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
     import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
     import com.github.nalamodikk.common.register.ModBlockEntities;
-    import com.github.nalamodikk.common.utils.NbtUtils;
+    import com.github.nalamodikk.common.utils.nbt.NbtUtils;
     import io.netty.buffer.Unpooled;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
@@ -20,6 +20,7 @@
     import net.minecraft.network.protocol.Packet;
     import net.minecraft.network.protocol.game.ClientGamePacketListener;
     import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+    import net.minecraft.resources.ResourceLocation;
     import net.minecraft.server.level.ServerLevel;
     import net.minecraft.world.entity.player.Inventory;
     import net.minecraft.world.entity.player.Player;
@@ -85,6 +86,9 @@
         private ContainerLevelAccess access;
         private int burnTime = 0;
         private int currentBurnTime = 0;
+        // ✅ 用來避免每幀都重播動畫，造成動畫 reset、跳針或閃爍
+        private String currentAnimation = "";
+        private boolean forceRefreshAnimation = false;
 
         private final ManaFuelHandler fuelLogic = new ManaFuelHandler(fuelHandler);
 
@@ -112,8 +116,14 @@
         public static int getMaxEnergy() {return MAX_ENERGY;}
         private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
         @Override
-        public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-            controllerRegistrar.add(new AnimationController<>(this, "mana_generator_controller", 0, this::predicate));
+        public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+            AnimationController<ManaGeneratorBlockEntity> controller =
+                    new AnimationController<>(this, "mana_generator_controller", 0, this::predicate);
+
+            controllers.add(controller);
+
+            // ✅ 初始設 idle 動畫，避免一開始或 ESC 回來變空白
+            controller.setAnimation(RawAnimation.begin().thenLoop("idle"));
         }
 
         @Override
@@ -121,37 +131,65 @@
             return cache;
         }
 
-        private <T extends GeoAnimatable> PlayState predicate(AnimationState<T> tAnimationState) {
-            if (stateManager.isWorking()) {
-                tAnimationState.getController().setAnimation(WORKING_ANIM);
-            } else {
-                tAnimationState.getController().setAnimation(IDLE_ANIM);
+        private <T extends GeoAnimatable> PlayState predicate(AnimationState<T> state) {
+            String targetAnimation = stateManager.isWorking() ? "working" : "idle";
+
+            if (!targetAnimation.equals(currentAnimation) || forceRefreshAnimation) {
+                String oldAnimation = currentAnimation;
+                state.getController().setAnimation(RawAnimation.begin().thenLoop(targetAnimation));
+                currentAnimation = targetAnimation;
+                forceRefreshAnimation = false;
+
+                MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
             }
+
             return PlayState.CONTINUE;
         }
+
+
+
         @Override
         protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.saveAdditional(tag, provider);
+
+            // ✅ 正確印出當下 stateManager 狀態
+            MagicalIndustryMod.LOGGER.info("[Client] saveAdditional - isWorking = {}", stateManager.isWorking());
 
             tag.putInt("Mode", stateManager.getCurrentModeIndex());
             tag.putInt("BurnTime", burnTime);
             tag.putInt("CurrentBurnTime", currentBurnTime);
             tag.putBoolean("IsWorking", stateManager.isWorking());
+            tag.putBoolean("IsPaused", fuelLogic.isPaused());
+
+            if (fuelLogic.getCurrentFuelId() != null) {
+                tag.putString("CurrentFuelId", fuelLogic.getCurrentFuelId().toString());
+            }
 
             NbtUtils.write(tag, "Mana", manaStorage, provider);
             NbtUtils.write(tag, "Energy", energyStorage, provider);
             NbtUtils.write(tag, "FuelItems", fuelHandler, provider);
             NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);
+
         }
+
 
         @Override
         protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.loadAdditional(tag, provider);
+            MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
 
             stateManager.setModeIndex(tag.getInt("Mode"));
             burnTime = tag.getInt("BurnTime");
             currentBurnTime = tag.getInt("CurrentBurnTime");
             stateManager.setWorking(tag.getBoolean("IsWorking"));
+
+            currentBurnTime = tag.getInt("CurrentBurnTime");
+            fuelLogic.setPaused(tag.getBoolean("IsPaused"));
+            if (tag.contains("CurrentFuelId")) {
+                ResourceLocation id = ResourceLocation.tryParse(tag.getString("CurrentFuelId"));
+                fuelLogic.setCurrentFuelId(id);
+            }
+            this.forceRefreshAnimation = true;
 
             NbtUtils.read(tag, "Mana", manaStorage, provider);
             NbtUtils.read(tag, "Energy", energyStorage, provider);
@@ -160,6 +198,9 @@
         }
 
 
+        public ManaFuelHandler getFuelLogic() {
+            return fuelLogic;
+        }
 
 
         @Override
@@ -199,35 +240,37 @@
         }
 
 
+
         @Override
         public void tickMachine() {
             if (fuelLogic.isCoolingDown()) {
                 fuelLogic.tickCooldown();
                 return;
             }
-
             if (!fuelLogic.isBurning()) {
                 if (!fuelLogic.tryConsumeFuel()) {
                     stateManager.setWorking(false); // ✅ 改用 stateManager 控制工作狀態
                     fuelLogic.setCooldown();
+
                     return;
                 }
             }
-
-            fuelLogic.tickBurn();
-
             boolean success = switch (stateManager.getCurrentMode()) {
                 case MANA -> manaGenHandler.generate();
                 case ENERGY -> energyGenHandler.generate();
             };
-
-
+            if (!success) {
+                fuelLogic.pauseBurn();
+                stateManager.setWorking(false);
+                return;
+            }
+            fuelLogic.resumeBurn();
+            fuelLogic.tickBurn(true);
             stateManager.setWorking(success); // ✅ 統一寫入狀態
-
             if (level instanceof ServerLevel serverLevel) {
                 OutputHandler.tryOutput(serverLevel, worldPosition, manaStorage, energyStorage, directionConfig);
             }
-
+            updateBlockActiveState(stateManager.isWorking());
             this.sync();
         }
 
@@ -236,12 +279,24 @@
             return false;
         }
 
-        private void sync() {
+        public void sync() {
+            if (this.level != null && !this.level.isClientSide()) {
+                this.setChanged();
+                this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+            }
             syncHelper.syncFrom(this);
         }
 
+
         public ContainerData getContainerData() {
             return syncHelper.getContainerData();
+        }
+
+        @Override
+        public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+            CompoundTag tag = new CompoundTag();
+            this.saveAdditional(tag, registries);
+            return tag;
         }
 
 
@@ -318,4 +373,14 @@
                 }
             };
         }
+
+        private void updateBlockActiveState(boolean isWorking) {
+            if (level == null) return;
+
+            BlockState state = level.getBlockState(worldPosition);
+            if (state.hasProperty(ManaGeneratorBlock.ACTIVE) && state.getValue(ManaGeneratorBlock.ACTIVE) != isWorking) {
+                level.setBlock(worldPosition, state.setValue(ManaGeneratorBlock.ACTIVE, isWorking), 3);
+            }
+        }
+
     }

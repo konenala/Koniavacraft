@@ -1,7 +1,8 @@
-package com.github.nalamodikk.common.utils;
+package com.github.nalamodikk.common.utils.logic;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
+import com.github.nalamodikk.common.utils.nbt.TagUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;

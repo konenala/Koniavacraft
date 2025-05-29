@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.mana_generator;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModMenuTypes;
-import com.github.nalamodikk.common.utils.FuelRegistryHelper;
+import com.github.nalamodikk.common.utils.logic.FuelRegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -15,13 +15,11 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
-import net.neoforged.neoforge.common.DataMapHooks;
 
 
 public class ManaGeneratorMenu extends AbstractContainerMenu {

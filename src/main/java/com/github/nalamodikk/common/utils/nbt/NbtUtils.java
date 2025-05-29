@@ -3,12 +3,11 @@
  * 支援 NeoForge 1.21.1 的 HolderLookup.Provider 介面，
  * 並擴充支援 List、Map、EnumMap 與 Optional 等常見資料結構的 NBT 操作。
  */
-package com.github.nalamodikk.common.utils;
+package com.github.nalamodikk.common.utils.nbt;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
@@ -16,7 +15,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class NbtUtils {
     /**

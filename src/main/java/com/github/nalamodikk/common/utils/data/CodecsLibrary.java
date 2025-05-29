@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.utils;
+package com.github.nalamodikk.common.utils.data;
 
 
 import com.mojang.serialization.Codec;

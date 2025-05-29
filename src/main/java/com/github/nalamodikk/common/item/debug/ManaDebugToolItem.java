@@ -1,9 +1,9 @@
 package com.github.nalamodikk.common.item.debug;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.capability.ManaCapability;
 import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
+import com.github.nalamodikk.common.register.ModCapability;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -82,7 +82,7 @@ public class ManaDebugToolItem extends Item {
         Level level = context.getLevel();
         if (!level.isClientSide()) {
             BlockPos pos = context.getClickedPos();
-            IUnifiedManaHandler manaStorage = level.getCapability(ManaCapability.MANA, pos, null);
+            IUnifiedManaHandler manaStorage = level.getCapability(ModCapability.MANA, pos, null);
 
             if (manaStorage != null) {
                 ItemStack stack = context.getItemInHand();

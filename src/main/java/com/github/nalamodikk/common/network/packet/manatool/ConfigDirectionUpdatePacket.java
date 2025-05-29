@@ -11,7 +11,7 @@ package com.github.nalamodikk.common.network.packet.manatool;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.common.utils.CodecsLibrary;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;

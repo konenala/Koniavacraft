@@ -8,6 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -19,12 +20,18 @@ public class ManaFuelHandler {
     private int burnTime;
     private int currentBurnTime;
     private int failedFuelCooldown;
+    private boolean isPaused;        // 是否暫停（因產出空間滿了）
 
     public ManaFuelHandler(ItemStackHandler fuelHandler) {
         this.fuelHandler = fuelHandler;
     }
 
     public boolean tryConsumeFuel() {
+        if (burnTime > 0) {
+            // 如果還有尚未燒完的燃料，就不要消耗新燃料
+            return false;
+        }
+
         ItemStack fuel = fuelHandler.getStackInSlot(0);
         if (fuel.isEmpty()) return false;
 
@@ -33,11 +40,13 @@ public class ManaFuelHandler {
 
         if (rate == null || rate.getBurnTime() <= 0 || rate.getManaRate() <= 0) return false;
 
+        // 正式啟動一筆新燃料
         currentFuelId = id;
         currentBurnTime = rate.getBurnTime();
         burnTime = currentBurnTime;
-        fuelHandler.extractItem(0, 1, false);
+        isPaused = false; // ✅ 一定要重置這個！
 
+        fuelHandler.extractItem(0, 1, false);
         return true;
     }
 
@@ -74,14 +83,52 @@ public class ManaFuelHandler {
         this.failedFuelCooldown = 20;
     }
 
+
+
+    public void setPaused(boolean paused) {
+        this.isPaused = paused;
+    }
+
+
+    public void setCurrentFuelId(@Nullable ResourceLocation id) {
+        this.currentFuelId = id;
+    }
+
+
     public void resetBurnTime() {
         this.burnTime = 0;
         this.currentBurnTime = 0;
     }
 
-    public void tickBurn() {
-        if (burnTime > 0) burnTime--;
+    public void tickBurn(boolean allowBurn) {
+        if (!allowBurn || isPaused) return;
+
+        if (burnTime > 0) {
+            burnTime--;
+            if (burnTime == 0) {
+                currentBurnTime  = 0;
+            }
+        }
     }
+
+    public void pauseBurn() {
+        this.isPaused = true;
+    }
+
+    public void resumeBurn() {
+        if (burnTime > 0) {
+            this.isPaused = false;
+        }
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+    public float getFuelProgress() {
+        if (currentBurnTime == 0) return 0f;
+        return burnTime / (float) currentBurnTime;
+    }
+
 
     public boolean isBurning() {
         return burnTime > 0;

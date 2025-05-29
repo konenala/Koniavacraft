@@ -2,8 +2,8 @@ package com.github.nalamodikk.common.network.packet.manatool;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.utils.CodecsLibrary;
-import com.github.nalamodikk.common.utils.CapabilityUtils;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
+import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;

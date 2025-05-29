@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.utils.helpers;
+package com.github.nalamodikk.common.utils.block;
 
 
 

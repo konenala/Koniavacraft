@@ -5,7 +5,7 @@ import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.packet.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.register.ModMenuTypes;
-import com.github.nalamodikk.common.utils.CodecsLibrary;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
