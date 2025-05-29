@@ -1,7 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
 
-import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import java.util.function.Supplier;
@@ -44,9 +43,7 @@ public class EnergyGenerationHandler {
         if (energyStorage == null || energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) {
             return false;
         }
-        if (energyStorage instanceof ModNeoNalaEnergyStorage custom) {
-            // 你可以使用 BigDecimal 的版本或擴充功能
-        }
+
         int energy = energyRateSupplier.get(); // ✅ 動態獲得當前燃料的能量值
         int accepted = energyStorage.receiveEnergy(energy, false);
         return accepted > 0;

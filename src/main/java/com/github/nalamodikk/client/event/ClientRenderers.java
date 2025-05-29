@@ -12,7 +12,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 public class ClientRenderers {
 
     @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+    public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.MANA_GENERATOR_BE.get(), ManaGeneratorRenderer::new);
 
 

@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.block.manabase;
 
 import com.github.nalamodikk.common.capability.ManaStorage;
+import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -18,6 +19,8 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigInteger;
+
 /**
  * 機器方塊實體的抽象基底類別。
  * 可選擇性支援魔力儲存、能量儲存、流體儲存、物品儲存等功能，
@@ -31,7 +34,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
 
     /** 能量儲存（可選） */
     @Nullable
-    protected final EnergyStorage energyStorage;
+    protected final ModNeoNalaEnergyStorage energyStorage;
 
     /** 物品儲存槽（可選） */
     @Nullable
@@ -81,7 +84,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
         super(type, pos, state);
         this.hasEnergy = hasEnergy;
         this.manaStorage = maxMana > 0 ? new ManaStorage(maxMana) : null;
-        this.energyStorage = hasEnergy ? new EnergyStorage(maxEnergy) : null;
+        this.energyStorage = hasEnergy ? new ModNeoNalaEnergyStorage(BigInteger.valueOf(maxEnergy)) : null;
         this.itemHandler = createHandler();
         this.fluidTank = createFluidTank();
         this.intervalTick = intervalTick;
@@ -95,7 +98,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
     public int getEnergyPerTick() { return energyPerTick; }
     public boolean hasEnergy() { return hasEnergy; }
     public @Nullable ManaStorage getManaStorage() { return manaStorage; }
-    public @Nullable EnergyStorage getEnergyStorage() { return energyStorage; }
+    public @Nullable ModNeoNalaEnergyStorage getEnergyStorage() { return energyStorage; }
     public @Nullable ItemStackHandler getItemHandler() { return itemHandler; }
     public @Nullable FluidTank getFluidTank() { return fluidTank; }
     public int getMaxEnergyCapacity() {return maxEnergy;}
