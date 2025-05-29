@@ -77,7 +77,13 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
                 LOGGER.error("Couldn't parse fuel rate for {}", id, e);
             }
         }
-        LOGGER.info("Loaded {} fuel rates", FUEL_RATES.size());
+
+        LOGGER.info("Loaded {} mana fuel entries from data pack:", FUEL_RATES.size());
+        for (ResourceLocation id : objects.keySet()) {
+            LOGGER.info(" ├─ ID: {}", id);
+            LOGGER.info(" │   ↳ Path: data/{}/{}.json", id.getNamespace(), id.getPath());
+        }
+
     }
 
 

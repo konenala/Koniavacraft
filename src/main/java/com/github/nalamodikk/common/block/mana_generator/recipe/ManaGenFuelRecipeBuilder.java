@@ -15,6 +15,8 @@ import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.Nullable;
 
 public class ManaGenFuelRecipeBuilder implements RecipeBuilder {
+    public static final String FUEL_RECIPE_PATH_PREFIX = "mana_recipes/mana_fuel/";
+
     private final Ingredient ingredient;
     private final int manaRate;
     private final int energyRate;
@@ -38,9 +40,10 @@ public class ManaGenFuelRecipeBuilder implements RecipeBuilder {
     public void save(RecipeOutput output) {
         Item resultItem = ingredient.getItems()[0].getItem();
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                MagicalIndustryMod.MOD_ID, // 命名空間：magical_industry
-                "mana_recipes/mana_fuel/" + BuiltInRegistries.ITEM.getKey(resultItem).getPath() + "_fuel"
+                MagicalIndustryMod.MOD_ID,
+                FUEL_RECIPE_PATH_PREFIX + BuiltInRegistries.ITEM.getKey(resultItem).getPath() + "_fuel"
         );
+
 
 
         save(output, id); // ✅ 呼叫你下面那個 save(output, id)

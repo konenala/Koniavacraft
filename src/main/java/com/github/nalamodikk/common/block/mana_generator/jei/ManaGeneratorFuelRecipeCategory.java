@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenFuelRecipe> {
     public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_fuel");
@@ -86,27 +87,29 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
         Component burnTimeText = Component.translatable("jei.magical_industry.burn_time", burnTime);
         graphics.drawString(font, burnTimeText, 45, 27, 0x555555, false);
         double efficiency = manaRate > 0 ? (double) energyRate / manaRate : 0;
-
-    }
-
-
-
-    @Override
-    public List<Component> getTooltipStrings(ManaGenFuelRecipe recipe, IRecipeSlotsView slotsView, double mouseX, double mouseY) {
-        List<Component> tooltips = new ArrayList<>();
-
-        // 🔹 魔力條區域 (x: 10 ~ 30, y: 10 ~ 70)
+        // 🔹 顯示 tooltip：滑鼠滑到魔力條 → 顯示魔力資訊
         if (mouseX >= 8 && mouseX <= 19 && mouseY >= 10 && mouseY <= 70) {
-            tooltips.add(Component.translatable("jei.magical_industry.fuel.mana", recipe.getManaRate()));
+            graphics.renderTooltip(font,
+                    List.of(Component.translatable("jei.magical_industry.fuel.mana", manaRate)),
+                    Optional.empty(),
+                    (int) mouseX,
+                    (int) mouseY
+            );
         }
 
-        // 🔹 能量條區域 (x: 150 ~ 170, y: 10 ~ 70)
+        // 🔹 顯示 tooltip：滑鼠滑到能量條 → 顯示能量資訊
         if (mouseX >= 150 && mouseX <= 170 && mouseY >= 10 && mouseY <= 70) {
-            tooltips.add(Component.translatable("jei.magical_industry.fuel.energy", recipe.getEnergyRate()));
+            graphics.renderTooltip(font,
+                    List.of(Component.translatable("jei.magical_industry.fuel.energy", energyRate)),
+                    Optional.empty(),
+                    (int) mouseX,
+                    (int) mouseY
+            );
         }
-
-        return tooltips;
     }
+
+
+
 
 
     public static ResourceLocation getTexture() {

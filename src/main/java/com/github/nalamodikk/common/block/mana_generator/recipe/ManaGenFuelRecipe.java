@@ -133,8 +133,5 @@ public class ManaGenFuelRecipe implements Recipe<RecipeInput> {
         }
     }
 
-    public static class FuelRecipeType implements RecipeType<ManaGenFuelRecipe> {
-        public static final FuelRecipeType INSTANCE = new FuelRecipeType();
-        private FuelRecipeType() {}
-    }
+
 }

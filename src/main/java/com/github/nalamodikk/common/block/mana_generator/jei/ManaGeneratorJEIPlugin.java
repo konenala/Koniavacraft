@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.common.register.ModRecipes;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -47,6 +48,8 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
         );
     }
 
+
+
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         registration.addRecipeClickArea(ManaGeneratorScreen.class,30,15 ,25,45, ManaGeneratorFuelRecipeCategory.RECIPE_TYPE);
@@ -61,7 +64,7 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
         }
 
         List<ManaGenFuelRecipe> manaGenFuelRecipes = minecraft.level.getRecipeManager()
-                .getAllRecipesFor(ManaGenFuelRecipe.FuelRecipeType.INSTANCE)
+                .getAllRecipesFor(ModRecipes.MANA_FUEL_TYPE.get())
                 .stream()
                 .map(RecipeHolder::value)
                 .toList();
