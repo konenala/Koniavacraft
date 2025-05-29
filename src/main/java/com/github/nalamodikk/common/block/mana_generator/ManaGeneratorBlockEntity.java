@@ -73,8 +73,8 @@ public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock imp
     private EnergyGenerationHandler energyGenHandler;
 
     private final ManaGeneratorStateManager stateManager = new ManaGeneratorStateManager();
-    private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("misc.idle");
-    private static final RawAnimation WORKING_ANIM = RawAnimation.begin().thenLoop("misc.working");
+    private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
+    private static final RawAnimation WORKING_ANIM = RawAnimation.begin().thenLoop("working");
 
 
     private final ItemStackHandler fuelHandler = new ItemStackHandler(FUEL_SLOT_COUNT);

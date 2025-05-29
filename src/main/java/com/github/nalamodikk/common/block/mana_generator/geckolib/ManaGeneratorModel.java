@@ -18,6 +18,6 @@ public class ManaGeneratorModel extends GeoModel<ManaGeneratorBlockEntity> {
 
     @Override
     public ResourceLocation getTextureResource(ManaGeneratorBlockEntity animatable) {
-        return MagicalIndustryMod.rl("textures/block/mana_generator.png");
+        return MagicalIndustryMod.rl("textures/block/mana_generator_texture.png");
     }
 }

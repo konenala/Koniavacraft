@@ -25,6 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class ManaGeneratorBlock extends BaseEntityBlock {
+    public static final MapCodec<ManaGeneratorBlock> CODEC = simpleCodec(ManaGeneratorBlock::new);
+
     public ManaGeneratorBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(ACTIVE, false)); // 預設不運作
@@ -33,7 +35,7 @@ public class ManaGeneratorBlock extends BaseEntityBlock {
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return null;
+        return CODEC;
     }
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;

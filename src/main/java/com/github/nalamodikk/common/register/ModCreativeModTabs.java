@@ -33,6 +33,7 @@ public class ModCreativeModTabs {
                         output.accept(ModBlocks.DEEPSLATE_MAGIC_ORE);
                         output.accept(ModBlocks.MANA_BLOCK);
                         output.accept(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
+                        output.accept(ModBlocks.MANA_GENERATOR);
 
                     })
                     .build());

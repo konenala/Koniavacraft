@@ -30,15 +30,18 @@ public class ManaGenFuelRecipeBuilder implements RecipeBuilder {
     public static ManaGenFuelRecipeBuilder create(ItemLike item, int manaRate, int energyRate, int burnTime) {
         return new ManaGenFuelRecipeBuilder(Ingredient.of(item), manaRate, energyRate, burnTime);
     }
+    public static ManaGenFuelRecipeBuilder create(Item item, int manaRate, int energyRate, int burnTime) {
+        return create((ItemLike) item, manaRate, energyRate, burnTime);
+    }
 
     @Override
     public void save(RecipeOutput output) {
         Item resultItem = ingredient.getItems()[0].getItem();
-
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                MagicalIndustryMod.MOD_ID,
-                BuiltInRegistries.ITEM.getKey(resultItem).getPath() + "_fuel"
+                MagicalIndustryMod.MOD_ID, // 命名空間：magical_industry
+                "mana_recipes/mana_fuel/" + BuiltInRegistries.ITEM.getKey(resultItem).getPath() + "_fuel"
         );
+
 
         save(output, id); // ✅ 呼叫你下面那個 save(output, id)
     }
