@@ -1,11 +1,9 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.block.blocks.Conduit.ManaConduitBlock;
-import com.github.nalamodikk.common.ComponentSystem.block.blocks.MachineBlock.ModularMachineBlock;
-import com.github.nalamodikk.common.block.blocks.basic.SolarManaCollectorBlock;
-import com.github.nalamodikk.common.block.blocks.managenerator.ManaGeneratorBlock;
-import com.github.nalamodikk.common.block.blocks.mana_crafting_table.ManaCraftingTableBlock;
+
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlock;
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlock;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -13,60 +11,57 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(ForgeRegistries.BLOCKS, MagicalIndustryMod.MOD_ID);
-
-    // 註冊 Mana Block
-    public static final RegistryObject<Block> MANA_BLOCK = registerBlock("mana_block",
-            () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
-
-    public static final RegistryObject<Block> MANA_CRAFTING_TABLE_BLOCK = registerBlock("mana_crafting_table",
-            () -> new ManaCraftingTableBlock(BlockBehaviour.Properties.copy(Blocks.BIRCH_WOOD)));
-
-    public static final RegistryObject<Block> MANA_GENERATOR = BLOCKS.register("mana_generator",
-            () -> new ManaGeneratorBlock(BlockBehaviour.Properties.copy(Blocks.STONE).noOcclusion()));
-
-    public static final RegistryObject<Block> MANA_CONDUIT = registerBlock("mana_conduit",
-            () -> new ManaConduitBlock());
-
-    public static final RegistryObject<Block> SOLAR_MANA_COLLECTOR  = registerBlock("solar_mana_collector",
-            () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()));
-
-    // 模塊化機器
-    public static final RegistryObject<Block> MODULAR_MACHINE_BLOCK = registerBlock("modular_machine",
-            () -> new ModularMachineBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()));
+    public static final DeferredRegister.Blocks BLOCKS =
+            DeferredRegister.createBlocks(MagicalIndustryMod.MOD_ID);
 
 
-    // 新增魔法礦物的註冊
-    public static final RegistryObject<Block> MAGIC_ORE = registerBlock("magic_ore",
-            () -> new DropExperienceBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
-                    .strength(2f).requiresCorrectToolForDrops(), UniformInt.of(3, 6)));
+    public static final DeferredBlock<Block> MANA_BLOCK =
+            registerBlock("mana_block", () -> new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)));
 
-    public static final RegistryObject<Block> DEEPSLATE_MAGIC_ORE = registerBlock("deepslate_magic_ore",
-            () -> new DropExperienceBlock(BlockBehaviour.Properties.copy(Blocks.DEEPSLATE)
-                    .strength(4f).requiresCorrectToolForDrops(), UniformInt.of(3, 8)));
+    public static final DeferredBlock<Block> MANA_CRAFTING_TABLE_BLOCK =
+            registerBlock("mana_crafting_table", () -> new ManaCraftingTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_WOOD)));
 
+    public static final DeferredBlock<Block> MANA_GENERATOR =
+            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
+//    public static final DeferredBlock<Block> MANA_CONDUIT =
+//            registerBlock("mana_conduit", () -> new ManaConduitBlock());
 
+//    public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
+//            registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+//
 
+    public static final DeferredBlock<Block> MAGIC_ORE =
+            registerBlock("magic_ore", () -> new DropExperienceBlock(UniformInt.of(3, 6), BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                                .strength(2f).requiresCorrectToolForDrops()));
 
-    // 通用的註冊方法
-    private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
-        RegistryObject<T> toReturn = BLOCKS.register(name, block);
+    public static final DeferredBlock<Block> DEEPSLATE_MAGIC_ORE =
+            registerBlock("deepslate_magic_ore", () -> new DropExperienceBlock(UniformInt.of(3, 8), BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE)
+                                .strength(4f).requiresCorrectToolForDrops()));
+
+    private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
+        DeferredBlock<T> toReturn = BLOCKS.register(name, block);
         registerBlockItem(name, toReturn);
         return toReturn;
     }
 
-    private static <T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block) {
-        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+
+    private static <T extends Block> DeferredBlock<T> registerBlockWithItem(String name, Supplier<T> block, Function<T, BlockItem> itemFactory) {
+        DeferredBlock<T> toReturn = BLOCKS.register(name, block);
+        ModItems.ITEMS.register(name, () -> itemFactory.apply(toReturn.get()));
+        return toReturn;
+    }
+
+    private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block) {
+        ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 
     public static void register(IEventBus eventBus) {

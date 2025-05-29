@@ -68,6 +68,9 @@
   "screen.magical_industry.output": "Output",
   "screen.magical_industry.input": "Input",
   "screen.magical_industry.cannot_toggle": "Generator is running, cannot switch mode!",
+  "screen.magical_industry.modular_machine_config": "Modular Machine Assembly Interface",
+  "screen.magical_industry.upgrade_button.tooltip": "Open Upgrade Module Interface",
+  "screen.magical_industry.upgrade.title": "Upgrade Module Manager",
 
 
 
@@ -87,6 +90,7 @@
   "button.magical_industry.toggle_auto_crafting": "Toggle",
   "button.magical_industry.auto_crafting_enabled": "AutoCrafting: Enabled",
   "button.magical_industry.auto_crafting_disabled": "AutoCrafting: Disabled",
+
 
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "Saved Block Position: (%s, %s, %s)",

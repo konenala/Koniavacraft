@@ -23,12 +23,13 @@
  */
 package com.github.nalamodikk.client.screenAPI;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class DynamicTooltip {
     private final Supplier<List<Component>> tooltipSupplier;

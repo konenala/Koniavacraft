@@ -1,18 +1,20 @@
 package com.github.nalamodikk.common.register;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingScreen;
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-import com.github.nalamodikk.common.screen.ManaGenerator.ManaGeneratorScreen;
-import com.github.nalamodikk.common.screen.manacrafting.ManaCraftingScreen;
-import com.github.nalamodikk.common.screen.tool.UniversalConfigScreen;
-import net.minecraft.client.gui.screens.MenuScreens;
-
+@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ModMenuScreens {
-    public static void registerScreens() {
-        // 註冊菜單屏幕
-        MenuScreens.register(ModMenusTypes.MANA_CRAFTING_MENU.get(), ManaCraftingScreen::new);
-        MenuScreens.register(ModMenusTypes.MANA_GENERATOR_MENU.get(), ManaGeneratorScreen::new);
-        MenuScreens.register(ModMenusTypes.UNIVERSAL_CONFIG.get(), UniversalConfigScreen::new);
-
-
+    @SubscribeEvent
+    public static void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenuTypes.MANA_CRAFTING_MENU.get(), ManaCraftingScreen::new);
+        event.register(ModMenuTypes.MANA_GENERATOR_MENU.get(), ManaGeneratorScreen::new);
     }
+
 }

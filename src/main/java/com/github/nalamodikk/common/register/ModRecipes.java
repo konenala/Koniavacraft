@@ -1,38 +1,68 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.recipe.ManaCraftingTableRecipe;
-import com.github.nalamodikk.common.recipe.fuel.ManaGenFuelRecipe;
+import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
+import com.github.nalamodikk.common.block.mana_generator.jei.ManaGeneratorJEIPlugin;
+import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ModRecipes {
-    // 註冊 RecipeSerializer 和 RecipeType
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
-            DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(Registries.RECIPE_SERIALIZER, MagicalIndustryMod.MOD_ID);
 
     public static final DeferredRegister<RecipeType<?>> TYPES =
-            DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(Registries.RECIPE_TYPE, MagicalIndustryMod.MOD_ID);
 
-    // 統一使用 mana_crafting 名稱
-    public static final RegistryObject<RecipeSerializer<ManaCraftingTableRecipe>> MANA_CRAFTING_SERIALIZER =
+    // 魔法合成台配方--註冊實例
+    private static final RecipeType<ManaCraftingTableRecipe> MANA_CRAFTING_TYPE_INSTANCE =
+            new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return MagicalIndustryMod.MOD_ID + ":mana_crafting";
+                }
+            };
+    // 註冊 serializer
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ManaCraftingTableRecipe>> MANA_CRAFTING_SERIALIZER =
             SERIALIZERS.register("mana_crafting", ManaCraftingTableRecipe.Serializer::new);
-    public static final RegistryObject<RecipeType<ManaCraftingTableRecipe>> MANA_CRAFTING_TYPE =
-            TYPES.register("mana_crafting", () -> ManaCraftingTableRecipe.Type.INSTANCE);
+    // 註冊 recipe type（簡潔乾淨）
+    public static final DeferredHolder<RecipeType<?>, RecipeType<ManaCraftingTableRecipe>> MANA_CRAFTING_TYPE =
+            TYPES.register("mana_crafting", () -> MANA_CRAFTING_TYPE_INSTANCE);
 
-    public static final RegistryObject<RecipeSerializer<ManaGenFuelRecipe>> FUEL_RECIPE_SERIALIZER =
+
+    // 魔力發電機 -manaGen
+    // 這是給 RecipeManager 用的 Vanilla RecipeType（不要引用 JEI Plugin，那是顛倒邏輯！）
+    private static final RecipeType<ManaGenFuelRecipe> MANA_FUEL_TYPE_INSTANCE = new RecipeType<>() {
+        @Override
+        public String toString() {
+            return MagicalIndustryMod.MOD_ID + ":mana_fuel";
+        }
+    };
+
+    // ✅ 給 Minecraft 用的 RecipeType（RecipeManager 用這個）
+    public static final DeferredHolder<RecipeType<?>, RecipeType<ManaGenFuelRecipe>> MANA_FUEL_TYPE =
+            TYPES.register("mana_fuel", () -> new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return MagicalIndustryMod.MOD_ID + ":mana_fuel";
+                }
+            });
+
+    // ✅ 給 Minecraft 用的 RecipeSerializer（讀 json 用這個）
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ManaGenFuelRecipe>> MANA_FUEL_SERIALIZER =
             SERIALIZERS.register("mana_fuel", () -> ManaGenFuelRecipe.FuelRecipeSerializer.INSTANCE);
-    public static final RegistryObject<RecipeType<ManaGenFuelRecipe>> FUEL_RECIPE_TYPE =
-            TYPES.register("mana_fuel", () -> ManaGenFuelRecipe.FuelRecipeType.INSTANCE);
 
 
-    // 註冊方法
-    public static void register(IEventBus eventBus) {
-        SERIALIZERS.register(eventBus);
-        TYPES.register(eventBus);
+
+
+    // 綁定用註冊方法
+    public static void register(IEventBus modEventBus) {
+        SERIALIZERS.register(modEventBus);
+        TYPES.register(modEventBus);
     }
+
 }

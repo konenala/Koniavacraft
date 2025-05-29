@@ -1,182 +1,160 @@
+// 已重構 BasicTechWandItem：使用 NeoForge DataComponent API + Packet + 滾輪切換 + 儲存方向提示
+/**
+ * 🔧 BasicTechWandItem
+ *
+ * 本類是自訂的科技魔杖物品，繼承自 Minecraft 的 Item 類別。
+ * 其邏輯透過 `useOn()` 方法在玩家右鍵方塊時自動觸發，
+ * 無需事件訂閱（不需使用 @SubscribeEvent 或 EventBus）。
+ *
+ * 此物品可搭配 TechWandMode 進行模式切換操作，
+ * 如：輸入輸出配置、方向設定、自轉行為等。
+ *
+ * ✅ 此類需註冊至 ModItems，讓遊戲認得它是一個有效物品。
+ */
+
 package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
-import com.github.nalamodikk.common.network.toolpacket.TechWandModePacket;
-import com.github.nalamodikk.common.screen.tool.UniversalConfigMenu;
-import com.github.nalamodikk.common.util.helpers.BlockSelector;
+import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
+import com.github.nalamodikk.common.network.packet.manatool.TechWandModePacket;
+import com.github.nalamodikk.common.register.ModDataComponents;
+import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
+import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
+import com.github.nalamodikk.common.utils.data.TechDataComponents;
+import com.github.nalamodikk.common.utils.block.BlockSelectorUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
-@Mod.EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class BasicTechWandItem extends Item {
-    // 你的代碼
 
     public BasicTechWandItem(Properties properties) {
-        super(properties);
-    }
-
-    // 定義科技魔杖的模式
-    public enum TechWandMode {
-        CONFIGURE_IO, // 合併輸入和輸出配置
-        DIRECTION_CONFIG,
-        ROTATE;
-
-        public TechWandMode next() {
-            TechWandMode[] modes = values();
-            return modes[(this.ordinal() + 1) % modes.length];
-        }
-
-        public TechWandMode previous() {
-            TechWandMode[] modes = values();
-            return modes[(this.ordinal() - 1 + modes.length) % modes.length];
-        }
+        super(properties.component(ModDataComponents.TECH_WAND_MODE, TechWandMode.CONFIGURE_IO));
+        NeoForge.EVENT_BUS.addListener(this::onLeftClickBlock);
+        NeoForge.EVENT_BUS.addListener(this::onMouseScroll);
     }
 
     public TechWandMode getMode(ItemStack stack) {
-        return TechWandMode.values()[stack.getOrCreateTag().getInt("TechWandMode")];
+        return stack.getOrDefault(ModDataComponents.TECH_WAND_MODE, TechWandMode.CONFIGURE_IO);
     }
 
     public void setMode(ItemStack stack, TechWandMode mode) {
-        stack.getOrCreateTag().putInt("TechWandMode", mode.ordinal());
+        stack.set(ModDataComponents.TECH_WAND_MODE, mode);
     }
 
-    // 伺服器端處理切換模式
     public void changeMode(Player player, ItemStack stack) {
         if (player instanceof ServerPlayer serverPlayer) {
-            TechWandMode currentMode = getMode(stack);
-            TechWandMode newMode = currentMode.next();
-            setMode(stack, newMode);
-            serverPlayer.displayClientMessage(Component.translatable("message.magical_industry.mode_changed",
-                    Component.translatable("mode.magical_industry." + newMode.name().toLowerCase())), true);
+            TechWandMode current = getMode(stack);
+            TechWandMode next = current.next();
+            setMode(stack, next);
+            serverPlayer.displayClientMessage(Component.translatable(
+                    "message.magical_industry.mode_changed",
+                    Component.translatable("mode.magical_industry." + next.getSerializedName())
+            ), true);
         }
     }
 
-    @SubscribeEvent
-    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+    public void onLeftClickBlock(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
-        Level level = player.level();
+        if (!player.isCrouching()) return;
+
         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (!(stack.getItem() instanceof BasicTechWandItem)) return;
 
-        if (player.isCrouching() && stack.getItem() instanceof BasicTechWandItem) {
-            if (!level.isClientSide()) { // 只在伺服器端處理選擇方塊的邏輯
-                // 使用射線追蹤來選擇玩家視角中的方塊
-                BlockPos targetBlockPos = BlockSelector.getTargetBlock(player, 5.0); // 假設 5 格內有效
-                if (targetBlockPos != null) {
-                    BlockEntity blockEntity = level.getBlockEntity(targetBlockPos);
+        Level level = player.level();
+        if (level.isClientSide) return;
 
-                    if (blockEntity instanceof IConfigurableBlock) {
-                        // 保存方塊的位置到工具的 NBT
-                        CompoundTag tag = stack.getOrCreateTag();
-                        tag.putInt("SelectedX", targetBlockPos.getX());
-                        tag.putInt("SelectedY", targetBlockPos.getY());
-                        tag.putInt("SelectedZ", targetBlockPos.getZ());
-                        for (Direction direction : Direction.values()) {
-                            boolean isOutput = ((IConfigurableBlock) blockEntity).isOutput(direction);
-                            tag.putBoolean("Direction_" + direction.getName(), isOutput);
-                        }
-                        stack.setTag(tag);
+        BlockPos target = BlockSelectorUtils.getTargetBlock(player, 5.0);
+        if (target == null) {
+            player.displayClientMessage(Component.translatable("message.magical_industry.no_block_selected"), true);
+            return;
+        }
 
-                        // 向玩家顯示一條消息，確認選擇了哪個方塊
-                        player.displayClientMessage(Component.translatable("message.magical_industry.block_selected", targetBlockPos), true);
-                        event.setCanceled(true); // 防止默認左鍵行為，例如破壞方塊
-                    } else {
-                        player.displayClientMessage(Component.translatable("message.magical_industry.block_not_configurable"), true);
-                    }
-                } else {
-                    player.displayClientMessage(Component.translatable("message.magical_industry.no_block_selected"), true);
-                }
-            }
+        BlockEntity be = level.getBlockEntity(target);
+        if (be instanceof IConfigurableBlock configBlock) {
+            TechDataComponents.saveConfigDirections(stack, target, configBlock);
+            player.displayClientMessage(Component.translatable("message.magical_industry.block_selected", target), true);
+            event.setCanceled(true);
+        } else {
+            player.displayClientMessage(Component.translatable("message.magical_industry.block_not_configurable"), true);
         }
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
+        if (player == null || !player.isCrouching()) return InteractionResult.PASS;
+
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         ItemStack stack = context.getItemInHand();
-        BlockEntity blockEntity = level.getBlockEntity(pos);
+        BlockEntity be = level.getBlockEntity(pos);
 
-        if (!level.isClientSide && player != null && player.isCrouching()) {
+        if (!level.isClientSide && be instanceof IConfigurableBlock configBlock) {
             TechWandMode mode = getMode(stack);
+            Direction face = context.getClickedFace();
 
-            if (blockEntity != null) {
-                // 如果是支持配置的機器，檢查 IConfigurableBlock 接口
-                if (blockEntity instanceof IConfigurableBlock configurableBlock) {
-                    Direction clickedFace = context.getClickedFace();
+            switch (mode) {
+                case DIRECTION_CONFIG -> {
+                    boolean output = configBlock.isOutput(face);
+                    configBlock.setDirectionConfig(face, !output);
+                    player.displayClientMessage(Component.translatable(
+                            "message.magical_industry.config_changed",
+                            face.getName(),
+                            !output ? Component.translatable("mode.magical_industry.output") : Component.translatable("mode.magical_industry.input")
+                    ), true);
+                    return InteractionResult.SUCCESS;
+                }
+                case CONFIGURE_IO -> {
+                    if (player instanceof ServerPlayer sp) {
+                        var manaStorage = CapabilityUtils.getMana(sp.level(), be.getBlockPos(), null);
+                        if (manaStorage != null) {
+                            ManaUpdatePacket.sendManaUpdate(sp, be.getBlockPos(), manaStorage.getManaStored());
+                        }
 
-                    switch (mode) {
-                        case DIRECTION_CONFIG:
-                            // 獲取當前設置，切換方向配置
-                            boolean isCurrentlyOutput = configurableBlock.isOutput(clickedFace);
-                            configurableBlock.setDirectionConfig(clickedFace, !isCurrentlyOutput);
-                            player.displayClientMessage(Component.translatable(
-                                    "message.magical_industry.config_changed",
-                                    clickedFace.getName(), !isCurrentlyOutput ? Component.translatable("mode.magical_industry.output") : Component.translatable("mode.magical_industry.input")), true);
-                            return InteractionResult.SUCCESS;
+                        sp.openMenu(new SimpleMenuProvider(
+                                (id, inv, p) -> new UniversalConfigMenu(id, inv, be, stack),
+                                Component.translatable("screen.magical_industry.configure_io")
+                        ), be.getBlockPos());
+                    }
+                    return InteractionResult.SUCCESS;
+                }
 
-                        case CONFIGURE_IO:
-                            // 直接開啟配置界面，不在這裡改變方向配置
-                            if (player instanceof ServerPlayer serverPlayer) {
-                                NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider(
-                                        (id, playerInventory, playerEntity) -> new UniversalConfigMenu(id, playerInventory, blockEntity, stack),
-                                        Component.translatable("screen.magical_industry.configure_io")
-                                ), buf -> {
-                                    buf.writeBlockPos(blockEntity.getBlockPos());
-                                    buf.writeItem(stack);
-                                });
-                            }
-                            return InteractionResult.SUCCESS;
 
-                        case ROTATE:
-                            // 旋轉機器方塊
-                            BlockState state = level.getBlockState(pos);
-                            if (state.hasProperty(BlockStateProperties.FACING)) {
-                                Direction currentDirection = state.getValue(BlockStateProperties.FACING);
-                                Direction newDirection = currentDirection.getClockWise();
-                                BlockState newState = state.setValue(BlockStateProperties.FACING, newDirection);
-                                level.setBlock(pos, newState, 3);
-                                player.displayClientMessage(Component.translatable("message.magical_industry.block_rotated_facing"), true);
-                                return InteractionResult.SUCCESS;
-                            } else if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                                Direction currentDirection = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                                Direction newDirection = currentDirection.getClockWise();
-                                BlockState newState = state.setValue(BlockStateProperties.HORIZONTAL_FACING, newDirection);
-                                level.setBlock(pos, newState, 3);
-                                player.displayClientMessage(Component.translatable("message.magical_industry.block_rotated_horizontal"), true);
-                                return InteractionResult.SUCCESS;
-                            } else {
-                                player.displayClientMessage(Component.translatable("message.magical_industry.block_cannot_rotate"), true);
-                            }
-                            break;
+
+                case ROTATE -> {
+                    BlockState state = level.getBlockState(pos);
+                    if (state.hasProperty(BlockStateProperties.FACING)) {
+                        level.setBlock(pos, state.setValue(BlockStateProperties.FACING,
+                                state.getValue(BlockStateProperties.FACING).getClockWise()), 3);
+                        player.displayClientMessage(Component.translatable("message.magical_industry.block_rotated_facing"), true);
+                        return InteractionResult.SUCCESS;
+                    } else if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                        level.setBlock(pos, state.setValue(BlockStateProperties.HORIZONTAL_FACING,
+                                state.getValue(BlockStateProperties.HORIZONTAL_FACING).getClockWise()), 3);
+                        player.displayClientMessage(Component.translatable("message.magical_industry.block_rotated_horizontal"), true);
+                        return InteractionResult.SUCCESS;
+                    } else {
+                        player.displayClientMessage(Component.translatable("message.magical_industry.block_cannot_rotate"), true);
                     }
                 }
             }
@@ -184,65 +162,53 @@ public class BasicTechWandItem extends Item {
         return InteractionResult.PASS;
     }
 
-    @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
-        Player player = net.minecraft.client.Minecraft.getInstance().player;
-        if (player != null && player.isCrouching()) {
-            ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-            if (heldItem.getItem() instanceof BasicTechWandItem) {
-                BasicTechWandItem wand = (BasicTechWandItem) heldItem.getItem();
-                float scrollDelta = (float) event.getScrollDelta();
 
-                if (scrollDelta != 0) {
-                    boolean forward = scrollDelta > 0;
+    public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || !player.isCrouching()) return;
 
-                    // 調試信息，確認封包被發送
-                    MagicalIndustryMod.LOGGER.debug("Sending TechWandModePacket: " + (forward ? "Next" : "Previous"));
+        ItemStack held = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (!(held.getItem() instanceof BasicTechWandItem wand)) return;
 
-                    RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new TechWandModePacket(forward));
-                    event.setCanceled(true);
-                }
-            }
-        }
+        boolean forward = event.getScrollDeltaY() > 0;
+        TechWandMode current = wand.getMode(held);
+        TechWandMode next = current.cycle(forward); // ⬅ 你需要這個方法
+        TechWandModePacket.sendToServer(next);
+
+        MagicalIndustryMod.LOGGER.debug("Sending TechWandModePacket: " + next);
+        event.setCanceled(true);
     }
 
-
-
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-        super.appendHoverText(stack, world, tooltip, flag);
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.translatable("tooltip.magical_industry.mode",
+                Component.translatable("mode.magical_industry." + getMode(stack).getSerializedName())));
+        TechDataComponents.appendSavedDirectionTooltip(stack, tooltipComponents);
+    }
 
-        // 显示当前模式
-        tooltip.add(Component.translatable("tooltip.magical_industry.mode", Component.translatable("mode.magical_industry." + getMode(stack).name().toLowerCase())));
+    public enum TechWandMode implements StringRepresentable {
+        CONFIGURE_IO,
+        DIRECTION_CONFIG,
+        ROTATE;
 
-        // 显示保存的方块方向配置信息
-        CompoundTag tag = stack.getTag();
-        if (tag != null) {
-            // 用 Map<Boolean, List<Direction>> 来分组相同配置的方向
-            Map<Boolean, List<Direction>> groupedDirections = new HashMap<>();
-            groupedDirections.put(true, new ArrayList<>());
-            groupedDirections.put(false, new ArrayList<>());
+        public TechWandMode next() {
+            return values()[(this.ordinal() + 1) % values().length];
+        }
 
-            for (Direction direction : Direction.values()) {
-                boolean isOutput = tag.getBoolean("Direction_" + direction.getName());
-                groupedDirections.get(isOutput).add(direction);
-            }
+        public TechWandMode previous() {
+            return values()[(this.ordinal() - 1 + values().length) % values().length];
+        }
 
-            // 添加工具提示
-            for (Map.Entry<Boolean, List<Direction>> entry : groupedDirections.entrySet()) {
-                List<Direction> directions = entry.getValue();
-                if (!directions.isEmpty()) {
-                    String directionNames = directions.stream()
-                            .map(Direction::getName)
-                            .map(String::toLowerCase)
-                            .collect(Collectors.joining(", "));
-                    String configType = entry.getKey() ? "Output" : "Input";
-                    tooltip.add(Component.translatable("tooltip.magical_industry.saved_direction_config", directionNames, configType));
-                }
-            }
-        } else {
-            tooltip.add(Component.translatable("tooltip.magical_industry.no_saved_block"));
+        public TechWandMode cycle(boolean forward) {
+            TechWandMode[] values = values();
+            int index = this.ordinal();
+            int nextIndex = (index + (forward ? 1 : -1) + values.length) % values.length;
+            return values[nextIndex];
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name(); // 或 .toLowerCase() 也可以配合本地化
         }
     }
 }

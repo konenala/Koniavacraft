@@ -1,15 +1,19 @@
 package com.github.nalamodikk.common.item.debug;
 
-import com.github.nalamodikk.common.capability.ManaCapability;
-
-import com.github.nalamodikk.common.register.handler.RegisterNetworkHandler;
-import com.github.nalamodikk.common.network.toolpacket.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.toolpacket.ModeChangePacket;
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
+import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
+import com.github.nalamodikk.common.register.ModCapability;
+import com.mojang.serialization.Codec;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,23 +21,60 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber
 public class ManaDebugToolItem extends Item {
     public static final String TAG_MODE_INDEX = "ModeIndex";
 
-
     private static final int[] MANA_AMOUNTS = {10, 100, 1000};
-    private static final String[] MODES = {"message.magical_industry.mana_mode_add_10", "message.magical_industry.mana_mode_add_100", "message.magical_industry.mana_mode_add_1000"};
+    private static final String[] MODES = {
+            "message.magical_industry.mana_mode_add_10",
+            "message.magical_industry.mana_mode_add_100",
+            "message.magical_industry.mana_mode_add_1000"
+    };
 
     public ManaDebugToolItem(Properties properties) {
         super(properties);
+        NeoForge.EVENT_BUS.addListener(this::onMouseScroll);
+
+    }
+
+    public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null || !player.isCrouching()) return;
+
+        ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (heldItem.getItem() != this) return;
+
+        boolean forward = event.getScrollDeltaY() > 0;
+        this.cycleMode(heldItem, forward); // 客戶端本地先切
+        ModeChangePacket.sendToServer(forward); // 發送方向封包
+
+        player.displayClientMessage(Component.translatable(
+                "message.magical_industry.mana_mode_changed",
+                Component.translatable(this.getCurrentModeKey(heldItem))
+        ), true);
+
+        event.setCanceled(true);
+    }
+
+
+
+    public static final DataComponentType<Integer> MODE_INDEX =
+            DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build();
+
+    public static int getModeIndex(ItemStack stack) {
+        return stack.getOrDefault(MODE_INDEX, 0);
+    }
+
+    public static void setModeIndex(ItemStack stack, int index) {
+        stack.set(MODE_INDEX, index);
     }
 
     @Override
@@ -41,31 +82,28 @@ public class ManaDebugToolItem extends Item {
         Level level = context.getLevel();
         if (!level.isClientSide()) {
             BlockPos pos = context.getClickedPos();
-            BlockEntity blockEntity = level.getBlockEntity(pos);
+            IUnifiedManaHandler manaStorage = level.getCapability(ModCapability.MANA, pos, null);
 
-            if (blockEntity != null && blockEntity.getCapability(ManaCapability.MANA).isPresent()) {
-                blockEntity.getCapability(ManaCapability.MANA).ifPresent(manaStorage -> {
-                    // 增加魔力
-                    ItemStack stack = context.getItemInHand();
-                    int modeIndex = stack.getOrCreateTag().getInt(TAG_MODE_INDEX);
-                    int manaToAdd = MANA_AMOUNTS[modeIndex];
-                    manaStorage.addMana(manaToAdd);
+            if (manaStorage != null) {
+                ItemStack stack = context.getItemInHand();
+                int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+                int manaToAdd = MANA_AMOUNTS[modeIndex];
+                manaStorage.addMana(manaToAdd);
 
-                    // 向玩家顯示訊息
-                    Player player = context.getPlayer();
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        serverPlayer.displayClientMessage(Component.translatable("message.magical_industry.mana_added", manaToAdd, manaStorage.getMana()), true);
-                    }
+                Player player = context.getPlayer();
+                if (player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.displayClientMessage(
+                            Component.translatable("message.magical_industry.mana_added", manaToAdd, manaStorage.getManaStored()), true);
+                }
 
-                    // 確保狀態已更新並同步到所有客戶端
-                    blockEntity.setChanged();
-                    BlockState state = level.getBlockState(pos);
-                    level.sendBlockUpdated(pos, state, state, 3);
+                BlockEntity blockEntity = level.getBlockEntity(pos);
+                if (blockEntity != null) blockEntity.setChanged();
+                BlockState state = level.getBlockState(pos);
+                level.sendBlockUpdated(pos, state, state, 3);
 
-                    // 發送同步封包到所有玩家
-                    ManaUpdatePacket packet = new ManaUpdatePacket(pos, manaStorage.getMana());
-                    RegisterNetworkHandler.NETWORK_CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), packet);
-                });
+                // ⚠️ 請自行確認 ManaUpdatePacket 是否已改寫為 NeoForge Payload 風格
+                PacketDistributor.sendToPlayer((ServerPlayer) context.getPlayer(),
+                        new ManaUpdatePacket(pos, manaStorage.getManaStored()));
 
                 return InteractionResult.SUCCESS;
             }
@@ -73,39 +111,23 @@ public class ManaDebugToolItem extends Item {
         return super.useOn(context);
     }
 
-    @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
-        Player player = net.minecraft.client.Minecraft.getInstance().player;
-        if (player != null) {
-            ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-
-            if (heldItem.getItem() instanceof ManaDebugToolItem && player.isCrouching()) {
-                ManaDebugToolItem manaDebugToolItem = (ManaDebugToolItem) heldItem.getItem();
-                manaDebugToolItem.cycleMode(heldItem, event.getScrollDelta() > 0);
-
-                // 發送封包同步到伺服器
-                int modeIndex = heldItem.getOrCreateTag().getInt(TAG_MODE_INDEX);
-                RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new ModeChangePacket(modeIndex));
-
-                player.displayClientMessage(Component.translatable("message.magical_industry.mana_mode_changed", manaDebugToolItem.getCurrentModeDescription(heldItem)), true);
-                event.setCanceled(true); // 阻止玩家切換物品欄位
-            }
-        }
-    }
-
-    private void cycleMode(ItemStack stack, boolean forward) {
-        int modeIndex = stack.getOrCreateTag().getInt(TAG_MODE_INDEX);
+    public void cycleMode(ItemStack stack, boolean forward) {
+        int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
         if (forward) {
             modeIndex = (modeIndex + 1) % MANA_AMOUNTS.length;
         } else {
             modeIndex = (modeIndex - 1 + MANA_AMOUNTS.length) % MANA_AMOUNTS.length;
         }
-        stack.getOrCreateTag().putInt(TAG_MODE_INDEX, modeIndex);
+        stack.set(ManaDebugToolItem.MODE_INDEX, modeIndex);
     }
 
-    private String getCurrentModeDescription(ItemStack stack) {
-        int modeIndex = stack.getOrCreateTag().getInt(TAG_MODE_INDEX);
-        return Component.translatable(MODES[modeIndex]).getString();
+
+    public String getCurrentModeKey(ItemStack stack) {
+        int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+        return MODES[modeIndex];
     }
+
+
+
+
 }

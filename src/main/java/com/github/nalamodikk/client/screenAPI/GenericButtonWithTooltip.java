@@ -1,5 +1,6 @@
 package com.github.nalamodikk.client.screenAPI;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -8,7 +9,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.util.List;
 
@@ -42,6 +42,19 @@ public class GenericButtonWithTooltip extends AbstractButton {
         this.onPress = onPress;
         this.tooltipSupplier = tooltipSupplier;
         this.hovering = false; // 初始為不懸停
+    }
+
+
+    public GenericButtonWithTooltip(
+            int x, int y, int width, int height,
+            Component message,
+            ResourceLocation texture,
+            int texWidth, int texHeight,
+            OnPress onPress,
+            TooltipSupplier.Positioned tooltipPositioned
+    ) {
+        this(x, y, width, height, message, texture, texWidth, texHeight, onPress,
+                () -> tooltipPositioned.getTooltip(0, 0)); // 包成舊的 tooltipSupplier
     }
 
     /**

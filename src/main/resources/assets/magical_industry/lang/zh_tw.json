@@ -68,6 +68,9 @@
 
   "screen.magical_industry.toggle_mode": "切換模式",
   "screen.magical_industry.current_mode": "當前模式: %s",
+  "screen.magical_industry.modular_machine_config": "模塊機器組裝介面",
+  "screen.magical_industry.upgrade_button.tooltip": "開啟升級模組介面",
+  "screen.magical_industry.upgrade.title": "升級模組管理介面",
 
   "mode.magical_industry.mana": "魔力",
   "mode.magical_industry.energy": "能量",
@@ -88,6 +91,7 @@
   "tooltip.magical_industry.module.item_input": "提供機器輸入槽位",
   "tooltip.magical_industry.module.item_output": "提供機器輸出槽位",
   "tooltip.magical_industry.module.mana_storage": "儲存與供應魔力",
+
 
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "已保存方塊位置: (%s, %s, %s)",

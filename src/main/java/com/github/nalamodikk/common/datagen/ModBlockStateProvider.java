@@ -1,15 +1,17 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+
 import com.github.nalamodikk.common.register.ModBlocks;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.client.model.generators.BlockStateProvider;
-import net.minecraftforge.client.model.generators.ConfiguredModel;
-import net.minecraftforge.client.model.generators.ModelFile;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredBlock;
+
 
 public class ModBlockStateProvider extends BlockStateProvider {
     public ModBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
@@ -19,40 +21,40 @@ public class ModBlockStateProvider extends BlockStateProvider {
     @Override
     protected void registerStatesAndModels() {
         blockWithItem(ModBlocks.MANA_BLOCK);
+        blockWithItem(ModBlocks.DEEPSLATE_MAGIC_ORE);
         blockWithItem(ModBlocks.MAGIC_ORE);
 
 
 
-
-
-
-        blockWithItem(ModBlocks.DEEPSLATE_MAGIC_ORE);
-
-
-        simpleBlockWithItem(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get(),
-                new ModelFile.UncheckedModelFile(modLoc("block/mana_crafting_table")));
-
-       /* simpleBlockWithItem(Block.byItem(ModItems.MANA_GENERATOR_BLOCK_ITEM.get()),
-                new ModelFile.UncheckedModelFile(modLoc("block/mana_generator")));
-
-
-        */
-
-     /*   simpleBlockWithItem(ModBlocks.MANA_GENERATOR.get(),
-                new ModelFile.UncheckedModelFile(modLoc("geo/mana_generator")));
-
-      */
-
-        /*
-        blockWithItem(ModBlocks.SAPPHIRE_ORE);
-        blockWithItem(ModBlocks.END_STONE_SAPPHIRE_ORE);
-        blockWithItem(ModBlocks.NETHER_SAPPHIRE_ORE);
-
-         */
+        getVariantBuilder(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
+                .partialState().modelForState()
+                .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/mana_crafting_table")))
+                .addModel();
 
     }
 
-    private void blockWithItem(RegistryObject<Block> blockRegistryObject) {
-        simpleBlockWithItem(blockRegistryObject.get(), cubeAll(blockRegistryObject.get()));
+    private void saplingBlock(DeferredBlock<Block> blockRegistryObject) {
+        simpleBlock(blockRegistryObject.get(),
+                models().cross(BuiltInRegistries.BLOCK.getKey(blockRegistryObject.get()).getPath(), blockTexture(blockRegistryObject.get())).renderType("cutout"));
+    }
+
+    private void leavesBlock(DeferredBlock<Block> blockRegistryObject) {
+        simpleBlockWithItem(blockRegistryObject.get(),
+                models().singleTexture(BuiltInRegistries.BLOCK.getKey(blockRegistryObject.get()).getPath(), ResourceLocation.parse("minecraft:block/leaves"),
+                        "all", blockTexture(blockRegistryObject.get())).renderType("cutout"));
+    }
+
+
+
+    private void blockWithItem(DeferredBlock<?> deferredBlock) {
+        simpleBlockWithItem(deferredBlock.get(), cubeAll(deferredBlock.get()));
+    }
+
+    private void blockItem(DeferredBlock<?> deferredBlock) {
+        simpleBlockItem(deferredBlock.get(), new ModelFile.UncheckedModelFile(MagicalIndustryMod.MOD_ID + ":block/" + deferredBlock.getId().getPath()));
+    }
+
+    private void blockItem(DeferredBlock<?> deferredBlock, String appendix) {
+        simpleBlockItem(deferredBlock.get(), new ModelFile.UncheckedModelFile(MagicalIndustryMod.MOD_ID + ":block/" + deferredBlock.getId().getPath() + appendix));
     }
 }

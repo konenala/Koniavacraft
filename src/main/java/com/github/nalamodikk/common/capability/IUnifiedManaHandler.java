@@ -6,16 +6,16 @@ import com.github.nalamodikk.common.capability.mana.ManaAction;
 public interface IUnifiedManaHandler {
 
     // 單一槽位管理
-    int getMana();
+    int getManaStored();
     void addMana(int amount);
     void consumeMana(int amount);
     void setMana(int amount);
     void onChanged();
-    int getMaxMana();
+    int getMaxManaStored();
     boolean canExtract();
 
     default int getNeeded() {
-        int needed = Math.max(0, getMaxMana() - getMana());
+        int needed = Math.max(0, getMaxManaStored() - getManaStored());
         return needed;
     }
 
@@ -64,10 +64,10 @@ public interface IUnifiedManaHandler {
     }
 
     default int extractMana(int amount, ManaAction action) {
-        if (amount <= 0 || getMana() == 0) {
+        if (amount <= 0 || getManaStored() == 0) {
             return 0;
         }
-        int extracted = Math.min(amount, getMana());
+        int extracted = Math.min(amount, getManaStored());
         if (action.execute()) {
             consumeMana(extracted);
             onChanged(); // 提取成功後通知變化
@@ -78,11 +78,11 @@ public interface IUnifiedManaHandler {
     // 多槽位管理
     int getManaContainerCount();
 
-    int getMana(int container);
+    int getManaStored(int container);
 
     void setMana(int container, int mana);
 
-    int getMaxMana(int container);
+    int getMaxManaStored(int container);
 
     int getNeededMana(int container);
 
