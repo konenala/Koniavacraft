@@ -71,3 +71,11 @@ repo
 /src/generated/resources/data/magical_industry/advancement/recipes/tools/netherite_axe_smithing.json
 /src/generated/resources/data/magical_industry/recipe/netherite_axe_smithing.json
 /src/generated/resources/data/minecraft/tags/block/mineable/pickaxe.json
+/src/generated/resources/data/magical_industry/recipe/blaze_rod_fuel.json
+/src/generated/resources/data/magical_industry/recipe/coal_fuel.json
+/src/generated/resources/data/magical_industry/recipe/corrupted_mana_dust_fuel.json
+/src/generated/resources/data/magical_industry/recipe/mana_dust_fuel.json
+/src/generated/resources/data/magical_industry/advancement/recipes/misc/mana_generator.json
+/src/generated/resources/data/magical_industry/recipe/mana_generator.json
+/src/generated/resources/data/magical_industry/recipe/mana_ingot_fuel.json
+/src/main/java/com/github/nalamodikk.zip
