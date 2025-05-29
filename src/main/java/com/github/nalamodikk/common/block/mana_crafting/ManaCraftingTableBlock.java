@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -47,15 +48,14 @@ public class ManaCraftingTableBlock extends BaseEntityBlock  {
         return RenderShape.MODEL;
     }
 
-
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                               Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ManaCraftingTableBlockEntity craftingTable) {
+            if (blockEntity instanceof ManaGeneratorBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
-                        new SimpleMenuProvider(craftingTable, Component.translatable("block.magical_industry.mana_crafting_table")),
+                        new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
                         pos
                 );
             } else {

@@ -3,10 +3,14 @@ package com.github.nalamodikk.common.block.mana_generator;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -58,8 +62,23 @@ public class ManaGeneratorBlock extends BaseEntityBlock {
         return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                              Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (!level.isClientSide()) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ManaGeneratorBlockEntity generator) {
+                ((ServerPlayer) player).openMenu(
+                        new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
+                        pos
+                );
+            } else {
+                throw new IllegalStateException("Our Container provider is missing!");
+            }
+        }
 
-
+        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+    }
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
