@@ -1,10 +1,9 @@
 package com.github.nalamodikk.common.utils;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.recipe.mana_fuel.loader.ManaGenFuelRateLoader;
+import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.FurnaceBlockEntity;

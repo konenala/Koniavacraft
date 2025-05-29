@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.recipe.mana_fuel.loader;
+package com.github.nalamodikk.common.block.mana_generator.recipe.loader;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.utils.FuelRegistryHelper;
@@ -36,6 +36,7 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
     private static final String DEFAULT_NAMESPACE = MagicalIndustryMod.MOD_ID;
     private static final int DEFAULT_BURN_TIME = 200;  // 默認燃燒時間
     private static final int DEFAULT_ENERGY_RATE = 1;
+    public static final int DEFAULT_INTERVAL = 1;
 
     public ManaGenFuelRateLoader() {
         super(GSON, "recipes/mana_recipes/mana_fuel");  // 確保加載 mana_recipes/fuel 目錄
@@ -60,8 +61,9 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
                 int manaRate = GsonHelper.getAsInt(jsonObject, "mana", 0); // 默認魔力生產為 0
                 int burnTime = GsonHelper.getAsInt(jsonObject, "burn_time", 200); // 默認燃燒時間 200
                 int energyRate = GsonHelper.getAsInt(jsonObject, "energy", 1); // 默認能量生產為 1
+                int intervalTick = GsonHelper.getAsInt(jsonObject, "interval", DEFAULT_INTERVAL);
 
-                FuelRate fuelRate = new FuelRate(manaRate, burnTime, energyRate);
+                FuelRate fuelRate = new FuelRate(manaRate, burnTime, energyRate,intervalTick );
 
                 if (!itemId.isEmpty()) {
                     FUEL_RATES.put(itemId, fuelRate);
@@ -109,13 +111,13 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
         Item item = BuiltInRegistries.ITEM.get(itemId);
         int defaultBurnTime = FuelRegistryHelper.getBurnTime(new ItemStack(item));
         if (defaultBurnTime > 0) {
-            LOGGER.info("[FuelRateLoader] 🔥 使用 ForgeHooks 獲取燃燒時間: {} | burnTime: {}", itemId, defaultBurnTime);
-            return new FuelRate(0, defaultBurnTime, DEFAULT_ENERGY_RATE);
+            LOGGER.info("[FuelRateLoader] 🔥 Using ForgeHooks burn time fallback: {} | burnTime: {}", itemId, defaultBurnTime);
+            return new FuelRate(0, defaultBurnTime, DEFAULT_ENERGY_RATE, DEFAULT_INTERVAL);
         }
 
         // 4️⃣ **如果完全找不到數據，使用預設燃燒時間**
-        LOGGER.warn("[FuelRateLoader] ❌ 找不到燃料數據: {}，使用預設值 manaRate: 0 | burnTime: {}", itemId, DEFAULT_BURN_TIME);
-        return new FuelRate(0, DEFAULT_BURN_TIME, DEFAULT_ENERGY_RATE);
+        LOGGER.warn("[FuelRateLoader] ❌ Fuel data not found for: {}. Using default values. manaRate: 0 | burnTime: {}", itemId, DEFAULT_BURN_TIME);
+        return new FuelRate(0, DEFAULT_BURN_TIME, DEFAULT_ENERGY_RATE,DEFAULT_INTERVAL );
     }
 
     // Class representing fuel rate
@@ -123,13 +125,19 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
         public final int manaRate;
         public final int burnTime;
         public final int energyRate;
+        private final int intervalTick; // ✅ 要記得定義這個欄位
 
-        public FuelRate(int manaRate, int burnTime, int energyRate) {
+        public FuelRate(int manaRate, int burnTime, int energyRate,int intervalTick) {
             this.manaRate = manaRate;
             this.burnTime = burnTime;
             this.energyRate = energyRate;
+            this.intervalTick = intervalTick; // ✅ 記得存進來
+
         }
 
+        public int getIntervalTick() {
+            return intervalTick > 0 ? intervalTick : DEFAULT_INTERVAL;
+        }
         public int getManaRate() {
             return manaRate;
         }

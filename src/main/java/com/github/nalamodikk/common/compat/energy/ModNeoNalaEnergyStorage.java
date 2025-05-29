@@ -24,6 +24,8 @@ public class ModNeoNalaEnergyStorage implements IEnergyStorage {
         return accepted.intValue();
     }
 
+
+
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
         BigDecimal amount = BigDecimal.valueOf(maxExtract);
@@ -36,4 +38,15 @@ public class ModNeoNalaEnergyStorage implements IEnergyStorage {
     @Override public int getMaxEnergyStored() { return capacity.intValue(); }
     @Override public boolean canExtract() { return energy.compareTo(BigDecimal.ZERO) > 0; }
     @Override public boolean canReceive() { return energy.compareTo(capacity) < 0; }
+
+    public BigDecimal getRawEnergyStored() {
+        return energy;
+    }
+
+    public BigDecimal getRawMaxCapacity() {
+        return capacity;
+    }
+
+
+
 }

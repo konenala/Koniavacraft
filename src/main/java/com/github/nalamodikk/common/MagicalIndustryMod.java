@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common;
 
 import com.github.nalamodikk.common.register.*;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.loading.FMLLoader;
 import org.slf4j.Logger;
 
@@ -31,6 +32,9 @@ public class MagicalIndustryMod {
     public static final boolean IS_PRODUCTION = FMLLoader.isProduction();
     public static final boolean IS_DEV = !IS_PRODUCTION;
 
+    public static ResourceLocation rl(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
@@ -46,6 +50,7 @@ public class MagicalIndustryMod {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModRecipes.register(modEventBus);
+
         ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
         ModCreativeModTabs.register(modEventBus);

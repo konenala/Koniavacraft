@@ -40,7 +40,7 @@ public abstract class AbstractManaCollectorBlock extends AbstractManaMachineEnti
     public AbstractManaCollectorBlock(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                       int maxMana, int intervalTick, int manaPerCycle) {
         // 呼叫 父類 禁用能源
-        super(type, pos, state, false, maxMana, intervalTick, manaPerCycle);
+        super(type, pos, state, false,0, maxMana, intervalTick, manaPerCycle);
         this.manaStorage = new ManaStorage(maxMana);
         this.intervalTick = intervalTick;
         this.manaPerCycle = manaPerCycle;

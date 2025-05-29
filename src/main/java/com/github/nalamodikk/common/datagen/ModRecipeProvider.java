@@ -30,7 +30,7 @@ public class ModRecipeProvider extends RecipeProvider {
 
         @Override
         protected void buildRecipes(RecipeOutput recipeOutput) {
-// TODO            FuelRecipeProvider.buildFuelRecipes(recipeOutput);
+            ManaFuelRecipeProvider.generate(recipeOutput);
 
             ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_BLOCK.get())
                     .pattern("SSS").pattern("SSS").pattern("SSS")
@@ -53,15 +53,15 @@ public class ModRecipeProvider extends RecipeProvider {
                     .requires(ModItems.MANA_INGOT.get())
                     .unlockedBy(getHasName(ModItems.MANA_INGOT.get()), has(ModItems.MANA_INGOT.get()))
                     .save(recipeOutput, "mana_dust_from_ingot");
-//   todo         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_GENERATOR.get())
-//                    .pattern("AAA").pattern("RMR").pattern("IFI")
-//                    .define('I', Items.IRON_INGOT)
-//                    .define('R', Items.REDSTONE_BLOCK)
-//                    .define('M', Items.DIAMOND_BLOCK)
-//                    .define('F', Blocks.FURNACE)
-//                    .define('A', Items.AMETHYST_SHARD)
-//                    .unlockedBy("has_iron", has(Items.IRON_INGOT))
-//                    .save(recipeOutput);
+           ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_GENERATOR.get())
+                    .pattern("AAA").pattern("RMR").pattern("IFI")
+                    .define('I', Items.IRON_INGOT)
+                    .define('R', Items.REDSTONE_BLOCK)
+                    .define('M', Items.DIAMOND_BLOCK)
+                    .define('F', Blocks.FURNACE)
+                    .define('A', Items.AMETHYST_SHARD)
+                    .unlockedBy("has_iron", has(Items.IRON_INGOT))
+                    .save(recipeOutput);
 
 
             ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())

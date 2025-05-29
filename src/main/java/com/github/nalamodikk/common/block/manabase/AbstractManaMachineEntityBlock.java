@@ -44,8 +44,6 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
     /** 是否具有能量儲存能力 */
     protected final boolean hasEnergy;
 
-    /** 是否正在工作中 */
-    protected boolean isWorking = false;
 
     /** 每次生產的魔力量 */
     protected int manaPerCycle;
@@ -95,7 +93,6 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
     public int getProgress() { return progress; }
     public int getMaxProgress() { return maxProgress; }
     public int getEnergyPerTick() { return energyPerTick; }
-    public boolean isWorking() { return isWorking; }
     public boolean hasEnergy() { return hasEnergy; }
     public @Nullable ManaStorage getManaStorage() { return manaStorage; }
     public @Nullable EnergyStorage getEnergyStorage() { return energyStorage; }
