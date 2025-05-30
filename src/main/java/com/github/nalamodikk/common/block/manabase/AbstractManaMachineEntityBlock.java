@@ -1,9 +1,11 @@
 package com.github.nalamodikk.common.block.manabase;
 
+import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +28,7 @@ import java.math.BigInteger;
  * 可選擇性支援魔力儲存、能量儲存、流體儲存、物品儲存等功能，
  * 並可透過覆寫對應方法客製化運作邏輯。
  */
-public abstract class AbstractManaMachineEntityBlock extends BlockEntity implements MenuProvider {
+public abstract class AbstractManaMachineEntityBlock extends BlockEntity implements MenuProvider , IConfigurableBlock {
 
     /** 魔力儲存（可選） */
     @Nullable

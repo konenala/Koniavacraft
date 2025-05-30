@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorMenu;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
@@ -27,6 +28,9 @@ public class ModMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<ManaGeneratorMenu>> MANA_GENERATOR_MENU =
             registerMenuType("mana_generator_menu", ManaGeneratorMenu::new);
 
+
+    public static final DeferredHolder<MenuType<?>, MenuType<SolarManaCollectorMenu>> SOLAR_MANA_COLLECTOR_MENU =
+            registerMenuType("solar_mana_collector", SolarManaCollectorMenu::new);
 
 
 

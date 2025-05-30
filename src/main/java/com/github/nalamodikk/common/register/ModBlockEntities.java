@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -25,15 +26,16 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(ManaGeneratorBlockEntity::new,
                             ModBlocks.MANA_GENERATOR.get()).build(null));
 
+    public static final Supplier<BlockEntityType<SolarManaCollectorBlockEntity>> SOLAR_MANA_COLLECTOR_BE =
+            BLOCK_ENTITY_TYPES.register("solar_mana_collector_be", () ->
+                    BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new,
+                            ModBlocks.SOLAR_MANA_COLLECTOR.get()).build(null));
+
 //    public static final Supplier<BlockEntityType<ManaConduitBlockEntity>> MANA_CONDUIT_BE =
 //            BLOCK_ENTITY_TYPES.register("mana_conduit", () ->
 //                    BlockEntityType.Builder.of(ManaConduitBlockEntity::new,
 //                            ModBlocks.MANA_CONDUIT.get()).build());
 //
-//    public static final Supplier<BlockEntityType<SolarManaCollectorBlockEntity>> SOLAR_MANA_COLLECTOR_BE =
-//            BLOCK_ENTITY_TYPES.register("solar_mana_collector_be", () ->
-//                    BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new,
-//                            ModBlocks.SOLAR_MANA_COLLECTOR.get()).build());
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->

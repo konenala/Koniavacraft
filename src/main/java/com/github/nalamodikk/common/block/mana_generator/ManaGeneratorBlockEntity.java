@@ -1,7 +1,6 @@
     // ⚠ 自動產生：結合 NeoForge 能量與魔力產出邏輯
     package com.github.nalamodikk.common.block.mana_generator;
 
-    import com.github.nalamodikk.common.API.IConfigurableBlock;
     import com.github.nalamodikk.common.MagicalIndustryMod;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
@@ -10,28 +9,25 @@
     import com.github.nalamodikk.common.capability.ManaStorage;
     import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
     import com.github.nalamodikk.common.register.ModBlockEntities;
-    import com.github.nalamodikk.common.utils.nbt.NbtUtils;
     import io.netty.buffer.Unpooled;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
     import net.minecraft.core.HolderLookup;
-    import net.minecraft.core.registries.BuiltInRegistries;
     import net.minecraft.nbt.CompoundTag;
     import net.minecraft.network.FriendlyByteBuf;
     import net.minecraft.network.chat.Component;
     import net.minecraft.network.protocol.Packet;
     import net.minecraft.network.protocol.game.ClientGamePacketListener;
     import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-    import net.minecraft.resources.ResourceLocation;
     import net.minecraft.server.level.ServerLevel;
     import net.minecraft.world.entity.player.Inventory;
     import net.minecraft.world.entity.player.Player;
     import net.minecraft.world.inventory.AbstractContainerMenu;
     import net.minecraft.world.inventory.ContainerData;
     import net.minecraft.world.inventory.ContainerLevelAccess;
-    import net.minecraft.world.item.Item;
     import net.minecraft.world.item.ItemStack;
     import net.minecraft.world.level.Level;
+    import net.minecraft.world.level.block.Block;
     import net.minecraft.world.level.block.entity.BlockEntity;
     import net.minecraft.world.level.block.entity.BlockEntityTicker;
     import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -48,11 +44,10 @@
     import software.bernie.geckolib.util.GeckoLibUtil;
 
     import java.util.EnumMap;
-    import java.util.HashMap;
-    import java.util.Map;
+
     import java.util.Optional;
 
-    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements IConfigurableBlock , GeoBlockEntity {
+    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements   GeoBlockEntity {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
 
@@ -108,6 +103,23 @@
             });
 
         }
+
+        @Override
+        public void drops(Level level, BlockPos pos) {
+            super.drops(level, pos);
+            if (level == null || level.isClientSide) return;
+
+            IItemHandler handler = this.getItemHandler();
+            if (handler == null) return;
+
+            for (int slot = 0; slot < handler.getSlots(); slot++) {
+                ItemStack stack = handler.getStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    Block.popResource(level, pos, stack);
+                }
+            }
+        }
+
 
         public static int getManaStoredIndex() {return MANA_STORED_INDEX;}
         public static int getEnergyStoredIndex() {return ENERGY_STORED_INDEX;}

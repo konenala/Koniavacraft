@@ -8,7 +8,9 @@ package com.github.nalamodikk.common.utils.nbt;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -193,4 +195,55 @@ public class NbtUtils {
             }
         }
     }
+
+
+    /**
+     * 將指定的 {@link ItemStack} 物品堆疊序列化為 NBT，並以 CompoundTag 格式回傳。
+     * <p>
+     * 此方法使用 NeoForge 1.21.1 所推薦的 Codec 系統，透過 {@link ItemStack#CODEC}
+     * 搭配 {@link HolderLookup.Provider} 正確編碼資料組件（DataComponent）。
+     * 另外會在結果中附加 "Slot" 欄位來標示物品欄位位置。
+     *
+     * @param stack    欲儲存的 ItemStack（不可為空）
+     * @param slotIndex 此 ItemStack 所在的欄位編號（通常為 inventory index）
+     * @param provider 提供 DataComponent 編碼所需的 {@link HolderLookup.Provider}
+     * @return 含有完整序列化資訊的 CompoundTag（含 id, count, components, Slot 等欄位）
+     * @throws IllegalStateException 若 Codec 序列化失敗或輸出並非 CompoundTag
+     */
+    public static CompoundTag writeItemStack(ItemStack stack, int slotIndex, HolderLookup.Provider provider) {
+        CompoundTag tag = new CompoundTag();
+        tag.putByte("Slot", (byte) slotIndex);
+
+        Tag encoded = ItemStack.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), stack)
+                .resultOrPartial(error -> {
+                    throw new IllegalStateException("Failed to encode ItemStack: " + error);
+                })
+                .orElseThrow();
+
+        if (!(encoded instanceof CompoundTag compound)) {
+            throw new IllegalStateException("Encoded ItemStack is not a CompoundTag");
+        }
+
+        for (String key : compound.getAllKeys()) {
+            tag.put(key, compound.get(key));
+        }
+
+        return tag;
+    }
+
+    /**
+     * 從指定的 {@link CompoundTag} 讀取並還原為 {@link ItemStack}。
+     * <p>
+     * 該 NBT 資料應來自 {@link #writeItemStack(ItemStack, int, HolderLookup.Provider)}，
+     * 或其他使用 {@link ItemStack#CODEC} 所序列化的物品堆疊資料。
+     *
+     * @param provider 用於還原 DataComponent 所需的 {@link HolderLookup.Provider}
+     * @param tag      含有物品資料的 CompoundTag（應包含 id, count, components 等欄位）
+     * @return 還原後的 {@link ItemStack}，若解析失敗將回傳 {@link ItemStack#EMPTY}
+     */
+    public static ItemStack readItemStack(HolderLookup.Provider provider, CompoundTag tag) {
+        return ItemStack.parseOptional(provider, tag);
+    }
+
+
 }

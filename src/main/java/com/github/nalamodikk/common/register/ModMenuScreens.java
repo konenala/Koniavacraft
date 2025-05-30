@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorScreen;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingScreen;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
@@ -15,6 +16,7 @@ public class ModMenuScreens {
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.MANA_CRAFTING_MENU.get(), ManaCraftingScreen::new);
         event.register(ModMenuTypes.MANA_GENERATOR_MENU.get(), ManaGeneratorScreen::new);
+        event.register(ModMenuTypes.SOLAR_MANA_COLLECTOR_MENU.get(), SolarManaCollectorScreen::new);
     }
 
 }

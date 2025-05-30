@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.register;
 
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlock;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -35,9 +36,9 @@ public class ModBlocks {
 //    public static final DeferredBlock<Block> MANA_CONDUIT =
 //            registerBlock("mana_conduit", () -> new ManaConduitBlock());
 
-//    public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
-//            registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
-//
+    public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
+            registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+
 
     public static final DeferredBlock<Block> MAGIC_ORE =
             registerBlock("magic_ore", () -> new DropExperienceBlock(UniformInt.of(3, 6), BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)

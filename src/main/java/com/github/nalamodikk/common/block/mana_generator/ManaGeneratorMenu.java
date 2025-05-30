@@ -84,8 +84,6 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
         }
     }
 
-
-
     @Override
     public boolean stillValid(Player player) {
         return stillValid(this.access, player, blockEntity.getBlockState().getBlock());

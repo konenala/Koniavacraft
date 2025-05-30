@@ -22,6 +22,10 @@ public class ModCreativeModTabs {
                         output.accept(ModItems.MANA_DUST);
                         output.accept(ModItems.CORRUPTED_MANA_DUST);
                         output.accept(ModItems.MANA_INGOT);
+                        output.accept(ModItems.SPEED_UPGRADE);
+                        output.accept(ModItems.EFFICIENCY_UPGRADE);
+                        output.accept(ModItems.BASIC_TECH_WAND);
+                        output.accept(ModItems.MANA_DEBUG_TOOL);
 
                     })
                     .build());
