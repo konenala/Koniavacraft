@@ -50,14 +50,6 @@ public class ManaFuelHandler {
         return true;
     }
 
-    public static Map<Item, Integer> getAllFuelItems() {
-        Map<Item, Integer> fuelMap = new HashMap<>();
-        for (Item item : BuiltInRegistries.ITEM) {
-            int burnTime = net.minecraft.world.level.block.entity.FurnaceBlockEntity.getFuel().getOrDefault(item, 0);
-            if (burnTime > 0) fuelMap.put(item, burnTime);
-        }
-        return fuelMap;
-    }
 
     public int getBurnTime() {
         return burnTime;

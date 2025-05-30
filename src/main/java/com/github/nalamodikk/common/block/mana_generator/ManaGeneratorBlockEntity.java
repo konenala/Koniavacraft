@@ -7,6 +7,8 @@
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
     import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
+    import com.github.nalamodikk.common.capability.ManaStorage;
+    import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
     import com.github.nalamodikk.common.register.ModBlockEntities;
     import com.github.nalamodikk.common.utils.nbt.NbtUtils;
     import io.netty.buffer.Unpooled;
@@ -75,6 +77,7 @@
         private final ManaGeneratorSyncHelper syncHelper = new ManaGeneratorSyncHelper();
         private final ManaGenerationHandler manaGenHandler;
         private final EnergyGenerationHandler energyGenHandler;
+        private final ManaGeneratorTicker ticker = new ManaGeneratorTicker(this);
 
         private final ManaGeneratorStateManager stateManager = new ManaGeneratorStateManager();
         private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -114,6 +117,19 @@
         public static int getDataCount() {return SYNC_DATA_COUNT;}
         public static int getMaxMana() {return MAX_MANA;}
         public static int getMaxEnergy() {return MAX_ENERGY;}
+        public ManaGeneratorStateManager getStateManager() {return stateManager;}
+        public ManaGenerationHandler getManaGenHandler() {return manaGenHandler;}
+        public EnergyGenerationHandler getEnergyGenHandler() {return energyGenHandler;}
+        public EnumMap<Direction, Boolean> getDirectionConfig() {return directionConfig;}
+        public ManaStorage getManaStorage() {return manaStorage;}
+        public ModNeoNalaEnergyStorage getEnergyStorage() {return energyStorage;}
+        private final ManaGeneratorNbtManager nbtManager = new ManaGeneratorNbtManager(this);
+
+        // set
+        public void setBurnTimeFromNbt(int value) {this.burnTime = value;}
+        public void setCurrentBurnTimeFromNbt(int value) {this.currentBurnTime = value;}
+        public void forceRefreshAnimationFromNbt() {this.forceRefreshAnimation = true;}
+
         private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
         @Override
         public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -145,63 +161,21 @@
 
             return PlayState.CONTINUE;
         }
-
-
-
         @Override
         protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.saveAdditional(tag, provider);
-
-            // ✅ 正確印出當下 stateManager 狀態
-            MagicalIndustryMod.LOGGER.info("[Client] saveAdditional - isWorking = {}", stateManager.isWorking());
-
-            tag.putInt("Mode", stateManager.getCurrentModeIndex());
-            tag.putInt("BurnTime", burnTime);
-            tag.putInt("CurrentBurnTime", currentBurnTime);
-            tag.putBoolean("IsWorking", stateManager.isWorking());
-            tag.putBoolean("IsPaused", fuelLogic.isPaused());
-
-            if (fuelLogic.getCurrentFuelId() != null) {
-                tag.putString("CurrentFuelId", fuelLogic.getCurrentFuelId().toString());
-            }
-
-            NbtUtils.write(tag, "Mana", manaStorage, provider);
-            NbtUtils.write(tag, "Energy", energyStorage, provider);
-            NbtUtils.write(tag, "FuelItems", fuelHandler, provider);
-            NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);
-
+            nbtManager.save(tag, provider);
         }
-
 
         @Override
         protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.loadAdditional(tag, provider);
-            MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
-
-            stateManager.setModeIndex(tag.getInt("Mode"));
-            burnTime = tag.getInt("BurnTime");
-            currentBurnTime = tag.getInt("CurrentBurnTime");
-            stateManager.setWorking(tag.getBoolean("IsWorking"));
-
-            currentBurnTime = tag.getInt("CurrentBurnTime");
-            fuelLogic.setPaused(tag.getBoolean("IsPaused"));
-            if (tag.contains("CurrentFuelId")) {
-                ResourceLocation id = ResourceLocation.tryParse(tag.getString("CurrentFuelId"));
-                fuelLogic.setCurrentFuelId(id);
-            }
-            this.forceRefreshAnimation = true;
-
-            NbtUtils.read(tag, "Mana", manaStorage, provider);
-            NbtUtils.read(tag, "Energy", energyStorage, provider);
-            NbtUtils.read(tag, "FuelItems", fuelHandler, provider);
-            NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);
+            nbtManager.load(tag, provider);
         }
-
 
         public ManaFuelHandler getFuelLogic() {
             return fuelLogic;
         }
-
 
         @Override
         public void setLevel(Level level) {
@@ -209,20 +183,7 @@
             this.access = ContainerLevelAccess.create(level, this.worldPosition);
         }
 
-        public static Map<Item, Integer> getAllFuelItems(Level level) {
-            Map<Item, Integer> fuelMap = new HashMap<>();
 
-            for (Item item : BuiltInRegistries.ITEM) {
-                ItemStack stack = new ItemStack(item);
-                int burnTime = net.minecraft.world.level.block.entity.FurnaceBlockEntity.getFuel().getOrDefault(item, 0);
-
-                if (burnTime > 0) {
-                    fuelMap.put(item, burnTime);
-                }
-            }
-
-            return fuelMap;
-        }
 
         public void markUpdated() {
             if (this.level != null) {
@@ -243,35 +204,7 @@
 
         @Override
         public void tickMachine() {
-            if (fuelLogic.isCoolingDown()) {
-                fuelLogic.tickCooldown();
-                return;
-            }
-            if (!fuelLogic.isBurning()) {
-                if (!fuelLogic.tryConsumeFuel()) {
-                    stateManager.setWorking(false); // ✅ 改用 stateManager 控制工作狀態
-                    fuelLogic.setCooldown();
-
-                    return;
-                }
-            }
-            boolean success = switch (stateManager.getCurrentMode()) {
-                case MANA -> manaGenHandler.generate();
-                case ENERGY -> energyGenHandler.generate();
-            };
-            if (!success) {
-                fuelLogic.pauseBurn();
-                stateManager.setWorking(false);
-                return;
-            }
-            fuelLogic.resumeBurn();
-            fuelLogic.tickBurn(true);
-            stateManager.setWorking(success); // ✅ 統一寫入狀態
-            if (level instanceof ServerLevel serverLevel) {
-                OutputHandler.tryOutput(serverLevel, worldPosition, manaStorage, energyStorage, directionConfig);
-            }
-            updateBlockActiveState(stateManager.isWorking());
-            this.sync();
+            ticker.tick();
         }
 
         @Override
@@ -374,7 +307,7 @@
             };
         }
 
-        private void updateBlockActiveState(boolean isWorking) {
+        public void updateBlockActiveState(boolean isWorking) {
             if (level == null) return;
 
             BlockState state = level.getBlockState(worldPosition);

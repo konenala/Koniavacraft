@@ -44,20 +44,7 @@ public class FuelRegistryHelper {
         return getBurnTime(new ItemStack(item));
     }
 
-    /**
-     * 取得所有可用作燃料的物品及其對應燃燒時間。
-     * 僅包含內建 Furnace 系統支援的燃料。
-     */
-    public static Map<Item, Integer> getAllFuelItems() {
-        Map<Item, Integer> fuelMap = new HashMap<>();
-        for (Item item : BuiltInRegistries.ITEM) {
-            int burnTime = getBurnTime(item);
-            if (burnTime > 0) {
-                fuelMap.put(item, burnTime);
-            }
-        }
-        return fuelMap;
-    }
+
 
     /**
      * 取得所有自定義 + 系統可識別的有效燃料（ManaFuel JSON / tag / 系統爐）。
