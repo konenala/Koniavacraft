@@ -21,12 +21,14 @@ import com.github.nalamodikk.common.network.packet.manatool.TechWandModePacket;
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.data.TechDataComponents;
 import com.github.nalamodikk.common.utils.block.BlockSelectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -48,7 +50,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BasicTechWandItem extends Item {
 
@@ -131,12 +134,12 @@ public class BasicTechWandItem extends Item {
                 }
                 case CONFIGURE_IO -> {
                     if (player instanceof ServerPlayer sp) {
+                        IConfigurableBlock configurableBlock = (IConfigurableBlock) be;
                         var manaStorage = CapabilityUtils.getMana(sp.level(), be.getBlockPos(), null);
                         if (manaStorage != null) {
                             ManaUpdatePacket.sendManaUpdate(sp, be.getBlockPos(), manaStorage.getManaStored());
                         }
 
-                        // ✅ 正確開 GUI，並透過 buffer 傳 BlockPos 與 ItemStack
                         sp.openMenu(new MenuProvider() {
                             @Override
                             public Component getDisplayName() {
@@ -145,16 +148,18 @@ public class BasicTechWandItem extends Item {
 
                             @Override
                             public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-                                return new UniversalConfigMenu(id, inv, be, stack); // 這是 for server-side use only
+                                return new UniversalConfigMenu(id, inv, be, stack); // ✅ 伺服器端建構用
                             }
                         }, (buf) -> {
                             buf.writeBlockPos(be.getBlockPos());
                             buf.writeWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, stack);
+                            buf.writeWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_BOOLEAN_MAP, configurableBlock.getDirectionConfig());
                         });
-                }
-                    return InteractionResult.SUCCESS;
-                }
 
+                        return InteractionResult.SUCCESS;
+                    }
+                    return InteractionResult.PASS;
+                }
 
 
                 case ROTATE -> {
@@ -199,7 +204,39 @@ public class BasicTechWandItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.translatable("tooltip.magical_industry.mode",
                 Component.translatable("mode.magical_industry." + getMode(stack).getSerializedName())));
-        TechDataComponents.appendSavedDirectionTooltip(stack, tooltipComponents);
+
+        EnumMap<Direction, Boolean> config = stack.get(ModDataComponents.CONFIGURED_DIRECTIONS);
+//        MagicalIndustryMod.LOGGER.info("[Tooltip] Stack: {}, HasConfig = {}", stack.getItem(), config != null);
+
+        if (config != null && !config.isEmpty()) {
+            // 用 Map<Boolean, List<Direction>> 來分類
+            Map<Boolean, List<Direction>> groupedDirections = new HashMap<>();
+            groupedDirections.put(true, new ArrayList<>());
+            groupedDirections.put(false, new ArrayList<>());
+
+            for (Direction dir : Direction.values()) {
+                boolean isOutput = config.getOrDefault(dir, false); // 預設為輸入
+                groupedDirections.get(isOutput).add(dir);
+            }
+
+            // 加入提示
+            for (Map.Entry<Boolean, List<Direction>> entry : groupedDirections.entrySet()) {
+                List<Direction> dirs = entry.getValue();
+                if (!dirs.isEmpty()) {
+                    String names = dirs.stream()
+                            .map(Direction::getName)
+                            .map(String::toLowerCase)
+                            .collect(Collectors.joining(", "));
+                    String configType = entry.getKey() ? "output" : "input";
+                    tooltipComponents.add(Component.translatable("tooltip.magical_industry.saved_direction_config", names,
+                            Component.translatable("screen.magical_industry." + configType)
+                    ));
+                }
+            }
+        } else {
+            tooltipComponents.add(Component.translatable("tooltip.magical_industry.no_saved_block"));
+        }
+
     }
 
     public enum TechWandMode implements StringRepresentable {

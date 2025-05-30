@@ -21,14 +21,18 @@ import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.screen.shared.FallbackUpgradeMenu;
 import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
+import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.IEventBus;
@@ -48,7 +52,13 @@ public class ModMenuTypes {
             registerMenuType("mana_crafting", ManaCraftingMenu::create);
 
     public static final DeferredHolder<MenuType<?>, MenuType<UniversalConfigMenu>> UNIVERSAL_CONFIG_MENU =
-            registerMenuType("universal_config", UniversalConfigMenu::new);
+            registerMenuType("universal_config", (id, inv, buf) ->
+                    new UniversalConfigMenu(id, inv,
+                            inv.player.level().getBlockEntity(buf.readBlockPos()),
+                            buf.readWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, NbtAccounter.unlimitedHeap()),
+                            buf.readWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_BOOLEAN_MAP, NbtAccounter.unlimitedHeap()) // ✅ 這裡才是正確的讀取
+                    )
+            );
 
     public static final DeferredHolder<MenuType<?>, MenuType<ManaGeneratorMenu>> MANA_GENERATOR_MENU =
             registerMenuType("mana_generator_menu", entityMenu(
@@ -104,6 +114,7 @@ public class ModMenuTypes {
             return constructor.apply(id, entityClass.cast(be));
         };
     }
+
     public static <T extends BlockEntity, M extends AbstractContainerMenu> IContainerFactory<M> entityMenu(
             Class<T> entityClass,
             TriFunction<Integer, Inventory, T, M> constructor

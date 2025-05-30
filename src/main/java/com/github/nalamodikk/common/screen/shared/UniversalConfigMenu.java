@@ -2,10 +2,12 @@ package com.github.nalamodikk.common.screen.shared;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.network.packet.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
+import com.github.nalamodikk.common.utils.item.ItemStackUtils;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Objects;
 
 public class UniversalConfigMenu extends AbstractContainerMenu {
@@ -31,6 +34,7 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final ItemStack wandItem;
     private final EnumMap<Direction, Boolean> initialConfig;
+    private final EnumMap<Direction, Boolean> originalConfig = new EnumMap<>(Direction.class);
 
     public UniversalConfigMenu(int id, Inventory playerInventory, BlockEntity blockEntity, ItemStack wandItem) {
         super(ModMenuTypes.UNIVERSAL_CONFIG_MENU.get(), id);
@@ -48,6 +52,7 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
                 this.currentConfig.put(direction, configurableBlock.isOutput(direction));
             }
         }
+
     }
 
     public static EnumMap<Direction, Boolean> getDirectionConfig(ItemStack stack) {
@@ -68,53 +73,42 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
         }
     }
 
+
+    public EnumMap<Direction, Boolean> getOriginalConfig() {
+        return originalConfig;
+    }
+
+
     @Override
     public void removed(Player player) {
         super.removed(player);
 
-        // 只在伺服器端更新方塊配置
         if (!player.level().isClientSide) {
-            if (this.blockEntity instanceof IConfigurableBlock configurableBlock) {
-                boolean configChanged = false;
+            ItemStack wand = ItemStackUtils.findHeldWand(player); // ✅ 用工具方法找實體物品
 
-                for (Direction direction : Direction.values()) {
-                    boolean newConfig = this.currentConfig.get(direction);
-                    if (configurableBlock.isOutput(direction) != newConfig) {
-                        configurableBlock.setDirectionConfig(direction, newConfig);
-                        configChanged = true;
-                    }
-                }
-
-                if (configChanged) {
-                    MagicalIndustryMod.LOGGER.info("Updated configuration for block at {}", this.blockEntity.getBlockPos());
-                    this.blockEntity.setChanged(); // 標記方塊為已變更以保存數據
-                    // 同步方塊狀態更新
-                    player.level().sendBlockUpdated(this.blockEntity.getBlockPos(), this.blockEntity.getBlockState(), this.blockEntity.getBlockState(), 3);
-                }
+            if (!wand.isEmpty()) {
+                EnumMap<Direction, Boolean> configCopy = new EnumMap<>(currentConfig);
+                wand.set(ModDataComponents.CONFIGURED_DIRECTIONS, configCopy); // ✅ 確保設定寫進真實物品
             }
-        } else {
-            // 只在客戶端發送封包到伺服器
-            for (Direction direction : Direction.values()) {
-                boolean newConfig = this.currentConfig.get(direction);
-                PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(this.blockEntity.getBlockPos(), direction, newConfig)
-                );
+
+            if (MagicalIndustryMod.IS_DEV) {
+                MagicalIndustryMod.LOGGER.info("[Menu] [Server] CurrentConfig = {}", this.currentConfig);
             }
         }
-
-        // 保存配置到物品的 NBT 數據
-        if (wandItem != null) {
-            EnumMap<Direction, Boolean> configCopy = new EnumMap<>(currentConfig); // 這通常是 UI 按鈕收集的
-            wandItem.set(ModDataComponents.CONFIGURED_DIRECTIONS, configCopy);
-        }
-
-    }
-
-    public UniversalConfigMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, Objects.requireNonNull(inv.player.level().getBlockEntity(buf.readBlockPos())), buf.readWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, NbtAccounter.unlimitedHeap()).copy()
-        );
     }
 
 
+    public UniversalConfigMenu(int id, Inventory playerInventory, BlockEntity blockEntity, ItemStack wandItem, EnumMap<Direction, Boolean> syncedConfig) {
+        super(ModMenuTypes.UNIVERSAL_CONFIG_MENU.get(), id);
+        this.blockEntity = blockEntity;
+        this.player = playerInventory.player;
+        this.wandItem = wandItem;
+        this.initialConfig = wandItem.getOrDefault(ModDataComponents.CONFIGURED_DIRECTIONS, new EnumMap<>(Direction.class));
+        this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
+        this.originalConfig.putAll(currentConfig); // 複製初始狀態
+
+        this.currentConfig.putAll(syncedConfig); // ✅ 用同步過來的正確值初始化
+    }
 
     @Override
     public ItemStack quickMoveStack(Player player, int i) {

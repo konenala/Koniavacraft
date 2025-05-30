@@ -132,6 +132,26 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         }
     }
 
+    @Override
+    public void onClose() {
+        super.onClose();
+
+        if (blockEntity instanceof IConfigurableBlock) {
+            for (Direction direction : Direction.values()) {
+                boolean oldValue = menu.getOriginalConfig().getOrDefault(direction, false);
+                boolean newValue = currentConfig.getOrDefault(direction, false);
+
+                if (oldValue != newValue) {
+                    PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newValue));
+
+                    if (MagicalIndustryMod.IS_DEV) {
+                        MagicalIndustryMod.LOGGER.info("[Client] Changed direction: {} → {}, sending packet", direction.getName(), newValue ? "OUTPUT" : "INPUT");
+                    }
+                }
+            }
+        }
+    }
+
 
     private void updateButtonTooltip(GenericButtonWithTooltip button, Direction direction) {
         button.setTooltip(Tooltip.create(getTooltipText(direction)));
