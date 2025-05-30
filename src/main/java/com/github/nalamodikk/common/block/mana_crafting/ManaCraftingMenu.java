@@ -190,7 +190,7 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
                 // 進行批量合成
                 for (int i = 0; i < maxCraftCount; i++) {
                     if (blockEntity.hasRecipe() && blockEntity.hasSufficientMana(recipe.getManaCost())) {
-                        blockEntity.craftItem();
+                        blockEntity.craftItem(player);
                         ItemStack resultStack = slot.getItem();
                         if (!this.moveItemStackTo(resultStack, ManaCraftingTableBlockEntity.TOTAL_SLOTS, this.slots.size(), true)) {
                             break; // 如果無法移動合成結果，退出循環

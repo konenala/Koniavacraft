@@ -14,6 +14,9 @@ public interface IUpgradeableMachine {
     default int getEfficiencyMultiplier() {
         return Math.min(1 + getUpgradeInventory().getUpgradeCount(UpgradeType.EFFICIENCY), 5);
     }
+    default int getUpgradeCount(UpgradeType type) {
+        return getUpgradeInventory().getUpgradeCount(type);
+    }
 
     BlockEntity getBlockEntity();
 

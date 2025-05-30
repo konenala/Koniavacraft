@@ -6,7 +6,12 @@ import com.github.nalamodikk.common.network.packet.manatool.ConfigDirectionUpdat
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -104,10 +109,11 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
 
     }
 
-    public UniversalConfigMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buf) {
-        this(id,playerInventory, Objects.requireNonNull(playerInventory.player.level().getBlockEntity(buf.readBlockPos())), CodecsLibrary.ITEM_STACK.decode(buf) // ✅ 自己 decode ItemStack
+    public UniversalConfigMenu(int id, Inventory inv, FriendlyByteBuf buf) {
+        this(id, inv, Objects.requireNonNull(inv.player.level().getBlockEntity(buf.readBlockPos())), buf.readWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, NbtAccounter.unlimitedHeap()).copy()
         );
     }
+
 
 
     @Override

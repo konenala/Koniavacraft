@@ -27,13 +27,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -131,11 +136,22 @@ public class BasicTechWandItem extends Item {
                             ManaUpdatePacket.sendManaUpdate(sp, be.getBlockPos(), manaStorage.getManaStored());
                         }
 
-                        sp.openMenu(new SimpleMenuProvider(
-                                (id, inv, p) -> new UniversalConfigMenu(id, inv, be, stack),
-                                Component.translatable("screen.magical_industry.configure_io")
-                        ), be.getBlockPos());
-                    }
+                        // ✅ 正確開 GUI，並透過 buffer 傳 BlockPos 與 ItemStack
+                        sp.openMenu(new MenuProvider() {
+                            @Override
+                            public Component getDisplayName() {
+                                return Component.translatable("screen.magical_industry.configure_io");
+                            }
+
+                            @Override
+                            public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+                                return new UniversalConfigMenu(id, inv, be, stack); // 這是 for server-side use only
+                            }
+                        }, (buf) -> {
+                            buf.writeBlockPos(be.getBlockPos());
+                            buf.writeWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, stack);
+                        });
+                }
                     return InteractionResult.SUCCESS;
                 }
 
@@ -208,7 +224,8 @@ public class BasicTechWandItem extends Item {
 
         @Override
         public String getSerializedName() {
-            return this.name(); // 或 .toLowerCase() 也可以配合本地化
+            return this.name().toLowerCase();
         }
+
     }
 }

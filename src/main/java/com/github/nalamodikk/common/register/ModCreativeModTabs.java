@@ -38,6 +38,7 @@ public class ModCreativeModTabs {
                         output.accept(ModBlocks.MANA_BLOCK);
                         output.accept(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
                         output.accept(ModBlocks.MANA_GENERATOR);
+                        output.accept(ModBlocks.SOLAR_MANA_COLLECTOR);
 
                     })
                     .build());

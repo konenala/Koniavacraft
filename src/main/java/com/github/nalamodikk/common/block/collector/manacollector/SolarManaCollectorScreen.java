@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.collector.manacollector;
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.network.packet.OpenUpgradeGuiPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -40,7 +41,7 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         final int targetY = this.topPos + 24;
 
         // 是否正在發電（同步值）
-        boolean generating = menu.getGeneratingSlot().get() != 0;
+        boolean generating = menu.isGenerating();
 
         // 如果沒在發電 → 降低亮度（變灰）
         if (!generating) {
@@ -91,12 +92,12 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
                 this.leftPos + 150, this.topPos + 5, // 位置
                 18, 18, // 尺寸
                 Component.empty(),
-                new ResourceLocation(MagicalIndustryMod.MOD_ID, "textures/gui/upgrade_button.png"),
+                ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/upgrade_button.png"),
                 18, 18, // 紋理尺寸
                 button -> {
                     // 傳送封包：打開 Upgrade GUI
                     BlockPos pos = this.menu.getBlockEntity().getBlockPos();
-                    RegisterNetworkHandler.NETWORK_CHANNEL.sendToServer(new OpenUpgradeGuiPacket(pos));
+                    OpenUpgradeGuiPacket.sendToServer(pos);
                 },
                 tooltip
         ));
@@ -106,7 +107,7 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 背景畫面
-        this.renderBackground(guiGraphics);              // 灰暗背景
+        this.renderBackground(guiGraphics,mouseX ,mouseY ,partialTick);              // 灰暗背景
         this.renderBg(guiGraphics, partialTick, mouseX, mouseY); // 你定義的 GUI 背景（紋理）
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);  // 基礎 Slot + 按鈕處理

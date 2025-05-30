@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.network.packet.OpenUpgradeGuiPacket;
 import com.github.nalamodikk.common.network.packet.ToggleModePacket;
 import com.github.nalamodikk.common.network.packet.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
@@ -23,6 +24,7 @@ public class ModNetworking {
         ManaUpdatePacket.registerTo(registrar);
         ConfigDirectionUpdatePacket.registerTo(registrar);
         ToggleModePacket.registerTo(registrar);
+        OpenUpgradeGuiPacket.registerTo(registrar);
     }
 
 }

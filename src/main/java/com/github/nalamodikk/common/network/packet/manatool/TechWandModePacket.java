@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.network.packet.manatool;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.register.ModDataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -37,12 +38,19 @@ public record TechWandModePacket(BasicTechWandItem.TechWandMode mode) implements
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer player) {
                 ItemStack stack = player.getMainHandItem();
-                if (!stack.isEmpty()) {
-                    stack.set(ModDataComponents.TECH_WAND_MODE, packet.mode());
+
+                if (stack.getItem() instanceof BasicTechWandItem wand) {
+                    wand.setMode(stack, packet.mode());
+
+                    player.displayClientMessage(Component.translatable(
+                            "message.magical_industry.mode_changed",
+                            Component.translatable("mode.magical_industry." + packet.mode().getSerializedName())
+                    ), true);
                 }
             }
         });
     }
+
 
 
     public static void registerTo(PayloadRegistrar registrar) {

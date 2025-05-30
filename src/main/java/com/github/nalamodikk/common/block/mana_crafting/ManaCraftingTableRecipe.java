@@ -16,6 +16,7 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 import java.util.*;
+
 public record ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient> ingredients,ItemStack result,int manaCost,boolean isShaped) implements Recipe<ManaCraftingTableRecipe.ManaCraftingInput>{
 
     @Override

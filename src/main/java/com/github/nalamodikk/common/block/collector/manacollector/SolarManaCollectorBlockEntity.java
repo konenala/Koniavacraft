@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.block.collector.manacollector;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.block.collector.manacollector.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
@@ -12,10 +13,12 @@ import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.mojang.logging.LogUtils;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -32,19 +35,26 @@ import java.util.EnumMap;
 public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock implements IConfigurableBlock, MenuProvider {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final int MAX_MANA = 80000;
+    private final SolarCollectorSyncHelper syncHelper = new SolarCollectorSyncHelper();
+    private boolean generating = false;
 
     private final UpgradeInventory upgrades = new UpgradeInventory(4);
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
     private static final int BASE_OUTPUT = 5;
-    public static int getMaxMana() {return MAX_MANA;}
 
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, 800, 40, 5);
     }
 
+
+    public SolarCollectorSyncHelper getSyncHelper() {
+        return syncHelper;
+    }
+
     @Override
     public void tickServer() {
+        syncHelper.syncFrom(this);
 
         int interval = Math.max(10, 200 - upgrades.getUpgradeCount(UpgradeType.SPEED) * 20);
         if (level.getGameTime() % interval != 0) return;
@@ -78,7 +88,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     }
 
     public void load(CompoundTag tag, HolderLookup.Provider provider) {
-        MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
+//        MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
 
         NbtUtils.read(tag, "Mana", manaStorage, provider);
         NbtUtils.read(tag, "Upgrades", upgrades, provider);
@@ -91,9 +101,12 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     }
 
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        return new SolarManaCollectorMenu(id, inv, this);
+    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        buf.writeBlockPos(this.getBlockPos()); // ✅ 你 client 端的 menu 需要這個
+        return new SolarManaCollectorMenu(id, playerInventory, buf);
     }
+
 
 
 
@@ -123,5 +136,20 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     public boolean isOutput(Direction direction) {
         return directionConfig.getOrDefault(direction, false);
     }
+
+    public int getManaStored() {
+        return this.manaStorage.getManaStored(); // 假設你有 manaStorage 欄位
+    }
+
+
+    public boolean isCurrentlyGenerating() {
+        return this.generating; // 假設你有一個 boolean 欄位叫 generating
+    }
+
+    public void setCurrentlyGenerating(boolean value) {
+        this.generating = value;
+    }
+
+    public static int getMaxMana() {return MAX_MANA;}
 
 }

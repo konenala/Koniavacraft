@@ -15,7 +15,7 @@ public class ManaGeneratorNbtManager {
     }
 
     public void save(CompoundTag tag, HolderLookup.Provider provider) {
-        MagicalIndustryMod.LOGGER.info("[Client] saveAdditional - isWorking = {}", entity.isWorking());
+//        MagicalIndustryMod.LOGGER.info("[Client] saveAdditional - isWorking = {}", entity.isWorking());
 
         tag.putInt("Mode", entity.getStateManager().getCurrentModeIndex());
         tag.putInt("BurnTime", entity.getBurnTime());
@@ -34,7 +34,7 @@ public class ManaGeneratorNbtManager {
     }
 
     public void load(CompoundTag tag, HolderLookup.Provider provider) {
-        MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
+//        MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
 
         entity.getStateManager().setModeIndex(tag.getInt("Mode"));
         entity.setBurnTimeFromNbt(tag.getInt("BurnTime"));

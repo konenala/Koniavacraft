@@ -1,14 +1,16 @@
 package com.github.nalamodikk.common.block.collector.manacollector;
 
 
+import com.github.nalamodikk.common.block.collector.manacollector.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.register.ModMenuTypes;
-import com.github.nalamodikk.common.sync.MachineSyncManager;
+import com.github.nalamodikk.common.utils.upgrade.UpgradeSlot;
+import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,101 +18,28 @@ import net.minecraft.world.item.ItemStack;
 public class SolarManaCollectorMenu extends AbstractContainerMenu {
     private final SolarManaCollectorBlockEntity blockEntity;
     private final ContainerLevelAccess access;
-
-    private final MachineSyncManager syncManager;
-    private final DataSlot manaStored = DataSlot.standalone();
-    private final DataSlot maxMana = DataSlot.standalone();
-    private int uiCachedMana; // 只存在 client，用來顯示 UI
-    private int uiMaxMana;
+    private final SolarCollectorSyncHelper syncHelper;
 
 
     public SolarManaCollectorMenu(int id, Inventory inv, SolarManaCollectorBlockEntity blockEntity) {
         super(ModMenuTypes.SOLAR_MANA_COLLECTOR_MENU.get(), id);
-
-        if (blockEntity == null || blockEntity.getLevel() == null) {
-            throw new IllegalStateException("SolarManaCollectorBlockEntity 或其 Level 為 null");
-        }
-
         this.blockEntity = blockEntity;
         this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
+        this.syncHelper = new SolarCollectorSyncHelper();
 
-        this.syncManager = new MachineSyncManager();
-
-        // --- 客製的 DataSlot --- （這是你 menu 用來畫面顯示用的）
-        this.addDataSlot(new DataSlot() {
-            @Override public int get() {
-                return blockEntity.getManaStored();
-            }
-
-            @Override public void set(int value) {
-                uiCachedMana = value; // 這應該是一個私有欄位
-            }
-
-        });
-        this.addDataSlot(new DataSlot() {
-            @Override public int get() {
-                return blockEntity.getMaxMana();
-            }
-
-            @Override public void set(int value) {
-                uiMaxMana = value;
-            }
-        });
-
-
-        // --- Capability 同步部分 ---
-        blockEntity.getCapability(ManaCapability.MANA).ifPresent(mana -> {
-            syncManager.addDataSlot(new DataSlot() {
-                @Override
-                public int get() {
-                    return mana.getManaStored();
-                }
-
-                @Override
-                public void set(int value) {
-                    // 客戶端收到，通常不需要設定
-                }
-            });
-
-            syncManager.addDataSlot(new DataSlot() {
-                @Override
-                public int get() {
-                    return mana.getMaxManaStored();
-                }
-
-                @Override
-                public void set(int value) {}
-            });
-        });
-
-        this.addDataSlots(syncManager);
-
-        // --- 插入玩家物品欄 ---
-        this.addPlayerInventorySlots(inv, 8, 84);
-        this.addPlayerHotbarSlots(inv, 8, 142);
-    }
-
-
-    public int getManaStored() {
-        return uiCachedMana; // 提供給 Screen 使用的值
-    }
-    public int getMaxMana() {
-        return uiMaxMana;
-    }
-    private final DataSlot generatingSlot = new DataSlot() {
-        @Override
-        public int get() {
-            return blockEntity.isCurrentlyGenerating() ? 1 : 0;
+        this.syncHelper.syncFrom(blockEntity);
+        this.addDataSlots(syncHelper.getContainerData()); // ✅ 現在就找得到方法了
+        if (blockEntity instanceof IUpgradeableMachine machine) {
+            Container upgrades = machine.getUpgradeInventory();
+            checkContainerSize(upgrades, 4);
+            this.addSlot(new UpgradeSlot(upgrades, 0, 47, 37));
+            this.addSlot(new UpgradeSlot(upgrades, 1, 65, 37));
+            this.addSlot(new UpgradeSlot(upgrades, 2, 83, 37));
+            this.addSlot(new UpgradeSlot(upgrades, 3, 101, 37));
         }
-
-        @Override
-        public void set(int value) {
-            blockEntity.setCurrentlyGenerating(value != 0);
-        }
-    };
-
-
-
+        addPlayerInventorySlots(inv, 8, 84);
+        addPlayerHotbarSlots(inv, 8, 142);
+    }
 
     public void addPlayerInventorySlots(Inventory inv, int startX, int startY) {
         // 玩家主背包 (3x9)
@@ -135,10 +64,9 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
         this(id, inv, (SolarManaCollectorBlockEntity) inv.player.level().getBlockEntity(buf.readBlockPos()));
     }
 
-
     @Override
     public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
-        return null;
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -146,13 +74,20 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
         return AbstractContainerMenu.stillValid(access, player, blockEntity.getBlockState().getBlock());
     }
 
-
     public SolarManaCollectorBlockEntity getBlockEntity() {
         return blockEntity;
     }
 
-
-    public DataSlot getGeneratingSlot() {
-        return generatingSlot;
+    public int getManaStored() {
+        return syncHelper.getManaStored();
     }
+
+    public int getMaxMana() {
+        return syncHelper.getMaxMana();
+    }
+
+    public boolean isGenerating() {
+        return syncHelper.isGenerating();
+    }
+
 }

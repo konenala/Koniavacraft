@@ -9,6 +9,9 @@ import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.register.ModCapability;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.SimpleContainer;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 
 import net.minecraft.core.BlockPos;
@@ -35,7 +38,6 @@ import java.util.Optional;
 
 public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider, IManaCraftingMachine {
     public static final int MAX_MANA = 10000;
-
     public static final int INPUT_SLOT_COUNT = 9;
     public static final int OUTPUT_SLOT = 9;
     public static final int TOTAL_SLOTS = 10;
@@ -80,11 +82,69 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     public void updateCraftingResult() {
         if (level == null || level.isClientSide()) return;
 
+        ManaCraftingTableRecipe.ManaCraftingInput input = new ManaCraftingTableRecipe.ManaCraftingInput(INPUT_SLOT_COUNT);
+        for (int i = 0; i < INPUT_SLOT_COUNT; i++) {
+            input.setItem(i, itemHandler.getStackInSlot(i));
+        }
+
+        Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
+
+        if (recipe.isPresent()) {
+            ItemStack result = recipe.get().assemble(input, level.registryAccess());
+            itemHandler.setStackInSlot(OUTPUT_SLOT, result.copy());
+        } else {
+            itemHandler.setStackInSlot(OUTPUT_SLOT, ItemStack.EMPTY);
+        }
     }
 
-    public void craftItem() {
 
+    public void craftItem(Player player) {
+        if (level == null || level.isClientSide()) return;
+
+        Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
+
+        if (recipe.isPresent()) {
+            ManaCraftingTableRecipe selected = recipe.get();
+            int cost = selected.manaCost();
+
+            if (!hasSufficientMana(cost)) return;
+
+            // ✅ 準備自定義的 ManaCraftingInput 作為配方匹配容器
+            ManaCraftingTableRecipe.ManaCraftingInput input = new ManaCraftingTableRecipe.ManaCraftingInput(INPUT_SLOT_COUNT);
+            for (int i = 0; i < INPUT_SLOT_COUNT; i++) {
+                input.setItem(i, itemHandler.getStackInSlot(i));
+            }
+
+            // ✅ 組合合成結果
+            ItemStack result = selected.assemble(input, level.registryAccess());
+
+            // ✅ 扣魔力
+            consumeMana(cost);
+
+            // ✅ 移除材料
+            for (int i = 0; i < INPUT_SLOT_COUNT; i++) {
+                ItemStack inSlot = itemHandler.getStackInSlot(i);
+                if (!inSlot.isEmpty()) {
+                    inSlot.shrink(1);
+                }
+            }
+
+            // ✅ 放入輸出欄位
+            ItemStack currentOutput = itemHandler.getStackInSlot(OUTPUT_SLOT);
+            if (currentOutput.isEmpty()) {
+                itemHandler.setStackInSlot(OUTPUT_SLOT, result.copy());
+            } else if (ItemStack.isSameItemSameComponents(currentOutput, result)) {
+                currentOutput.grow(result.getCount());
+            } else {
+                player.drop(result, false);
+            }
+
+            // ✅ 播放聲音並同步
+            level.playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1f, 1f);
+            setChanged();
+        }
     }
+
 
     public ItemStackHandler getItemHandler() {
         return itemHandler;

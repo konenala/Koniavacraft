@@ -57,10 +57,12 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, boo
                 if (be instanceof IConfigurableBlock configurable) {
                     configurable.setDirectionConfig(packet.direction(), packet.isOutput());
                     be.setChanged();
+                    level.sendBlockUpdated(packet.pos(), be.getBlockState(), be.getBlockState(), 3); // 🟢 客戶端同步畫面
                 }
             }
         });
     }
+
 
     public static void registerTo(PayloadRegistrar registrar) {
         registrar.playToServer(TYPE, STREAM_CODEC, ConfigDirectionUpdatePacket::handle);

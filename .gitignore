@@ -79,3 +79,7 @@ repo
 /src/generated/resources/data/magical_industry/recipe/mana_generator.json
 /src/generated/resources/data/magical_industry/recipe/mana_ingot_fuel.json
 /src/main/java/com/github/nalamodikk.zip
+/src/generated/resources/.cache/103d9f3f36b01595f1aa5172191e60eff02e6924
+/src/generated/resources/data/magical_industry/neoforge/biome_modifier/add_magic_ore.json
+/src/generated/resources/data/magical_industry/worldgen/configured_feature/magic_ore.json
+/src/generated/resources/data/magical_industry/worldgen/placed_feature/magic_ore.json

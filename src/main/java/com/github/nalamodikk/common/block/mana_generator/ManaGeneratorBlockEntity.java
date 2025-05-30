@@ -60,7 +60,6 @@
         private static final int MAX_ENERGY = 200000;
         private static final int TICK_INTERVAL = 1;
         private static final int MANA_PER_CYCLE = 10;
-        private static final int SYNC_DATA_COUNT = 5;
         private static final int FUEL_SLOT_COUNT = 1;
         private static final int MANA_STORED_INDEX = 0;
         private static final int ENERGY_STORED_INDEX = 1;
@@ -126,7 +125,6 @@
         public static int getModeIndex() {return MODE_INDEX;}
         public static int getBurnTimeIndex() {return BURN_TIME_INDEX;}
         public static int getCurrentBurnTimeIndex() {return CURRENT_BURN_TIME_INDEX;}
-        public static int getDataCount() {return SYNC_DATA_COUNT;}
         public static int getMaxMana() {return MAX_MANA;}
         public static int getMaxEnergy() {return MAX_ENERGY;}
         public ManaGeneratorStateManager getStateManager() {return stateManager;}
@@ -136,6 +134,7 @@
         public ManaStorage getManaStorage() {return manaStorage;}
         public ModNeoNalaEnergyStorage getEnergyStorage() {return energyStorage;}
         private final ManaGeneratorNbtManager nbtManager = new ManaGeneratorNbtManager(this);
+        public ManaGeneratorSyncHelper getSyncHelper() {return syncHelper;}
 
         // set
         public void setBurnTimeFromNbt(int value) {this.burnTime = value;}
@@ -168,7 +167,7 @@
                 currentAnimation = targetAnimation;
                 forceRefreshAnimation = false;
 
-                MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
+//                MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
             }
 
             return PlayState.CONTINUE;
@@ -290,8 +289,7 @@
         @Nullable
         @Override
         public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-            return  new ManaGeneratorMenu(id, inv, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(this.worldPosition));
-
+            return new ManaGeneratorMenu(id, inv, this);
         }
 
         public ItemStackHandler getFuelHandler() {
