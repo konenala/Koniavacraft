@@ -17,7 +17,27 @@ import net.minecraft.world.level.Level;
 
 import java.util.*;
 
-public record ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient> ingredients,ItemStack result,int manaCost,boolean isShaped) implements Recipe<ManaCraftingTableRecipe.ManaCraftingInput>{
+public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.ManaCraftingInput> {
+    private ResourceLocation id;
+    private final NonNullList<Ingredient> ingredients;
+    private final ItemStack result;
+    private final int manaCost;
+    private final boolean isShaped;
+    private final List<String> pattern = new ArrayList<>();
+    private final Map<String, Ingredient> key = new HashMap<>();
+
+    public ManaCraftingTableRecipe(ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result, int manaCost, boolean isShaped) {
+        this.id = id;
+        this.ingredients = ingredients;
+        this.result = result;
+        this.manaCost = manaCost;
+        this.isShaped = isShaped;
+    }
+
+    public ManaCraftingTableRecipe withId(ResourceLocation id) {
+        this.id = id;
+        return this;
+    }
 
     @Override
     public boolean matches(ManaCraftingInput input, Level level) {
@@ -114,22 +134,60 @@ public record ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient
         return true;
     }
 
+    public ResourceLocation getId() {
+        return id;
+    }
+
+    public static ManaCraftingTableRecipe fromCodec(
+            boolean shaped,
+            int manaCost,
+            List<String> pattern,
+            Map<String, Ingredient> key,
+            List<Ingredient> ingredients,
+            ItemStack result
+    ) {
+        NonNullList<Ingredient> resolvedIngredients;
+        if (shaped) {
+            resolvedIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
+            for (int row = 0; row < pattern.size(); row++) {
+                String line = pattern.get(row);
+                for (int col = 0; col < line.length(); col++) {
+                    String c = String.valueOf(line.charAt(col));
+                    Ingredient ing = key.getOrDefault(c, Ingredient.EMPTY);
+                    resolvedIngredients.set(row * 3 + col, ing);
+                }
+            }
+        } else {
+            resolvedIngredients = NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
+        }
+
+        ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(null, resolvedIngredients, result, manaCost, shaped);
+        recipe.pattern.addAll(pattern);
+        recipe.key.putAll(key);
+        return recipe;
+        }
+
+    public ItemStack getResult() {
+        return result;
+    }
+    public static ManaCraftingTableRecipe createWithoutId(NonNullList<Ingredient> ingredients, ItemStack result, int manaCost, boolean isShaped) {
+        return new ManaCraftingTableRecipe(null, ingredients, result, manaCost, isShaped);
+    }
 
 
     public static class Serializer implements RecipeSerializer<ManaCraftingTableRecipe> {
+
+
         public static final MapCodec<ManaCraftingTableRecipe> CODEC = RecordCodecBuilder.mapCodec(inst ->
                 inst.group(
-                        ResourceLocation.CODEC.fieldOf("id").forGetter(ManaCraftingTableRecipe::id),
-                        Ingredient.CODEC.listOf().xmap(
-                                list -> NonNullList.of(Ingredient.EMPTY, list.toArray(Ingredient[]::new)),
-                                list -> List.copyOf(list)
-                        ).fieldOf("ingredients").forGetter(ManaCraftingTableRecipe::ingredients),
-                        ItemStack.CODEC.fieldOf("result").forGetter(ManaCraftingTableRecipe::result),
-                        Codec.INT.fieldOf("mana_cost").forGetter(ManaCraftingTableRecipe::manaCost),
-                        Codec.BOOL.fieldOf("shaped").forGetter(ManaCraftingTableRecipe::isShaped)
-                ).apply(inst, ManaCraftingTableRecipe::new)
+                        Codec.BOOL.fieldOf("shaped").forGetter(ManaCraftingTableRecipe::isShaped),
+                        Codec.INT.fieldOf("mana_cost").forGetter(ManaCraftingTableRecipe::getManaCost),
+                        Codec.list(Codec.STRING).optionalFieldOf("pattern", List.of()).forGetter(r -> r.pattern), // NEW
+                        Codec.unboundedMap(Codec.STRING, Ingredient.CODEC).optionalFieldOf("key", Map.of()).forGetter(r -> r.key), // NEW
+                        Ingredient.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(r -> r.ingredients),
+                        ItemStack.CODEC.fieldOf("result").forGetter(ManaCraftingTableRecipe::getResult)
+                ).apply(inst, ManaCraftingTableRecipe::fromCodec)
         );
-
 
 
         public static final StreamCodec<RegistryFriendlyByteBuf, List<Ingredient>> INGREDIENT_LIST_STREAM_CODEC =
@@ -150,40 +208,116 @@ public record ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient
                         }
                 );
 
+        public static final StreamCodec<RegistryFriendlyByteBuf, List<String>> STRING_LIST_CODEC =
+                StreamCodec.of(
+                        (buf, list) -> {
+                            buf.writeVarInt(list.size());
+                            for (String s : list) buf.writeUtf(s);
+                        },
+                        buf -> {
+                            int size = buf.readVarInt();
+                            List<String> result = new ArrayList<>(size);
+                            for (int i = 0; i < size; i++) result.add(buf.readUtf());
+                            return result;
+                        }
+                );
 
-        @SuppressWarnings("unchecked")
-        public static final StreamCodec<RegistryFriendlyByteBuf, ManaCraftingTableRecipe> STREAM_CODEC =
-                (StreamCodec<RegistryFriendlyByteBuf, ManaCraftingTableRecipe>) StreamCodec.composite(
-                        ResourceLocation.STREAM_CODEC.mapStream(buf -> buf),
-                        ManaCraftingTableRecipe::id,
-
-                        INGREDIENT_LIST_STREAM_CODEC,
-                        ManaCraftingTableRecipe::ingredients,
-
-                        ItemStack.STREAM_CODEC,
-                        ManaCraftingTableRecipe::result,
-
-                        ByteBufCodecs.VAR_INT, // ✅ 換掉 Codec.INT
-                        ManaCraftingTableRecipe::manaCost,
-
-                        ByteBufCodecs.BOOL,    // ✅ 換掉 Codec.BOOL
-                        ManaCraftingTableRecipe::isShaped,
-
-                        (id, ingredients, result, mana, shaped) -> new ManaCraftingTableRecipe(
-                                id,
-                                ingredients.isEmpty()
-                                        ? NonNullList.create()
-                                        : NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0])),
-                                result.copy(),
-                                mana,
-                                shaped
-                        )
+        public static final StreamCodec<RegistryFriendlyByteBuf, Map<String, Ingredient>> STRING_INGREDIENT_MAP_CODEC =
+                StreamCodec.of(
+                        (buf, map) -> {
+                            buf.writeVarInt(map.size());
+                            for (Map.Entry<String, Ingredient> e : map.entrySet()) {
+                                buf.writeUtf(e.getKey());
+                                Ingredient.CONTENTS_STREAM_CODEC.encode(buf, e.getValue());
+                            }
+                        },
+                        buf -> {
+                            int size = buf.readVarInt();
+                            Map<String, Ingredient> result = new HashMap<>();
+                            for (int i = 0; i < size; i++) {
+                                String key = buf.readUtf();
+                                Ingredient ing = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
+                                result.put(key, ing);
+                            }
+                            return result;
+                        }
                 );
 
 
+        public static final StreamCodec<RegistryFriendlyByteBuf, PatternKey> PATTERN_KEY_CODEC =
+                StreamCodec.of(
+                        // encode
+                        (buf, patternKey) -> {
+                            // Write pattern list
+                            List<String> pattern = patternKey.pattern();
+                            buf.writeVarInt(pattern.size());
+                            for (String s : pattern) {
+                                buf.writeUtf(s);
+                            }
+
+                            // Write key map
+                            Map<String, Ingredient> key = patternKey.key();
+                            buf.writeVarInt(key.size());
+                            for (Map.Entry<String, Ingredient> entry : key.entrySet()) {
+                                buf.writeUtf(entry.getKey());
+                                Ingredient.CONTENTS_STREAM_CODEC.encode(buf, entry.getValue());
+                            }
+                        },
+                        // decode
+                        buf -> {
+                            // Read pattern list
+                            int patternSize = buf.readVarInt();
+                            List<String> pattern = new ArrayList<>(patternSize);
+                            for (int i = 0; i < patternSize; i++) {
+                                pattern.add(buf.readUtf());
+                            }
+
+                            // Read key map
+                            int keySize = buf.readVarInt();
+                            Map<String, Ingredient> key = new HashMap<>();
+                            for (int i = 0; i < keySize; i++) {
+                                String k = buf.readUtf();
+                                Ingredient v = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
+                                key.put(k, v);
+                            }
+
+                            return new PatternKey(pattern, key);
+                        }
+                );
+        private record PatternKey(List<String> pattern, Map<String, Ingredient> key) {}
 
 
+        @SuppressWarnings("unchecked")
+        public static final StreamCodec<RegistryFriendlyByteBuf, ManaCraftingTableRecipe> STREAM_CODEC =
+                StreamCodec.composite(
+                        ResourceLocation.STREAM_CODEC.mapStream(buf -> buf),
+                        ManaCraftingTableRecipe::getId,
 
+                        INGREDIENT_LIST_STREAM_CODEC,
+                        ManaCraftingTableRecipe::getIngredients,
+
+                        ItemStack.STREAM_CODEC,
+                        ManaCraftingTableRecipe::getResult,
+
+                        ByteBufCodecs.VAR_INT,
+                        ManaCraftingTableRecipe::getManaCost,
+
+                        ByteBufCodecs.BOOL,
+                        ManaCraftingTableRecipe::isShaped,
+
+                        PATTERN_KEY_CODEC,
+                        recipe -> new PatternKey(recipe.pattern, recipe.key),
+
+                        (id, ingredients, result, mana, shaped, patternKey) -> {
+                            NonNullList<Ingredient> ingredientList = ingredients.isEmpty()
+                                    ? NonNullList.create()
+                                    : NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
+                            ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(id, ingredientList, result.copy(), mana, shaped);
+                            recipe.pattern.addAll(patternKey.pattern());
+                            recipe.key.putAll(patternKey.key());
+                            return recipe;
+                        }
+                );
 
         @Override
         public MapCodec<ManaCraftingTableRecipe> codec() {

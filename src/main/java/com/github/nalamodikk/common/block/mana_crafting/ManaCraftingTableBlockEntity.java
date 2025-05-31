@@ -105,7 +105,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
         if (recipe.isPresent()) {
             ManaCraftingTableRecipe selected = recipe.get();
-            int cost = selected.manaCost();
+            int cost = selected.getManaCost();
 
             if (!hasSufficientMana(cost)) return;
 

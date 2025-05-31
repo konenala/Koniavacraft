@@ -83,3 +83,5 @@ repo
 /src/generated/resources/data/magical_industry/neoforge/biome_modifier/add_magic_ore.json
 /src/generated/resources/data/magical_industry/worldgen/configured_feature/magic_ore.json
 /src/generated/resources/data/magical_industry/worldgen/placed_feature/magic_ore.json
+/src/generated/resources/data/magical_industry/recipe/mana_recipes/mana_crafting/mana_dust.json
+/src/generated/resources/data/magical_industry/loot_table/blocks/solar_mana_collector.json

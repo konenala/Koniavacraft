@@ -34,6 +34,7 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
         dropSelf(ModBlocks.MANA_BLOCK.get());
         dropSelf(ModBlocks.MANA_GENERATOR.get());
+        dropSelf(ModBlocks.SOLAR_MANA_COLLECTOR.get());
 
 
         // dropSelf(ModBlocks.MAGIC_BLOCK.get());

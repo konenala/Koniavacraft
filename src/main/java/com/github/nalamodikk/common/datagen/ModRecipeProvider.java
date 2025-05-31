@@ -2,17 +2,15 @@ package com.github.nalamodikk.common.datagen;
 
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.datagen.recipe.ManaCraftingRecipeProvider;
+import com.github.nalamodikk.common.datagen.recipe.ManaFuelRecipeProvider;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.ItemLike;
 
@@ -21,7 +19,6 @@ import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public class ModRecipeProvider extends RecipeProvider {
     public ModRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
@@ -31,7 +28,7 @@ public class ModRecipeProvider extends RecipeProvider {
         @Override
         protected void buildRecipes(RecipeOutput recipeOutput) {
             ManaFuelRecipeProvider.generate(recipeOutput);
-
+            ManaCraftingRecipeProvider.generate(recipeOutput);
             ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_BLOCK.get())
                     .pattern("SSS").pattern("SSS").pattern("SSS")
                     .define('S', ModItems.MANA_INGOT.get())

@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.datagen;
+package com.github.nalamodikk.common.datagen.recipe;
 
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipeBuilder;
 import com.github.nalamodikk.common.register.ModItems;
