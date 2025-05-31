@@ -58,6 +58,8 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         drawManaBar(guiGraphics, 11, 19); // 偏移位置可自行調整
     }
 
+
+
     private boolean isHoveringManaBar(int mouseX, int mouseY) {
         int manaBarX = this.leftPos + 11;
         int manaBarY = this.topPos + 19;

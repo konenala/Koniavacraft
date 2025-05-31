@@ -53,8 +53,8 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     }
 
     @Override
-    public void tickServer() {
-        syncHelper.getRawSyncManager().set(SolarCollectorSyncHelper.SyncIndex.GENERATING.ordinal(),canGenerate() ? 1 : 0);
+    public void tickMachine() {
+        this.generating = canGenerate();
         syncHelper.syncFrom(this);
 
         int interval = Math.max(10, 200 - upgrades.getUpgradeCount(UpgradeType.SPEED) * 20);
