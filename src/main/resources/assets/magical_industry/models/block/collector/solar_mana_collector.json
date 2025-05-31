@@ -5,6 +5,8 @@
 		"1": "magical_industry:block/solar_mana_collector",
 		"particle": "magical_industry:block/solar_mana_collector"
 	},
+	"render_type": "cutout",
+
 	"elements": [
 		{
 			"from": [7, 11.4, 12.8],

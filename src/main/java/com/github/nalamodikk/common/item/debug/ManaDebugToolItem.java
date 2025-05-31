@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.item.debug;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
@@ -50,16 +51,15 @@ public class ManaDebugToolItem extends Item {
         if (heldItem.getItem() != this) return;
 
         boolean forward = event.getScrollDeltaY() > 0;
-        this.cycleMode(heldItem, forward); // 客戶端本地先切
-        ModeChangePacket.sendToServer(forward); // 發送方向封包
 
-        player.displayClientMessage(Component.translatable(
-                "message.magical_industry.mana_mode_changed",
-                Component.translatable(this.getCurrentModeKey(heldItem))
-        ), true);
+        // ❌ 不要在 client 呼叫這個，server 才是資料源
+        // this.cycleMode(heldItem, forward);
+
+        ModeChangePacket.sendToServer(forward); // ✅ 正確送出封包讓伺服器處理
 
         event.setCanceled(true);
     }
+
 
 
 
@@ -111,14 +111,29 @@ public class ManaDebugToolItem extends Item {
         return super.useOn(context);
     }
 
-    public void cycleMode(ItemStack stack, boolean forward) {
-        int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+    public void cycleMode(ItemStack stack, boolean forward, ServerPlayer player) {
+        int currentIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+        int newIndex;
+
         if (forward) {
-            modeIndex = (modeIndex + 1) % MANA_AMOUNTS.length;
+            newIndex = (currentIndex + 1) % MANA_AMOUNTS.length;
         } else {
-            modeIndex = (modeIndex - 1 + MANA_AMOUNTS.length) % MANA_AMOUNTS.length;
+            newIndex = (currentIndex - 1 + MANA_AMOUNTS.length) % MANA_AMOUNTS.length;
         }
-        stack.set(ManaDebugToolItem.MODE_INDEX, modeIndex);
+
+        stack.set(ManaDebugToolItem.MODE_INDEX, newIndex);
+
+        // ✅ 使用具名模式的翻譯 key
+        String modeKey = MODES[newIndex];
+
+        player.displayClientMessage(Component.translatable(
+                "message.magical_industry.mode_changed",
+                Component.translatable(modeKey)
+        ), true);
+
+        if (MagicalIndustryMod.IS_DEV) {
+            MagicalIndustryMod.LOGGER.info("[ModeChange] {} switched wand mode: {} → {}", player.getGameProfile().getName(), currentIndex, newIndex);
+        }
     }
 
 

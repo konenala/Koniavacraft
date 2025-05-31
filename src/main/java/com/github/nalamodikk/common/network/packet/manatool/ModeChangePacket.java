@@ -37,11 +37,12 @@ public record ModeChangePacket(boolean forward) implements CustomPacketPayload {
             if (context.player() instanceof ServerPlayer player) {
                 ItemStack stack = player.getMainHandItem();
                 if (stack.getItem() instanceof ManaDebugToolItem tool) {
-                    tool.cycleMode(stack, packet.forward());
+                    tool.cycleMode(stack, packet.forward(), player); // ✅ server 才執行
                 }
             }
         });
     }
+
 
     // ✅ 註冊方法：由 ModNetworking 統一調用
     public static void registerTo(PayloadRegistrar registrar) {

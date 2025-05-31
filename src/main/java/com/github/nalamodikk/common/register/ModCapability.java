@@ -24,18 +24,14 @@ public class ModCapability {
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(
-                ModCapability.MANA,
-                ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(),
-                (blockEntity, side) -> blockEntity.getManaStorage()
-        );
+        event.registerBlockEntity(ModCapability.MANA, ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), (blockEntity, side) -> blockEntity.getManaStorage());
+        event.registerBlockEntity(ModCapability.MANA, ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), (blockEntity, side) -> blockEntity.getManaStorage());
+        event.registerBlockEntity(ModCapability.MANA, ModBlockEntities.MANA_GENERATOR_BE.get(), (blockEntity, side) -> blockEntity.getManaStorage());
 
-        // 物品欄能力：ManaCraftingTableBlockEntity
-        event.registerBlockEntity(
-                Capabilities.ItemHandler.BLOCK,
-                ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(),
-                (blockEntity, side) -> blockEntity.getItemHandler()
-        );
+        // 物品欄能力：ManaCraftingTableBlockEntity;
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.MANA_GENERATOR_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
     }
 
 }
