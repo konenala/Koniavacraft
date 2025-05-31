@@ -5,6 +5,8 @@
  */
 package com.github.nalamodikk.common.utils.nbt;
 
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
@@ -245,5 +247,35 @@ public class NbtUtils {
         return ItemStack.parseOptional(provider, tag);
     }
 
+
+    public static void writeEnumIOTypeMap(CompoundTag tag, String key, EnumMap<Direction, IOHandlerUtils.IOType> map) {
+        CompoundTag ioTag = new CompoundTag();
+        for (Map.Entry<Direction, IOHandlerUtils.IOType> entry : map.entrySet()) {
+            ioTag.putString(entry.getKey().getName(), entry.getValue().name());
+        }
+        tag.put(key, ioTag);
+    }
+
+
+    public static EnumMap<Direction, IOHandlerUtils.IOType> readEnumIOTypeMap(CompoundTag tag, String key) {
+        EnumMap<Direction, IOHandlerUtils.IOType> result = new EnumMap<>(Direction.class);
+        if (tag.contains(key, Tag.TAG_COMPOUND)) {
+            CompoundTag ioTag = tag.getCompound(key);
+            for (Direction dir : Direction.values()) {
+                String dirName = dir.getName();
+                if (ioTag.contains(dirName)) {
+                    try {
+                        IOHandlerUtils.IOType type = IOHandlerUtils.IOType.valueOf(ioTag.getString(dirName));
+                        result.put(dir, type);
+                    } catch (IllegalArgumentException ignored) {
+                        result.put(dir, IOHandlerUtils.IOType.DISABLED);
+                    }
+                } else {
+                    result.put(dir, IOHandlerUtils.IOType.DISABLED);
+                }
+            }
+        }
+        return result;
+    }
 
 }

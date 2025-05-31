@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.network.packet.manatool;
+package com.github.nalamodikk.common.network.packet.server;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;

@@ -1,12 +1,12 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.packet.OpenUpgradeGuiPacket;
-import com.github.nalamodikk.common.network.packet.ToggleModePacket;
-import com.github.nalamodikk.common.network.packet.manatool.ConfigDirectionUpdatePacket;
-import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
-import com.github.nalamodikk.common.network.packet.manatool.TechWandModePacket;
+import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
+import com.github.nalamodikk.common.network.packet.server.ToggleModePacket;
+import com.github.nalamodikk.common.network.packet.server.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.ManaUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.ModeChangePacket;
+import com.github.nalamodikk.common.network.packet.server.TechWandModePacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;

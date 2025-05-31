@@ -9,6 +9,7 @@
     import com.github.nalamodikk.common.capability.ManaStorage;
     import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
     import com.github.nalamodikk.common.register.ModBlockEntities;
+    import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import io.netty.buffer.Unpooled;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
@@ -72,6 +73,7 @@
         private final ManaGenerationHandler manaGenHandler;
         private final EnergyGenerationHandler energyGenHandler;
         private final ManaGeneratorTicker ticker = new ManaGeneratorTicker(this);
+        private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
 
         private final ManaGeneratorStateManager stateManager = new ManaGeneratorStateManager();
         private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -79,7 +81,6 @@
 
 
         private final ItemStackHandler fuelHandler = new ItemStackHandler(FUEL_SLOT_COUNT);
-        private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
         private ContainerLevelAccess access;
         private int burnTime = 0;
         private int currentBurnTime = 0;
@@ -100,6 +101,9 @@
                 Optional<ManaGenFuelRateLoader.FuelRate> rate = getCurrentFuelRate();
                 return rate.map(ManaGenFuelRateLoader.FuelRate::getEnergyRate).orElse(DEFAULT_ENERGY_PER_TICK);
             });
+            for (Direction dir : Direction.values()) {
+                ioMap.put(dir, IOHandlerUtils.IOType.DISABLED); // 或從 NBT、DataComponent 還原
+            }
 
         }
 
@@ -130,7 +134,6 @@
         public ManaGeneratorStateManager getStateManager() {return stateManager;}
         public ManaGenerationHandler getManaGenHandler() {return manaGenHandler;}
         public EnergyGenerationHandler getEnergyGenHandler() {return energyGenHandler;}
-        public EnumMap<Direction, Boolean> getDirectionConfig() {return directionConfig;}
         public ManaStorage getManaStorage() {return manaStorage;}
         public ModNeoNalaEnergyStorage getEnergyStorage() {return energyStorage;}
         private final ManaGeneratorNbtManager nbtManager = new ManaGeneratorNbtManager(this);
@@ -264,17 +267,28 @@
             return stateManager.getCurrentModeIndex();
         }
 
-
         @Override
-        public boolean isOutput(Direction direction) {
-            return directionConfig.getOrDefault(direction, false);
+        public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
+            ioMap.put(direction, type);
         }
 
         @Override
-        public void setDirectionConfig(Direction direction, boolean isOutput) {
-            directionConfig.put(direction, isOutput);
-            setChanged();
+        public IOHandlerUtils.IOType getIOConfig(Direction direction) {
+            return ioMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
         }
+
+        @Override
+        public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
+            return ioMap;
+        }
+
+        @Override
+        public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> map) {
+            ioMap.clear();
+            ioMap.putAll(map);
+        }
+
+
 
         @Override
         public Component getDisplayName() {

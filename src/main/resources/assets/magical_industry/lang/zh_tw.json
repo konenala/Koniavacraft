@@ -64,7 +64,8 @@
   "screen.magical_industry.output": "輸出",
   "screen.magical_industry.input": "輸入",
   "screen.magical_industry.cannot_toggle": "發電機正在運行，無法切換模式！",
-
+  "screen.magical_industry.disabled": "停用",
+  "screen.magical_industry.both": "輸入與輸出",
 
   "screen.magical_industry.toggle_mode": "切換模式",
   "screen.magical_industry.current_mode": "當前模式: %s",
@@ -79,6 +80,8 @@
   "mode.magical_industry.rotate": "旋轉",
   "mode.magical_industry.output": "輸出",
   "mode.magical_industry.input": "輸入",
+  "mode.magical_industry.disabled": "停用",
+  "mode.magical_industry.both": "輸入與輸出",
   "mode.magical_industry.direction_config": "方向配置模式",
 
   "button.magical_industry.toggle_mode.tooltip_auto": "自動模式",

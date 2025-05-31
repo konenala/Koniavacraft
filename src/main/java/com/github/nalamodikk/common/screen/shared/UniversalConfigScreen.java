@@ -3,7 +3,8 @@ package com.github.nalamodikk.common.screen.shared;
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.packet.manatool.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
@@ -26,10 +27,12 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/universal_config.png");
     private static final ResourceLocation BUTTON_TEXTURE_INPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_input.png");
     private static final ResourceLocation BUTTON_TEXTURE_OUTPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_output.png");
+    private static final ResourceLocation BUTTON_TEXTURE_BOTH = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_both.png");
+    private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_disabled.png");
     private static final int BUTTON_WIDTH = 20;
     private static final int BUTTON_HEIGHT = 20;
 
-    private final EnumMap<Direction, Boolean> currentConfig = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, IOHandlerUtils.IOType> currentIOMap = new EnumMap<>(Direction.class);
     private final BlockEntity blockEntity;
 
     public UniversalConfigScreen(UniversalConfigMenu menu, Inventory playerInventory, Component title) {
@@ -39,7 +42,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         this.imageHeight = 166;
 
         for (Direction direction : Direction.values()) {
-            currentConfig.put(direction, false);
+            currentIOMap.put(direction, IOHandlerUtils.IOType.DISABLED); // ✅ 初始化為禁用
         }
     }
 
@@ -70,7 +73,11 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
                 int buttonX = baseX + offset[0];
                 int buttonY = baseY + offset[1];
 
-                ResourceLocation currentTexture = currentConfig.getOrDefault(direction, false) ? BUTTON_TEXTURE_OUTPUT : BUTTON_TEXTURE_INPUT;
+                IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+
+                boolean isOutput = (type == IOHandlerUtils.IOType.OUTPUT || type == IOHandlerUtils.IOType.BOTH);
+                String configType = isOutput ? "output" : "input";
+                ResourceLocation currentTexture = isOutput ? BUTTON_TEXTURE_OUTPUT : BUTTON_TEXTURE_INPUT;
 
                 GenericButtonWithTooltip button = new GenericButtonWithTooltip(
                         buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT,
@@ -87,7 +94,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     private void updateCurrentConfigFromBlockEntity() {
         if (blockEntity instanceof IConfigurableBlock configurableBlock) {
             for (Direction direction : Direction.values()) {
-                currentConfig.put(direction, configurableBlock.isOutput(direction));
+                currentIOMap.put(direction, configurableBlock.getIOConfig(direction)); // ✅ 直接用 IOType
             }
         }
     }
@@ -112,25 +119,31 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
     private void onDirectionConfigButtonClick(Direction direction) {
         if (blockEntity instanceof IConfigurableBlock configurableBlock) {
-            boolean newConfig = !currentConfig.getOrDefault(direction, false);
-            currentConfig.put(direction, newConfig);
+            // 取得目前 IOType 並循環切換
+            IOHandlerUtils.IOType current = configurableBlock.getIOConfig(direction);
+            IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
 
-            // 更新本地按鈕狀態
-            configurableBlock.setDirectionConfig(direction, newConfig);
+            // 更新本地狀態（按鈕顯示用）
+            currentIOMap.put(direction, next); // ← 你可能要把 currentConfig 改成 currentIOMap<Direction, IOType>
+
+            // 實際設定
+            configurableBlock.setIOConfig(direction, next);
             blockEntity.setChanged();
 
-            // 發送封包來同步方向配置到伺服器
-            PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newConfig));
+            // 發送封包給伺服器同步 IO 設定
+            PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, next));
 
-            // 顯示玩家通知
+            // 顯示玩家通知（用本地化）
             Minecraft.getInstance().player.displayClientMessage(Component.translatable(
                     "message.magical_industry.config_button_clicked",
-                    direction.getName(), newConfig ? Component.translatable("mode.magical_industry.output") : Component.translatable("mode.magical_industry.input")), true);
+                    direction.getName(),
+                    Component.translatable("mode.magical_industry." + next.name().toLowerCase()) // 本地化鍵如 mode.magical_industry.output
+            ), true);
 
-            // 更新界面中的按鈕顯示
             updateAllButtonTooltipsAndTextures();
         }
     }
+
 
     @Override
     public void onClose() {
@@ -138,14 +151,14 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
         if (blockEntity instanceof IConfigurableBlock) {
             for (Direction direction : Direction.values()) {
-                boolean oldValue = menu.getOriginalConfig().getOrDefault(direction, false);
-                boolean newValue = currentConfig.getOrDefault(direction, false);
+                IOHandlerUtils.IOType oldValue = menu.getOriginalIOMap().getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+                IOHandlerUtils.IOType newValue = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
 
                 if (oldValue != newValue) {
                     PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newValue));
 
                     if (MagicalIndustryMod.IS_DEV) {
-                        MagicalIndustryMod.LOGGER.info("[Client] Changed direction: {} → {}, sending packet", direction.getName(), newValue ? "OUTPUT" : "INPUT");
+                        MagicalIndustryMod.LOGGER.info("[Client] Changed direction: {} → {}, sending packet", direction.getName(), newValue.name());
                     }
                 }
             }
@@ -153,18 +166,28 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     }
 
 
+
     private void updateButtonTooltip(GenericButtonWithTooltip button, Direction direction) {
         button.setTooltip(Tooltip.create(getTooltipText(direction)));
     }
 
     private void updateButtonTexture(GenericButtonWithTooltip button, Direction direction) {
-        boolean isOutput = currentConfig.getOrDefault(direction, false);
-        ResourceLocation newTexture = isOutput ? BUTTON_TEXTURE_OUTPUT : BUTTON_TEXTURE_INPUT;
+        IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+        ResourceLocation newTexture = switch (type) {
+            case INPUT -> BUTTON_TEXTURE_INPUT;
+            case OUTPUT -> BUTTON_TEXTURE_OUTPUT;
+            case BOTH -> BUTTON_TEXTURE_BOTH;
+            case DISABLED -> BUTTON_TEXTURE_DISABLED;
+        };
         button.setTexture(newTexture, 20, 20);
     }
 
     private MutableComponent getTooltipText(Direction direction) {
-        String configType = currentConfig.getOrDefault(direction, false) ? "output" : "input";
+        IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+
+        // 取得類型名稱小寫（input、output、both、disabled）
+        String configType = type.name().toLowerCase();
+
         return Component.translatable("screen.magical_industry.configure_side", direction.getName())
                 .append(" ")
                 .append(Component.translatable("screen.magical_industry." + configType));

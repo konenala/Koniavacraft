@@ -47,7 +47,8 @@ public class ManaGeneratorTicker {
                     machine.getBlockPos(),
                     machine.getManaStorage(),
                     machine.getEnergyStorage(),
-                    machine.getDirectionConfig());
+                    machine.getIOMap());
+
         }
 
         machine.updateBlockActiveState(machine.getStateManager().isWorking());

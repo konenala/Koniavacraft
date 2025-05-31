@@ -16,11 +16,13 @@ package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.packet.manatool.TechWandModePacket;
+import com.github.nalamodikk.common.network.packet.server.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.ManaUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.TechWandModePacket;
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.data.TechDataComponents;
 import com.github.nalamodikk.common.utils.block.BlockSelectorUtils;
@@ -28,16 +30,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -49,6 +48,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,15 +123,25 @@ public class BasicTechWandItem extends Item {
 
             switch (mode) {
                 case DIRECTION_CONFIG -> {
-                    boolean output = configBlock.isOutput(face);
-                    configBlock.setDirectionConfig(face, !output);
+                    IOHandlerUtils.IOType current = configBlock.getIOConfig(face);
+                    IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
+                    configBlock.setIOConfig(face, next);
+
+                    BlockEntity blockEntity = level.getBlockEntity(pos);
+                    if (blockEntity != null) {
+                        PacketDistributor.sendToPlayer((ServerPlayer) player,
+                                new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), face, next)); // ✅ 改為傳 IOType
+                    }
+
                     player.displayClientMessage(Component.translatable(
                             "message.magical_industry.config_changed",
                             face.getName(),
-                            !output ? Component.translatable("mode.magical_industry.output") : Component.translatable("mode.magical_industry.input")
+                            Component.translatable("mode.magical_industry." + next.name().toLowerCase()) // ✅ 改為使用 next.name()
                     ), true);
+
                     return InteractionResult.SUCCESS;
                 }
+
                 case CONFIGURE_IO -> {
                     if (player instanceof ServerPlayer sp) {
                         IConfigurableBlock configurableBlock = (IConfigurableBlock) be;
@@ -153,8 +163,9 @@ public class BasicTechWandItem extends Item {
                         }, (buf) -> {
                             buf.writeBlockPos(be.getBlockPos());
                             buf.writeWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, stack);
-                            buf.writeWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_BOOLEAN_MAP, configurableBlock.getDirectionConfig());
+                            buf.writeWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_IOTYPE_MAP, configurableBlock.getIOMap()); // ✅ 寫入新的 IOType map
                         });
+
 
                         return InteractionResult.SUCCESS;
                     }

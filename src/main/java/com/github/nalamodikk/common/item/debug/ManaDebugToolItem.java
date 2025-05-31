@@ -2,17 +2,14 @@ package com.github.nalamodikk.common.item.debug;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
+import com.github.nalamodikk.common.network.packet.server.ManaUpdatePacket;
 import com.github.nalamodikk.common.register.ModCapability;
 import com.mojang.serialization.Codec;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 
 import net.minecraft.world.entity.player.Player;
@@ -22,9 +19,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public class ManaDebugToolItem extends Item {
@@ -39,26 +33,9 @@ public class ManaDebugToolItem extends Item {
 
     public ManaDebugToolItem(Properties properties) {
         super(properties);
-        NeoForge.EVENT_BUS.addListener(this::onMouseScroll);
 
     }
 
-    public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
-        Player player = Minecraft.getInstance().player;
-        if (player == null || !player.isCrouching()) return;
-
-        ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (heldItem.getItem() != this) return;
-
-        boolean forward = event.getScrollDeltaY() > 0;
-
-        // ❌ 不要在 client 呼叫這個，server 才是資料源
-        // this.cycleMode(heldItem, forward);
-
-        ModeChangePacket.sendToServer(forward); // ✅ 正確送出封包讓伺服器處理
-
-        event.setCanceled(true);
-    }
 
 
 

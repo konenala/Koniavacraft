@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.register;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -78,6 +79,12 @@ public class ModDataComponents {
                     .build();
 
 
+    public static final DataComponentType<EnumMap<Direction, IOHandlerUtils.IOType>> CONFIGURED_DIRECTIONS_IO =
+            DataComponentType.<EnumMap<Direction, IOHandlerUtils.IOType>>builder()
+                    .persistent(CodecsLibrary.DIRECTION_IOTYPE_MAP)                  // 儲存用（NBT）
+                    .networkSynchronized(CodecsLibrary.DIRECTION_IOTYPE_CODEC)       // 封包同步用
+                    .build();
+
     public static final DataComponentType<Map<Direction, Boolean>> SAVED_DIRECTIONS =
             DataComponentType.<Map<Direction, Boolean>>builder()
                     .persistent(DIRECTION_BOOL_MAP_CODEC)
@@ -92,6 +99,7 @@ public class ModDataComponents {
             helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "tech_wand_mode"), TECH_WAND_MODE);
             helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "saved_directions"), SAVED_DIRECTIONS);
             helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "configured_directions"), CONFIGURED_DIRECTIONS);
+            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "configured_directions_io"), CONFIGURED_DIRECTIONS_IO);
 
         });
     }

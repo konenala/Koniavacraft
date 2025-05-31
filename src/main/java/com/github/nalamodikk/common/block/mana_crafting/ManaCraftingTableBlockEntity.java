@@ -261,23 +261,35 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     }
 
 
+
+    private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
+
     @Override
-    public void setDirectionConfig(Direction direction, boolean isOutput) {
-        directionConfig.put(direction, isOutput ? IOHandlerUtils.IOType.OUTPUT : IOHandlerUtils.IOType.INPUT);
+    public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
+        ioMap.put(direction, type);
     }
+
+    @Override
+    public IOHandlerUtils.IOType getIOConfig(Direction direction) {
+        return ioMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+    }
+
+    @Override
+    public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
+        return ioMap;
+    }
+
+    @Override
+    public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> map) {
+        ioMap.clear();
+        ioMap.putAll(map);
+    }
+
 
     @Override
     public boolean isOutput(Direction direction) {
         return directionConfig.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED) == IOHandlerUtils.IOType.OUTPUT;
     }
 
-    @Override
-    public EnumMap<Direction, Boolean> getDirectionConfig() {
-        EnumMap<Direction, Boolean> copy = new EnumMap<>(Direction.class);
-        for (Direction dir : Direction.values()) {
-            copy.put(dir, isOutput(dir));
-        }
-        return copy;
-    }
 
 }

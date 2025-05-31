@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.network.packet;
+package com.github.nalamodikk.common.network.packet.server;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;

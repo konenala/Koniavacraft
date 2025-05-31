@@ -71,7 +71,8 @@
   "screen.magical_industry.modular_machine_config": "Modular Machine Assembly Interface",
   "screen.magical_industry.upgrade_button.tooltip": "Open Upgrade Module Interface",
   "screen.magical_industry.upgrade.title": "Upgrade Module Manager",
-
+  "screen.magical_industry.disabled": "Disabled",
+  "screen.magical_industry.both": "Input & Output",
 
 
   "mode.magical_industry.mana": "Mana",
@@ -82,6 +83,9 @@
   "mode.magical_industry.output": "Output",
   "mode.magical_industry.input": "Input",
   "mode.magical_industry.direction_config": "Direction Configuration Mode",
+  "mode.magical_industry.disabled": "Disabled",
+  "mode.magical_industry.both": "Input & Output",
+
 
 
   "button.magical_industry.toggle_mode.tooltip_auto": "Automatic Mode",

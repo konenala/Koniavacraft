@@ -8,6 +8,7 @@ import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.utils.block.DirectionIOController;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.nbt.NbtUtils;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
@@ -67,7 +68,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
         int inserted = manaStorage.insertMana(amount, ManaAction.EXECUTE);
         if (inserted > 0) {
-            OutputHandler.tryOutput((ServerLevel) level, worldPosition, manaStorage, null, directionConfig);
+            OutputHandler.tryOutput((ServerLevel) level, worldPosition, manaStorage, null, ioMap);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             setChanged();
 
@@ -115,22 +116,34 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         return upgrades;
     }
 
-    public EnumMap<Direction, Boolean> getDirectionConfig() {
-        return directionConfig;
-    }
+
 
     public ManaStorage getManaStorage() {
         return manaStorage;
     }
 
 
+    private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
+
     @Override
-    public void setDirectionConfig(Direction direction, boolean isOutput) {
-        directionConfig.put(direction, isOutput);
-        setChanged();
-        if (level != null) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
+    public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
+        ioMap.put(direction, type);
+    }
+
+    @Override
+    public IOHandlerUtils.IOType getIOConfig(Direction direction) {
+        return ioMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+    }
+
+    @Override
+    public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
+        return ioMap;
+    }
+
+    @Override
+    public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> map) {
+        ioMap.clear();
+        ioMap.putAll(map);
     }
 
     @Override

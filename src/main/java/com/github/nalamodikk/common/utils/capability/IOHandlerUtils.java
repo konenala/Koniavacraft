@@ -20,6 +20,9 @@ public class IOHandlerUtils {
         public boolean canExtract() {
             return this == INPUT || this == BOTH;
         }
+        public boolean outputs() {
+            return this == OUTPUT || this == BOTH;
+        }
 
         public boolean canInsert() {
             return this == OUTPUT || this == BOTH;
@@ -76,4 +79,43 @@ public class IOHandlerUtils {
     public static void extractItemsFromNeighbors(Level level, BlockPos pos, IItemHandler selfStorage, EnumMap<Direction, IOType> config) {
         // 範例用：你可以根據需要補進具體抽物品邏輯
     }
+
+
+    /**
+     * 將 Boolean 型方向設定（true 為輸出）轉換成 IOType 設定。
+     * true 會變成 OUTPUT，false 會變成 DISABLED。
+     */
+    public static EnumMap<Direction, IOType> convertBooleanMapToIOType(EnumMap<Direction, Boolean> booleanMap) {
+        EnumMap<Direction, IOType> ioMap = new EnumMap<>(Direction.class);
+        for (Direction dir : Direction.values()) {
+            boolean isOutput = booleanMap.getOrDefault(dir, false);
+            ioMap.put(dir, isOutput ? IOType.OUTPUT : IOType.DISABLED);
+        }
+        return ioMap;
+    }
+
+    /**
+     * 將 IOType 型方向設定轉換成 Boolean 設定（僅視為輸出/非輸出）。
+     * OUTPUT 與 BOTH 會視為 true，其餘為 false。
+     */
+    public static EnumMap<Direction, Boolean> convertIOTypeToBooleanMap(EnumMap<Direction, IOType> ioMap) {
+        EnumMap<Direction, Boolean> booleanMap = new EnumMap<>(Direction.class);
+        for (Direction dir : Direction.values()) {
+            IOType type = ioMap.getOrDefault(dir, IOType.DISABLED);
+            booleanMap.put(dir, type == IOType.OUTPUT || type == IOType.BOTH);
+        }
+        return booleanMap;
+    }
+
+
+
+    public static IOType nextIOType(IOType current) {
+        return switch (current) {
+            case DISABLED -> IOType.OUTPUT;
+            case OUTPUT -> IOType.INPUT;
+            case INPUT -> IOType.BOTH;
+            case BOTH -> IOType.DISABLED;
+        };
+    }
+
 }

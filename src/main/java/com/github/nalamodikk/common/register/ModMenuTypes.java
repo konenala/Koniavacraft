@@ -56,7 +56,7 @@ public class ModMenuTypes {
                     new UniversalConfigMenu(id, inv,
                             inv.player.level().getBlockEntity(buf.readBlockPos()),
                             buf.readWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, NbtAccounter.unlimitedHeap()),
-                            buf.readWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_BOOLEAN_MAP, NbtAccounter.unlimitedHeap()) // ✅ 這裡才是正確的讀取
+                            buf.readWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_IOTYPE_MAP, NbtAccounter.unlimitedHeap()) // ✅ 這裡才是正確的讀取
                     )
             );
 

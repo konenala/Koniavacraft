@@ -4,6 +4,7 @@ package com.github.nalamodikk.common.block.mana_generator.logic;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModCapability;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -20,9 +21,10 @@ public class OutputHandler {
 
     private static final int MAX_OUTPUT_PER_TICK = 40;
 
-    public static void tryOutput(ServerLevel level, BlockPos origin, ManaStorage manaStorage, IEnergyStorage energyStorage, EnumMap<Direction, Boolean> directionConfig) {
-        List<IUnifiedManaHandler> manaTargets = new ArrayList<>();
+    public static void tryOutput(ServerLevel level, BlockPos pos, ManaStorage manaStorage, IEnergyStorage energyStorage, EnumMap<Direction, IOHandlerUtils.IOType> ioMap) {        List<IUnifiedManaHandler> manaTargets = new ArrayList<>();
         List<Integer> manaDemands = new ArrayList<>();
+        BlockPos origin = pos;
+
         int totalManaDemand = 0;
 
         List<IEnergyStorage> energyTargets = new ArrayList<>();
@@ -30,7 +32,8 @@ public class OutputHandler {
         int totalEnergyDemand = 0;
 
         for (Direction dir : Direction.values()) {
-            if (!directionConfig.getOrDefault(dir, false)) continue;
+            IOHandlerUtils.IOType type = ioMap.getOrDefault(dir, IOHandlerUtils.IOType.DISABLED);
+            if (!type.outputs()) continue;
 
             BlockPos targetPos = origin.relative(dir);
             Direction inputSide = dir.getOpposite();

@@ -30,7 +30,11 @@ public class ManaGeneratorNbtManager {
         NbtUtils.write(tag, "Mana", entity.getManaStorage(), provider);
         NbtUtils.write(tag, "Energy", entity.getEnergyStorage(), provider);
         NbtUtils.write(tag, "FuelItems", entity.getFuelHandler(), provider);
-        NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", entity.getDirectionConfig());
+        // 儲存
+        NbtUtils.writeEnumIOTypeMap(tag, "IOMap", entity.getIOMap());
+
+
+
     }
 
     public void load(CompoundTag tag, HolderLookup.Provider provider) {
@@ -50,8 +54,8 @@ public class ManaGeneratorNbtManager {
         NbtUtils.read(tag, "Mana", entity.getManaStorage(), provider);
         NbtUtils.read(tag, "Energy", entity.getEnergyStorage(), provider);
         NbtUtils.read(tag, "FuelItems", entity.getFuelHandler(), provider);
-        NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", entity.getDirectionConfig());
-
+        // 載入
+        entity.setIOMap(NbtUtils.readEnumIOTypeMap(tag, "IOMap"));
         entity.forceRefreshAnimationFromNbt();
     }
 }

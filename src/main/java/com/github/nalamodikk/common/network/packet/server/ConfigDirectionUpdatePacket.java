@@ -7,17 +7,17 @@
  * 記得：這個封包會自動透過 type() 推導註冊資訊，無需額外傳 TYPE。
  */
 
-package com.github.nalamodikk.common.network.packet.manatool;
+package com.github.nalamodikk.common.network.packet.server;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.register.ModDataComponents;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.item.ItemStackUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -31,21 +31,20 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.EnumMap;
 
-public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, boolean isOutput)
+public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, IOHandlerUtils.IOType ioType)
         implements CustomPacketPayload {
 
     public static final Type<ConfigDirectionUpdatePacket> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "config_direction_update"));
 
-
-
     public static final StreamCodec<RegistryFriendlyByteBuf, ConfigDirectionUpdatePacket> STREAM_CODEC =
             StreamCodec.composite(
                     CodecsLibrary.BLOCK_POS, ConfigDirectionUpdatePacket::pos,
                     CodecsLibrary.DIRECTION, ConfigDirectionUpdatePacket::direction,
-                    ByteBufCodecs.BOOL, ConfigDirectionUpdatePacket::isOutput,
+                    CodecsLibrary.STREAM_CODEC, ConfigDirectionUpdatePacket::ioType,
                     ConfigDirectionUpdatePacket::new
             );
+
 
 
 
@@ -53,6 +52,7 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, boo
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
+
 
     public static void handle(ConfigDirectionUpdatePacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
@@ -62,14 +62,14 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, boo
 
                 if (be instanceof IConfigurableBlock configurable) {
                     // ✅ 若內容沒變，就直接略過處理（防止多次封包）
-                    if (configurable.isOutput(packet.direction()) == packet.isOutput()) {
+                    if (configurable.getIOConfig(packet.direction()) == packet.ioType()) {
                         if (MagicalIndustryMod.IS_DEV) {
-                            MagicalIndustryMod.LOGGER.info("[Server] ⏩ Skipped duplicate config for {} → {}", packet.direction(), packet.isOutput() ? "OUTPUT" : "INPUT");
+                            MagicalIndustryMod.LOGGER.info("[Server] ⏩ Skipped duplicate config for {} → {}", packet.direction(),packet.ioType());
                         }
                         return;
                     }
 
-                    configurable.setDirectionConfig(packet.direction(), packet.isOutput());
+                    configurable.setIOConfig(packet.direction(), packet.ioType());
                     be.setChanged();
                     level.sendBlockUpdated(packet.pos(), be.getBlockState(), be.getBlockState(), 3); // 🟢 客戶端同步畫面
 
