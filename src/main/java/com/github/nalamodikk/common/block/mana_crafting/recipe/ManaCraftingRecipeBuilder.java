@@ -29,9 +29,11 @@ public class ManaCraftingRecipeBuilder implements RecipeBuilder {
     private final Map<Character, Ingredient> key = new HashMap<>();
 
     public ManaCraftingRecipeBuilder(ItemStack result) {
+        if (result == null || result.isEmpty()) {
+            throw new IllegalArgumentException("❌ 無效的配方輸出：ItemStack 不能為 null 或 EMPTY！");
+        }
         this.result = result;
     }
-
     // ✅ 語法糖：支援 Ingredient 直接 define
     public ManaCraftingRecipeBuilder define(char symbol, Ingredient ingredient) {
         if (symbol == ' ')

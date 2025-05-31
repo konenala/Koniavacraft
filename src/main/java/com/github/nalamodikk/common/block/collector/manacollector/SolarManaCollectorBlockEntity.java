@@ -54,6 +54,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
     @Override
     public void tickServer() {
+        syncHelper.getRawSyncManager().set(SolarCollectorSyncHelper.SyncIndex.GENERATING.ordinal(),canGenerate() ? 1 : 0);
         syncHelper.syncFrom(this);
 
         int interval = Math.max(10, 200 - upgrades.getUpgradeCount(UpgradeType.SPEED) * 20);
@@ -80,20 +81,20 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         return level.isDay() && !level.isRaining() && level.canSeeSky(worldPosition.above());
     }
 
-    public void save(CompoundTag tag, HolderLookup.Provider provider) {
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        NbtUtils.write(tag, "Mana", manaStorage, registries);
+        NbtUtils.write(tag, "Upgrades", upgrades, registries);
+        NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);    }
 
-        NbtUtils.write(tag, "Mana", manaStorage, provider);
-        NbtUtils.write(tag, "Upgrades", upgrades, provider);
-        NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);
-    }
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 
-    public void load(CompoundTag tag, HolderLookup.Provider provider) {
-//        MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
+        NbtUtils.read(tag, "Mana", manaStorage, registries);
+        NbtUtils.read(tag, "Upgrades", upgrades, registries);
+        NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);    }
 
-        NbtUtils.read(tag, "Mana", manaStorage, provider);
-        NbtUtils.read(tag, "Upgrades", upgrades, provider);
-        NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);
-    }
+
 
     @Override
     public Component getDisplayName() {
