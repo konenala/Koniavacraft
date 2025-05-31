@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.mana_crafting.recipe;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.register.ModRecipes;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.advancements.Criterion;
@@ -109,44 +110,56 @@ public class ManaCraftingRecipeBuilder implements RecipeBuilder {
             throw new IllegalStateException("[DataGen] ❌ ManaCraftingRecipeBuilder ingredients 為空，無法儲存配方！");
         }
 
+        Item item = result.getItem();
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+
+        if (itemId == null || itemId.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
+            throw new IllegalStateException("[DataGen] ❌ 結果物品尚未註冊！Item: " + item);
+        }
+
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
                 ModRecipes.MANA_CRAFTING_SERIALIZER.getId().getNamespace(),
-                CRAFTING_RECIPE_PATH_PREFIX + getResult().builtInRegistryHolder().key().location().getPath()
+                CRAFTING_RECIPE_PATH_PREFIX + itemId.getPath()
         );
+
         save(output, id);
     }
 
     public void save(RecipeOutput output, @Nullable String customName) {
+        Item item = result.getItem();
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+
+        if (itemId == null || itemId.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
+            throw new IllegalStateException("[DataGen] ❌ 結果物品尚未註冊！Item: " + item);
+        }
+
+        String path = customName != null ? customName : itemId.getPath();
+
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
                 ModRecipes.MANA_CRAFTING_SERIALIZER.getId().getNamespace(),
-                CRAFTING_RECIPE_PATH_PREFIX + (customName != null ? customName : getResult().builtInRegistryHolder().key().location().getPath())
+                CRAFTING_RECIPE_PATH_PREFIX + path
         );
+
         save(output, id);
     }
+
 
     public void save(RecipeOutput output, ResourceLocation id) {
         output.accept(id, buildRecipe(id), null);
     }
 
-    private ManaCraftingTableRecipe buildRecipe(ResourceLocation id) {
-        NonNullList<Ingredient> finalIngredients;
-
-        if (shaped) {
-            finalIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
-            for (int row = 0; row < pattern.size(); row++) {
-                String line = pattern.get(row);
-                for (int col = 0; col < line.length(); col++) {
-                    char c = line.charAt(col);
-                    Ingredient ing = key.getOrDefault(c, Ingredient.EMPTY);
-                    finalIngredients.set(row * 3 + col, ing);
-                }
-            }
-        } else {
-            finalIngredients = NonNullList.copyOf(ingredients);
+    public ManaCraftingTableRecipe buildRecipe(ResourceLocation id) {
+        if (id == null) {
+            throw new IllegalArgumentException("❌ buildRecipe: 你不能傳入 null 的配方 ID！");
         }
 
-        return new ManaCraftingTableRecipe(id, finalIngredients, result.copy(), manaCost, shaped);
+        ManaCraftingTableRecipe recipe = shaped
+                ? ManaCraftingTableRecipe.createShaped(pattern, key, result, manaCost)
+                : ManaCraftingTableRecipe.createShapeless(ingredients, result, manaCost);
+        return recipe.withId(id);
     }
+
+
 
     @Override
     public RecipeBuilder unlockedBy(String name, Criterion<?> criterion) {

@@ -3,7 +3,6 @@ package com.github.nalamodikk.common.block.mana_generator.jei;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
-import com.github.nalamodikk.common.register.ModRecipes;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -21,13 +20,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenFuelRecipe> {
@@ -35,8 +31,8 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/jei_fuel.png");
     private static final ResourceLocation MANA_BAR = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final ResourceLocation ENERGY_BAR =  ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/energy_bar_full.png");
-    public static  mezz.jei.api.recipe.RecipeType<ManaGenFuelRecipe> JEI_RECIPE_TYPE =
-            new mezz.jei.api.recipe.RecipeType<>(UID, ManaGenFuelRecipe.class);
+    public static  RecipeType<ManaGenFuelRecipe> manaGenFuelRecipeType =
+            new RecipeType<>(UID, ManaGenFuelRecipe.class);
     private static final int RECIPE_WIDTH = 182;
     private static final int RECIPE_HEIGHT = 80;
 
@@ -68,7 +64,7 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
 
     @Override
     public RecipeType<ManaGenFuelRecipe> getRecipeType() {
-        return JEI_RECIPE_TYPE;
+        return manaGenFuelRecipeType;
     }
 
 

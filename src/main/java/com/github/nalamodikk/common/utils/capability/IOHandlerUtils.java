@@ -6,6 +6,7 @@ import com.github.nalamodikk.common.capability.mana.ManaAction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 
@@ -14,14 +15,14 @@ import java.util.EnumMap;
 public class IOHandlerUtils {
 
     public enum IOType {
-        INPUT, OUTPUT, DISABLED;
+        INPUT, OUTPUT, BOTH, DISABLED;
 
         public boolean canExtract() {
-            return this == INPUT;
+            return this == INPUT || this == BOTH;
         }
 
         public boolean canInsert() {
-            return this == OUTPUT;
+            return this == OUTPUT || this == BOTH;
         }
     }
 
@@ -41,10 +42,17 @@ public class IOHandlerUtils {
             IUnifiedManaHandler neighbor = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
             if (neighbor == null) continue;
 
-            int simulated = neighbor.extractMana(maxPerSide, ManaAction.get(true));
-            if (simulated > 0) {
-                int extracted = neighbor.extractMana(maxPerSide, ManaAction.get(false));
-                selfStorage.receiveMana(extracted, ManaAction.get(false));
+            int simulatedExtract = neighbor.extractMana(maxPerSide, ManaAction.get(true));
+            if (simulatedExtract <= 0) continue;
+
+            int simulatedInsert = selfStorage.receiveMana(simulatedExtract, ManaAction.get(true));
+            if (simulatedInsert <= 0) continue;
+
+            int extracted = neighbor.extractMana(simulatedInsert, ManaAction.get(false));
+            int inserted = selfStorage.receiveMana(extracted, ManaAction.get(false));
+
+            if (inserted > 0 && level.getBlockEntity(pos) instanceof BlockEntity be) {
+                be.setChanged(); // ✅ 如果需要觸發儲存
             }
         }
     }

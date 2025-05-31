@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
+import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.API.IManaCraftingMachine;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
@@ -8,6 +9,8 @@ import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.github.nalamodikk.common.register.ModCapability;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
+import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -34,13 +37,18 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
+import java.util.EnumMap;
 import java.util.Optional;
 
-public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider, IManaCraftingMachine {
+public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider, IManaCraftingMachine , IConfigurableBlock {
     public static final int MAX_MANA = 10000;
     public static final int INPUT_SLOT_COUNT = 9;
     public static final int OUTPUT_SLOT = 9;
     public static final int TOTAL_SLOTS = 10;
+    private final EnumMap<Direction, IOHandlerUtils.IOType> directionConfig = Util.make(new EnumMap<>(Direction.class), map -> {
+        for (Direction d : Direction.values()) map.put(d, IOHandlerUtils.IOType.INPUT); // 預設為可抽入
+    });
+
 
     private final ItemStackHandler itemHandler = new ItemStackHandler(TOTAL_SLOTS);
     private final IUnifiedManaHandler manaStorage = new ManaStorage(MAX_MANA);
@@ -51,29 +59,18 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManaCraftingTableBlockEntity be) {
         be.extractManaFromNeighbors();
-        be.updateCraftingResult();
+
+//        be.updateCraftingResult();
     }
 
     private void extractManaFromNeighbors() {
-        for (Direction direction : Direction.values()) {
-            BlockPos neighborPos = worldPosition.relative(direction);
-            if (!level.hasChunkAt(neighborPos)) continue;
-
-            BlockEntity neighbor = level.getBlockEntity(neighborPos);
-            if (neighbor == null) continue;
-
-            // 安全查詢 Mana 能力（使用 NeoForge 提供的 Level API）
-            IUnifiedManaHandler neighborMana = level.getCapability(ModCapability.MANA, neighborPos, direction.getOpposite());
-
-            if (neighborMana == null) continue;
-
-            int simulated = neighborMana.extractMana(50, ManaAction.get(true));
-            if (simulated > 0) {
-                int extracted = neighborMana.extractMana(50, ManaAction.get(false));
-                manaStorage.receiveMana(extracted, ManaAction.get(false));
-                setChanged();
-            }
-        }
+        IOHandlerUtils.extractManaFromNeighbors(
+                level,
+                worldPosition,
+                manaStorage,
+                directionConfig,
+                50 // 每面最多提取的 mana 數量
+        );
     }
 
 
@@ -262,4 +259,25 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     public boolean hasRecipe() {
         return getCurrentRecipe().isPresent();
     }
+
+
+    @Override
+    public void setDirectionConfig(Direction direction, boolean isOutput) {
+        directionConfig.put(direction, isOutput ? IOHandlerUtils.IOType.OUTPUT : IOHandlerUtils.IOType.INPUT);
+    }
+
+    @Override
+    public boolean isOutput(Direction direction) {
+        return directionConfig.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED) == IOHandlerUtils.IOType.OUTPUT;
+    }
+
+    @Override
+    public EnumMap<Direction, Boolean> getDirectionConfig() {
+        EnumMap<Direction, Boolean> copy = new EnumMap<>(Direction.class);
+        for (Direction dir : Direction.values()) {
+            copy.put(dir, isOutput(dir));
+        }
+        return copy;
+    }
+
 }

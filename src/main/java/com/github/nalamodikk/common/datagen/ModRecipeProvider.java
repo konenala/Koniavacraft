@@ -29,6 +29,7 @@ public class ModRecipeProvider extends RecipeProvider {
         protected void buildRecipes(RecipeOutput recipeOutput) {
             ManaFuelRecipeProvider.generate(recipeOutput);
             ManaCraftingRecipeProvider.generate(recipeOutput);
+
             ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_BLOCK.get())
                     .pattern("SSS").pattern("SSS").pattern("SSS")
                     .define('S', ModItems.MANA_INGOT.get())

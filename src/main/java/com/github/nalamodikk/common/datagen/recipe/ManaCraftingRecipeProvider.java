@@ -9,14 +9,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ManaCraftingRecipeProvider {
+    public static ManaCraftingTableRecipe shaped(ResourceLocation id, List<String> pattern, Map<String, Ingredient> stringKey, ItemStack result, int manaCost) {
+        // 把 String 轉成 Character
+        Map<Character, Ingredient> charKey = new HashMap<>();
+        for (Map.Entry<String, Ingredient> entry : stringKey.entrySet()) {
+            String keyStr = entry.getKey();
+            if (keyStr.length() != 1) {
+                throw new IllegalArgumentException("Key must be single character, got: '" + keyStr + "'");
+            }
+            charKey.put(keyStr.charAt(0), entry.getValue());
+        }
 
-    public static ManaCraftingTableRecipe shaped(ResourceLocation id, List<String> pattern, Map<String, Ingredient> key, ItemStack result, int manaCost) {
-        return ManaCraftingTableRecipe.fromCodec(true, manaCost, pattern, key, List.of(), result).withId(id);
+        return ManaCraftingTableRecipe.createShaped(pattern, charKey, result, manaCost).withId(id);
     }
+
 
     public static void generate(RecipeOutput output) {
         // ✅ 無序合成配方

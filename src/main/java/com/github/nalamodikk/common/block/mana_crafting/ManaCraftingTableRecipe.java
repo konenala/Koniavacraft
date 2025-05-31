@@ -1,11 +1,13 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModRecipes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -14,8 +16,12 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 
 public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.ManaCraftingInput> {
     private ResourceLocation id;
@@ -25,6 +31,7 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
     private final boolean isShaped;
     private final List<String> pattern = new ArrayList<>();
     private final Map<String, Ingredient> key = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaCraftingTableRecipe.class);
 
     public ManaCraftingTableRecipe(ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result, int manaCost, boolean isShaped) {
         this.id = id;
@@ -134,18 +141,60 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
         return true;
     }
 
+
     public ResourceLocation getId() {
+        if (id == null) {
+            LOGGER.error("❌ getId() 被叫，但 ID 是 null！配方內容 result: {}, ingredients: {}", result, ingredients, new RuntimeException("trace")); // 顯示 call stack
+            throw new IllegalStateException("Recipe ID is not set");
+        }
         return id;
     }
 
+
+    public static ManaCraftingTableRecipe createShapeless(List<Ingredient> ingredients, ItemStack result, int manaCost) {
+        NonNullList<Ingredient> list = NonNullList.copyOf(ingredients);
+
+        return new ManaCraftingTableRecipe(null, list, result.copy(), manaCost, false);
+    }
+
+    public static ManaCraftingTableRecipe createShaped(List<String> pattern, Map<Character, Ingredient> key, ItemStack result, int manaCost) {
+        NonNullList<Ingredient> resolvedIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
+
+        for (int row = 0; row < pattern.size(); row++) {
+            String line = pattern.get(row);
+            for (int col = 0; col < line.length(); col++) {
+                char c = line.charAt(col);
+                if (c == ' ') {
+                    continue; // ✅ 空格視為空白格
+                }
+                if (!key.containsKey(c)) {
+                    throw new IllegalArgumentException("❌ pattern 使用了未定義的符號 '" + c + "'，請使用 define(...) 定義！");
+                }
+                Ingredient ing = key.get(c); // ✅ 已保證存在
+                resolvedIngredients.set(row * 3 + col, ing);
+            }
+        }
+
+        ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(null, resolvedIngredients, result.copy(), manaCost, true);
+        recipe.pattern.addAll(pattern);
+        for (var entry : key.entrySet()) {
+            recipe.key.put(String.valueOf(entry.getKey()), entry.getValue()); // ✅ 字元轉字串
+        }
+
+        return recipe;
+    }
+
+
     public static ManaCraftingTableRecipe fromCodec(
-            boolean shaped,
-            int manaCost,
-            List<String> pattern,
-            Map<String, Ingredient> key,
+            boolean shaped, int manaCost,
+            @Nullable List<String> pattern,
+            @Nullable Map<String, Ingredient> key,
             List<Ingredient> ingredients,
             ItemStack result
     ) {
+        pattern = pattern != null ? pattern : List.of();
+        key = key != null ? key : Map.of();
+
         NonNullList<Ingredient> resolvedIngredients;
         if (shaped) {
             resolvedIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
@@ -161,11 +210,10 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
             resolvedIngredients = NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
         }
 
-        ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(null, resolvedIngredients, result, manaCost, shaped);
-        recipe.pattern.addAll(pattern);
-        recipe.key.putAll(key);
-        return recipe;
-        }
+        // ❌ 注意：這裡仍然無法知道 id
+        return new ManaCraftingTableRecipe(null, resolvedIngredients, result.copy(), manaCost, shaped);
+    }
+
 
     public ItemStack getResult() {
         return result;
@@ -180,14 +228,19 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
 
         public static final MapCodec<ManaCraftingTableRecipe> CODEC = RecordCodecBuilder.mapCodec(inst ->
                 inst.group(
+                        ResourceLocation.CODEC.fieldOf("id").forGetter(r -> r.getId()), // ✅ 自訂 id 欄位，從 JSON 中解析
                         Codec.BOOL.fieldOf("shaped").forGetter(ManaCraftingTableRecipe::isShaped),
                         Codec.INT.fieldOf("mana_cost").forGetter(ManaCraftingTableRecipe::getManaCost),
-                        Codec.list(Codec.STRING).optionalFieldOf("pattern", List.of()).forGetter(r -> r.pattern), // NEW
-                        Codec.unboundedMap(Codec.STRING, Ingredient.CODEC).optionalFieldOf("key", Map.of()).forGetter(r -> r.key), // NEW
+                        Codec.list(Codec.STRING).optionalFieldOf("pattern", List.of()).forGetter(r -> r.pattern),
+                        Codec.unboundedMap(Codec.STRING, Ingredient.CODEC).optionalFieldOf("key", Map.of()).forGetter(r -> r.key),
                         Ingredient.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(r -> r.ingredients),
                         ItemStack.CODEC.fieldOf("result").forGetter(ManaCraftingTableRecipe::getResult)
-                ).apply(inst, ManaCraftingTableRecipe::fromCodec)
+                ).apply(inst, (id, shaped, manaCost, pattern, key, ingredients, result) -> {
+                    ManaCraftingTableRecipe recipe = ManaCraftingTableRecipe.fromCodec(shaped, manaCost, pattern, key, ingredients, result);
+                    return recipe.withId(id); // ✅ 自動補上 id
+                })
         );
+
 
 
         public static final StreamCodec<RegistryFriendlyByteBuf, List<Ingredient>> INGREDIENT_LIST_STREAM_CODEC =
@@ -308,21 +361,30 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
                         PATTERN_KEY_CODEC,
                         recipe -> new PatternKey(recipe.pattern, recipe.key),
 
+                        // ✅ 這裡直接 new，因為你 constructor 已經做了所有初始化
                         (id, ingredients, result, mana, shaped, patternKey) -> {
-                            NonNullList<Ingredient> ingredientList = ingredients.isEmpty()
-                                    ? NonNullList.create()
-                                    : NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
-                            ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(id, ingredientList, result.copy(), mana, shaped);
+                            var resolved = NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
+                            var recipe = new ManaCraftingTableRecipe(id, resolved, result.copy(), mana, shaped);
                             recipe.pattern.addAll(patternKey.pattern());
-                            recipe.key.putAll(patternKey.key());
+                            for (var entry : patternKey.key().entrySet()) {
+                                recipe.key.put(entry.getKey(), entry.getValue());
+                            }
                             return recipe;
                         }
                 );
 
+
         @Override
         public MapCodec<ManaCraftingTableRecipe> codec() {
-            return CODEC;
+            return CODEC.xmap(
+                    Function.identity(),
+                    recipe -> {
+                        // 這裡一定不該再被叫到 getId，否則還是 null
+                        return recipe;
+                    }
+            );
         }
+
 
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, ManaCraftingTableRecipe> streamCodec() {
