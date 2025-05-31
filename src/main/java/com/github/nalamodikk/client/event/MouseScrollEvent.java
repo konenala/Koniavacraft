@@ -2,7 +2,7 @@ package com.github.nalamodikk.client.event;
 
 
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
-import com.github.nalamodikk.common.network.packet.server.ModeChangePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ModeChangePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;

@@ -21,10 +21,9 @@ public class OutputHandler {
 
     private static final int MAX_OUTPUT_PER_TICK = 40;
 
-    public static void tryOutput(ServerLevel level, BlockPos pos, ManaStorage manaStorage, IEnergyStorage energyStorage, EnumMap<Direction, IOHandlerUtils.IOType> ioMap) {        List<IUnifiedManaHandler> manaTargets = new ArrayList<>();
+    public static boolean tryOutput(ServerLevel level, BlockPos pos, ManaStorage manaStorage, IEnergyStorage energyStorage, EnumMap<Direction, IOHandlerUtils.IOType> ioMap) {
+        List<IUnifiedManaHandler> manaTargets = new ArrayList<>();
         List<Integer> manaDemands = new ArrayList<>();
-        BlockPos origin = pos;
-
         int totalManaDemand = 0;
 
         List<IEnergyStorage> energyTargets = new ArrayList<>();
@@ -35,7 +34,7 @@ public class OutputHandler {
             IOHandlerUtils.IOType type = ioMap.getOrDefault(dir, IOHandlerUtils.IOType.DISABLED);
             if (!type.outputs()) continue;
 
-            BlockPos targetPos = origin.relative(dir);
+            BlockPos targetPos = pos.relative(dir);
             Direction inputSide = dir.getOpposite();
 
             // 魔力接收端
@@ -61,25 +60,56 @@ public class OutputHandler {
             }
         }
 
+        boolean didOutput = false;
+
         // 魔力輸出
-        if (totalManaDemand > 0) {
+        if (manaStorage != null && totalManaDemand > 0 && manaStorage.getManaStored() > 0) {
             int totalToSend = Math.min(manaStorage.getManaStored(), MAX_OUTPUT_PER_TICK);
             for (int i = 0; i < manaTargets.size(); i++) {
                 int portion = (int) Math.round(totalToSend * (manaDemands.get(i) / (double) totalManaDemand));
                 int accepted = manaTargets.get(i).receiveMana(portion, ManaAction.EXECUTE);
-                manaStorage.extractMana(accepted, ManaAction.EXECUTE);
+                if (accepted > 0) {
+                    manaStorage.extractMana(accepted, ManaAction.EXECUTE);
+                    didOutput = true;
+                }
             }
         }
 
         // 能量輸出
-        if (totalEnergyDemand > 0) {
+        if (energyStorage != null && totalEnergyDemand > 0 && energyStorage.getEnergyStored() > 0) {
             int totalToSend = Math.min(energyStorage.getEnergyStored(), MAX_OUTPUT_PER_TICK);
             for (int i = 0; i < energyTargets.size(); i++) {
                 int portion = (int) Math.round(totalToSend * (energyDemands.get(i) / (double) totalEnergyDemand));
                 int accepted = energyTargets.get(i).receiveEnergy(portion, false);
-                energyStorage.extractEnergy(accepted, false);
+                if (accepted > 0) {
+                    energyStorage.extractEnergy(accepted, false);
+                    didOutput = true;
+                }
+            }
+        }
+
+        return didOutput;
+    }
+
+
+    public static class OutputThrottleController {
+        private int noOutputStreak = 0;
+        private int currentDelay = 0;
+
+        public boolean shouldTryOutput() {
+            return currentDelay-- <= 0;
+        }
+
+        public void recordOutputResult(boolean success) {
+            if (success) {
+                noOutputStreak = 0;
+                currentDelay = 1; // 成功後下次仍會馬上再嘗試一次
+            } else {
+                noOutputStreak++;
+                currentDelay = Math.min(10, noOutputStreak); // 每失敗一次就延長下一次的 delay（最多10）
             }
         }
     }
+
 
 }

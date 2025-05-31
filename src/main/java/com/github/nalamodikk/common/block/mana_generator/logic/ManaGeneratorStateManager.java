@@ -2,6 +2,8 @@ package com.github.nalamodikk.common.block.mana_generator.logic;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 
+import java.util.function.Consumer;
+
 public class ManaGeneratorStateManager {
 
     public enum Mode {
@@ -14,6 +16,13 @@ public class ManaGeneratorStateManager {
 
     public boolean isWorking() {
         return isWorking;
+    }
+
+    public void setWorking(boolean working, Consumer<Boolean> onChange) {
+        if (this.isWorking != working) {
+            this.isWorking = working;
+            onChange.accept(working);
+        }
     }
 
     public void setWorking(boolean working) {

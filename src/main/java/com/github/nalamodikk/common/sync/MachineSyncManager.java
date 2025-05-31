@@ -11,6 +11,14 @@ public class MachineSyncManager implements ContainerData {
     private final List<DataSlot> dataSlots = new ArrayList<>();
     private final int[] values;
 
+    public boolean setIfChanged(int index, int value) {
+        if (get(index) != value) {
+            set(index, value);
+            return true;
+        }
+        return false;
+    }
+
     public MachineSyncManager(int slotCount) {
         this.values = new int[slotCount];
         for (int i = 0; i < slotCount; i++) {

@@ -1,6 +1,4 @@
 {
-	"render_type": "cutout",
-
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
@@ -162,5 +160,7 @@
 			"color": 0,
 			"children": [5, 6, 7]
 		}
-	]
+	],
+	"render_type": "translucent"
+
 }

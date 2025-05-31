@@ -31,8 +31,10 @@ import java.math.BigInteger;
 public abstract class AbstractManaMachineEntityBlock extends BlockEntity implements MenuProvider , IConfigurableBlock {
 
     /** 魔力儲存（可選） */
+    private static final int MAX_MANA = 200000;
+
     @Nullable
-    protected final ManaStorage manaStorage;
+    protected final  ManaStorage manaStorage;
 
     /** 能量儲存（可選） */
     @Nullable

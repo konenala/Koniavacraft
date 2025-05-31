@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.block.mana_generator;
 import com.github.nalamodikk.client.screenAPI.UniversalTexturedButton;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 
-import com.github.nalamodikk.common.network.packet.server.ToggleModePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ToggleModePacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;

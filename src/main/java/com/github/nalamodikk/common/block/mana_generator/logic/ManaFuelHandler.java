@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -14,6 +16,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ManaFuelHandler {
+    private final ManaGeneratorStateManager  stateManager;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaFuelHandler.class);
 
     private final ItemStackHandler fuelHandler;
     private ResourceLocation currentFuelId;
@@ -21,14 +25,28 @@ public class ManaFuelHandler {
     private int currentBurnTime;
     private int failedFuelCooldown;
     private boolean isPaused;        // 是否暫停（因產出空間滿了）
+    private boolean needsFuel = true;
 
-    public ManaFuelHandler(ItemStackHandler fuelHandler) {
+
+
+    public ManaFuelHandler( ItemStackHandler fuelHandler,ManaGeneratorStateManager stateManager) {
         this.fuelHandler = fuelHandler;
+        this.stateManager = stateManager;
+
+    }
+
+
+    public void tickCooldown() {
+        if (failedFuelCooldown > 0) {
+            failedFuelCooldown--;
+            if (failedFuelCooldown == 0) {
+                markNeedsFuel(); // cooldown 結束再嘗試消耗
+            }
+        }
     }
 
     public boolean tryConsumeFuel() {
-        if (burnTime > 0) {
-            // 如果還有尚未燒完的燃料，就不要消耗新燃料
+        if (!needsFuel || burnTime > 0 || failedFuelCooldown > 0) {
             return false;
         }
 
@@ -38,18 +56,40 @@ public class ManaFuelHandler {
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(fuel.getItem());
         FuelRate rate = ManaGenFuelRateLoader.getFuelRateForItem(id);
 
-        if (rate == null || rate.getBurnTime() <= 0 || rate.getManaRate() <= 0) return false;
+        if (rate == null || rate.getBurnTime() <= 0) {
+            failedFuelCooldown = 20; // cooldown 20 tick 再試
+            needsFuel = false;       // 暫時不要再試，等待 cooldown
+            return false;
+        }
 
-        // 正式啟動一筆新燃料
+        switch (stateManager.getCurrentMode()) {
+            case MANA -> {
+                if (rate.getManaRate() <= 0) {
+                    failedFuelCooldown = 20;
+                    needsFuel = false;
+                    return false;
+                }
+            }
+            case ENERGY -> {
+                if (rate.getEnergyRate() <= 0) {
+                    failedFuelCooldown = 20;
+                    needsFuel = false;
+                    return false;
+                }
+            }
+        }
+
         currentFuelId = id;
         currentBurnTime = rate.getBurnTime();
         burnTime = currentBurnTime;
-        isPaused = false; // ✅ 一定要重置這個！
-
         fuelHandler.extractItem(0, 1, false);
+        needsFuel = false; // 燃料已成功啟動，不需再嘗試
         return true;
     }
 
+    public void markNeedsFuel() {
+        this.needsFuel = true;
+    }
 
     public int getBurnTime() {
         return burnTime;
@@ -67,9 +107,6 @@ public class ManaFuelHandler {
         return failedFuelCooldown > 0;
     }
 
-    public void tickCooldown() {
-        if (failedFuelCooldown > 0) failedFuelCooldown--;
-    }
 
     public void setCooldown() {
         this.failedFuelCooldown = 20;
@@ -130,7 +167,20 @@ public class ManaFuelHandler {
         if (currentFuelId == null) return Optional.empty();
 
         ManaGenFuelRateLoader.FuelRate rate = ManaGenFuelRateLoader.getFuelRateForItem(currentFuelId);
-        return Optional.ofNullable(rate);
+        if (rate == null) return Optional.empty();
+
+        // ✅ 根據模式篩選產能是否合法
+        switch (stateManager.getCurrentMode()) {
+            case MANA -> {
+                if (rate.getManaRate() <= 0) return Optional.empty();
+            }
+            case ENERGY -> {
+                if (rate.getEnergyRate() <= 0) return Optional.empty();
+            }
+        }
+
+        return Optional.of(rate);
     }
+
 
 }

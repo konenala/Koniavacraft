@@ -7,7 +7,7 @@
  * 記得：這個封包會自動透過 type() 推導註冊資訊，無需額外傳 TYPE。
  */
 
-package com.github.nalamodikk.common.network.packet.server;
+package com.github.nalamodikk.common.network.packet.server.manatool;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.API.IConfigurableBlock;

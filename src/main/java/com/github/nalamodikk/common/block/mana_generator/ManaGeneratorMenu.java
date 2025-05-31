@@ -40,24 +40,9 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
         this.addSlot(new SlotItemHandler(blockInventory, 0, 80, 40) {
             @Override
             public boolean mayPlace(@NotNull ItemStack stack) {
-                int mode = blockEntity.getCurrentMode();
-                boolean valid;
-
-                if (mode == 0) {
-                    valid = stack.is(ItemTags.create(ResourceLocation.fromNamespaceAndPath(
-                            MagicalIndustryMod.MOD_ID, "mana"
-                    )));
-                } else if (mode == 1) {
-                    valid = FuelRegistryHelper.getBurnTime(stack) > 0;
-                    if (MagicalIndustryMod.IS_PRODUCTION && !FuelRegistryHelper.hasCustomFuelRate(stack.getItem())) {
-                        inv.player.sendSystemMessage(Component.literal("No fuel rate defined. Please report this to the mod author."));
-                    }
-                } else {
-                    valid = false;
-                }
-
-                return valid;
+                return true; // 允許所有物品放入
             }
+
         });
 
         layoutPlayerInventorySlots(inv, 8, 84);

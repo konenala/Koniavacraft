@@ -1,7 +1,8 @@
 package com.github.nalamodikk.common.datagen.worldgen;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import net.minecraft.core.HolderGetter;
+import com.github.nalamodikk.common.datagen.worldgen.ore.ModOrePlacement;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -13,22 +14,26 @@ import net.minecraft.world.level.levelgen.placement.*;
 import java.util.List;
 
 public class ModPlacedFeatures {
-    public static final ResourceKey<PlacedFeature> MAGIC_ORE_PLACED_KEY = ResourceKey.create(
-            Registries.PLACED_FEATURE, ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "magic_ore"));
+    public static final ResourceKey<PlacedFeature> MAGIC_ORE_PLACED_KEY = registerKey("magic_ore");
 
     public static void bootstrap(BootstrapContext<PlacedFeature> context) {
-        HolderGetter<ConfiguredFeature<?, ?>> configured = context.lookup(Registries.CONFIGURED_FEATURE);
+        var configuredFeatures = context.lookup(Registries.CONFIGURED_FEATURE);
 
-        PlacedFeature placed = new PlacedFeature(
-                configured.getOrThrow(ModConfiguredFeatures.MAGIC_ORE_KEY),
-                List.of(
-                        CountPlacement.of(5), // 每區塊 5 次
-                        InSquarePlacement.spread(),
-                        HeightRangePlacement.uniform(VerticalAnchor.absolute(12), VerticalAnchor.absolute(64)),
-                        BiomeFilter.biome()
-                )
+        register(context, MAGIC_ORE_PLACED_KEY,
+                configuredFeatures.getOrThrow(ModConfiguredFeatures.MAGIC_ORE_KEY),
+                ModOrePlacement.commonOrePlacement(10, HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(64)))
         );
-
-        context.register(MAGIC_ORE_PLACED_KEY, placed);
     }
+
+
+    private static void register(BootstrapContext<PlacedFeature> context, ResourceKey<PlacedFeature> key, Holder<ConfiguredFeature<?, ?>> configuration,
+                                 List<PlacementModifier> modifiers) {
+        context.register(key, new PlacedFeature(configuration, List.copyOf(modifiers)));
+    }
+
+
+    private static ResourceKey<PlacedFeature> registerKey(String name) {
+        return ResourceKey.create(Registries.PLACED_FEATURE, ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, name));
+    }
+
 }

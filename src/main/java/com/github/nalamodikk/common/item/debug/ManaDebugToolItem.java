@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.item.debug;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.network.packet.server.ManaUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.register.ModCapability;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;

@@ -14,44 +14,60 @@ public class ManaGeneratorTicker {
     }
 
     public void tick() {
-        if (machine.getFuelLogic().isCoolingDown()) {
-            machine.getFuelLogic().tickCooldown();
-            return;
-        }
+        ManaFuelHandler fuelHandler = machine.getFuelLogic();
+        boolean changed = false;
 
-        if (!machine.getFuelLogic().isBurning()) {
-            if (!machine.getFuelLogic().tryConsumeFuel()) {
+        fuelHandler.tickCooldown();
+
+        if (!fuelHandler.isBurning()) {
+            if (!fuelHandler.tryConsumeFuel()) {
                 machine.getStateManager().setWorking(false);
-                machine.getFuelLogic().setCooldown();
-                return;
+                machine.updateBlockActiveState(false);
+                changed = true;
+                // 不返回，因為 cooldown 可能剛 tick 結束，可以立即進入發電階段
             }
         }
+        boolean success = false;
 
-        boolean success = switch (machine.getStateManager().getCurrentMode()) {
-            case MANA -> machine.getManaGenHandler().generate();
-            case ENERGY -> machine.getEnergyGenHandler().generate();
-        };
+        if (fuelHandler.isBurning()) {
+            success = switch (machine.getStateManager().getCurrentMode()) {
+                case MANA -> machine.getManaGenHandler().generate();
+                case ENERGY -> machine.getEnergyGenHandler().generate();
+            };
+        }
 
         if (!success) {
-            machine.getFuelLogic().pauseBurn();
+            fuelHandler.pauseBurn();
             machine.getStateManager().setWorking(false);
-            return;
+            machine.updateBlockActiveState(false);
+            changed = true;
+        } else {
+            fuelHandler.resumeBurn();
+            fuelHandler.tickBurn(true);
+            machine.getStateManager().setWorking(true);
+
+            if (machine.getLevel() instanceof ServerLevel serverLevel) {
+                if (machine.getOutputThrottle().shouldTryOutput()) {
+                    boolean outputSuccess = OutputHandler.tryOutput(
+                            serverLevel,
+                            machine.getBlockPos(),
+                            machine.getManaStorage(),
+                            machine.getEnergyStorage(),
+                            machine.getIOMap()
+                    );
+                    machine.getOutputThrottle().recordOutputResult(outputSuccess);
+                }
+            }
+
+
+            machine.updateBlockActiveState(true);
+            changed = true;
         }
 
-        machine.getFuelLogic().resumeBurn();
-        machine.getFuelLogic().tickBurn(true);
-        machine.getStateManager().setWorking(true);
-
-        if (machine.getLevel() instanceof ServerLevel serverLevel) {
-            OutputHandler.tryOutput(serverLevel,
-                    machine.getBlockPos(),
-                    machine.getManaStorage(),
-                    machine.getEnergyStorage(),
-                    machine.getIOMap());
-
+        if (changed) {
+            machine.sync(); // ✅ 只在必要時同步
         }
-
-        machine.updateBlockActiveState(machine.getStateManager().isWorking());
-        machine.sync();
     }
+
+
 }

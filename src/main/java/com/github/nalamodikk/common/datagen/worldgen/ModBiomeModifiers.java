@@ -15,20 +15,23 @@ import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
+import java.util.List;
+
 public class ModBiomeModifiers {
-    public static final ResourceKey<BiomeModifier> ADD_MAGIC_ORE = ResourceKey.create(
-            NeoForgeRegistries.Keys.BIOME_MODIFIERS, ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "add_magic_ore"));
+    public static final ResourceKey<BiomeModifier> ADD_MAGIC_ORE = registerKey("add_magic_ore");
 
     public static void bootstrap(BootstrapContext<BiomeModifier> context) {
-        HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
-        HolderGetter<PlacedFeature> placed = context.lookup(Registries.PLACED_FEATURE);
+        var placedFeatures = context.lookup(Registries.PLACED_FEATURE);
+        var biomes = context.lookup(Registries.BIOME);
+        context.register(ADD_MAGIC_ORE, new BiomeModifiers.AddFeaturesBiomeModifier(
+                biomes.getOrThrow(BiomeTags.IS_OVERWORLD),
+                HolderSet.direct(List.of(placedFeatures.getOrThrow(ModPlacedFeatures.MAGIC_ORE_PLACED_KEY))),
+                GenerationStep.Decoration.UNDERGROUND_ORES
+        ));
 
-        BiomeModifier modifier = new BiomeModifiers.AddFeaturesBiomeModifier(
-                biomes.getOrThrow(BiomeTags.IS_OVERWORLD), // 主世界所有 Biome
-                HolderSet.direct(placed.getOrThrow(ModPlacedFeatures.MAGIC_ORE_PLACED_KEY)),
-                GenerationStep.Decoration.UNDERGROUND_ORES // 掛在什麼階段生成
-        );
+    }
 
-        context.register(ADD_MAGIC_ORE, modifier);
+    private static ResourceKey<BiomeModifier> registerKey(String name) {
+        return ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, name));
     }
 }

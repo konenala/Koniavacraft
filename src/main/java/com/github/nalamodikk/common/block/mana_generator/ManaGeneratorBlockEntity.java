@@ -74,6 +74,7 @@
         private final EnergyGenerationHandler energyGenHandler;
         private final ManaGeneratorTicker ticker = new ManaGeneratorTicker(this);
         private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
+        private final OutputHandler.OutputThrottleController outputThrottle = new OutputHandler.OutputThrottleController();
 
         private final ManaGeneratorStateManager stateManager = new ManaGeneratorStateManager();
         private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -88,7 +89,8 @@
         private String currentAnimation = "";
         private boolean forceRefreshAnimation = false;
 
-        private final ManaFuelHandler fuelLogic = new ManaFuelHandler(fuelHandler);
+        private final ManaFuelHandler fuelLogic = new ManaFuelHandler(fuelHandler,stateManager);
+        public OutputHandler.OutputThrottleController getOutputThrottle() {return outputThrottle;}
 
         public ManaGeneratorBlockEntity(BlockPos pos, BlockState state) {
             super(ModBlockEntities.MANA_GENERATOR_BE.get(), pos, state, true, MAX_MANA, MAX_ENERGY, TICK_INTERVAL, MANA_PER_CYCLE);
@@ -231,7 +233,8 @@
                 this.setChanged();
                 this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
             }
-            syncHelper.syncFrom(this);
+            syncHelper.syncFrom(this);         // ➤ 更新資料並標記 dirty
+            syncHelper.flushSyncState(this);   // ➤ ✅ 現在就清掉 dirty
         }
 
 

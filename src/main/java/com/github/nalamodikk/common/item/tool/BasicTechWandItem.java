@@ -16,9 +16,9 @@ package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.packet.server.ConfigDirectionUpdatePacket;
-import com.github.nalamodikk.common.network.packet.server.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.packet.server.TechWandModePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;

@@ -27,15 +27,21 @@ public class ManaGeneratorSyncHelper implements ISyncHelper {
     }
 
     private final MachineSyncManager syncManager = new MachineSyncManager(SyncIndex.count());
+    private final boolean[] dirtyFlags = new boolean[SyncIndex.count()];
+
     private final int[] lastSyncedValues = new int[SyncIndex.count()];
+
+
 
     private void setIfChanged(SyncIndex index, int newValue) {
         int ordinal = index.ordinal();
         if (lastSyncedValues[ordinal] != newValue) {
             lastSyncedValues[ordinal] = newValue;
             syncManager.set(ordinal, newValue);
+            dirtyFlags[ordinal] = true; // ✅ 資料有變才標記為 dirty
         }
     }
+
 
     public void syncFrom(ManaGeneratorBlockEntity be) {
         setIfChanged(SyncIndex.MANA, be.getManaStorage() != null ? be.getManaStorage().getManaStored() : 0);
@@ -66,4 +72,24 @@ public class ManaGeneratorSyncHelper implements ISyncHelper {
     public MachineSyncManager getRawSyncManager() {
         return syncManager;
     }
+
+    public boolean hasDirty() {
+        for (boolean flag : dirtyFlags) {
+            if (flag) return true;
+        }
+        return false;
+    }
+
+    public void flushSyncState(BlockEntity be) {
+        if (hasDirty()) {
+            clearDirty();
+        }
+    }
+
+    private void clearDirty() {
+        for (int i = 0; i < dirtyFlags.length; i++) {
+            dirtyFlags[i] = false;
+        }
+    }
+
 }
