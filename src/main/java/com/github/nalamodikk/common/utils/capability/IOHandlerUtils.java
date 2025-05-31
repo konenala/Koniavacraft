@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.utils.capability;
 
 
+import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import net.minecraft.core.BlockPos;
@@ -42,6 +43,14 @@ public class IOHandlerUtils {
             if (!canExtract(dir, config)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
+            Direction neighborFacing = dir.getOpposite();
+            BlockEntity neighborEntity = level.getBlockEntity(neighborPos);
+
+            if (neighborEntity instanceof IConfigurableBlock configurable) {
+                var ioMap = configurable.getIOMap();
+                if (!canInsert(neighborFacing, ioMap)) continue;
+            }
+
             IUnifiedManaHandler neighbor = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
             if (neighbor == null) continue;
 
@@ -55,10 +64,11 @@ public class IOHandlerUtils {
             int inserted = selfStorage.receiveMana(extracted, ManaAction.get(false));
 
             if (inserted > 0 && level.getBlockEntity(pos) instanceof BlockEntity be) {
-                be.setChanged(); // ✅ 如果需要觸發儲存
+                be.setChanged();
             }
         }
     }
+
 
     public static void extractEnergyFromNeighbors(Level level, BlockPos pos, IEnergyStorage selfStorage, EnumMap<Direction, IOType> config, int maxPerSide) {
         for (Direction dir : Direction.values()) {
