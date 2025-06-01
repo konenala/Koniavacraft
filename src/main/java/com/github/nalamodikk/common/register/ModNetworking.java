@@ -21,7 +21,6 @@ public class ModNetworking {
 
         TechWandModePacket.registerTo(registrar);
         ModeChangePacket.registerTo(registrar);
-        ManaUpdatePacket.registerTo(registrar);
         ConfigDirectionUpdatePacket.registerTo(registrar);
         ToggleModePacket.registerTo(registrar);
         OpenUpgradeGuiPacket.registerTo(registrar);

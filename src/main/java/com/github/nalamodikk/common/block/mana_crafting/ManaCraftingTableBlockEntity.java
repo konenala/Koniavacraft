@@ -8,14 +8,11 @@ import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.register.ModCapability;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.SimpleContainer;
-import net.neoforged.neoforge.capabilities.BlockCapability;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;

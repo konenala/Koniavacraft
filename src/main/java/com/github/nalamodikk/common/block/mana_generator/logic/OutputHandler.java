@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.block.mana_generator.logic;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
-import com.github.nalamodikk.common.register.ModCapability;
+import com.github.nalamodikk.common.register.ModCapabilities;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +38,7 @@ public class OutputHandler {
             Direction inputSide = dir.getOpposite();
 
             // 魔力接收端
-            IUnifiedManaHandler manaTarget = BlockCapabilityCache.create(ModCapability.MANA, level, targetPos, inputSide).getCapability();
+            IUnifiedManaHandler manaTarget = BlockCapabilityCache.create(ModCapabilities.MANA, level, targetPos, inputSide).getCapability();
             if (manaTarget != null && manaStorage != null && manaTarget.canReceive()) {
                 int demand = manaTarget.getMaxManaStored() - manaTarget.getManaStored();
                 if (demand > 0) {

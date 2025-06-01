@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.item.debug;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.common.register.ModCapability;
+import com.github.nalamodikk.common.register.ModCapabilities;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -59,7 +59,7 @@ public class ManaDebugToolItem extends Item {
         Level level = context.getLevel();
         if (!level.isClientSide()) {
             BlockPos pos = context.getClickedPos();
-            IUnifiedManaHandler manaStorage = level.getCapability(ModCapability.MANA, pos, null);
+            IUnifiedManaHandler manaStorage = level.getCapability(ModCapabilities.MANA, pos, null);
 
             if (manaStorage != null) {
                 ItemStack stack = context.getItemInHand();

@@ -74,6 +74,19 @@
   "screen.magical_industry.disabled": "Disabled",
   "screen.magical_industry.both": "Input & Output",
 
+  "screen.magical_industry.nara.bind": "Bind",
+  "screen.magical_industry.nara.cancel": "Leave",
+  "screen.magical_industry.nara.title": "Ding───!",
+  "screen.magical_industry.nara.line1": "▸ Detected new consciousness fluctuation…",
+  "screen.magical_industry.nara.line2": "▸ Verifying soul identification code…",
+  "screen.magical_industry.nara.line3": "▸ Result: Unbound",
+  "screen.magical_industry.nara.line4": "▸ Initiating 'Nara System' initialization sequence…",
+  "screen.magical_industry.nara.line5": "▸ Loading module core: Magical Industry (Ver. 0.1.0) subject to actual version",
+  "screen.magical_industry.nara.line6": "▸ Scan complete. Connection conditions fulfilled.",
+  "screen.magical_industry.nara.confirm": "Would you like to bind with the Nara System?",
+  "screen.magical_industry.nara.warning": "This operation is irreversible. Please proceed with caution.",
+  "screen.magical_industry.nara.screen_title": "Nara System Initialization",
+
 
   "mode.magical_industry.mana": "Mana",
   "mode.magical_industry.energy": "Energy",

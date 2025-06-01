@@ -73,7 +73,23 @@
   "screen.magical_industry.upgrade_button.tooltip": "開啟升級模組介面",
   "screen.magical_industry.upgrade.title": "升級模組管理介面",
 
-  "mode.magical_industry.mana": "魔力",
+  "screen.magical_industry.nara.bind": "綁定",
+  "screen.magical_industry.nara.cancel": "離開",
+  "screen.magical_industry.nara.title": "叮───！",
+  "screen.magical_industry.nara.line1": "▸ 檢測到新生意識波動…",
+  "screen.magical_industry.nara.line2": "▸ 核對靈魂識別碼中…",
+  "screen.magical_industry.nara.line3": "▸ 結果：未綁定",
+  "screen.magical_industry.nara.line4": "▸ 啟動『娜拉系統』初始化序列…",
+  "screen.magical_industry.nara.line5": "▸ 加載模組核心：魔法工業（Ver. 0.1.0）根據實際版本號而定",
+  "screen.magical_industry.nara.line6": "▸ 掃描完成，符合接入條件。",
+  "screen.magical_industry.nara.confirm": "是否與娜拉系統綁定？",
+  "screen.magical_industry.nara.warning": "此操作無法復原，請審慎選擇。",
+  "screen.magical_industry.nara.screen_title": "娜拉系統初始化",
+
+
+
+
+"mode.magical_industry.mana": "魔力",
   "mode.magical_industry.energy": "能量",
   "mode.magical_industry.configure_io": "配置輸入/輸出",
   "mode.magical_industry.add_mana": "增加魔力",
