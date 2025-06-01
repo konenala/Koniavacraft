@@ -3,14 +3,15 @@ package com.github.nalamodikk.common.register;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 
-import com.github.nalamodikk.system.nara.api.INaraData;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.EntityCapability;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 
@@ -23,11 +24,13 @@ public class ModCapabilities {
                     Direction.class
             );
 
-    public static final EntityCapability<INaraData, Void> NARA_DATA =
-            EntityCapability.createVoid(
-                    ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "nara_data"),
-                    INaraData.class
-            );
+    public static final DataComponentType<Boolean> NARA_BOUND =
+            DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build();
+
+
 
 //    public static final EntityCapability<INaraData, Void> NARA =
 //            EntityCapability.createVoid(
@@ -52,7 +55,6 @@ public class ModCapabilities {
 
         // 實體能力
 //        event.registerEntity(ModCapability.NARA,EntityType.PLAYER, (player, ctx) -> new NaraData());
-
 
     }
 

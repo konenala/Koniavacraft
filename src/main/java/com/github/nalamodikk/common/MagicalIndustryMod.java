@@ -38,8 +38,7 @@ public class MagicalIndustryMod {
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
-    public MagicalIndustryMod(IEventBus modEventBus, ModContainer modContainer)
-    {
+    public MagicalIndustryMod(IEventBus modEventBus, ModContainer modContainer) {
 
 
         // debug test
@@ -50,7 +49,7 @@ public class MagicalIndustryMod {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModRecipes.register(modEventBus);
-
+        ModDataAttachments.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
         ModCreativeModTabs.register(modEventBus);

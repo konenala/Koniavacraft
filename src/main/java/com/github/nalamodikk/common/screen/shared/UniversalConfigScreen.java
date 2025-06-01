@@ -31,6 +31,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_disabled.png");
     private static final int BUTTON_WIDTH = 20;
     private static final int BUTTON_HEIGHT = 20;
+    private final EnumMap<Direction, GenericButtonWithTooltip> directionButtonMap = new EnumMap<>(Direction.class);
 
     private final EnumMap<Direction, IOHandlerUtils.IOType> currentIOMap = new EnumMap<>(Direction.class);
     private final BlockEntity blockEntity;
@@ -67,6 +68,8 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         directionOffsets.put(Direction.WEST, new int[]{-60, 0});
         directionOffsets.put(Direction.EAST, new int[]{60, 0});
 
+        directionButtonMap.clear(); // ← 清空舊的映射
+
         for (Direction direction : Direction.values()) {
             if (directionOffsets.containsKey(direction)) {
                 int[] offset = directionOffsets.get(direction);
@@ -75,17 +78,24 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
                 IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
 
-                boolean isOutput = (type == IOHandlerUtils.IOType.OUTPUT || type == IOHandlerUtils.IOType.BOTH);
-                String configType = isOutput ? "output" : "input";
-                ResourceLocation currentTexture = isOutput ? BUTTON_TEXTURE_OUTPUT : BUTTON_TEXTURE_INPUT;
+                ResourceLocation currentTexture = switch (type) {
+                    case INPUT -> BUTTON_TEXTURE_INPUT;
+                    case OUTPUT -> BUTTON_TEXTURE_OUTPUT;
+                    case BOTH -> BUTTON_TEXTURE_BOTH;
+                    case DISABLED -> BUTTON_TEXTURE_DISABLED;
+                };
+
+                Component label = Component.translatable("direction.magical_industry." + direction.getName());
 
                 GenericButtonWithTooltip button = new GenericButtonWithTooltip(
                         buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT,
-                        Component.literal(direction.getName()),
+                        label,
                         currentTexture, 20, 20,
                         btn -> onDirectionConfigButtonClick(direction),
                         () -> Collections.singletonList(getTooltipText(direction))
                 );
+
+                directionButtonMap.put(direction, button); // 🔁 儲存按鈕
                 this.addRenderableWidget(button);
             }
         }
@@ -110,12 +120,9 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     }
 
     private GenericButtonWithTooltip getButtonByDirection(Direction direction) {
-        return this.renderables.stream()
-                .filter(widget -> widget instanceof GenericButtonWithTooltip button && button.getMessage().getString().equals(direction.getName()))
-                .map(widget -> (GenericButtonWithTooltip) widget)
-                .findFirst()
-                .orElse(null);
+        return directionButtonMap.get(direction);
     }
+
 
     private void onDirectionConfigButtonClick(Direction direction) {
         if (blockEntity instanceof IConfigurableBlock configurableBlock) {

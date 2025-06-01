@@ -7,7 +7,6 @@ import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.register.ModBlockEntities;
-import com.github.nalamodikk.common.utils.block.DirectionIOController;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.nbt.NbtUtils;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;

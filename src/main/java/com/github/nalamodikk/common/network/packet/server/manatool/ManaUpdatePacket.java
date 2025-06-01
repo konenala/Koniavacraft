@@ -1,12 +1,8 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.network.packet.client.ManaUpdatePacketClient;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
-import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -14,11 +10,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 
@@ -39,22 +32,20 @@ public record ManaUpdatePacket(BlockPos pos, int mana) implements CustomPacketPa
         return TYPE;
     }
 
-
-    public static void registerToClient(PayloadRegistrar registrar) {
+    public static void registerClientOnly(PayloadRegistrar registrar) {
+        // 這行不能直接用 method reference，會讓 class loader 解析 Client 類而爆炸
         registrar.playToClient(TYPE, STREAM_CODEC,
-                (packet, context) -> context.enqueueWork(() -> ManaUpdatePacketClient.handle(packet, context))
+                (packet, context) -> context.enqueueWork(() -> {
+                    if (FMLEnvironment.dist.isClient()) {
+                        // ✅ 在執行時才觸碰 client-only 類別
+                        ManaUpdatePacketClient.handle(packet, context);
+                    }
+                })
         );
     }
 
 
-    // ✅ 封包處理器
 
-
-    // ✅ 封包註冊：交由 ModNetworking 調用
-
-
-    public static void registerTo(PayloadRegistrar registrar) {
-    }
 
     // ✅ 伺服器端封包發送工具
     public static void sendManaUpdate(ServerPlayer player, BlockPos pos, int mana) {

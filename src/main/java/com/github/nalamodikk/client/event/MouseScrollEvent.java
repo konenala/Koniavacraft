@@ -1,6 +1,7 @@
 package com.github.nalamodikk.client.event;
 
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.network.packet.server.manatool.ModeChangePacket;
 import net.minecraft.client.Minecraft;
@@ -12,7 +13,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
-@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID,value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class MouseScrollEvent {
 
     @SubscribeEvent

@@ -26,6 +26,8 @@ import java.util.Map;
 public class ModDataComponents {
 
 
+
+
     public static final DataComponentType<BasicTechWandItem.TechWandMode> TECH_WAND_MODE =
             DataComponentType.<BasicTechWandItem.TechWandMode>builder()
                     .persistent(StringRepresentable.fromEnum(BasicTechWandItem.TechWandMode::values))
@@ -103,4 +105,14 @@ public class ModDataComponents {
 
         });
     }
+
+// todo
+//  public static final DataComponentType<Boolean> NARA_IMPRINT =
+//         DataComponentType.<Boolean>builder()
+//                 .persistent(Codec.BOOL)
+//                 .networkSynchronized(ByteBufCodecs.BOOL)
+//                 .build();
+//  然後在 register() 裡註冊：
+//  helper.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, "nara_imprint"), NARA_IMPRINT);
+
 }

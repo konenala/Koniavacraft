@@ -36,10 +36,6 @@ public class ManaDebugToolItem extends Item {
 
     }
 
-
-
-
-
     public static final DataComponentType<Integer> MODE_INDEX =
             DataComponentType.<Integer>builder()
                     .persistent(Codec.INT)

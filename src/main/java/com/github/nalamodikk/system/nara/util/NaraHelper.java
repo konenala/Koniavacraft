@@ -1,26 +1,22 @@
 package com.github.nalamodikk.system.nara.util;
 
-import com.github.nalamodikk.common.register.ModCapabilities;
-import com.github.nalamodikk.system.nara.api.INaraData;
+import com.github.nalamodikk.common.register.ModDataAttachments;
+import com.github.nalamodikk.common.register.ModDataComponents;
 import net.minecraft.world.entity.player.Player;
 
-import javax.annotation.Nullable;
 
 public class NaraHelper {
-    @Nullable
-    public static INaraData get(Player player) {
-        return player.getCapability(ModCapabilities.NARA_DATA, null);
-    }
-
     public static boolean isBound(Player player) {
-        var data = get(player);
-        return data != null && data.isBound();
+        return player.getData(ModDataAttachments.NARA_BOUND); // AttachmentType<T>
     }
 
-    public static void setBound(Player player, boolean bound) {
-        var data = get(player);
-        if (data != null) {
-            data.setBound(bound);
-        }
+    public static void setBound(Player player, boolean value) {
+        player.setData(ModDataAttachments.NARA_BOUND, value);
+    }
+
+    public static void clearBound(Player player) {
+        player.removeData(ModDataAttachments.NARA_BOUND);
     }
 }
+
+

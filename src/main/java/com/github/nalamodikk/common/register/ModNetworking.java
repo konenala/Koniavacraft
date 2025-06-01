@@ -7,6 +7,8 @@ import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirecti
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ModeChangePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
+import com.github.nalamodikk.system.nara.network.NaraBindRequestPacket;
+import com.github.nalamodikk.system.nara.network.NaraSyncPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -24,6 +26,11 @@ public class ModNetworking {
         ConfigDirectionUpdatePacket.registerTo(registrar);
         ToggleModePacket.registerTo(registrar);
         OpenUpgradeGuiPacket.registerTo(registrar);
+
+        // 娜拉系統
+        NaraBindRequestPacket.registerTo(registrar);
+        NaraSyncPacket.registerTo(registrar);
+
     }
 
 }

@@ -32,6 +32,10 @@
   "message.magical_industry.block_selected": "Selected block at position: {0}",
   "message.magical_industry.block_not_configurable": "The selected block is not configurable.",
   "message.magical_industry.cannot_toggle_while_working": "You cannot toggle modes while the generator is working!",
+  "message.magical_industry.nara.disconnect_message": "You have chosen to sever your connection with the Nara System.",
+  "message.magical_industry.nara.system_online": "▸ NARA SYSTEM ONLINE",
+  "message.magical_industry.nara.stabilized": "▸ Conscious alignment stabilized.",
+  "message.magical_industry.nara.welcome": "▸ Welcome, Operator.",
 
   "message.magical_industry.screen.generator_working": "Generator is working. Mode switching is disabled.",
 
@@ -75,14 +79,15 @@
   "screen.magical_industry.disabled": "Disabled",
   "screen.magical_industry.both": "Input & Output",
 
-  "screen.magical_industry.nara.bind": "Bind",
-  "screen.magical_industry.nara.cancel": "Leave",
+  "screen.magical_industry.nara.bind": "Bind to Nara System",
+  "screen.magical_industry.nara.cancel": "Cancel",
+
   "screen.magical_industry.nara.title": "Ding───!",
   "screen.magical_industry.nara.line1": "▸ Detected new consciousness fluctuation…",
   "screen.magical_industry.nara.line2": "▸ Verifying soul identification code…",
   "screen.magical_industry.nara.line3": "▸ Result: Unbound",
   "screen.magical_industry.nara.line4": "▸ Initiating 'Nara System' initialization sequence…",
-  "screen.magical_industry.nara.line5": "▸ Loading module core: Magical Industry (Ver. {0})",
+  "screen.magical_industry.nara.line5": "▸ Loading module core: Magical Industry (Ver. {%s)",
   "screen.magical_industry.nara.line6": "▸ Scan complete. Connection conditions fulfilled.",
   "screen.magical_industry.nara.confirm": "Would you like to bind with the Nara System?",
   "screen.magical_industry.nara.warning": "This operation is irreversible. Please proceed with caution.",
@@ -128,6 +133,9 @@
   "tooltip.magical_industry.not_enough_mana": "Not enough mana!",
   "tooltip.magical_industry.module.mana": "Mana Cost: %s/tick",
   "tooltip.magical_industry.machine.cleared": "Cleared inserted component item.",
+
+  "tooltip.magical_industry.nara.bind": "Bind your consciousness to the Nara system",
+  "tooltip.magical_industry.nara.cancel": "Reject connection and exit",
 
   "tooltip.magical_industry.module.item_input": "Provides input slots for assembling machines.",
   "tooltip.magical_industry.module.item_output": "Provides output slots for assembling machines.",

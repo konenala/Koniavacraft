@@ -1,7 +1,9 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.common.network.packet.client.ManaUpdatePacketClient;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
+import com.github.nalamodikk.system.nara.network.OpenNaraInitScreenPacket;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -14,7 +16,9 @@ public class ModNetworkingClient {
     public static void register(final RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
 
-        ManaUpdatePacket.registerToClient(registrar); // ✅ 新增這個
+        ManaUpdatePacket.registerClientOnly(registrar);
+        // 打開玩家第一次登入的GUI
+        OpenNaraInitScreenPacket.registerToClient(registrar);
 
     }
 }
