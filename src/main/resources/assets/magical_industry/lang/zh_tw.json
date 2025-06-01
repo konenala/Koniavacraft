@@ -17,6 +17,7 @@
   "jei.magical_industry.fuel": "魔力燃料",
   "jei.magical_industry.burn_time": "燃燒時間：%s tick",
 
+  "message.magical_industry.nara.sync_error": "同步娜拉狀態時發生錯誤：%s",
 
   "message.magical_industry.mana_added": "增加了 %s 魔力。當前魔力：%s",
   "message.magical_industry.mana_mode_changed": "切換到模式：%s",
@@ -80,7 +81,7 @@
   "screen.magical_industry.nara.line2": "▸ 核對靈魂識別碼中…",
   "screen.magical_industry.nara.line3": "▸ 結果：未綁定",
   "screen.magical_industry.nara.line4": "▸ 啟動『娜拉系統』初始化序列…",
-  "screen.magical_industry.nara.line5": "▸ 加載模組核心：魔法工業（Ver. 0.1.0）根據實際版本號而定",
+  "screen.magical_industry.nara.line5": "▸ 加載模組核心：魔法工業（Ver.  {0}）",
   "screen.magical_industry.nara.line6": "▸ 掃描完成，符合接入條件。",
   "screen.magical_industry.nara.confirm": "是否與娜拉系統綁定？",
   "screen.magical_industry.nara.warning": "此操作無法復原，請審慎選擇。",

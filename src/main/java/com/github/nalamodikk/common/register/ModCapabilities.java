@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.register;
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 
-import com.github.nalamodikk.system.api.INaraData;
+import com.github.nalamodikk.system.nara.api.INaraData;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;

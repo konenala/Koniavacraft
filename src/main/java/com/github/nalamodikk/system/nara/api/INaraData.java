@@ -1,4 +1,4 @@
-package com.github.nalamodikk.system.api;
+package com.github.nalamodikk.system.nara.api;
 
 public interface INaraData {
     boolean isBound();

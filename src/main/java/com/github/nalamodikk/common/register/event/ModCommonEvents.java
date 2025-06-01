@@ -2,8 +2,8 @@ package com.github.nalamodikk.common.register.event;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModCapabilities;
-import com.github.nalamodikk.system.api.INaraData;
-import com.github.nalamodikk.system.data.NaraData;
+import com.github.nalamodikk.system.nara.api.INaraData;
+import com.github.nalamodikk.system.nara.data.NaraData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;

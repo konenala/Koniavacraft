@@ -1,7 +1,7 @@
-package com.github.nalamodikk.system.api.util;
+package com.github.nalamodikk.system.nara.util;
 
-import com.github.nalamodikk.system.api.INaraData;
-import com.github.nalamodikk.system.data.NaraDataProvider;
+import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.system.nara.api.INaraData;
 import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 public class NaraHelper {
     @Nullable
     public static INaraData get(Player player) {
-        return player.getCapability(NaraDataProvider.NARA_DATA, null);
+        return player.getCapability(ModCapabilities.NARA_DATA, null);
     }
 
     public static boolean isBound(Player player) {
