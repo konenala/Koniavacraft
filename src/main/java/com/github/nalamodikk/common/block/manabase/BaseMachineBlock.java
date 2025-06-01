@@ -3,15 +3,21 @@ package com.github.nalamodikk.common.block.manabase;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 import javax.annotation.Nullable;
 
 public abstract class BaseMachineBlock extends BaseEntityBlock {
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public BaseMachineBlock(Properties properties) {
         super(properties);
@@ -20,6 +26,16 @@ public abstract class BaseMachineBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 
     @Override
@@ -40,4 +56,9 @@ public abstract class BaseMachineBlock extends BaseEntityBlock {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         return (blockEntity instanceof MenuProvider provider) ? provider : null;
     }
+
+    public static boolean hasFacing(BlockState state) {
+        return state.hasProperty(FACING);
+    }
+
 }

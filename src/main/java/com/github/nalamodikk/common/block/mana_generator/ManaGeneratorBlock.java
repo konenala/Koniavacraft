@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator;
 
+import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-public class ManaGeneratorBlock extends BaseEntityBlock {
+public class ManaGeneratorBlock extends BaseMachineBlock {
     public static final MapCodec<ManaGeneratorBlock> CODEC = simpleCodec(ManaGeneratorBlock::new);
 
     public ManaGeneratorBlock(Properties properties) {

@@ -16,6 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Collections;
@@ -59,14 +61,32 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     }
 
     private void initDirectionButtons(int baseX, int baseY) {
+        Direction facing = Direction.NORTH;
+        BlockState state = blockEntity.getBlockState();
+        if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+            facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+        }
         EnumMap<Direction, int[]> directionOffsets = new EnumMap<>(Direction.class);
 
-        directionOffsets.put(Direction.UP, new int[]{0, -60});
-        directionOffsets.put(Direction.DOWN, new int[]{0, 60});
-        directionOffsets.put(Direction.NORTH, new int[]{0, -30});
-        directionOffsets.put(Direction.SOUTH, new int[]{0, 30});
-        directionOffsets.put(Direction.WEST, new int[]{-60, 0});
-        directionOffsets.put(Direction.EAST, new int[]{60, 0});
+        Direction front = facing;
+        Direction back = front.getOpposite();
+        Direction left = front.getCounterClockWise();
+        Direction right = front.getClockWise();
+        Direction up = Direction.UP;
+        Direction down = Direction.DOWN;
+
+        // 視覺 layout：
+        //     [UP]
+        // [LEFT][FRONT][RIGHT]
+        //     [DOWN]
+        //     [BACK]
+
+        directionOffsets.put(up,    new int[]{0, -60});
+        directionOffsets.put(down,  new int[]{0, 60});
+        directionOffsets.put(front, new int[]{0, -20});
+        directionOffsets.put(back,  new int[]{0, 90});
+        directionOffsets.put(left,  new int[]{-60, 0});
+        directionOffsets.put(right, new int[]{60, 0});
 
         directionButtonMap.clear(); // ← 清空舊的映射
 

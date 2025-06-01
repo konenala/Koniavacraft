@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.block.collector.manacollector;
 
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class SolarManaCollectorBlock extends BaseEntityBlock  {
+public class SolarManaCollectorBlock extends BaseMachineBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public SolarManaCollectorBlock(Properties properties) {

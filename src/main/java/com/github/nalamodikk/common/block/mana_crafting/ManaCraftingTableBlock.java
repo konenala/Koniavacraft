@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class ManaCraftingTableBlock extends BaseEntityBlock  {
+public class ManaCraftingTableBlock extends BaseMachineBlock {
     public static final MapCodec<ManaCraftingTableBlock> CODEC = simpleCodec(ManaCraftingTableBlock::new);
     public static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
