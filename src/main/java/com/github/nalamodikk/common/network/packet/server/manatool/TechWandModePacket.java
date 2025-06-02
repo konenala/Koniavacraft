@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;

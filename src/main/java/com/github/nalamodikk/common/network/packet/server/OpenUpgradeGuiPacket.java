@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;

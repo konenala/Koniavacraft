@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;

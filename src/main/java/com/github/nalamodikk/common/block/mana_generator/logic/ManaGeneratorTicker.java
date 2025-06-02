@@ -1,10 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
-import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
-import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerLevel;
 import org.slf4j.Logger;

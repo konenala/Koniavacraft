@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.datagen.recipe.ManaCraftingRecipeProvider;
 import com.github.nalamodikk.common.datagen.recipe.ManaFuelRecipeProvider;
 import com.github.nalamodikk.common.register.ModBlocks;

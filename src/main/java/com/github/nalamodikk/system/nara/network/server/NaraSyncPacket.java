@@ -1,6 +1,6 @@
 package com.github.nalamodikk.system.nara.network.server;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.system.nara.network.client.NaraSyncPacketclient;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;

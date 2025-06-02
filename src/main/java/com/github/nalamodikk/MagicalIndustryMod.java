@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common;
+package com.github.nalamodikk;
 
 import com.github.nalamodikk.common.register.*;
 import net.minecraft.resources.ResourceLocation;
@@ -6,7 +6,6 @@ import net.neoforged.fml.loading.FMLLoader;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -15,7 +14,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -62,7 +60,6 @@ public class MagicalIndustryMod {
 
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)

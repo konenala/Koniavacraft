@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.block.mana_crafting;
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.API.IManaCraftingMachine;
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;

@@ -9,7 +9,7 @@
 
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.common.register.ModDataComponents;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;

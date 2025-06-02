@@ -1,6 +1,6 @@
 package com.github.nalamodikk.client.event;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.system.nara.network.server.NaraSyncPacket;
 import com.github.nalamodikk.system.nara.network.client.OpenNaraInitScreenPacket;
 import com.github.nalamodikk.system.nara.util.NaraHelper;

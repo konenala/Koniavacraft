@@ -1,7 +1,7 @@
 package com.github.nalamodikk.system.nara.network.client;
 
 import com.github.nalamodikk.client.event.NaraIntroSchedulerEvent;
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

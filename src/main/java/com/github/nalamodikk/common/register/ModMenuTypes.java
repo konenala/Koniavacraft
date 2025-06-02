@@ -12,7 +12,7 @@ package com.github.nalamodikk.common.register;
  * registerMenuType("mana_generator", entityMenu(ManaGeneratorBlockEntity.class, ManaGeneratorMenu::new));
  */
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorMenu;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
@@ -28,7 +28,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;

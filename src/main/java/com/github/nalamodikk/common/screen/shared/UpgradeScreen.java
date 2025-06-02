@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.screen.shared;
 
 import com.github.nalamodikk.client.screenAPI.UniversalTexturedButton;
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;

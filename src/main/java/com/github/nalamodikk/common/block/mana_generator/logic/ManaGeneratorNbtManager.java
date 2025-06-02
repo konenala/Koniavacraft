@@ -1,6 +1,5 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.utils.nbt.NbtUtils;
 import net.minecraft.core.HolderLookup;

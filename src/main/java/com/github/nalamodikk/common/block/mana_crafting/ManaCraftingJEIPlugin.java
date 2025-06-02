@@ -1,7 +1,6 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.mana_generator.jei.ManaGeneratorJEIPlugin;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.github.nalamodikk.common.register.ModRecipes;
 import mezz.jei.api.IModPlugin;

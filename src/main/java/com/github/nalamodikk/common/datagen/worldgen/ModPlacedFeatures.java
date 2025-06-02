@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.datagen.worldgen;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.datagen.worldgen.ore.ModOrePlacement;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;

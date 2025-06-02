@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.packet.server.manatool.*;
 import com.github.nalamodikk.system.nara.network.client.NaraSystemIntroMessagePacket;
 import com.github.nalamodikk.system.nara.network.client.OpenNaraInitScreenPacket;

@@ -2,7 +2,7 @@ package com.github.nalamodikk.system.nara.screen;
 
 
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.system.nara.network.server.NaraBindRequestPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -59,6 +59,9 @@ public class NaraInitScreen extends Screen {
             }
         }
     }
+//LightningBoltRenderer
+    // ✅ 玩家登入時已強制綁定，不需每次操作再次檢查 Nara 綁定狀態
+    // 若未來允許跳過動畫或支援非強制模式，需補上 isBound() 檢查
 
     private void initButtons() {
         int centerX = this.width / 2;

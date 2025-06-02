@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.datagen;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 
 import com.github.nalamodikk.common.register.ModBlocks;
 import net.minecraft.core.registries.BuiltInRegistries;

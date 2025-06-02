@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.platform;
+package com.github.nalamodikk.client.platform;
 
 
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;

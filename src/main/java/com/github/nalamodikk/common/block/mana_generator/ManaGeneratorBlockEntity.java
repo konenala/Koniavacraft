@@ -1,7 +1,7 @@
     // ⚠ 自動產生：結合 NeoForge 能量與魔力產出邏輯
     package com.github.nalamodikk.common.block.mana_generator;
 
-    import com.github.nalamodikk.common.MagicalIndustryMod;
+    import com.github.nalamodikk.MagicalIndustryMod;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
@@ -10,12 +10,10 @@
     import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
     import com.github.nalamodikk.common.register.ModBlockEntities;
     import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
-    import io.netty.buffer.Unpooled;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
     import net.minecraft.core.HolderLookup;
     import net.minecraft.nbt.CompoundTag;
-    import net.minecraft.network.FriendlyByteBuf;
     import net.minecraft.network.chat.Component;
     import net.minecraft.network.protocol.Packet;
     import net.minecraft.network.protocol.game.ClientGamePacketListener;

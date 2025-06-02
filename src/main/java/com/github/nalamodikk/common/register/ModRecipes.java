@@ -1,8 +1,7 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
-import com.github.nalamodikk.common.block.mana_generator.jei.ManaGeneratorJEIPlugin;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;

@@ -1,7 +1,6 @@
 package com.github.nalamodikk.client.platform;
 
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.common.platform.PlatformClientHelper;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import net.minecraft.client.Minecraft;

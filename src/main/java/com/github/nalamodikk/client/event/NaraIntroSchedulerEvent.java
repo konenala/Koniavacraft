@@ -1,6 +1,6 @@
 package com.github.nalamodikk.client.event;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.system.nara.screen.NaraIntroScreen;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;

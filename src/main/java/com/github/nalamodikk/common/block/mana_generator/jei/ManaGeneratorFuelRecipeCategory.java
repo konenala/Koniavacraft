@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.jei;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.register.ModBlocks;
 import com.mojang.blaze3d.systems.RenderSystem;

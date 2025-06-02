@@ -1,9 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.recipe;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
+import com.github.nalamodikk.MagicalIndustryMod;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;

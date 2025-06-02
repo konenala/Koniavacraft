@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.collector.manacollector;
 
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;

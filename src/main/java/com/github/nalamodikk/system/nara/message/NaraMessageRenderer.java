@@ -1,8 +1,7 @@
 package com.github.nalamodikk.system.nara.message;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModDataAttachments;
-import com.github.nalamodikk.system.nara.data.NaraMessage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

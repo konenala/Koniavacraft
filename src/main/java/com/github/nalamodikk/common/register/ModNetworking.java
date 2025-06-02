@@ -1,13 +1,9 @@
 package com.github.nalamodikk.common.register;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.packet.client.ManaUpdatePacketClient;
+import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.*;
-import com.github.nalamodikk.system.nara.network.client.NaraSystemIntroMessagePacket;
-import com.github.nalamodikk.system.nara.network.client.OpenNaraInitScreenPacket;
 import com.github.nalamodikk.system.nara.network.server.NaraBindRequestPacket;
-import com.github.nalamodikk.system.nara.network.server.NaraSyncPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
