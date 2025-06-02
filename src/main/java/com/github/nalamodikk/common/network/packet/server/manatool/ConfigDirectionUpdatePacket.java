@@ -45,14 +45,10 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, IOH
                     ConfigDirectionUpdatePacket::new
             );
 
-
-
-
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
-
 
     public static void handle(ConfigDirectionUpdatePacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
@@ -100,14 +96,9 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, IOH
         });
     }
 
-
-
     public static void registerTo(PayloadRegistrar registrar) {
         registrar.playToServer(TYPE, STREAM_CODEC, ConfigDirectionUpdatePacket::handle);
     }
 
-    public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar(MagicalIndustryMod.MOD_ID)
-                .playToServer(TYPE, STREAM_CODEC, ConfigDirectionUpdatePacket::handle);
-    }
+
 }

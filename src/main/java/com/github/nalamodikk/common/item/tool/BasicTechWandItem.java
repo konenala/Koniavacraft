@@ -129,8 +129,7 @@ public class BasicTechWandItem extends Item {
 
                     BlockEntity blockEntity = level.getBlockEntity(pos);
                     if (blockEntity != null) {
-                        PacketDistributor.sendToPlayer((ServerPlayer) player,
-                                new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), face, next)); // ✅ 改為傳 IOType
+                        PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(pos, face, next));
                     }
 
                     player.displayClientMessage(Component.translatable(
