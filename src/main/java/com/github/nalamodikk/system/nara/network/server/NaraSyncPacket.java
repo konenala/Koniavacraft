@@ -1,7 +1,7 @@
-package com.github.nalamodikk.system.nara.network;
+package com.github.nalamodikk.system.nara.network.server;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.system.nara.network.client.NaraSyncPacketclient;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -24,8 +24,17 @@ public record NaraSyncPacket(boolean isBound) implements CustomPacketPayload {
         return TYPE;
     }
 
-    public static void registerTo(PayloadRegistrar registrar) {
+    public static void registerToClient(PayloadRegistrar registrar) {
         registrar.playToClient(TYPE, STREAM_CODEC, NaraSyncPacketclient::handleNaraSync);
     }
+
+
+    // ✅ 正確範本
+    public static void registerToServer(PayloadRegistrar registrar) {
+        registrar.playToClient(TYPE, STREAM_CODEC, (packet, context) -> {});
+    }
+
+
+
 
 }

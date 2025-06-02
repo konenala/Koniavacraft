@@ -1,9 +1,10 @@
 package com.github.nalamodikk.common.register;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.network.packet.client.ManaUpdatePacketClient;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.system.nara.network.OpenNaraInitScreenPacket;
+import com.github.nalamodikk.system.nara.network.server.NaraSyncPacket;
+import com.github.nalamodikk.system.nara.network.client.NaraSystemIntroMessagePacket;
+import com.github.nalamodikk.system.nara.network.client.OpenNaraInitScreenPacket;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,6 +20,8 @@ public class ModNetworkingClient {
         ManaUpdatePacket.registerClientOnly(registrar);
         // 打開玩家第一次登入的GUI
         OpenNaraInitScreenPacket.registerToClient(registrar);
+        NaraSystemIntroMessagePacket.registerToClient(registrar);
+        NaraSyncPacket.registerToClient(registrar); // ✅ 完整放這沒問題
 
     }
 }

@@ -52,11 +52,6 @@
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
 
-        public enum Mode {
-            MANA,
-            ENERGY
-        }
-
         private static final int MAX_MANA = 200000;
         private static final int MAX_ENERGY = 200000;
         private static final int TICK_INTERVAL = 1;

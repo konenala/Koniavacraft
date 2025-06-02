@@ -1,4 +1,4 @@
-package com.github.nalamodikk.system.nara.network;
+package com.github.nalamodikk.system.nara.network.server;
 
 import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.system.nara.util.NaraHelper;
@@ -47,6 +47,13 @@ public record NaraBindRequestPacket(boolean bind) implements CustomPacketPayload
             }
         });
     }
+
+    // ✅ 正確範本
+    public static void registerToServer(PayloadRegistrar registrar) {
+        registrar.playToClient(TYPE, STREAM_CODEC, (packet, context) -> {});
+    }
+
+
 
     public static void send(boolean bind) {
         PacketDistributor.sendToServer(new NaraBindRequestPacket(bind));

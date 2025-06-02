@@ -1,6 +1,6 @@
-package com.github.nalamodikk.system.nara.network;
+package com.github.nalamodikk.system.nara.network.client;
 
-import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.system.nara.network.server.NaraSyncPacket;
 import com.github.nalamodikk.system.nara.util.NaraHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

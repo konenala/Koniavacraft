@@ -1,9 +1,7 @@
-package com.github.nalamodikk.system.nara.network;
+package com.github.nalamodikk.system.nara.network.client;
 
 import com.github.nalamodikk.client.event.NaraIntroSchedulerEvent;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.system.nara.screen.NaraIntroScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -22,6 +20,13 @@ public record OpenNaraInitScreenPacket() implements CustomPacketPayload {
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
+
+
+    // ✅ 正確範本
+    public static void registerToServer(PayloadRegistrar registrar) {
+        registrar.playToClient(TYPE, STREAM_CODEC, (packet, context) -> {});
+    }
+
 
     public static void registerToClient(PayloadRegistrar registrar) {
         registrar.playToClient(TYPE, STREAM_CODEC,

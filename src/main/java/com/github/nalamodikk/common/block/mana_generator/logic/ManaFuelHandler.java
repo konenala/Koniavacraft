@@ -51,7 +51,7 @@ public class ManaFuelHandler {
         }
 
         ItemStack fuel = fuelHandler.getStackInSlot(0);
-        if (fuel.isEmpty()) return false;
+        if (fuel.isEmpty() || fuel.getItem() == null) return false; // ← 加這裡保險
 
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(fuel.getItem());
         FuelRate rate = ManaGenFuelRateLoader.getFuelRateForItem(id);
@@ -85,6 +85,8 @@ public class ManaFuelHandler {
         fuelHandler.extractItem(0, 1, false);
         needsFuel = false; // 燃料已成功啟動，不需再嘗試
         return true;
+
+
     }
 
     public void markNeedsFuel() {
@@ -141,12 +143,18 @@ public class ManaFuelHandler {
     }
 
     public void pauseBurn() {
-        this.isPaused = true;
+        if (!isPaused) {
+            isPaused = true;
+            failedFuelCooldown = Math.max(failedFuelCooldown, 20); // 最少 1 秒後會重試
+            LOGGER.debug("pauseBurn(): machine paused, cooldown = {}", failedFuelCooldown);
+        }
     }
 
+
     public void resumeBurn() {
-        if (burnTime > 0) {
+        if (isPaused) {
             this.isPaused = false;
+            LOGGER.debug("resumeBurn(): machine resumed from pause");
         }
     }
 

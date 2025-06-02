@@ -79,6 +79,11 @@
   "screen.magical_industry.disabled": "Disabled",
   "screen.magical_industry.both": "Input & Output",
 
+  "screen.magical_industry.configure_side.full": "Configured side: %s %s",
+  "screen.magical_industry.hold_shift": "Hold Shift for more information",
+  "screen.magical_industry.debug_world_direction": "World direction key: %s",
+
+
   "screen.magical_industry.nara.bind": "Bind to Nara System",
   "screen.magical_industry.nara.cancel": "Cancel",
 

@@ -7,7 +7,7 @@ import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirecti
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -23,14 +23,15 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConfigMenu> {
 
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/universal_config.png");
-    private static final ResourceLocation BUTTON_TEXTURE_INPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_input.png");
-    private static final ResourceLocation BUTTON_TEXTURE_OUTPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_output.png");
-    private static final ResourceLocation BUTTON_TEXTURE_BOTH = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_both.png");
-    private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/button_config_disabled.png");
+    private static final ResourceLocation BUTTON_TEXTURE_INPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_input.png");
+    private static final ResourceLocation BUTTON_TEXTURE_OUTPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_output.png");
+    private static final ResourceLocation BUTTON_TEXTURE_BOTH = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_both.png");
+    private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_disabled.png");
     private static final int BUTTON_WIDTH = 20;
     private static final int BUTTON_HEIGHT = 20;
     private final EnumMap<Direction, GenericButtonWithTooltip> directionButtonMap = new EnumMap<>(Direction.class);
@@ -80,13 +81,14 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         // [LEFT][FRONT][RIGHT]
         //     [DOWN]
         //     [BACK]
+        int adjustedBaseY = (this.height - this.imageHeight) / 2 + this.imageHeight / 2 - BUTTON_HEIGHT / 2 - 10;
 
-        directionOffsets.put(up,    new int[]{0, -60});
-        directionOffsets.put(down,  new int[]{0, 60});
-        directionOffsets.put(front, new int[]{0, -20});
-        directionOffsets.put(back,  new int[]{0, 90});
-        directionOffsets.put(left,  new int[]{-60, 0});
-        directionOffsets.put(right, new int[]{60, 0});
+        directionOffsets.put(Direction.UP,     new int[]{0, -50});
+        directionOffsets.put(Direction.DOWN,   new int[]{0, 30});
+        directionOffsets.put(front,            new int[]{0, -20});  // ✅ 改這行
+        directionOffsets.put(back,             new int[]{0, 60});
+        directionOffsets.put(left,             new int[]{-60, 0});
+        directionOffsets.put(right,            new int[]{60, 0});
 
         directionButtonMap.clear(); // ← 清空舊的映射
 
@@ -94,7 +96,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
             if (directionOffsets.containsKey(direction)) {
                 int[] offset = directionOffsets.get(direction);
                 int buttonX = baseX + offset[0];
-                int buttonY = baseY + offset[1];
+                int buttonY = adjustedBaseY + offset[1];
 
                 IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
 
@@ -195,7 +197,8 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
 
     private void updateButtonTooltip(GenericButtonWithTooltip button, Direction direction) {
-        button.setTooltip(Tooltip.create(getTooltipText(direction)));
+        button.setTooltip(null); // 禁用靜態 tooltip
+        directionButtonMap.put(direction, button);
     }
 
     private void updateButtonTexture(GenericButtonWithTooltip button, Direction direction) {
@@ -211,14 +214,25 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
     private MutableComponent getTooltipText(Direction direction) {
         IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
-
-        // 取得類型名稱小寫（input、output、both、disabled）
         String configType = type.name().toLowerCase();
 
-        return Component.translatable("screen.magical_industry.configure_side", direction.getName())
-                .append(" ")
-                .append(Component.translatable("screen.magical_industry." + configType));
+        Component localizedDirection = Component.translatable("direction.magical_industry." + direction.getName());
+        Component modeText = Component.translatable("screen.magical_industry." + configType);
+
+        MutableComponent tooltip = Component.translatable("screen.magical_industry.configure_side.full", localizedDirection, modeText);
+
+        // Shift 顯示進階資訊
+        if (Screen.hasShiftDown()) {
+            tooltip.append("\n")
+                    .append(Component.translatable("screen.magical_industry.debug_world_direction", direction.getName()));
+        } else {
+            tooltip.append("\n")
+                    .append(Component.translatable("screen.magical_industry.hold_shift"));
+        }
+
+        return tooltip;
     }
+
 
     @Override
     protected void renderBg(GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
@@ -231,6 +245,8 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTicks) {
         this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
+        renderButtonTooltips(pGuiGraphics, pMouseX, pMouseY); // ✅ 加上這行
+
     }
 
     @Override
@@ -239,20 +255,18 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     }
 
     private boolean renderButtonTooltips(GuiGraphics pGuiGraphics, int mouseX, int mouseY) {
-        for (Object widget : this.renderables) {
-            if (widget instanceof GenericButtonWithTooltip button) {
-                if (button.isMouseOver(mouseX, mouseY)) {
-                    Tooltip tooltip = button.getTooltip();
-                    if (tooltip != null) {
-                        List<FormattedCharSequence> formattedComponents = tooltip.toCharSequence(Minecraft.getInstance());
-                        if (!formattedComponents.isEmpty()) {
-                            pGuiGraphics.renderTooltip(Minecraft.getInstance().font, formattedComponents, mouseX, mouseY);
-                            return true;
-                        }
-                    }
-                }
+        for (Map.Entry<Direction, GenericButtonWithTooltip> entry : directionButtonMap.entrySet()) {
+            Direction direction = entry.getKey();
+            GenericButtonWithTooltip button = entry.getValue();
+
+            if (button.isMouseOver(mouseX, mouseY)) {
+                MutableComponent tooltip = getTooltipText(direction);
+                List<FormattedCharSequence> formatted = Minecraft.getInstance().font.split(tooltip, 200);
+                pGuiGraphics.renderTooltip(Minecraft.getInstance().font, formatted, mouseX, mouseY);
+                return true;
             }
         }
         return false;
     }
 }
+

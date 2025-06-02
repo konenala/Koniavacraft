@@ -3,11 +3,9 @@ package com.github.nalamodikk.system.nara.screen;
 
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.system.nara.network.NaraBindRequestPacket;
+import com.github.nalamodikk.system.nara.network.server.NaraBindRequestPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

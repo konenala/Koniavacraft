@@ -92,6 +92,9 @@
   "screen.magical_industry.nara.warning": "此操作無法復原，請審慎選擇。",
   "screen.magical_industry.nara.screen_title": "娜拉系統初始化",
 
+  "screen.magical_industry.configure_side.full": "配置方向：%s %s",
+  "screen.magical_industry.hold_shift": "按住 Shift 顯示進階資訊",
+  "screen.magical_industry.debug_world_direction": "世界方向代碼：%s",
 
 
 

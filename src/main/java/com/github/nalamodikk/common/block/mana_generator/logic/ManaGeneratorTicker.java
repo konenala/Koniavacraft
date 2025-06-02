@@ -1,13 +1,17 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
+import com.github.nalamodikk.common.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
+import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerLevel;
+import org.slf4j.Logger;
 
 public class ManaGeneratorTicker {
     private final ManaGeneratorBlockEntity machine;
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public ManaGeneratorTicker(ManaGeneratorBlockEntity machine) {
         this.machine = machine;
@@ -19,11 +23,18 @@ public class ManaGeneratorTicker {
 
         fuelHandler.tickCooldown();
 
+        // ✅ 若燃燒已停、未在 cooldown、卻處於 pause → 重設需要燃料
+        if (!fuelHandler.isBurning() && !fuelHandler.isCoolingDown() && fuelHandler.isPaused()) {
+            LOGGER.debug("[FuelSafety] Recovering from paused-but-not-cooling state");
+            fuelHandler.markNeedsFuel(); // ✅ 強制再試一次
+            fuelHandler.setPaused(false);
+        }
+
+
         if (!fuelHandler.isBurning()) {
             if (!fuelHandler.tryConsumeFuel()) {
                 machine.getStateManager().setWorking(false);
                 machine.updateBlockActiveState(false);
-                changed = true;
                 // 不返回，因為 cooldown 可能剛 tick 結束，可以立即進入發電階段
             }
         }
@@ -67,6 +78,8 @@ public class ManaGeneratorTicker {
         if (changed) {
             machine.sync(); // ✅ 只在必要時同步
         }
+
+
     }
 
 
