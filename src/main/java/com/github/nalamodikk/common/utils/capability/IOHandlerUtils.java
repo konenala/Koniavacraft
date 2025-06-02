@@ -11,10 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class IOHandlerUtils {
 
@@ -41,56 +38,69 @@ public class IOHandlerUtils {
         return config.getOrDefault(dir, IOType.DISABLED).canInsert();
     }
 
-    public static void extractManaFromNeighbors(Level level, BlockPos pos, IUnifiedManaHandler selfStorage, EnumMap<Direction, IOType> config) {
-        if (selfStorage.getManaStored() >= selfStorage.getMaxManaStored()) return;
+    public static void extractManaFromNeighbors(Level level, BlockPos pos, IUnifiedManaHandler selfStorage, EnumMap<Direction, IOType> config, int maxExtractPerTick) {
+        if (level.isClientSide) return; // 🛑 客戶端不執行
+        if (selfStorage == null || selfStorage.getManaStored() >= selfStorage.getMaxManaStored()) return; // 🛑 滿了或異常
 
         long remainingCapacity = selfStorage.getMaxManaStored() - selfStorage.getManaStored();
 
-        // 📌 收集所有可抽取方向，依鄰居的 mana 多寡排序
-        List<Map.Entry<Direction, IUnifiedManaHandler>> validSources = new ArrayList<>();
+        List<Direction> inputs = config.entrySet().stream()
+                .filter(e -> e.getValue() == IOType.INPUT || e.getValue() == IOType.BOTH)
+                .map(Map.Entry::getKey)
+                .toList();
 
-        for (Map.Entry<Direction, IOType> entry : config.entrySet()) {
-            Direction dir = entry.getKey();
-            if (entry.getValue() != IOType.INPUT) continue;
+        // 🧠 依據鄰居 mana 多寡排序（魔力多優先）
+        List<Neighbor> neighbors = new ArrayList<>();
 
+        for (Direction dir : inputs) {
             BlockPos neighborPos = pos.relative(dir);
             Direction neighborFacing = dir.getOpposite();
+
             BlockEntity neighborEntity = level.getBlockEntity(neighborPos);
             if (neighborEntity == null) continue;
 
             if (neighborEntity instanceof IConfigurableBlock configurable) {
-                if (configurable.getIOMap().getOrDefault(neighborFacing, IOType.DISABLED) != IOType.OUTPUT) continue;
+                IOType neighborSetting = configurable.getIOMap().getOrDefault(neighborFacing, IOType.DISABLED);
+                if (neighborSetting != IOType.OUTPUT && neighborSetting != IOType.BOTH) continue;
             }
 
-            IUnifiedManaHandler neighbor = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
-            if (neighbor == null || neighbor.getManaStored() <= 0) continue;
+            IUnifiedManaHandler neighborStorage = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
+            if (neighborStorage == null || neighborStorage.getManaStored() <= 0) continue;
 
-            validSources.add(Map.entry(dir, neighbor));
+            neighbors.add(new Neighbor(dir, neighborStorage));
         }
 
-        // 📌 依照鄰居儲存的 mana 倒序排序（多的優先）
-        validSources.sort((a, b) -> Long.compare(b.getValue().getManaStored(), a.getValue().getManaStored()));
+        // 🔽 依據鄰居儲存量排序（多的排前面）
+        neighbors.sort(Comparator.comparingLong(n -> -n.handler().getManaStored()));
 
-        for (Map.Entry<Direction, IUnifiedManaHandler> source : validSources) {
-            Direction dir = source.getKey();
-            IUnifiedManaHandler neighbor = source.getValue();
+        for (Neighbor entry : neighbors) {
+            Direction dir = entry.direction();
+            IUnifiedManaHandler neighbor = entry.handler();
 
-            long tryExtract = Math.min(remainingCapacity, 50); // 可改為動態計算
-            long extracted = neighbor.extractMana((int) tryExtract, ManaAction.get(false));
-            if (extracted <= 0) continue;
+            // 🧪 預先模擬最大可抽取量（這裡寫死為 50，可調整）
+            long toExtract = Math.min(maxExtractPerTick, remainingCapacity);
+            long simulatedExtract = neighbor.extractMana((int) toExtract, ManaAction.get(true));
+            if (simulatedExtract <= 0) continue;
 
+            long simulatedInsert = selfStorage.receiveMana((int) simulatedExtract, ManaAction.get(true));
+            if (simulatedInsert <= 0) continue;
+
+            // ✅ 正式抽取與注入
+            long extracted = neighbor.extractMana((int) simulatedInsert, ManaAction.get(false));
             long inserted = selfStorage.receiveMana((int) extracted, ManaAction.get(false));
+
             if (inserted > 0 && level.getBlockEntity(pos) instanceof BlockEntity be) {
-                be.setChanged();
-                return; // 每 tick 僅抽一面
+                be.setChanged(); // 標記更新
             }
 
+            // 🔁 更新剩餘容量，若已滿就停止
             remainingCapacity -= inserted;
             if (remainingCapacity <= 0) break;
         }
     }
 
-
+    // 放在工具類或內部類內也可以
+    public record Neighbor(Direction direction, IUnifiedManaHandler handler) {}
 
 
     public static void extractEnergyFromNeighbors(Level level, BlockPos pos, IEnergyStorage selfStorage, EnumMap<Direction, IOType> config, int maxPerSide) {

@@ -39,7 +39,6 @@ public class ModDataComponents {
                     )
                     .build();
 
-
     public static final DataComponentType<BlockPos> SAVED_BLOCK_POS =
             DataComponentType.<BlockPos>builder()
                     .persistent(BlockPos.CODEC)

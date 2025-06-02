@@ -61,12 +61,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     }
 
     private void extractManaFromNeighbors() {
-        IOHandlerUtils.extractManaFromNeighbors(
-                level,
-                worldPosition,
-                manaStorage,
-                directionConfig,
-                50 // 每面最多提取的 mana 數量
+        IOHandlerUtils.extractManaFromNeighbors(level, worldPosition, manaStorage, directionConfig, 50 // 每面最多提取的 mana 數量
         );
     }
 
