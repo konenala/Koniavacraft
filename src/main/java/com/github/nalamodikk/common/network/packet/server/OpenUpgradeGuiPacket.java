@@ -4,6 +4,7 @@ import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,8 +18,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.slf4j.Logger;
 
 public record OpenUpgradeGuiPacket(BlockPos pos) implements CustomPacketPayload {
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final Type<OpenUpgradeGuiPacket> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "open_upgrade_gui"));
