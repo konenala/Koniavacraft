@@ -70,9 +70,6 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         );
     }
 
-
-
-
     public void updateCraftingResult() {
         if (level == null || level.isClientSide()) return;
 
