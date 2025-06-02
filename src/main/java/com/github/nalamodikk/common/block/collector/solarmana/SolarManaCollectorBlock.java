@@ -1,13 +1,11 @@
-package com.github.nalamodikk.common.block.collector.manacollector;
+package com.github.nalamodikk.common.block.collector.solarmana;
 
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
 import com.github.nalamodikk.common.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

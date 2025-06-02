@@ -13,8 +13,8 @@ package com.github.nalamodikk.common.register;
  */
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorBlockEntity;
-import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorMenu;
+import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorMenu;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;

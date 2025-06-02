@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.collector.manacollector;
+package com.github.nalamodikk.common.block.collector.solarmana;
 
 import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;

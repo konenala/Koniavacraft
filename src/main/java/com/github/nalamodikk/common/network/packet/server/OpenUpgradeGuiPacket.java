@@ -51,8 +51,11 @@ public record OpenUpgradeGuiPacket(BlockPos pos) implements CustomPacketPayload 
                 player.openMenu(new SimpleMenuProvider(
                         (id, inv, p) -> new UpgradeMenu(id, inv, machine.getUpgradeInventory(), machine),
                         Component.translatable("screen.magical_industry.upgrade.title")
+
                 ), buf -> buf.writeBlockPos(packet.pos()));
             }
+            LOGGER.info("[OpenUpgradeGuiPacket] Opening upgrade GUI at {}", packet.pos());
+
         });
     }
 

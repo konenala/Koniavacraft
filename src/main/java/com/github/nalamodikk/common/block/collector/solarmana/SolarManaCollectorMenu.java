@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.block.collector.manacollector;
+package com.github.nalamodikk.common.block.collector.solarmana;
 
 
-import com.github.nalamodikk.common.block.collector.manacollector.sync.SolarCollectorSyncHelper;
+import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeSlot;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;

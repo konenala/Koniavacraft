@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.block.collector.manacollector.sync;
+package com.github.nalamodikk.common.block.collector.solarmana.sync;
 
-import com.github.nalamodikk.common.block.collector.manacollector.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.sync.MachineSyncManager;
 import net.minecraft.world.inventory.ContainerData;
 
