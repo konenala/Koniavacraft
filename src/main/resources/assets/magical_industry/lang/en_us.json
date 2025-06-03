@@ -80,8 +80,8 @@
 
 
   "message.magical_industry.add_mana_success": "Added 10 mana!",
-  "message.magical_industry.block_rotated_facing": "Block rotated! (FACING)",
-  "message.magical_industry.block_rotated_horizontal": "Block rotated! (HORIZONTAL_FACING)",
+  "message.magical_industry.block_rotated_facing": "Block rotated! ",
+  "message.magical_industry.block_rotated_horizontal": "Block rotated! ",
   "message.magical_industry.block_cannot_rotate": "Block cannot be rotated!",
   "message.magical_industry.tech_wand.mode.configure_input": "Configure Input Mode",
   "message.magical_industry.tech_wand.mode.configure_output": "Configure Output Mode",
@@ -101,8 +101,8 @@
   "direction.magical_industry.west": "West",
   "direction.magical_industry.east": "East",
 
-  "screen.magical_industry.upgrade.speed": "Speed Upgrade: %s",
-  "screen.magical_industry.upgrade.efficiency": "Efficiency Upgrade: %s",
+  "screen.magical_industry.upgrade.speed": "Speed : %s",
+  "screen.magical_industry.upgrade.efficiency": "Efficiency : %s",
 
 
   "screen.magical_industry.configure_io": "Configure Input and Output",

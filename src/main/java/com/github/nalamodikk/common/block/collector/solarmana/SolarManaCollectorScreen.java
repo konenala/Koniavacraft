@@ -108,6 +108,7 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
     }
 
 
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 背景畫面
@@ -115,11 +116,32 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         this.renderBg(guiGraphics, partialTick, mouseX, mouseY); // 你定義的 GUI 背景（紋理）
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);  // 基礎 Slot + 按鈕處理
+
+
         Component speedLabel = Component.translatable("screen.magical_industry.upgrade.speed", menu.getSpeedLevel());
         Component efficiencyLabel = Component.translatable("screen.magical_industry.upgrade.efficiency", menu.getEfficiencyLevel());
 
-        guiGraphics.drawString(font, speedLabel, leftPos + 10, topPos + 60, 0xFFFFFF, false);
-        guiGraphics.drawString(font, efficiencyLabel, leftPos + 10, topPos + 70, 0xFFFFFF, false);
+        float scale = 0.8f;
+        int drawX = leftPos + 22; // ❗你可以調整這個 X（越大越靠右）
+        int drawY1 = topPos + 20;
+        int drawY2 = topPos + 30;
+
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(scale, scale, 1.0f);
+
+        guiGraphics.drawString(font, speedLabel,
+                (int)(drawX / scale),
+                (int)(drawY1 / scale),
+                0xFFFFFF, false);
+
+        guiGraphics.drawString(font, efficiencyLabel,
+                (int)(drawX / scale),
+                (int)(drawY2 / scale),
+                0xFFFFFF, false);
+
+        guiGraphics.pose().popPose();
+
+
         this.renderTooltip(guiGraphics, mouseX, mouseY); // 工具提示（例如滑鼠移到物品上）
         if (isHoveringManaBar(mouseX, mouseY)) {
             guiGraphics.renderTooltip(this.font, Component.translatable("tooltip.mana", this.menu.getManaStored(), this.menu.getMaxMana()), mouseX, mouseY);
