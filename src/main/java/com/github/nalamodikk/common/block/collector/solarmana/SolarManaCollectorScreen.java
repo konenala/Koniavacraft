@@ -95,7 +95,7 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
                 this.leftPos + 150, this.topPos + 5, // 位置
                 18, 18, // 尺寸
                 Component.empty(),
-                ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/upgrade_button.png"),
+                ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/upgrade_button.png"),
                 18, 18, // 紋理尺寸
                 button -> {
                     // 傳送封包：打開 Upgrade GUI

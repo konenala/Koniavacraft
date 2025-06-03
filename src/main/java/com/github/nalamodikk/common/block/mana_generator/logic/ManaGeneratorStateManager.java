@@ -25,9 +25,10 @@ public class ManaGeneratorStateManager {
         }
     }
 
-    public void setWorking(boolean working) {
+    public boolean setWorking(boolean working) {
         this.isWorking = working;
 
+        return working;
     }
 
     public int getCurrentModeIndex() {

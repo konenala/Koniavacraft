@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.mana_crafting;
 import com.github.nalamodikk.client.screenAPI.DynamicTooltip;
 import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.common.utils.gui.GuiRenderUtils;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -42,7 +43,7 @@ public class ManaCraftingTableCategory implements IRecipeCategory<ManaCraftingTa
     public ManaCraftingTableCategory(IGuiHelper helper) {
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get()));
         // 使用完整的魔力条纹理
-        this.manaCostDrawable = helper.createDrawable(MANA_BAR_TEXTURE, 0, 0, 16, 16);  // 使用整张魔力条纹理，指定区域大小
+        this.manaCostDrawable = helper.createDrawable(MANA_BAR_TEXTURE, 0, 0, 11, 49);  // 使用整张魔力条纹理，指定区域大小
     }
 
     @Override
@@ -114,10 +115,19 @@ public class ManaCraftingTableCategory implements IRecipeCategory<ManaCraftingTa
 
         int filledHeight = (int)((manaCost / (float) ManaCraftingTableBlockEntity.MAX_MANA) * barHeight);
         int filledY = barY + barHeight - filledHeight;
-        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f); // 重設為白色，避免影響之後的 blit/draw
+        // 前提：你已經有 PoseStack，可從 guiGraphics.pose() 取得
+        GuiRenderUtils renderUtils = new GuiRenderUtils(graphics.pose());
 
-        Minecraft.getInstance().getTextureManager().bindForSetup(MANA_BAR_TEXTURE);
-        graphics.blit(MANA_BAR_TEXTURE, barX, filledY, 0, barHeight - filledHeight, barWidth,filledHeight);
+        // 直接使用 blitWithColor 取代 setColor + bind + blit
+        renderUtils.blitWithColor(
+                MANA_BAR_TEXTURE,
+                barX, filledY,                // 左上角位置
+                barWidth, filledHeight,       // 寬度與高度（只畫填滿的部分）
+                0f, (barHeight - filledHeight) / (float) barHeight,  // u1, v1 （V座標要往下偏）
+                1f, 1f,                        // u2, v2 （畫整張貼圖寬）
+                1.0f, 1.0f, 1.0f, 1.0f         // 顏色為白色、不透明
+        );
+
 
         // 檢查滑鼠是否在指定區域內
         int x = 11;
