@@ -58,9 +58,6 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
     }
 
 
-
-
-
     public ManaCraftingMenu(int containerId, Inventory playerInventory, IItemHandler itemHandler, ContainerLevelAccess access, Level level) {
         super(ModMenuTypes.MANA_CRAFTING_MENU.get(), containerId);
         this.access = access;
@@ -85,7 +82,7 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
         // 設置 3x3 合成槽
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                this.addSlot(new SlotItemHandler(itemHandler, j + i * 3, 30 + j * 18, 17 + i * 18));
+                this.addSlot(new UpdatingSlotItemHandler(itemHandler, j + i * 3, 30 + j * 18, 17 + i * 18, this));
             }
         }
 

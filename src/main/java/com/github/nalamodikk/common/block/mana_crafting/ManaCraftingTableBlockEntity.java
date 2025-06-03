@@ -8,6 +8,7 @@ import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.register.ModRecipes;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
@@ -20,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -64,7 +66,6 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         IOHandlerUtils.extractManaFromNeighbors(level, worldPosition, manaStorage, directionConfig, 50 // 每面最多提取的 mana 數量
         );
     }
-
     public void updateCraftingResult() {
         if (level == null || level.isClientSide()) return;
 
@@ -73,7 +74,8 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
             input.setItem(i, itemHandler.getStackInSlot(i));
         }
 
-        Optional<ManaCraftingTableRecipe> recipe = getCurrentRecipe();
+        Optional<ManaCraftingTableRecipe> recipe = level.getRecipeManager()
+                .getRecipeFor(ModRecipes.MANA_CRAFTING_TYPE.get(), input, level).map(RecipeHolder::value);
 
         if (recipe.isPresent()) {
             ItemStack result = recipe.get().assemble(input, level.registryAccess());
@@ -81,7 +83,10 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         } else {
             itemHandler.setStackInSlot(OUTPUT_SLOT, ItemStack.EMPTY);
         }
+
+        setChanged();
     }
+
 
 
     public void craftItem(Player player) {

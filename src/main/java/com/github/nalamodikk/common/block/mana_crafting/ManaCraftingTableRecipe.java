@@ -27,17 +27,62 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
     private final ItemStack result;
     private final int manaCost;
     private final boolean isShaped;
+    // 保證這兩個欄位都是可變結構
     private final List<String> pattern = new ArrayList<>();
     private final Map<String, Ingredient> key = new HashMap<>();
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManaCraftingTableRecipe.class);
 
-    public ManaCraftingTableRecipe(ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result, int manaCost, boolean isShaped) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaCraftingTableRecipe.class);
+    private final Ingredient[][] patternMatrix;
+
+    public ManaCraftingTableRecipe(ResourceLocation id,NonNullList<Ingredient> ingredients,ItemStack result,int manaCost,boolean isShaped,List<String> patternFromConstructor, Map<String, Ingredient> keyFromConstructor) {
         this.id = id;
         this.ingredients = ingredients;
         this.result = result;
         this.manaCost = manaCost;
         this.isShaped = isShaped;
+
+        if (isShaped) {
+            this.pattern.addAll(patternFromConstructor);
+            this.key.putAll(keyFromConstructor);
+            this.patternMatrix = buildMatrixFromPattern();
+        } else {
+            this.patternMatrix = new Ingredient[0][0]; // 不會被用到
+        }
     }
+    public ManaCraftingTableRecipe(
+            ResourceLocation id,
+            List<String> pattern,
+            Map<String, Ingredient> key,
+            ItemStack result,
+            int manaCost
+    ) {
+        this.id = id;
+        this.pattern.addAll(pattern);
+        this.key.putAll(key);
+        this.result = result;
+        this.manaCost = manaCost;
+        this.isShaped = true;
+
+        this.patternMatrix = buildMatrixFromPattern();
+        this.ingredients = flattenMatrix(patternMatrix);
+    }
+
+
+
+    public ManaCraftingTableRecipe( ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result, int manaCost, boolean isShaped) {
+        this.id = id;
+        this.ingredients = ingredients;
+        this.result = result;
+        this.manaCost = manaCost;
+        this.isShaped = isShaped;
+
+        if (isShaped) {
+            throw new IllegalStateException("❌ Shaped 請使用 pattern + key 建構子！");
+        } else {
+            this.patternMatrix = new Ingredient[0][0];
+        }
+    }
+
 
     public ManaCraftingTableRecipe withId(ResourceLocation id) {
         this.id = id;
@@ -46,9 +91,6 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
 
     @Override
     public boolean matches(ManaCraftingInput input, Level level) {
-        if (level.isClientSide()) {
-            return false;
-        }
 
         if (input.getContainerSize() != 9) {
             return false;
@@ -96,6 +138,54 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
             return remainingIngredients.isEmpty() && usedSlotCount == ingredients.size();
         }
     }
+
+    private Ingredient[][] buildMatrixFromPattern() {
+        int height = pattern.size();
+        int width = pattern.get(0).length();
+        Ingredient[][] matrix = new Ingredient[height][width];
+        for (int y = 0; y < height; y++) {
+            String line = pattern.get(y);
+            for (int x = 0; x < width; x++) {
+                String symbol = line.substring(x, x + 1);
+                Ingredient ing = key.getOrDefault(symbol, Ingredient.EMPTY);
+                matrix[y][x] = ing;
+            }
+        }
+        return matrix;
+    }
+
+    private NonNullList<Ingredient> flattenMatrix(Ingredient[][] matrix) {
+        NonNullList<Ingredient> list = NonNullList.withSize(9, Ingredient.EMPTY);
+        for (int y = 0; y < matrix.length; y++) {
+            for (int x = 0; x < matrix[y].length; x++) {
+                list.set(y * 3 + x, matrix[y][x]);
+            }
+        }
+        return list;
+    }
+
+
+    private boolean matchesPattern(ManaCraftingInput input, int xOffset, int yOffset, boolean mirrored) {
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+                int relX = x - xOffset;
+                int relY = y - yOffset;
+                Ingredient expected = Ingredient.EMPTY;
+
+                if (relX >= 0 && relY >= 0 && relX < patternMatrix[0].length && relY < patternMatrix.length) {
+                    int patternX = mirrored ? patternMatrix[0].length - relX - 1 : relX;
+                    expected = patternMatrix[relY][patternX];
+                }
+
+                ItemStack actual = input.getItem(x + y * 3);
+                if (!expected.test(actual)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 
     @Override
     public ItemStack assemble(ManaCraftingInput input, HolderLookup.Provider registries) {
@@ -152,35 +242,20 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
     public static ManaCraftingTableRecipe createShapeless(List<Ingredient> ingredients, ItemStack result, int manaCost) {
         NonNullList<Ingredient> list = NonNullList.copyOf(ingredients);
 
-        return new ManaCraftingTableRecipe(null, list, result.copy(), manaCost, false);
+        return new ManaCraftingTableRecipe(null, list, result.copy(), manaCost, false
+        );
+
     }
 
     public static ManaCraftingTableRecipe createShaped(List<String> pattern, Map<Character, Ingredient> key, ItemStack result, int manaCost) {
-        NonNullList<Ingredient> resolvedIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
-
-        for (int row = 0; row < pattern.size(); row++) {
-            String line = pattern.get(row);
-            for (int col = 0; col < line.length(); col++) {
-                char c = line.charAt(col);
-                if (c == ' ') {
-                    continue; // ✅ 空格視為空白格
-                }
-                if (!key.containsKey(c)) {
-                    throw new IllegalArgumentException("❌ pattern 使用了未定義的符號 '" + c + "'，請使用 define(...) 定義！");
-                }
-                Ingredient ing = key.get(c); // ✅ 已保證存在
-                resolvedIngredients.set(row * 3 + col, ing);
-            }
-        }
-
-        ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(null, resolvedIngredients, result.copy(), manaCost, true);
-        recipe.pattern.addAll(pattern);
+        Map<String, Ingredient> keyMap = new HashMap<>();
         for (var entry : key.entrySet()) {
-            recipe.key.put(String.valueOf(entry.getKey()), entry.getValue()); // ✅ 字元轉字串
+            keyMap.put(String.valueOf(entry.getKey()), entry.getValue()); // 將 char 轉成 string
         }
 
-        return recipe;
+        return new ManaCraftingTableRecipe(null, pattern, keyMap, result.copy(), manaCost);
     }
+
 
 
     public static ManaCraftingTableRecipe fromCodec(
