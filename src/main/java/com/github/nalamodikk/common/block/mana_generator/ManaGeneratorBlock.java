@@ -52,8 +52,6 @@ public class ManaGeneratorBlock extends BaseMachineBlock {
         builder.add(FACING, ACTIVE); // 註冊 ACTIVE 屬性
     }
 
-
-
     @Override
     public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
         return state.getValue(ACTIVE) ? 15 : 0; // 運作時發光，否則不發光
@@ -88,7 +86,8 @@ public class ManaGeneratorBlock extends BaseMachineBlock {
 
             // 如果是 ManaCraftingTableBlockEntity，掉落物品
             if (blockEntity instanceof ManaGeneratorBlockEntity) {
-                ((ManaGeneratorBlockEntity) blockEntity).drops(level, pos);  // 掉落方塊內的物品
+                ((ManaGeneratorBlockEntity) blockEntity).drops(level, pos);    // 掉落方塊內的物品
+                level.invalidateCapabilities(pos); // ❗❗通知 NeoForge: 這個位置的能力不可靠了，清除快取！
             }
             
         }

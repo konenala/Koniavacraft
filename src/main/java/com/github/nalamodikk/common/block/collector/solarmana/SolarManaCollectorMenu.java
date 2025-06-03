@@ -29,14 +29,7 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
 
         this.syncHelper.syncFrom(blockEntity);
         this.addDataSlots(syncHelper.getContainerData()); // ✅ 現在就找得到方法了
-        if (blockEntity instanceof IUpgradeableMachine machine) {
-            Container upgrades = machine.getUpgradeInventory();
-            checkContainerSize(upgrades, 4);
-            this.addSlot(new UpgradeSlot(upgrades, 0, 47, 37));
-            this.addSlot(new UpgradeSlot(upgrades, 1, 65, 37));
-            this.addSlot(new UpgradeSlot(upgrades, 2, 83, 37));
-            this.addSlot(new UpgradeSlot(upgrades, 3, 101, 37));
-        }
+
         addPlayerInventorySlots(inv, 8, 84);
         addPlayerHotbarSlots(inv, 8, 142);
     }
@@ -89,5 +82,14 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
     public boolean isGenerating() {
         return syncHelper.isGenerating();
     }
+
+    public int getSpeedLevel() {
+        return syncHelper.getRawSyncManager().get(SolarCollectorSyncHelper.SyncIndex.SPEED_LEVEL.ordinal());
+    }
+
+    public int getEfficiencyLevel() {
+        return syncHelper.getRawSyncManager().get(SolarCollectorSyncHelper.SyncIndex.EFFICIENCY_LEVEL.ordinal());
+    }
+
 
 }

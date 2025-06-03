@@ -107,7 +107,7 @@
             super.drops(level, pos);
             if (level == null || level.isClientSide) return;
 
-            IItemHandler handler = this.getItemHandler();
+            IItemHandler handler = this.fuelHandler;
             if (handler == null) return;
 
             for (int slot = 0; slot < handler.getSlots(); slot++) {

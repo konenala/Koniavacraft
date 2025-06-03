@@ -11,6 +11,7 @@ import com.github.nalamodikk.common.utils.nbt.NbtUtils;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
+import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
@@ -24,6 +25,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.HolderLookup;
 
@@ -31,13 +33,14 @@ import org.slf4j.Logger;
 
 import java.util.EnumMap;
 
-public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock implements IConfigurableBlock, MenuProvider {
+public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock implements IConfigurableBlock, MenuProvider , IUpgradeableMachine {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final int MAX_MANA = 80000;
     private final SolarCollectorSyncHelper syncHelper = new SolarCollectorSyncHelper();
     private boolean generating = false;
+    public static final int UPGRADE_SLOT_COUNT = 4;
 
-    private final UpgradeInventory upgrades = new UpgradeInventory(4);
+    private final UpgradeInventory upgrades = new UpgradeInventory(UPGRADE_SLOT_COUNT);
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
     private static final int BASE_OUTPUT = 5;
 
@@ -56,12 +59,16 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         this.generating = canGenerate();
         syncHelper.syncFrom(this);
 
-        int interval = Math.max(10, 200 - upgrades.getUpgradeCount(UpgradeType.SPEED) * 20);
+        int speedLevel = upgrades.getUpgradeCount(UpgradeType.SPEED);
+        int efficiencyLevel = upgrades.getUpgradeCount(UpgradeType.EFFICIENCY);
+
+        // ⏱ 根據速度升級計算觸發頻率（最低 10 tick）
+        int interval = Math.max(10, 200 - speedLevel * 20);
         if (level.getGameTime() % interval != 0) return;
 
         if (!canGenerate()) return;
 
-        int efficiencyLevel = upgrades.getUpgradeCount(UpgradeType.EFFICIENCY);
+        // 📈 根據效率升級計算產出量（每級 +10%，可改為 log、平方等曲線）
         int amount = (int)(BASE_OUTPUT * (1 + efficiencyLevel * 0.1));
 
         int inserted = manaStorage.insertMana(amount, ManaAction.EXECUTE);
@@ -71,7 +78,13 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
             setChanged();
 
             if (level instanceof ServerLevel server) {
-                server.sendParticles(ParticleTypes.ENCHANT, worldPosition.getX() + 0.5, worldPosition.getY() + 1.1, worldPosition.getZ() + 0.5, 2, 0.2, 0.1, 0.2, 0.0);
+                server.sendParticles(
+                        ParticleTypes.ENCHANT,
+                        worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 1.1,
+                        worldPosition.getZ() + 0.5,
+                        2, 0.2, 0.1, 0.2, 0.0
+                );
             }
         }
     }
@@ -114,6 +127,10 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         return upgrades;
     }
 
+    @Override
+    public BlockEntity getBlockEntity() {
+        return this;
+    }
 
 
     public ManaStorage getManaStorage() {

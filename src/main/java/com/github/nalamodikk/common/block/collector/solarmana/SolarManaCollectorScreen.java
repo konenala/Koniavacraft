@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaCollectorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/solar_mana_collector_gui.png");
@@ -100,6 +101,7 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
                     // 傳送封包：打開 Upgrade GUI
                     BlockPos pos = this.menu.getBlockEntity().getBlockPos();
                     OpenUpgradeGuiPacket.sendToServer(pos);
+
                 },
                 tooltip
         ));
@@ -113,7 +115,11 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         this.renderBg(guiGraphics, partialTick, mouseX, mouseY); // 你定義的 GUI 背景（紋理）
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);  // 基礎 Slot + 按鈕處理
+        Component speedLabel = Component.translatable("screen.magical_industry.upgrade.speed", menu.getSpeedLevel());
+        Component efficiencyLabel = Component.translatable("screen.magical_industry.upgrade.efficiency", menu.getEfficiencyLevel());
 
+        guiGraphics.drawString(font, speedLabel, leftPos + 10, topPos + 60, 0xFFFFFF, false);
+        guiGraphics.drawString(font, efficiencyLabel, leftPos + 10, topPos + 70, 0xFFFFFF, false);
         this.renderTooltip(guiGraphics, mouseX, mouseY); // 工具提示（例如滑鼠移到物品上）
         if (isHoveringManaBar(mouseX, mouseY)) {
             guiGraphics.renderTooltip(this.font, Component.translatable("tooltip.mana", this.menu.getManaStored(), this.menu.getMaxMana()), mouseX, mouseY);

@@ -68,6 +68,9 @@ public class SolarManaCollectorBlock extends BaseMachineBlock {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof SolarManaCollectorBlockEntity collector) {
                 collector.drops(level,pos); // 如果你有 drops() 方法
+                Containers.dropContents(level, pos, collector.getUpgradeInventory());
+                level.invalidateCapabilities(pos); // ❗❗通知 NeoForge: 這個位置的能力不可靠了，清除快取！
+
             }
             super.onRemove(oldState, level, pos, newState, isMoving);
         }

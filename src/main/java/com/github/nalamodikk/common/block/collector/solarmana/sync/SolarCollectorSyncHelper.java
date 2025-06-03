@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.block.collector.solarmana.sync;
 
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.sync.MachineSyncManager;
+import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import net.minecraft.world.inventory.ContainerData;
 
 /**
@@ -12,7 +13,9 @@ public class SolarCollectorSyncHelper {
     public enum SyncIndex {
         MANA,
         MAX_MANA,
-        GENERATING;
+        GENERATING,
+        SPEED_LEVEL,
+        EFFICIENCY_LEVEL;
 
         public static int count() {
             return values().length;
@@ -28,6 +31,8 @@ public class SolarCollectorSyncHelper {
         syncManager.set(SyncIndex.MANA.ordinal(), be.getManaStored());
         syncManager.set(SyncIndex.MAX_MANA.ordinal(), SolarManaCollectorBlockEntity.getMaxMana());
         syncManager.set(SyncIndex.GENERATING.ordinal(), be.isCurrentlyGenerating() ? 1 : 0);
+        syncManager.set(SyncIndex.SPEED_LEVEL.ordinal(), be.getUpgradeInventory().getUpgradeCount(UpgradeType.SPEED));
+        syncManager.set(SyncIndex.EFFICIENCY_LEVEL.ordinal(), be.getUpgradeInventory().getUpgradeCount(UpgradeType.EFFICIENCY));
     }
 
     public ContainerData getContainerData() {

@@ -3,7 +3,6 @@ package com.github.nalamodikk.common.screen.shared;
 
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
