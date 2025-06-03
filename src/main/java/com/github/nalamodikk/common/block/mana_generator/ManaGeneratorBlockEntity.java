@@ -6,9 +6,11 @@
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
     import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
+    import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
     import com.github.nalamodikk.common.capability.ManaStorage;
     import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
     import com.github.nalamodikk.common.register.ModBlockEntities;
+    import com.github.nalamodikk.common.register.ModCapabilities;
     import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
@@ -31,6 +33,9 @@
     import net.minecraft.world.level.block.entity.BlockEntityTicker;
     import net.minecraft.world.level.block.entity.BlockEntityType;
     import net.minecraft.world.level.block.state.BlockState;
+    import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+    import net.neoforged.neoforge.capabilities.Capabilities;
+    import net.neoforged.neoforge.energy.IEnergyStorage;
     import net.neoforged.neoforge.items.IItemHandler;
     import net.neoforged.neoforge.items.ItemStackHandler;
     import org.jetbrains.annotations.Nullable;
@@ -49,6 +54,9 @@
     public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements   GeoBlockEntity {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
+
+        private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, @Nullable Direction>> manaOutputCaches = new EnumMap<>(Direction.class);
+        private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, @Nullable Direction>> energyOutputCaches = new EnumMap<>(Direction.class);
 
         private static final int MAX_MANA = 200000;
         private static final int MAX_ENERGY = 200000;
@@ -174,6 +182,14 @@
         protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.saveAdditional(tag, provider);
             nbtManager.save(tag, provider);
+        }
+
+        @Override
+        public void onLoad() {
+            super.onLoad();
+            if (!this.getLevel().isClientSide()) {
+                initOutputCaches();
+            }
         }
 
         @Override
@@ -336,4 +352,24 @@
             }
         }
 
+
+        public void initOutputCaches() {
+            if (!(level instanceof ServerLevel serverLevel)) return;
+
+            for (Direction dir : Direction.values()) {
+                manaOutputCaches.put(dir, BlockCapabilityCache.create(
+                        ModCapabilities.MANA,
+                        serverLevel,
+                        worldPosition.relative(dir),
+                        dir.getOpposite()
+                ));
+
+                energyOutputCaches.put(dir, BlockCapabilityCache.create(
+                        Capabilities.EnergyStorage.BLOCK,
+                        serverLevel,
+                        worldPosition.relative(dir),
+                        dir.getOpposite()
+                ));
+            }
+        }
     }

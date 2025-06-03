@@ -8,35 +8,38 @@ import org.slf4j.Logger;
 public class ManaGeneratorTicker {
     private final ManaGeneratorBlockEntity machine;
     public static final Logger LOGGER = LogUtils.getLogger();
+    private int tickCounter = 0;
 
     public ManaGeneratorTicker(ManaGeneratorBlockEntity machine) {
         this.machine = machine;
     }
 
     public void tick() {
+        tickCounter++;
+
         ManaFuelHandler fuelHandler = machine.getFuelLogic();
         boolean changed = false;
 
         fuelHandler.tickCooldown();
 
-        // ✅ 若燃燒已停、未在 cooldown、卻處於 pause → 重設需要燃料
         if (!fuelHandler.isBurning() && !fuelHandler.isCoolingDown() && fuelHandler.isPaused()) {
             if (!fuelHandler.hasAttemptedRecovery()) {
                 LOGGER.debug("[FuelSafety] Recovering from paused-but-not-cooling state");
-                fuelHandler.markNeedsFuel(); // ✅ 強制再試一次
+                fuelHandler.markNeedsFuel();
                 fuelHandler.setPaused(false);
-                fuelHandler.markRecoveryAttempted(); // ✅ 標記本次已恢復
+                fuelHandler.markRecoveryAttempted();
             }
         }
-
 
         if (!fuelHandler.isBurning()) {
-            if (!fuelHandler.tryConsumeFuel()) {
-                machine.getStateManager().setWorking(false);
-                machine.updateBlockActiveState(false);
-                // 不返回，因為 cooldown 可能剛 tick 結束，可以立即進入發電階段
+            if (tickCounter % 4 == 0 && !fuelHandler.tryConsumeFuel()) {
+                if (machine.getStateManager().setWorking(false)) {
+                    machine.updateBlockActiveState(false);
+                    changed = true;
+                }
             }
         }
+
         boolean success = false;
 
         if (fuelHandler.isBurning()) {
@@ -48,13 +51,17 @@ public class ManaGeneratorTicker {
 
         if (!success) {
             fuelHandler.pauseBurn();
-            machine.getStateManager().setWorking(false);
-            machine.updateBlockActiveState(false);
-            changed = true;
+            if (machine.getStateManager().setWorking(false)) {
+                machine.updateBlockActiveState(false);
+                changed = true;
+            }
         } else {
             fuelHandler.resumeBurn();
             fuelHandler.tickBurn(true);
-            machine.getStateManager().setWorking(true);
+            if (machine.getStateManager().setWorking(true)) {
+                machine.updateBlockActiveState(true);
+                changed = true;
+            }
 
             if (machine.getLevel() instanceof ServerLevel serverLevel) {
                 if (machine.getOutputThrottle().shouldTryOutput()) {
@@ -68,18 +75,13 @@ public class ManaGeneratorTicker {
                     machine.getOutputThrottle().recordOutputResult(outputSuccess);
                 }
             }
-
-
-            machine.updateBlockActiveState(true);
-            changed = true;
         }
 
         if (changed) {
-            machine.sync(); // ✅ 只在必要時同步
+            machine.sync();
         }
-
-
     }
+
 
 
 }
