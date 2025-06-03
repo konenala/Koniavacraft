@@ -171,8 +171,9 @@
 
   "creativetab.magical_industry_items": "魔法工業-物品",
   "creativetab.magical_industry_blocks": "魔法工業-方塊",
-  "creativetab.magical_industry_modules": "魔法工業-模塊零件"
+  "creativetab.magical_industry_modules": "魔法工業-模塊零件",
 
+  "magical_industry.config.manaRecipeRefreshInterval": "每幾 tick 更新一次魔力合成配方結果（建議值：2～10）"
 
 
 }

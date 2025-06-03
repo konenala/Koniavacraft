@@ -21,9 +21,12 @@ public class ManaGeneratorTicker {
 
         // ✅ 若燃燒已停、未在 cooldown、卻處於 pause → 重設需要燃料
         if (!fuelHandler.isBurning() && !fuelHandler.isCoolingDown() && fuelHandler.isPaused()) {
-            LOGGER.debug("[FuelSafety] Recovering from paused-but-not-cooling state");
-            fuelHandler.markNeedsFuel(); // ✅ 強制再試一次
-            fuelHandler.setPaused(false);
+            if (!fuelHandler.hasAttemptedRecovery()) {
+                LOGGER.debug("[FuelSafety] Recovering from paused-but-not-cooling state");
+                fuelHandler.markNeedsFuel(); // ✅ 強制再試一次
+                fuelHandler.setPaused(false);
+                fuelHandler.markRecoveryAttempted(); // ✅ 標記本次已恢復
+            }
         }
 
 

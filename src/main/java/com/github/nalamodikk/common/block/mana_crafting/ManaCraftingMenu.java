@@ -11,17 +11,19 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.SlotItemHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
+
+import static com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity.TOTAL_SLOTS;
 
 public class ManaCraftingMenu extends AbstractContainerMenu {
     private final ManaCraftingTableBlockEntity blockEntity;
@@ -52,7 +54,7 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
         }
 
         // fallback：沒有 block entity
-        return new ManaCraftingMenu(windowId, playerInventory, new ItemStackHandler(ManaCraftingTableBlockEntity.TOTAL_SLOTS),
+        return new ManaCraftingMenu(windowId, playerInventory, new ItemStackHandler(TOTAL_SLOTS),
                 ContainerLevelAccess.NULL, level);
 
     }
@@ -87,38 +89,40 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
         }
 
         // 設置輸出槽
-        this.addSlot(new SlotItemHandler(itemHandler, OUTPUT_SLOT, 124, 35) {
+        this.addSlot(new UpdatingSlotItemHandler(itemHandler, OUTPUT_SLOT, 124, 35 ,this) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return false; // 輸出槽不允許手動放入物品
             }
 
             @Override
+            public boolean mayPickup(Player player) {
+                return this.hasItem(); // ✅ 這行是你漏掉的關鍵
+            }
+
+            @Override
             public void onTake(Player player, ItemStack stack) {
                 if (blockEntity != null) {
-                    // 獲取當前配方
-                    Optional<ManaCraftingTableRecipe> recipe = blockEntity.getCurrentRecipe();
+                    Optional<RecipeHolder<ManaCraftingTableRecipe>> recipeOpt = blockEntity.getLastMatchedRecipeHolder();
 
-                    // 確保配方存在且魔力充足
-                    if (recipe.isPresent() && blockEntity.hasSufficientMana(recipe.get().getManaCost())) {
-                        blockEntity.consumeMana(recipe.get().getManaCost()); // 消耗魔力
+                    if (recipeOpt.isPresent()) {
+                        ManaCraftingTableRecipe recipe = recipeOpt.get().value();
+                        int manaCost = recipe.getManaCost();
 
-                        // 消耗合成材料
-                        for (int i = INPUT_SLOT_START; i <= INPUT_SLOT_END; i++) {
-                            blockEntity.getItemHandler().extractItem(i, 1, false);
+                        if (blockEntity.hasSufficientMana(manaCost) && blockEntity.tryConsumeMana(manaCost)) {
+                            // ✅ 扣材料
+                            for (int i = INPUT_SLOT_START; i <= INPUT_SLOT_END; i++) {
+                                blockEntity.getItemHandler().extractItem(i, 1, false);
+                            }
+
+                            // ❗ 這裡不建議清空 output，由 updateCraftingResult 決定要不要產物
+                            blockEntity.updateCraftingResult();
                         }
-
-                        // 自動更新合成結果
-                        blockEntity.updateCraftingResult(); // 檢查是否能夠再次合成
                     }
                 }
 
                 super.onTake(player, stack);
             }
-
-
-
-
         });
 
         // 設置玩家的物品欄槽
@@ -134,116 +138,139 @@ public class ManaCraftingMenu extends AbstractContainerMenu {
     }
 
 
+    /**
+     * Handles shift-click output crafting from the output slot.
+     * Supports automatic recipe re-evaluation and continuous crafting
+     * while materials and inventory space are sufficient.
+     */
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = this.slots.get(index);
-        if (slot == null || !slot.hasItem()) {
-            return ItemStack.EMPTY;
-        }
+        if (slot == null || !slot.hasItem()) return ItemStack.EMPTY;
 
-        ItemStack stackInSlot = slot.getItem();
-        ItemStack originalStack = stackInSlot.copy();
-
-        // 如果是合成結果槽
+        ItemStack clickedStack = slot.getItem();
+        ItemStack originalStack = clickedStack.copy();
         if (index == OUTPUT_SLOT) {
-            if (blockEntity == null) {
-                return ItemStack.EMPTY;
-            }
-            if (!blockEntity.hasRecipe()) {
-                return ItemStack.EMPTY;
-            }
+            blockEntity.updateCraftingResult(); // ✅ 確保 lastMatchedRecipe 有內容
+            LOGGER.debug("[QuickMove] Start");
 
+            Optional<ManaCraftingTableRecipe> recipeOpt = blockEntity.getLastMatchedRecipe();
+            if (recipeOpt.isEmpty()) return ItemStack.EMPTY;
 
-            // 嘗試將合成結果移到玩家的物品欄中
-            if (!this.moveItemStackTo(stackInSlot, ManaCraftingTableBlockEntity.TOTAL_SLOTS, this.slots.size(), true)) {
-                return ItemStack.EMPTY;
-            }
+            ManaCraftingTableRecipe recipe = recipeOpt.get();
+            int manaCost = recipe.getManaCost();
+            if (manaCost <= 0) return ItemStack.EMPTY;
 
-            // 執行批量合成的邏輯
-            int maxCraftCount = Integer.MAX_VALUE;
+            // 準備目前的輸入
+            ManaCraftingTableRecipe.ManaCraftingInput input = blockEntity.getManaCraftingInput();
 
-            // 計算可以進行的最大合成次數
-            Optional<ManaCraftingTableRecipe> currentRecipe = blockEntity.getCurrentRecipe();
-            if (currentRecipe.isPresent()) {
-                ManaCraftingTableRecipe recipe = currentRecipe.get();
+            // ✅ 計算最大合成次數：由配方判定哪些材料足夠
+            int maxCraft = recipe.getMaxCraftsPossible(input);
+            maxCraft = Math.min(maxCraft, blockEntity.getManaStored() / manaCost); // 再限制魔力
 
-                // 計算材料可以進行合成的最大次數
-                for (int i = INPUT_SLOT_START; i <= INPUT_SLOT_END; i++) {
-                    ItemStack stack = blockEntity.getItemHandler().getStackInSlot(i);
-                    if (!stack.isEmpty()) {
-                        int maxForThisSlot = stack.getCount() / 1; // 每次合成需要 1 個材料
-                        maxCraftCount = Math.min(maxCraftCount, maxForThisSlot);
-                    } else {
-                        maxCraftCount = 0;
-                        break; // 如果某個槽位沒有材料，無法進行合成
-                    }
+            LOGGER.debug("[QuickMove] maxCraft = {}", maxCraft);
+
+            ItemStack totalResult = ItemStack.EMPTY;
+
+            for (int i = 0; i < maxCraft; i++) {
+                input = blockEntity.getManaCraftingInput(); // 每次重建輸入（已經會 shrink）
+                ItemStack simulated = recipe.assemble(input, player.level().registryAccess());
+                if (simulated.isEmpty()) break;
+
+                // ✅ 扣魔力
+                blockEntity.consumeMana(manaCost);
+
+                // ✅ 扣材料
+                for (int j = INPUT_SLOT_START; j <= INPUT_SLOT_END; j++) {
+                    ItemStack in = blockEntity.getItemHandler().getStackInSlot(j);
+                    if (!in.isEmpty()) in.shrink(1);
                 }
 
-                // 計算魔力可以進行合成的最大次數
-                int maxManaCrafts = blockEntity.getManaStored() / recipe.getManaCost();
-                maxCraftCount = Math.min(maxCraftCount, maxManaCrafts);
+                // ✅ 嘗試搬到背包
+                if (!this.moveItemStackTo(simulated.copy(), TOTAL_SLOTS, this.slots.size(), true)) {
+                    LOGGER.debug("[QuickMove] 背包滿了，中止批次合成");
+                    break;
+                }
 
-                // 進行批量合成
-                for (int i = 0; i < maxCraftCount; i++) {
-                    if (blockEntity.hasRecipe() && blockEntity.hasSufficientMana(recipe.getManaCost())) {
-                        blockEntity.craftItem(player);
-                        ItemStack resultStack = slot.getItem();
-                        if (!this.moveItemStackTo(resultStack, ManaCraftingTableBlockEntity.TOTAL_SLOTS, this.slots.size(), true)) {
-                            break; // 如果無法移動合成結果，退出循環
-                        }
-                    } else {
-                        break;
-                    }
+                if (totalResult.isEmpty()) {
+                    totalResult = simulated.copy();
+                } else if (ItemStack.isSameItemSameComponents(totalResult, simulated)) {
+                    totalResult.grow(simulated.getCount());
+                } else {
+                    LOGGER.debug("[QuickMove] 不同產物 → 中止批次合成");
+                    break;
                 }
             }
 
-            slot.onQuickCraft(stackInSlot, originalStack);
+            blockEntity.setChanged();               // 同步
+            blockEntity.updateCraftingResult();     // 更新產物
+            return totalResult;
         }
-        // 如果是玩家物品欄的槽位
-        else if (index >= ManaCraftingTableBlockEntity.TOTAL_SLOTS) {
-            // 嘗試將物品移動到合成材料槽
-            if (!this.moveItemStackTo(stackInSlot, INPUT_SLOT_START, INPUT_SLOT_END + 1, false)) {
+
+
+
+        // ✅ 玩家背包 → 嘗試放進合成槽
+        if (index >= TOTAL_SLOTS) {
+            if (!this.moveItemStackTo(clickedStack, INPUT_SLOT_START, INPUT_SLOT_END + 1, false)) {
                 return ItemStack.EMPTY;
             }
         }
-        // 如果是合成網格的槽位
+        // ✅ 合成槽 → 移回背包
         else if (index >= INPUT_SLOT_START && index <= INPUT_SLOT_END) {
-            // 將材料移動到玩家物品欄中
-            if (!this.moveItemStackTo(stackInSlot, ManaCraftingTableBlockEntity.TOTAL_SLOTS, this.slots.size(), false)) {
+            if (!this.moveItemStackTo(clickedStack, TOTAL_SLOTS, this.slots.size(), false)) {
                 return ItemStack.EMPTY;
             }
         }
 
-        if (stackInSlot.isEmpty()) {
+        if (clickedStack.isEmpty()) {
             slot.set(ItemStack.EMPTY);
         } else {
             slot.setChanged();
         }
 
-        if (stackInSlot.getCount() == originalStack.getCount()) {
+        if (clickedStack.getCount() == originalStack.getCount()) {
+
             return ItemStack.EMPTY;
         }
 
-        slot.onTake(player, stackInSlot);
+        slot.onTake(player, clickedStack);
         return originalStack;
     }
 
 
 
+    private boolean canInsertIntoPlayerInventory(ItemStack stack) {
+        for (int i = TOTAL_SLOTS; i < this.slots.size(); i++) {
+            Slot slot = this.slots.get(i);
+            if (slot.mayPlace(stack) && slot.hasItem()) {
+                ItemStack existing = slot.getItem();
+                if (ItemStack.isSameItemSameComponents(existing, stack) && existing.getCount() < existing.getMaxStackSize()) {
+                    return true;
+                }
+            } else if (!slot.hasItem()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     @Override
     public void slotsChanged(Container container) {
         super.slotsChanged(container);
-        if (blockEntity != null) {
-            blockEntity.updateCraftingResult(); // 更新合成結果
 
-            // 確保伺服器和客戶端同步
-            blockEntity.setChanged();
-            if (!blockEntity.getLevel().isClientSide()) {
-                BlockState state = blockEntity.getLevel().getBlockState(blockEntity.getBlockPos());
-                blockEntity.getLevel().sendBlockUpdated(blockEntity.getBlockPos(), state, state, 3);
-            }
+        if (blockEntity != null && !blockEntity.getLevel().isClientSide()) {
+            blockEntity.updateCraftingResult(); // ✅ server 更新產物
+
+            blockEntity.setChanged(); // 標記要同步
+            BlockState state = blockEntity.getLevel().getBlockState(blockEntity.getBlockPos());
+            blockEntity.getLevel().sendBlockUpdated(blockEntity.getBlockPos(), state, state, 3);
+        }
+
+        // ✅ ✅ ✅ 客戶端預測顯示結果（只加這一段）
+        if (blockEntity != null && blockEntity.getLevel().isClientSide()) {
+            blockEntity.updateCraftingResult(); // 客戶端顯示產物
         }
     }
 

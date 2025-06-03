@@ -177,6 +177,9 @@
 
   "creativetab.magical_industry_items": "Magical Industry - Items",
   "creativetab.magical_industry_blocks": "Magical Industry - Blocks",
-  "creativetab.magical_industry_modules": "Magical Industry - Modules"
+  "creativetab.magical_industry_modules": "Magical Industry - Modules",
+
+  "magical_industry.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)"
+
 
 }

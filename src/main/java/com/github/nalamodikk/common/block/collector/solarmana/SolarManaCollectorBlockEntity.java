@@ -72,21 +72,20 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         int amount = (int)(BASE_OUTPUT * (1 + efficiencyLevel * 0.1));
 
         int inserted = manaStorage.insertMana(amount, ManaAction.EXECUTE);
-        if (inserted > 0) {
-            OutputHandler.tryOutput((ServerLevel) level, worldPosition, manaStorage, null, ioMap);
+        if (inserted > 0 && level instanceof ServerLevel server) {
+            OutputHandler.tryOutput(server, worldPosition, manaStorage, null, ioMap);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             setChanged();
 
-            if (level instanceof ServerLevel server) {
-                server.sendParticles(
-                        ParticleTypes.ENCHANT,
-                        worldPosition.getX() + 0.5,
-                        worldPosition.getY() + 1.1,
-                        worldPosition.getZ() + 0.5,
-                        2, 0.2, 0.1, 0.2, 0.0
-                );
-            }
+            server.sendParticles(
+                    ParticleTypes.ENCHANT,
+                    worldPosition.getX() + 0.5,
+                    worldPosition.getY() + 1.1,
+                    worldPosition.getZ() + 0.5,
+                    2, 0.2, 0.1, 0.2, 0.0
+            );
         }
+
     }
 
     protected boolean canGenerate() {

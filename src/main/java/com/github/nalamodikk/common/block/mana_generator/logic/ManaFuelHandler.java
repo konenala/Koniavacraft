@@ -26,6 +26,7 @@ public class ManaFuelHandler {
     private int failedFuelCooldown;
     private boolean isPaused;        // 是否暫停（因產出空間滿了）
     private boolean needsFuel = true;
+    private boolean recoveryAttempted = false;
 
 
 
@@ -33,6 +34,19 @@ public class ManaFuelHandler {
         this.fuelHandler = fuelHandler;
         this.stateManager = stateManager;
 
+    }
+
+
+    public boolean hasAttemptedRecovery() {
+        return recoveryAttempted;
+    }
+
+    public void markRecoveryAttempted() {
+        this.recoveryAttempted = true;
+    }
+
+    public void resetRecoveryFlag() {
+        this.recoveryAttempted = false;
     }
 
 
@@ -84,6 +98,8 @@ public class ManaFuelHandler {
         burnTime = currentBurnTime;
         fuelHandler.extractItem(0, 1, false);
         needsFuel = false; // 燃料已成功啟動，不需再嘗試
+        recoveryAttempted = false;
+
         return true;
 
 

@@ -67,6 +67,21 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
         this.ingredients = flattenMatrix(patternMatrix);
     }
 
+    public int getMaxCraftsPossible(ManaCraftingInput input) {
+        int max = Integer.MAX_VALUE;
+        NonNullList<Ingredient> ingredients = this.getIngredients();
+
+        for (int i = 0; i < ingredients.size(); i++) {
+            Ingredient ing = ingredients.get(i);
+            if (ing.isEmpty()) continue;
+
+            ItemStack in = input.getItem(i);
+            if (!ing.test(in)) return 0;
+
+            max = Math.min(max, in.getCount());
+        }
+        return max;
+    }
 
 
     public ManaCraftingTableRecipe( ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result, int manaCost, boolean isShaped) {

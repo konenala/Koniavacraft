@@ -1,7 +1,9 @@
 package com.github.nalamodikk;
 
+import com.github.nalamodikk.common.config.ModCommonConfig;
 import com.github.nalamodikk.common.register.*;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLLoader;
 import org.slf4j.Logger;
 
@@ -38,6 +40,7 @@ public class MagicalIndustryMod {
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public MagicalIndustryMod(IEventBus modEventBus, ModContainer modContainer) {
 
+        modContainer.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC);
 
         // debug test
         LOGGER.debug("這是一條 DEBUG 測試訊息");
