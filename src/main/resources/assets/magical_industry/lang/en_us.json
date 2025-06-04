@@ -11,7 +11,9 @@
   "item.magical_industry.module.magical_industry.item_output": "Item Output Module",
   "item.magical_industry.speed_upgrade": "Speed Upgrade Module",
   "item.magical_industry.efficiency_upgrade": "Efficiency Upgrade Module",
-
+  "item.magical_industry.raw_mana_dust": "Raw Mana Dust",
+  "item.magical_industry.condensed_mana_dust": "Condensed Mana Dust",
+  "item.magical_industry.mana_crystal_fragment": "Mana Crystal Fragment",
 
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "Saved Block Position: (%s, %s, %s)",

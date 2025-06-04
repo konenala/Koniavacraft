@@ -5,6 +5,10 @@ import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.register.ModItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
@@ -19,12 +23,32 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        basicItem(ModItems.MANA_DEBUG_TOOL.get());
-        basicItem(ModItems.BASIC_TECH_WAND.get());
-        basicItem(ModItems.MANA_DUST.get());
-        basicItem(ModItems.MANA_INGOT.get());
-        basicItem(ModItems.CORRUPTED_MANA_DUST.get());
+        ModItems.ITEMS.getEntries().forEach(item -> {
+            Item instance = item.get();
+            String name = item.getId().getPath();
+
+            // ❌ 跳過 BlockItem（例如 mana_block）
+            if (instance instanceof BlockItem) {
+                return;
+            }
+
+            // ❌ 若對應貼圖不存在，也跳過（避免崩潰）
+            ResourceLocation texture = modLoc("item/" + name);
+            if (!existingFileHelper.exists(texture, TEXTURE)) {
+                LOGGER.warn("Skipping item model for '{}': missing texture", name);
+                return;
+            }
+
+            // ✅ 自動判斷工具或普通物品
+            if (instance instanceof TieredItem || instance instanceof SwordItem) {
+                handheldItem(instance);
+            } else {
+                basicItem(instance);
+            }
+        });
     }
+
+
 
     private ItemModelBuilder saplingItem(DeferredBlock<Block> item) {
         return withExistingParent(item.getId().getPath(),
