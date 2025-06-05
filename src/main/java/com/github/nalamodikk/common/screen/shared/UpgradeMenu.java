@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.screen.shared;
 
-import com.github.nalamodikk.common.register.ModMenuTypes;
+import com.github.nalamodikk.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeSlot;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import net.minecraft.world.Container;

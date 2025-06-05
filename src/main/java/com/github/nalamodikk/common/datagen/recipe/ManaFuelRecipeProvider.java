@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen.recipe;
 
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipeBuilder;
-import com.github.nalamodikk.common.register.ModItems;
+import com.github.nalamodikk.register.ModItems;
 import net.minecraft.world.item.Items;
 import net.minecraft.data.recipes.RecipeOutput;
 

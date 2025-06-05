@@ -1,7 +1,7 @@
 package com.github.nalamodikk;
 
 import com.github.nalamodikk.common.config.ModCommonConfig;
-import com.github.nalamodikk.common.register.*;
+import com.github.nalamodikk.register.*;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLLoader;

@@ -2,8 +2,8 @@ package com.github.nalamodikk.common.screen.shared;
 
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModDataComponents;
-import com.github.nalamodikk.common.register.ModMenuTypes;
+import com.github.nalamodikk.register.ModDataComponents;
+import com.github.nalamodikk.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.item.ItemStackUtils;
 import net.minecraft.core.Direction;

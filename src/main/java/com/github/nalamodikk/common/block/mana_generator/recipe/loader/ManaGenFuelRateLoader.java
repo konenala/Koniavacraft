@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,9 +35,10 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
     private static final Map<String, FuelRate> FUEL_RATES = new HashMap<>();
 
     private static final String DEFAULT_NAMESPACE = MagicalIndustryMod.MOD_ID;
-    private static final int DEFAULT_BURN_TIME = 200;  // 默認燃燒時間
-    private static final int DEFAULT_ENERGY_RATE = 1;
-    public static final int DEFAULT_INTERVAL = 1;
+    private static final int DEFAULT_BURN_TIME = 0;  // 默認燃燒時間
+    private static final int DEFAULT_ENERGY_RATE = 0;
+    public static final int DEFAULT_INTERVAL = 0;
+    private static final Set<ResourceLocation> warnedAlready = new HashSet<>();
 
     public ManaGenFuelRateLoader() {
         super(GSON, "recipe/mana_recipes/mana_fuel");  // 確保加載 mana_recipes/fuel 目錄
@@ -122,8 +124,9 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
         }
 
         // 4️⃣ **如果完全找不到數據，使用預設燃燒時間**
-        LOGGER.warn("[FuelRateLoader] ❌ Fuel data not found for: {}. Using default values. manaRate: 0 | burnTime: {}", itemId, DEFAULT_BURN_TIME);
-        return new FuelRate(0, DEFAULT_BURN_TIME, DEFAULT_ENERGY_RATE,DEFAULT_INTERVAL );
+        if (warnedAlready.add(itemId)) {
+            LOGGER.warn("[FuelRateLoader] ❌ Fuel data not found for: {}. Using default values. manaRate: 0 | burnTime: {}", itemId, DEFAULT_BURN_TIME);
+        }        return new FuelRate(0, DEFAULT_BURN_TIME, DEFAULT_ENERGY_RATE,DEFAULT_INTERVAL );
     }
 
     // Class representing fuel rate

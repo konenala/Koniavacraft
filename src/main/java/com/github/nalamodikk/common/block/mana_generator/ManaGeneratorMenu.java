@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.mana_generator;
 
 import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
-import com.github.nalamodikk.common.register.ModMenuTypes;
+import com.github.nalamodikk.register.ModMenuTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;

@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.recipe;
 
-import com.github.nalamodikk.common.register.ModRecipes;
+import com.github.nalamodikk.register.ModRecipes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -13,8 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.core.HolderLookup;
-
-import java.util.List;
 
 
 public class ManaGenFuelRecipe implements Recipe<RecipeInput> {

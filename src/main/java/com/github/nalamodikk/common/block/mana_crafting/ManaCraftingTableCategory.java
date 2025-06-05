@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.mana_crafting;
 
 import com.github.nalamodikk.client.screenAPI.DynamicTooltip;
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.register.ModBlocks;
 import com.github.nalamodikk.common.utils.gui.GuiRenderUtils;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;

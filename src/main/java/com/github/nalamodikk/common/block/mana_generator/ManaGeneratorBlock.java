@@ -1,13 +1,12 @@
 package com.github.nalamodikk.common.block.mana_generator;
 
 import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +26,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
 
 public class ManaGeneratorBlock extends BaseMachineBlock {
     public static final MapCodec<ManaGeneratorBlock> CODEC = simpleCodec(ManaGeneratorBlock::new);

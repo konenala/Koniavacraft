@@ -85,3 +85,8 @@ repo
 /src/generated/resources/data/magical_industry/worldgen/placed_feature/magic_ore.json
 /src/generated/resources/data/magical_industry/recipe/mana_recipes/mana_crafting/mana_dust.json
 /src/generated/resources/data/magical_industry/loot_table/blocks/solar_mana_collector.json
+/src/generated/resources/assets/magical_industry/models/item/condensed_mana_dust.json
+/src/generated/resources/assets/magical_industry/models/item/efficiency_upgrade.json
+/src/generated/resources/assets/magical_industry/models/item/mana_crystal_fragment.json
+/src/generated/resources/assets/magical_industry/models/item/raw_mana_dust.json
+/src/generated/resources/assets/magical_industry/models/item/speed_upgrade.json

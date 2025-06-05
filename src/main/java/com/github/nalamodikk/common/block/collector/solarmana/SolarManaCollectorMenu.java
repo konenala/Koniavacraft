@@ -2,11 +2,8 @@ package com.github.nalamodikk.common.block.collector.solarmana;
 
 
 import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
-import com.github.nalamodikk.common.register.ModMenuTypes;
-import com.github.nalamodikk.common.utils.upgrade.UpgradeSlot;
-import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
+import com.github.nalamodikk.register.ModMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;

@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.mana_crafting.recipe;
 
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
-import com.github.nalamodikk.common.register.ModRecipes;
+import com.github.nalamodikk.register.ModRecipes;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;

@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.block.mana_generator.logic;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
-import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.register.ModCapabilities;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

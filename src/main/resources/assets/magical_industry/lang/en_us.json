@@ -15,6 +15,10 @@
   "item.magical_industry.condensed_mana_dust": "Condensed Mana Dust",
   "item.magical_industry.mana_crystal_fragment": "Mana Crystal Fragment",
 
+  "key.magical_industry.open_floating_gui": "Open Floating Panel",
+  "key.categories.magical_industry": "Magical Industry",
+
+
   "tooltip.magical_industry.saved_direction_config": "%s: %s",
   "tooltip.magical_industry.saved_block_position": "Saved Block Position: (%s, %s, %s)",
   "tooltip.magical_industry.no_saved_block": "No block saved",

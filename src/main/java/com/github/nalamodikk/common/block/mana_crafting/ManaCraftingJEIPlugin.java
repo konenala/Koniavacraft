@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModBlocks;
-import com.github.nalamodikk.common.register.ModRecipes;
+import com.github.nalamodikk.register.ModBlocks;
+import com.github.nalamodikk.register.ModRecipes;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IGuiHandlerRegistration;

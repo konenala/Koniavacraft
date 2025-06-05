@@ -11,7 +11,7 @@ package com.github.nalamodikk.common.network.packet.server.manatool;
 
 import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.common.register.ModDataComponents;
+import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.item.ItemStackUtils;
@@ -25,7 +25,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 

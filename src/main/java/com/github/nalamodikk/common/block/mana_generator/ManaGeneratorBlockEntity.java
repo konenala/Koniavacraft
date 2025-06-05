@@ -9,8 +9,8 @@
     import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
     import com.github.nalamodikk.common.capability.ManaStorage;
     import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
-    import com.github.nalamodikk.common.register.ModBlockEntities;
-    import com.github.nalamodikk.common.register.ModCapabilities;
+    import com.github.nalamodikk.register.ModBlockEntities;
+    import com.github.nalamodikk.register.ModCapabilities;
     import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;

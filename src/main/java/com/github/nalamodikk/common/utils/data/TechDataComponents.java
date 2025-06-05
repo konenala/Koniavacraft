@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.utils.data;
 
-import com.github.nalamodikk.common.register.ModDataComponents;
+import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.common.API.IConfigurableBlock;
 
 import net.minecraft.core.BlockPos;

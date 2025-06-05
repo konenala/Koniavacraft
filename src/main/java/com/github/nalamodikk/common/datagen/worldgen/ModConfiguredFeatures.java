@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen.worldgen;
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.register.ModBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;

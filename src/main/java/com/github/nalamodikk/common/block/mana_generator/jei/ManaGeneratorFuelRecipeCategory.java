@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.mana_generator.jei;
 
 import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.register.ModBlocks;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;

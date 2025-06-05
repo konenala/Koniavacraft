@@ -1,9 +1,9 @@
 package com.github.nalamodikk.client.event;
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.system.nara.network.server.NaraSyncPacket;
-import com.github.nalamodikk.system.nara.network.client.OpenNaraInitScreenPacket;
-import com.github.nalamodikk.system.nara.util.NaraHelper;
+import com.github.nalamodikk.narasystem.nara.network.server.NaraSyncPacket;
+import com.github.nalamodikk.narasystem.nara.network.client.OpenNaraInitScreenPacket;
+import com.github.nalamodikk.narasystem.nara.util.NaraHelper;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;

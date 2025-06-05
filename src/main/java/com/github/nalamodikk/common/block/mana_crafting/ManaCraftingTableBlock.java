@@ -1,8 +1,7 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

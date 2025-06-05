@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.datagen;
 
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModItems;
+import com.github.nalamodikk.register.ModItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;

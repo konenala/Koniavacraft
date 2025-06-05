@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.register.ModRecipes;
+import com.github.nalamodikk.register.ModRecipes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

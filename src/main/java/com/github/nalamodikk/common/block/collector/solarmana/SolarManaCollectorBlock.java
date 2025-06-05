@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.collector.solarmana;
 
 import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

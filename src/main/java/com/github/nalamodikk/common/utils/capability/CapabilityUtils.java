@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.utils.capability;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.register.ModCapabilities;
+import com.github.nalamodikk.register.ModCapabilities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.BlockCapability;

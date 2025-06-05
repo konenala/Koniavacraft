@@ -1,14 +1,17 @@
 package com.github.nalamodikk.common.block.collector.solarmana.sync;
 
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.sync.ISyncHelper;
 import com.github.nalamodikk.common.sync.MachineSyncManager;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * 用來同步 SolarManaCollectorBlockEntity 的 mana 數值與發電狀態。
  */
-public class SolarCollectorSyncHelper {
+public class SolarCollectorSyncHelper implements ISyncHelper {
 
     public enum SyncIndex {
         MANA,
@@ -33,6 +36,13 @@ public class SolarCollectorSyncHelper {
         syncManager.set(SyncIndex.GENERATING.ordinal(), be.isCurrentlyGenerating() ? 1 : 0);
         syncManager.set(SyncIndex.SPEED_LEVEL.ordinal(), be.getUpgradeInventory().getUpgradeCount(UpgradeType.SPEED));
         syncManager.set(SyncIndex.EFFICIENCY_LEVEL.ordinal(), be.getUpgradeInventory().getUpgradeCount(UpgradeType.EFFICIENCY));
+    }
+
+    @Override
+    public void syncFrom(BlockEntity be) {
+        if (be instanceof SolarManaCollectorBlockEntity solarMana) {
+           this.syncFrom(solarMana);
+        }
     }
 
     public ContainerData getContainerData() {

@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.register.ModBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;

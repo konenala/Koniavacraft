@@ -19,7 +19,7 @@ import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
-import com.github.nalamodikk.common.register.ModDataComponents;
+import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
