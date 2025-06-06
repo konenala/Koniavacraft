@@ -1,9 +1,8 @@
 package com.github.nalamodikk.common.block.mana_generator.jei;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
-import com.github.nalamodikk.common.register.ModBlocks;
-import com.github.nalamodikk.common.register.ModRecipes;
+import com.github.nalamodikk.register.ModBlocks;
 import com.mojang.blaze3d.systems.RenderSystem;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -21,22 +20,19 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenFuelRecipe> {
-    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_fuel");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/jei_fuel.png");
-    private static final ResourceLocation MANA_BAR = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
-    private static final ResourceLocation ENERGY_BAR =  ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/energy_bar_full.png");
-    public static  mezz.jei.api.recipe.RecipeType<ManaGenFuelRecipe> JEI_RECIPE_TYPE =
-            new mezz.jei.api.recipe.RecipeType<>(UID, ManaGenFuelRecipe.class);
+    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_fuel");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/jei_fuel.png");
+    private static final ResourceLocation MANA_BAR = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
+    private static final ResourceLocation ENERGY_BAR =  ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/energy_bar_full.png");
+    public static  RecipeType<ManaGenFuelRecipe> manaGenFuelRecipeType =
+            new RecipeType<>(UID, ManaGenFuelRecipe.class);
     private static final int RECIPE_WIDTH = 182;
     private static final int RECIPE_HEIGHT = 80;
 
@@ -68,13 +64,13 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
 
     @Override
     public RecipeType<ManaGenFuelRecipe> getRecipeType() {
-        return JEI_RECIPE_TYPE;
+        return manaGenFuelRecipeType;
     }
 
 
     @Override
     public Component getTitle() {
-        return Component.translatable("jei.magical_industry.fuel");
+        return Component.translatable("jei.koniava.fuel");
     }
 
     @Override
@@ -106,13 +102,13 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
         int manaRate = recipe.getManaRate();     // 魔力消耗/t
         int energyRate = recipe.getEnergyRate(); // 能量產出/t
         int burnTime = recipe.getBurnTime(); // ← 你要從這裡取
-        Component burnTimeText = Component.translatable("jei.magical_industry.burn_time", burnTime);
+        Component burnTimeText = Component.translatable("jei.koniava.burn_time", burnTime);
         graphics.drawString(font, burnTimeText, 45, 27, 0x555555, false);
         double efficiency = manaRate > 0 ? (double) energyRate / manaRate : 0;
         // 🔹 顯示 tooltip：滑鼠滑到魔力條 → 顯示魔力資訊
         if (mouseX >= 8 && mouseX <= 19 && mouseY >= 10 && mouseY <= 70) {
             graphics.renderTooltip(font,
-                    List.of(Component.translatable("jei.magical_industry.fuel.mana", manaRate)),
+                    List.of(Component.translatable("jei.koniava.fuel.mana", manaRate)),
                     Optional.empty(),
                     (int) mouseX,
                     (int) mouseY
@@ -122,7 +118,7 @@ public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenF
         // 🔹 顯示 tooltip：滑鼠滑到能量條 → 顯示能量資訊
         if (mouseX >= 150 && mouseX <= 170 && mouseY >= 10 && mouseY <= 70) {
             graphics.renderTooltip(font,
-                    List.of(Component.translatable("jei.magical_industry.fuel.energy", energyRate)),
+                    List.of(Component.translatable("jei.koniava.fuel.energy", energyRate)),
                     Optional.empty(),
                     (int) mouseX,
                     (int) mouseY

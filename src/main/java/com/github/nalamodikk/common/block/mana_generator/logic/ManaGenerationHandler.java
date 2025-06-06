@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.mana_generator.logic;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -35,7 +36,13 @@ public class ManaGenerationHandler {
 
         if (tickCounter >= rate.getIntervalTick()) {
             tickCounter = 0;
-            manaStorage.addMana(rate.getManaRate());
+
+            int remaining = manaStorage.insertMana(rate.getManaRate(), ManaAction.EXECUTE);
+            if (remaining > 0) {
+                // 呼叫外部回傳「剩下來的」魔力量（丟給 OutputHandler）
+                onGenerate.accept(remaining);
+            }
+
             return true;
         }
 

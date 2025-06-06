@@ -1,42 +1,95 @@
-
 package com.github.nalamodikk.common.block.mana_generator.sync;
 
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.common.sync.UnifiedSyncManager;
+import com.github.nalamodikk.common.sync.ISyncHelper;
+import com.github.nalamodikk.common.sync.MachineSyncManager;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class ManaGeneratorSyncHelper {
-    public static final int MANA_STORED_INDEX = 0;
-    public static final int ENERGY_STORED_INDEX = 1;
-    public static final int MODE_INDEX = 2;
-    public static final int BURN_TIME_INDEX = 3;
-    public static final int CURRENT_BURN_TIME_INDEX = 4;
-    public static final int SYNC_DATA_COUNT = 5;
-    public static final int IS_WORKING_INDEX = 6;
-    public static final int IS_PAUSED_INDEX = 7;
+/**
+ * 管理 ManaGeneratorBlockEntity 的同步欄位。
+ * 使用 enum 管理同步 index，提高語意與維護性。
+ */
+public class ManaGeneratorSyncHelper implements ISyncHelper {
 
-    private final UnifiedSyncManager syncManager = new UnifiedSyncManager(SYNC_DATA_COUNT);
+    public enum SyncIndex {
+        MANA,
+        ENERGY,
+        MODE,
+        BURN_TIME,
+        CURRENT_BURN_TIME,
+        IS_WORKING,
+        IS_PAUSED;
 
-    public void syncFrom(ManaGeneratorBlockEntity be) {
-        syncManager.set(MANA_STORED_INDEX, be.getManaStorage() != null ? be.getManaStorage().getManaStored() : 0);
-        syncManager.set(ENERGY_STORED_INDEX, be.getEnergyStorage() != null ? be.getEnergyStorage().getEnergyStored() : 0);
-        syncManager.set(MODE_INDEX, be.getCurrentMode());
-        syncManager.set(BURN_TIME_INDEX, be.getBurnTime());
-        syncManager.set(CURRENT_BURN_TIME_INDEX, be.getCurrentBurnTime());
-        syncManager.set(IS_WORKING_INDEX, be.isWorking() ? 1 : 0);
-        syncManager.set(IS_PAUSED_INDEX, be.getFuelLogic().isPaused() ? 1 : 0);
-
+        public static int count() {
+            return values().length;
+        }
     }
 
+    private final MachineSyncManager syncManager = new MachineSyncManager(SyncIndex.count());
+    private final boolean[] dirtyFlags = new boolean[SyncIndex.count()];
+
+    private final int[] lastSyncedValues = new int[SyncIndex.count()];
+
+
+
+    private void setIfChanged(SyncIndex index, int newValue) {
+        int ordinal = index.ordinal();
+        if (lastSyncedValues[ordinal] != newValue) {
+            lastSyncedValues[ordinal] = newValue;
+            syncManager.set(ordinal, newValue);
+            dirtyFlags[ordinal] = true; // ✅ 資料有變才標記為 dirty
+        }
+    }
+
+
+    public void syncFrom(ManaGeneratorBlockEntity be) {
+        setIfChanged(SyncIndex.MANA, be.getManaStorage() != null ? be.getManaStorage().getManaStored() : 0);
+        setIfChanged(SyncIndex.ENERGY, be.getEnergyStorage() != null ? be.getEnergyStorage().getEnergyStored() : 0);
+        setIfChanged(SyncIndex.MODE, be.getCurrentMode());
+        setIfChanged(SyncIndex.BURN_TIME, be.getBurnTime());
+        setIfChanged(SyncIndex.CURRENT_BURN_TIME, be.getCurrentBurnTime());
+        setIfChanged(SyncIndex.IS_WORKING, be.isWorking() ? 1 : 0);
+        setIfChanged(SyncIndex.IS_PAUSED, be.getFuelLogic().isPaused() ? 1 : 0);
+    }
+
+    @Override
+    public void syncFrom(BlockEntity be) {
+        if (be instanceof ManaGeneratorBlockEntity generator) {
+            syncFrom(generator);
+        }
+    }
+
+    @Override
     public ContainerData getContainerData() {
-        return syncManager.getContainerData();
+        return syncManager;
     }
 
     public void setModeIndex(int modeIndex) {
-        syncManager.set(MODE_INDEX, modeIndex);
+        setIfChanged(SyncIndex.MODE, modeIndex);
     }
 
-    public UnifiedSyncManager getRawSyncManager() {
+    public MachineSyncManager getRawSyncManager() {
         return syncManager;
     }
+
+    public boolean hasDirty() {
+        for (boolean flag : dirtyFlags) {
+            if (flag) return true;
+        }
+        return false;
+    }
+
+    public void flushSyncState(BlockEntity be) {
+        if (hasDirty()) {
+            clearDirty();
+        }
+    }
+
+    private void clearDirty() {
+        for (int i = 0; i < dirtyFlags.length; i++) {
+            dirtyFlags[i] = false;
+        }
+    }
+
 }

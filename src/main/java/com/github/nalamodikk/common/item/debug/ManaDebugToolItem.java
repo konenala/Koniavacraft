@@ -1,17 +1,15 @@
 package com.github.nalamodikk.common.item.debug;
 
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.network.packet.manatool.ManaUpdatePacket;
-import com.github.nalamodikk.common.network.packet.manatool.ModeChangePacket;
-import com.github.nalamodikk.common.register.ModCapability;
+import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
+import com.github.nalamodikk.register.ModCapabilities;
 import com.mojang.serialization.Codec;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 
 import net.minecraft.world.entity.player.Player;
@@ -21,9 +19,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public class ManaDebugToolItem extends Item {
@@ -31,37 +26,15 @@ public class ManaDebugToolItem extends Item {
 
     private static final int[] MANA_AMOUNTS = {10, 100, 1000};
     private static final String[] MODES = {
-            "message.magical_industry.mana_mode_add_10",
-            "message.magical_industry.mana_mode_add_100",
-            "message.magical_industry.mana_mode_add_1000"
+            "message.koniava.mana_mode_add_10",
+            "message.koniava.mana_mode_add_100",
+            "message.koniava.mana_mode_add_1000"
     };
 
     public ManaDebugToolItem(Properties properties) {
         super(properties);
-        NeoForge.EVENT_BUS.addListener(this::onMouseScroll);
 
     }
-
-    public void onMouseScroll(InputEvent.MouseScrollingEvent event) {
-        Player player = Minecraft.getInstance().player;
-        if (player == null || !player.isCrouching()) return;
-
-        ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (heldItem.getItem() != this) return;
-
-        boolean forward = event.getScrollDeltaY() > 0;
-        this.cycleMode(heldItem, forward); // 客戶端本地先切
-        ModeChangePacket.sendToServer(forward); // 發送方向封包
-
-        player.displayClientMessage(Component.translatable(
-                "message.magical_industry.mana_mode_changed",
-                Component.translatable(this.getCurrentModeKey(heldItem))
-        ), true);
-
-        event.setCanceled(true);
-    }
-
-
 
     public static final DataComponentType<Integer> MODE_INDEX =
             DataComponentType.<Integer>builder()
@@ -82,7 +55,7 @@ public class ManaDebugToolItem extends Item {
         Level level = context.getLevel();
         if (!level.isClientSide()) {
             BlockPos pos = context.getClickedPos();
-            IUnifiedManaHandler manaStorage = level.getCapability(ModCapability.MANA, pos, null);
+            IUnifiedManaHandler manaStorage = level.getCapability(ModCapabilities.MANA, pos, null);
 
             if (manaStorage != null) {
                 ItemStack stack = context.getItemInHand();
@@ -93,7 +66,7 @@ public class ManaDebugToolItem extends Item {
                 Player player = context.getPlayer();
                 if (player instanceof ServerPlayer serverPlayer) {
                     serverPlayer.displayClientMessage(
-                            Component.translatable("message.magical_industry.mana_added", manaToAdd, manaStorage.getManaStored()), true);
+                            Component.translatable("message.koniava.mana_added", manaToAdd, manaStorage.getManaStored()), true);
                 }
 
                 BlockEntity blockEntity = level.getBlockEntity(pos);
@@ -111,14 +84,29 @@ public class ManaDebugToolItem extends Item {
         return super.useOn(context);
     }
 
-    public void cycleMode(ItemStack stack, boolean forward) {
-        int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+    public void cycleMode(ItemStack stack, boolean forward, ServerPlayer player) {
+        int currentIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+        int newIndex;
+
         if (forward) {
-            modeIndex = (modeIndex + 1) % MANA_AMOUNTS.length;
+            newIndex = (currentIndex + 1) % MANA_AMOUNTS.length;
         } else {
-            modeIndex = (modeIndex - 1 + MANA_AMOUNTS.length) % MANA_AMOUNTS.length;
+            newIndex = (currentIndex - 1 + MANA_AMOUNTS.length) % MANA_AMOUNTS.length;
         }
-        stack.set(ManaDebugToolItem.MODE_INDEX, modeIndex);
+
+        stack.set(ManaDebugToolItem.MODE_INDEX, newIndex);
+
+        // ✅ 使用具名模式的翻譯 key
+        String modeKey = MODES[newIndex];
+
+        player.displayClientMessage(Component.translatable(
+                "message.koniava.mode_changed",
+                Component.translatable(modeKey)
+        ), true);
+
+        if (KoniavacraftMod.IS_DEV) {
+            KoniavacraftMod.LOGGER.info("[ModeChange] {} switched wand mode: {} → {}", player.getGameProfile().getName(), currentIndex, newIndex);
+        }
     }
 
 

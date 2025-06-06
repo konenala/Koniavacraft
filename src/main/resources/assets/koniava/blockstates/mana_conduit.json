@@ -1,0 +1,31 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "koniava:block/conduit/mana_conduit_center" }
+    },
+    {
+      "when": { "up": "true" },
+      "apply": { "model": "koniava:block/conduit/mana_conduit_up" }
+    },
+    {
+      "when": { "down": "true" },
+      "apply": { "model": "koniava:block/conduit/mana_conduit_down" }
+    },
+    {
+      "when": { "north": "true" },
+      "apply": { "model": "koniava:block/conduit/mana_conduit_north" }
+    },
+    {
+      "when": { "south": "true" },
+      "apply": { "model": "koniava:block/conduit/mana_conduit_south" }
+    },
+    {
+      "when": { "east": "true" },
+      "apply": { "model": "koniava:block/conduit/mana_conduit_east" }
+    },
+    {
+      "when": { "west": "true" },
+      "apply": { "model": "koniava:block/conduit/mana_conduit_west" }
+    }
+  ]
+}

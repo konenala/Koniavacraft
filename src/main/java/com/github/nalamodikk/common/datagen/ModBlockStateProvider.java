@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.datagen;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.register.ModBlocks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 
 public class ModBlockStateProvider extends BlockStateProvider {
     public ModBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
-        super(output, MagicalIndustryMod.MOD_ID, exFileHelper);
+        super(output, KoniavacraftMod.MOD_ID, exFileHelper);
     }
 
     @Override
@@ -51,10 +51,10 @@ public class ModBlockStateProvider extends BlockStateProvider {
     }
 
     private void blockItem(DeferredBlock<?> deferredBlock) {
-        simpleBlockItem(deferredBlock.get(), new ModelFile.UncheckedModelFile(MagicalIndustryMod.MOD_ID + ":block/" + deferredBlock.getId().getPath()));
+        simpleBlockItem(deferredBlock.get(), new ModelFile.UncheckedModelFile(KoniavacraftMod.MOD_ID + ":block/" + deferredBlock.getId().getPath()));
     }
 
     private void blockItem(DeferredBlock<?> deferredBlock, String appendix) {
-        simpleBlockItem(deferredBlock.get(), new ModelFile.UncheckedModelFile(MagicalIndustryMod.MOD_ID + ":block/" + deferredBlock.getId().getPath() + appendix));
+        simpleBlockItem(deferredBlock.get(), new ModelFile.UncheckedModelFile(KoniavacraftMod.MOD_ID + ":block/" + deferredBlock.getId().getPath() + appendix));
     }
 }

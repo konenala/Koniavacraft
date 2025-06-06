@@ -1,12 +1,12 @@
 package com.github.nalamodikk.common.block.mana_generator;
 
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
+import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -26,9 +26,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
 
-public class ManaGeneratorBlock extends BaseEntityBlock {
+public class ManaGeneratorBlock extends BaseMachineBlock {
     public static final MapCodec<ManaGeneratorBlock> CODEC = simpleCodec(ManaGeneratorBlock::new);
 
     public ManaGeneratorBlock(Properties properties) {
@@ -51,8 +50,6 @@ public class ManaGeneratorBlock extends BaseEntityBlock {
         builder.add(FACING, ACTIVE); // 註冊 ACTIVE 屬性
     }
 
-
-
     @Override
     public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
         return state.getValue(ACTIVE) ? 15 : 0; // 運作時發光，否則不發光
@@ -69,7 +66,7 @@ public class ManaGeneratorBlock extends BaseEntityBlock {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ManaGeneratorBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
-                        new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
+                        new SimpleMenuProvider(generator, Component.translatable("block.koniava.mana_generator")),
                         pos
                 );
             } else {
@@ -87,7 +84,7 @@ public class ManaGeneratorBlock extends BaseEntityBlock {
 
             // 如果是 ManaCraftingTableBlockEntity，掉落物品
             if (blockEntity instanceof ManaGeneratorBlockEntity) {
-                ((ManaGeneratorBlockEntity) blockEntity).drops(level, pos);  // 掉落方塊內的物品
+                level.invalidateCapabilities(pos); // ❗❗通知 NeoForge: 這個位置的能力不可靠了，清除快取！
             }
             
         }

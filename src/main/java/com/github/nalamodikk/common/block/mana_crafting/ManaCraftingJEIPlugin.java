@@ -1,7 +1,8 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
-import com.github.nalamodikk.common.register.ModBlocks;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.register.ModBlocks;
+import com.github.nalamodikk.register.ModRecipes;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -13,22 +14,27 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @JeiPlugin
 public class ManaCraftingJEIPlugin implements IModPlugin {
 
-    public static final ResourceLocation PLUGIN_UID = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "jei_plugin");
+    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_crafting");
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManaCraftingJEIPlugin.class);
 
     @Override
     public ResourceLocation getPluginUid() {
-        return PLUGIN_UID;
+        return UID;
     }
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         // 注册自定义配方类别 (魔力合成台)
+        LOGGER.info("[JEI] 正在註冊 ManaCraftingTableCategory...");
+
         registration.addRecipeCategories(new ManaCraftingTableCategory(
                 registration.getJeiHelpers().getGuiHelper()));
     }
@@ -42,19 +48,22 @@ public class ManaCraftingJEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        // 获取当前的配方管理器
-        RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) {
+            LOGGER.warn("[JEI] Minecraft 尚未進入世界，跳過 mana_crafting 配方註冊！");
+            return;
+        }
 
-        // 获取所有的魔力合成台配方
+        RecipeManager recipeManager = minecraft.level.getRecipeManager();
+
         List<ManaCraftingTableRecipe> manaCraftingTableRecipes =
-                recipeManager.getAllRecipesFor(ManaCraftingTableRecipe.Type.INSTANCE)
-                        .stream()
+                recipeManager.getAllRecipesFor(ModRecipes.MANA_CRAFTING_TYPE.get())
+                .stream()
                         .map(RecipeHolder::value)
                         .toList();
 
-
-        // 注册魔力合成台的配方到 JEI 中
         registration.addRecipes(ManaCraftingTableCategory.MANA_CRAFTING_TYPE, manaCraftingTableRecipes);
+        LOGGER.info("[JEI] 成功註冊 {} 筆 mana_crafting 配方", manaCraftingTableRecipes.size());
     }
 
     @Override

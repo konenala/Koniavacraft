@@ -1,39 +1,41 @@
     // ⚠ 自動產生：結合 NeoForge 能量與魔力產出邏輯
     package com.github.nalamodikk.common.block.mana_generator;
 
-    import com.github.nalamodikk.common.API.IConfigurableBlock;
-    import com.github.nalamodikk.common.MagicalIndustryMod;
+    import com.github.nalamodikk.KoniavacraftMod;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
     import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
-    import com.github.nalamodikk.common.register.ModBlockEntities;
-    import com.github.nalamodikk.common.utils.nbt.NbtUtils;
-    import io.netty.buffer.Unpooled;
+    import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+    import com.github.nalamodikk.common.capability.ManaStorage;
+    import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
+    import com.github.nalamodikk.register.ModBlockEntities;
+    import com.github.nalamodikk.register.ModCapabilities;
+    import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
     import net.minecraft.core.HolderLookup;
-    import net.minecraft.core.registries.BuiltInRegistries;
     import net.minecraft.nbt.CompoundTag;
-    import net.minecraft.network.FriendlyByteBuf;
     import net.minecraft.network.chat.Component;
     import net.minecraft.network.protocol.Packet;
     import net.minecraft.network.protocol.game.ClientGamePacketListener;
     import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-    import net.minecraft.resources.ResourceLocation;
     import net.minecraft.server.level.ServerLevel;
     import net.minecraft.world.entity.player.Inventory;
     import net.minecraft.world.entity.player.Player;
     import net.minecraft.world.inventory.AbstractContainerMenu;
     import net.minecraft.world.inventory.ContainerData;
     import net.minecraft.world.inventory.ContainerLevelAccess;
-    import net.minecraft.world.item.Item;
     import net.minecraft.world.item.ItemStack;
     import net.minecraft.world.level.Level;
+    import net.minecraft.world.level.block.Block;
     import net.minecraft.world.level.block.entity.BlockEntity;
     import net.minecraft.world.level.block.entity.BlockEntityTicker;
     import net.minecraft.world.level.block.entity.BlockEntityType;
     import net.minecraft.world.level.block.state.BlockState;
+    import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+    import net.neoforged.neoforge.capabilities.Capabilities;
+    import net.neoforged.neoforge.energy.IEnergyStorage;
     import net.neoforged.neoforge.items.IItemHandler;
     import net.neoforged.neoforge.items.ItemStackHandler;
     import org.jetbrains.annotations.Nullable;
@@ -46,24 +48,20 @@
     import software.bernie.geckolib.util.GeckoLibUtil;
 
     import java.util.EnumMap;
-    import java.util.HashMap;
-    import java.util.Map;
+
     import java.util.Optional;
 
-    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements IConfigurableBlock , GeoBlockEntity {
+    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements   GeoBlockEntity {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
 
-        public enum Mode {
-            MANA,
-            ENERGY
-        }
+        private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, @Nullable Direction>> manaOutputCaches = new EnumMap<>(Direction.class);
+        private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, @Nullable Direction>> energyOutputCaches = new EnumMap<>(Direction.class);
 
         private static final int MAX_MANA = 200000;
         private static final int MAX_ENERGY = 200000;
         private static final int TICK_INTERVAL = 1;
         private static final int MANA_PER_CYCLE = 10;
-        private static final int SYNC_DATA_COUNT = 5;
         private static final int FUEL_SLOT_COUNT = 1;
         private static final int MANA_STORED_INDEX = 0;
         private static final int ENERGY_STORED_INDEX = 1;
@@ -75,6 +73,9 @@
         private final ManaGeneratorSyncHelper syncHelper = new ManaGeneratorSyncHelper();
         private final ManaGenerationHandler manaGenHandler;
         private final EnergyGenerationHandler energyGenHandler;
+        private final ManaGeneratorTicker ticker = new ManaGeneratorTicker(this);
+        private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
+        private final OutputHandler.OutputThrottleController outputThrottle = new OutputHandler.OutputThrottleController();
 
         private final ManaGeneratorStateManager stateManager = new ManaGeneratorStateManager();
         private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -82,7 +83,6 @@
 
 
         private final ItemStackHandler fuelHandler = new ItemStackHandler(FUEL_SLOT_COUNT);
-        private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
         private ContainerLevelAccess access;
         private int burnTime = 0;
         private int currentBurnTime = 0;
@@ -90,7 +90,8 @@
         private String currentAnimation = "";
         private boolean forceRefreshAnimation = false;
 
-        private final ManaFuelHandler fuelLogic = new ManaFuelHandler(fuelHandler);
+        private final ManaFuelHandler fuelLogic = new ManaFuelHandler(fuelHandler,stateManager);
+        public OutputHandler.OutputThrottleController getOutputThrottle() {return outputThrottle;}
 
         public ManaGeneratorBlockEntity(BlockPos pos, BlockState state) {
             super(ModBlockEntities.MANA_GENERATOR_BE.get(), pos, state, true, MAX_MANA, MAX_ENERGY, TICK_INTERVAL, MANA_PER_CYCLE);
@@ -103,17 +104,49 @@
                 Optional<ManaGenFuelRateLoader.FuelRate> rate = getCurrentFuelRate();
                 return rate.map(ManaGenFuelRateLoader.FuelRate::getEnergyRate).orElse(DEFAULT_ENERGY_PER_TICK);
             });
+            for (Direction dir : Direction.values()) {
+                ioMap.put(dir, IOHandlerUtils.IOType.DISABLED); // 或從 NBT、DataComponent 還原
+            }
 
         }
+
+        @Override
+        public void drops(Level level, BlockPos pos) {
+            super.drops(level, pos);
+            if (level == null || level.isClientSide) return;
+
+            IItemHandler handler = this.fuelHandler;
+            if (handler == null) return;
+
+            for (int slot = 0; slot < handler.getSlots(); slot++) {
+                ItemStack stack = handler.getStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    Block.popResource(level, pos, stack);
+                }
+            }
+        }
+
 
         public static int getManaStoredIndex() {return MANA_STORED_INDEX;}
         public static int getEnergyStoredIndex() {return ENERGY_STORED_INDEX;}
         public static int getModeIndex() {return MODE_INDEX;}
         public static int getBurnTimeIndex() {return BURN_TIME_INDEX;}
         public static int getCurrentBurnTimeIndex() {return CURRENT_BURN_TIME_INDEX;}
-        public static int getDataCount() {return SYNC_DATA_COUNT;}
         public static int getMaxMana() {return MAX_MANA;}
         public static int getMaxEnergy() {return MAX_ENERGY;}
+        public ManaGeneratorStateManager getStateManager() {return stateManager;}
+        public ManaGenerationHandler getManaGenHandler() {return manaGenHandler;}
+        public EnergyGenerationHandler getEnergyGenHandler() {return energyGenHandler;}
+        public ManaStorage getManaStorage() {return manaStorage;}
+        public ModNeoNalaEnergyStorage getEnergyStorage() {return energyStorage;}
+        private final ManaGeneratorNbtManager nbtManager = new ManaGeneratorNbtManager(this);
+        public ManaGeneratorSyncHelper getSyncHelper() {return syncHelper;}
+
+        // set
+        public void setBurnTimeFromNbt(int value) {this.burnTime = value;}
+        public void setCurrentBurnTimeFromNbt(int value) {this.currentBurnTime = value;}
+        public void forceRefreshAnimationFromNbt() {this.forceRefreshAnimation = true;}
+
         private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
         @Override
         public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -140,68 +173,34 @@
                 currentAnimation = targetAnimation;
                 forceRefreshAnimation = false;
 
-                MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
+//                MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
             }
 
             return PlayState.CONTINUE;
         }
-
-
-
         @Override
         protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.saveAdditional(tag, provider);
-
-            // ✅ 正確印出當下 stateManager 狀態
-            MagicalIndustryMod.LOGGER.info("[Client] saveAdditional - isWorking = {}", stateManager.isWorking());
-
-            tag.putInt("Mode", stateManager.getCurrentModeIndex());
-            tag.putInt("BurnTime", burnTime);
-            tag.putInt("CurrentBurnTime", currentBurnTime);
-            tag.putBoolean("IsWorking", stateManager.isWorking());
-            tag.putBoolean("IsPaused", fuelLogic.isPaused());
-
-            if (fuelLogic.getCurrentFuelId() != null) {
-                tag.putString("CurrentFuelId", fuelLogic.getCurrentFuelId().toString());
-            }
-
-            NbtUtils.write(tag, "Mana", manaStorage, provider);
-            NbtUtils.write(tag, "Energy", energyStorage, provider);
-            NbtUtils.write(tag, "FuelItems", fuelHandler, provider);
-            NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);
-
+            nbtManager.save(tag, provider);
         }
 
+        @Override
+        public void onLoad() {
+            super.onLoad();
+            if (!this.getLevel().isClientSide()) {
+                initOutputCaches();
+            }
+        }
 
         @Override
         protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.loadAdditional(tag, provider);
-            MagicalIndustryMod.LOGGER.info("[Client] loaded IsWorking = {}", tag.getBoolean("IsWorking"));
-
-            stateManager.setModeIndex(tag.getInt("Mode"));
-            burnTime = tag.getInt("BurnTime");
-            currentBurnTime = tag.getInt("CurrentBurnTime");
-            stateManager.setWorking(tag.getBoolean("IsWorking"));
-
-            currentBurnTime = tag.getInt("CurrentBurnTime");
-            fuelLogic.setPaused(tag.getBoolean("IsPaused"));
-            if (tag.contains("CurrentFuelId")) {
-                ResourceLocation id = ResourceLocation.tryParse(tag.getString("CurrentFuelId"));
-                fuelLogic.setCurrentFuelId(id);
-            }
-            this.forceRefreshAnimation = true;
-
-            NbtUtils.read(tag, "Mana", manaStorage, provider);
-            NbtUtils.read(tag, "Energy", energyStorage, provider);
-            NbtUtils.read(tag, "FuelItems", fuelHandler, provider);
-            NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);
+            nbtManager.load(tag, provider);
         }
-
 
         public ManaFuelHandler getFuelLogic() {
             return fuelLogic;
         }
-
 
         @Override
         public void setLevel(Level level) {
@@ -209,20 +208,7 @@
             this.access = ContainerLevelAccess.create(level, this.worldPosition);
         }
 
-        public static Map<Item, Integer> getAllFuelItems(Level level) {
-            Map<Item, Integer> fuelMap = new HashMap<>();
 
-            for (Item item : BuiltInRegistries.ITEM) {
-                ItemStack stack = new ItemStack(item);
-                int burnTime = net.minecraft.world.level.block.entity.FurnaceBlockEntity.getFuel().getOrDefault(item, 0);
-
-                if (burnTime > 0) {
-                    fuelMap.put(item, burnTime);
-                }
-            }
-
-            return fuelMap;
-        }
 
         public void markUpdated() {
             if (this.level != null) {
@@ -243,35 +229,7 @@
 
         @Override
         public void tickMachine() {
-            if (fuelLogic.isCoolingDown()) {
-                fuelLogic.tickCooldown();
-                return;
-            }
-            if (!fuelLogic.isBurning()) {
-                if (!fuelLogic.tryConsumeFuel()) {
-                    stateManager.setWorking(false); // ✅ 改用 stateManager 控制工作狀態
-                    fuelLogic.setCooldown();
-
-                    return;
-                }
-            }
-            boolean success = switch (stateManager.getCurrentMode()) {
-                case MANA -> manaGenHandler.generate();
-                case ENERGY -> energyGenHandler.generate();
-            };
-            if (!success) {
-                fuelLogic.pauseBurn();
-                stateManager.setWorking(false);
-                return;
-            }
-            fuelLogic.resumeBurn();
-            fuelLogic.tickBurn(true);
-            stateManager.setWorking(success); // ✅ 統一寫入狀態
-            if (level instanceof ServerLevel serverLevel) {
-                OutputHandler.tryOutput(serverLevel, worldPosition, manaStorage, energyStorage, directionConfig);
-            }
-            updateBlockActiveState(stateManager.isWorking());
-            this.sync();
+            ticker.tick();
         }
 
         @Override
@@ -284,7 +242,8 @@
                 this.setChanged();
                 this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
             }
-            syncHelper.syncFrom(this);
+            syncHelper.syncFrom(this);         // ➤ 更新資料並標記 dirty
+            syncHelper.flushSyncState(this);   // ➤ ✅ 現在就清掉 dirty
         }
 
 
@@ -320,21 +279,32 @@
             return stateManager.getCurrentModeIndex();
         }
 
-
         @Override
-        public boolean isOutput(Direction direction) {
-            return directionConfig.getOrDefault(direction, false);
+        public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
+            ioMap.put(direction, type);
         }
 
         @Override
-        public void setDirectionConfig(Direction direction, boolean isOutput) {
-            directionConfig.put(direction, isOutput);
-            setChanged();
+        public IOHandlerUtils.IOType getIOConfig(Direction direction) {
+            return ioMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
         }
+
+        @Override
+        public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
+            return ioMap;
+        }
+
+        @Override
+        public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> map) {
+            ioMap.clear();
+            ioMap.putAll(map);
+        }
+
+
 
         @Override
         public Component getDisplayName() {
-            return Component.translatable("block." + MagicalIndustryMod.MOD_ID + ".mana_generator");
+            return Component.translatable("block." + KoniavacraftMod.MOD_ID + ".mana_generator");
         }
 
         @Override
@@ -345,8 +315,7 @@
         @Nullable
         @Override
         public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-            return  new ManaGeneratorMenu(id, inv, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(this.worldPosition));
-
+            return new ManaGeneratorMenu(id, inv, this);
         }
 
         public ItemStackHandler getFuelHandler() {
@@ -374,7 +343,7 @@
             };
         }
 
-        private void updateBlockActiveState(boolean isWorking) {
+        public void updateBlockActiveState(boolean isWorking) {
             if (level == null) return;
 
             BlockState state = level.getBlockState(worldPosition);
@@ -383,4 +352,24 @@
             }
         }
 
+
+        public void initOutputCaches() {
+            if (!(level instanceof ServerLevel serverLevel)) return;
+
+            for (Direction dir : Direction.values()) {
+                manaOutputCaches.put(dir, BlockCapabilityCache.create(
+                        ModCapabilities.MANA,
+                        serverLevel,
+                        worldPosition.relative(dir),
+                        dir.getOpposite()
+                ));
+
+                energyOutputCaches.put(dir, BlockCapabilityCache.create(
+                        Capabilities.EnergyStorage.BLOCK,
+                        serverLevel,
+                        worldPosition.relative(dir),
+                        dir.getOpposite()
+                ));
+            }
+        }
     }

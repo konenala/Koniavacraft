@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.utils.capability;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.register.ModCapability;
+import com.github.nalamodikk.register.ModCapabilities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -41,7 +41,7 @@ public class CapabilityUtils {
      */
     @Nullable
     public static IUnifiedManaHandler getNeighborMana(Level level, BlockPos neighborPos, Direction fromDirection) {
-        return level.getCapability(ModCapability.MANA, neighborPos, fromDirection.getOpposite());
+        return level.getCapability(ModCapabilities.MANA, neighborPos, fromDirection.getOpposite());
     }
 
     /**
@@ -88,11 +88,11 @@ public class CapabilityUtils {
 
     public static @Nullable IUnifiedManaHandler getMana(Level level, BlockPos pos, @Nullable Direction dir) {
         // 優先查詢給定方向
-        IUnifiedManaHandler handler = level.getCapability(ModCapability.MANA, pos, dir);
+        IUnifiedManaHandler handler = level.getCapability(ModCapabilities.MANA, pos, dir);
 
         // 如果失敗，嘗試用 null fallback 查詢（有些註冊用 createVoid）
         if (handler == null) {
-            handler = level.getCapability(ModCapability.MANA, pos, null);
+            handler = level.getCapability(ModCapabilities.MANA, pos, null);
         }
 
         return handler;
@@ -184,4 +184,15 @@ public class CapabilityUtils {
             event.registerBlockEntity(capability, type, provider);
         }
     }
+
+
+    /***
+     *   獲取 娜拉系統的data
+     */
+
+//    public static Optional<INaraData> getNaraData(Player player) {
+//        return Optional.ofNullable(player.getCapability(ModCapability.NARA, null));
+//
+//    }
+
 }

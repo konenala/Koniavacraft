@@ -1,0 +1,191 @@
+{
+  "item.koniava.mana_dust": "Mana Dust",
+  "item.koniava.mana_ingot": "Mana Ingot",
+  "item.koniava.mana_debug_tool": "Mana Debug Tool",
+  "item.koniava.corrupted_mana_dust": "Corrupted Mana Dust",
+  "item.koniava.basic_tech_wand": "Basic Tech Wand",
+  "item.koniava.basic_tech_wand.tooltip.mode": "Mode: %s",
+  "item.koniava.module.koniava.mana_storage": "Mana Storage Module",
+  "item.koniava.module.koniava.mana_producer": "Mana Producer Module",
+  "item.koniava.module.koniava.item_input": "Item Input Module",
+  "item.koniava.module.koniava.item_output": "Item Output Module",
+  "item.koniava.speed_upgrade": "Speed Upgrade Module",
+  "item.koniava.efficiency_upgrade": "Efficiency Upgrade Module",
+  "item.koniava.raw_mana_dust": "Raw Mana Dust",
+  "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
+  "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
+
+  "key.koniava.open_floating_gui": "[Experimental] Open Floating Panel",
+  "key.categories.koniava": "Koniavacraft",
+
+
+  "tooltip.koniava.saved_direction_config": "%s: %s",
+  "tooltip.koniava.saved_block_position": "Saved Block Position: (%s, %s, %s)",
+  "tooltip.koniava.no_saved_block": "No block saved",
+  "tooltip.koniava.mode": "Mode: %s",
+  "tooltip.koniava.mana_stored": "Mana: %1$d / %2$d",
+  "tooltip.koniava.mana_cost": "Mana Cost: %1$d",
+  "tooltip.koniava.mana_generator.mana": "Mana Stored: %s",
+  "tooltip.koniava.mana_generator.status.generating": "Generating",
+  "tooltip.koniava.mana_generator.status.stopped": "Stopped",
+  "tooltip.mana": "Mana: %s / %s",
+  "tooltip.energy": "Energy: %s / %s",
+  "tooltip.koniava.mana_conduit.line1": "A conduit to transfer mana.",
+  "tooltip.koniava.mana_conduit.line2": "Connects to mana machines and networks.",
+  "tooltip.koniava.mana_conduit.line3": "Supports multi-directional connections.",
+  "tooltip.koniava.mana_conduit.hold_shift": "Hold SHIFT for more details.",
+  "tooltip.koniava.not_enough_mana": "Not enough mana!",
+  "tooltip.koniava.module.mana": "Mana Cost: %s/tick",
+  "tooltip.koniava.machine.cleared": "Cleared inserted component item.",
+
+  "tooltip.koniava.upgrade.hold_shift": "§7Hold §eShift §7for more info",
+  "tooltip.koniava.upgrade.speed": "§aIncreases machine speed and reduces cooldown interval.",
+  "tooltip.koniava.upgrade.efficiency": "§aImproves output efficiency and increases mana production per cycle.",
+
+  "tooltip.koniava.nara.bind": "Bind your consciousness to the Nara system",
+  "tooltip.koniava.nara.cancel": "Reject connection and exit",
+
+  "tooltip.koniava.module.item_input": "Provides input slots for assembling machines.",
+  "tooltip.koniava.module.item_output": "Provides output slots for assembling machines.",
+  "tooltip.koniava.module.mana_storage": "Stores and supplies mana energy to adjacent components.",
+  "tooltip.koniava.machine.grid_size": "Grid contains %s components.",
+  "tooltip.koniava.machine.grid_entry": "• [%s] %s",
+  "tooltip.koniava.machine.inserted": "Component item inserted into the modular machine.",
+
+  "jei.koniava.fuel.mana": "Mana Output: %s",
+  "jei.koniava.fuel.energy": "Energy Output: %s",
+  "jei.koniava.fuel.burn_time": "Burn Time: %s",
+  "jei.koniava.fuel": "Mana Fuel",
+  "jei.koniava.burn_time": "Burn Time: %s ticks",
+
+  "message.koniava.nara.sync_error": "An error occurred while syncing Nara state: %s",
+
+  "message.koniava.mana_added": "Added %s Mana. Current Mana: %s",
+  "message.koniava.mana_mode_changed": "Switched to mode: %s",
+  "message.koniava.mana_mode_add_10": "Add 10 Mana",
+  "message.koniava.mana_mode_add_100": "Add 100 Mana",
+  "message.koniava.mana_mode_add_1000": "Add 1000 Mana",
+  "message.koniava.not_enough_mana": "Not enough mana in wand!",
+  "message.koniava.block_rotated": "Block rotated!",
+  "message.koniava.mode_changed": "Mode: %s",
+  "message.koniava.no_block_selected": "No block selected with the tech wand.",
+  "message.koniava.selected_block_unavailable": "Selected block is no longer available.",
+  "message.koniava.block_selected": "Selected block at position: {0}",
+  "message.koniava.block_not_configurable": "The selected block is not configurable.",
+  "message.koniava.cannot_toggle_while_working": "You cannot toggle modes while the generator is working!",
+  "message.koniava.nara.disconnect_message": "You have chosen to sever your connection with the Nara System.",
+  "message.koniava.nara.system_online": "▸ NARA SYSTEM ONLINE",
+  "message.koniava.nara.stabilized": "▸ Conscious alignment stabilized.",
+  "message.koniava.nara.welcome": "▸ Welcome, Operator.",
+
+  "message.koniava.screen.generator_working": "Generator is working. Mode switching is disabled.",
+
+  "message.koniava.machine.restored_count": "Restored previous setup. Returned %s module(s) to you.",
+  "message.koniava.machine.no_history": "No previous setup to restore.",
+
+
+
+  "message.koniava.add_mana_success": "Added 10 mana!",
+  "message.koniava.block_rotated_facing": "Block rotated! ",
+  "message.koniava.block_rotated_horizontal": "Block rotated! ",
+  "message.koniava.block_cannot_rotate": "Block cannot be rotated!",
+  "message.koniava.tech_wand.mode.configure_input": "Configure Input Mode",
+  "message.koniava.tech_wand.mode.configure_output": "Configure Output Mode",
+  "message.koniava.tech_wand.mode.add_mana": "Add Mana Mode",
+  "message.koniava.tech_wand.mode.rotate": "Rotate Block Mode",
+  "message.koniava.config_button_clicked": "Configuration button clicked!",
+  "message.koniava.config_changed": "Configuration for side %s has been changed to %s.",
+  "message.koniava.wrench.conduit_mode": "Set %s to %s",
+  "message.koniava.machine.cleared_count": "Returned %s module item(s).",
+  "message.koniava.machine.nothing_to_clear": "No module items to return.",
+  "message.koniava.machine.no_space": "No available module slot.",
+
+  "direction.koniava.up": "Up",
+  "direction.koniava.down": "Down",
+  "direction.koniava.north": "North",
+  "direction.koniava.south": "South",
+  "direction.koniava.west": "West",
+  "direction.koniava.east": "East",
+
+  "screen.koniava.upgrade.speed": "Speed : %s",
+  "screen.koniava.upgrade.efficiency": "Efficiency : %s",
+
+
+  "screen.koniava.configure_io": "Configure Input and Output",
+  "screen.koniava.toggle_mode": "Toggle Mode",
+  "screen.koniava.current_mode": "Current Mode: %s",
+  "screen.koniava.configure_side": "Configure Side: %s",
+  "screen.koniava.output": "Output",
+  "screen.koniava.input": "Input",
+  "screen.koniava.cannot_toggle": "Generator is running, cannot switch mode!",
+  "screen.koniava.modular_machine_config": "Modular Machine Assembly Interface",
+  "screen.koniava.upgrade_button.tooltip": "Open Upgrade Module Interface",
+  "screen.koniava.upgrade.title": "Upgrade Module Manager",
+  "screen.koniava.disabled": "Disabled",
+  "screen.koniava.both": "Input & Output",
+
+  "screen.koniava.configure_side.full": "Configured side: %s %s",
+  "screen.koniava.hold_shift": "Hold Shift for more information",
+  "screen.koniava.debug_world_direction": "World direction key: %s",
+
+
+  "screen.koniava.nara.bind": "Bind to Nara System",
+  "screen.koniava.nara.cancel": "Cancel",
+
+  "screen.koniava.nara.title": "Ding───!",
+  "screen.koniava.nara.line1": "▸ Detected new consciousness fluctuation…",
+  "screen.koniava.nara.line2": "▸ Verifying soul identification code…",
+  "screen.koniava.nara.line3": "▸ Result: Unbound",
+  "screen.koniava.nara.line4": "▸ Initiating 'Nara System' initialization sequence…",
+  "screen.koniava.nara.line5": "▸ Loading module core: Koniavacraft (Ver. {%s)",
+  "screen.koniava.nara.line6": "▸ Scan complete. Connection conditions fulfilled.",
+  "screen.koniava.nara.confirm": "Would you like to bind with the Nara System?",
+  "screen.koniava.nara.warning": "This operation is irreversible. Please proceed with caution.",
+  "screen.koniava.nara.screen_title": "Nara System Initialization",
+
+
+  "mode.koniava.mana": "Mana",
+  "mode.koniava.energy": "Energy",
+  "mode.koniava.configure_io": "Configure Input/Output",
+  "mode.koniava.add_mana": "Add Mana",
+  "mode.koniava.rotate": "Rotate",
+  "mode.koniava.output": "Output",
+  "mode.koniava.input": "Input",
+  "mode.koniava.direction_config": "Direction Configuration Mode",
+  "mode.koniava.disabled": "Disabled",
+  "mode.koniava.both": "Input & Output",
+
+
+
+  "button.koniava.toggle_mode.tooltip_auto": "Automatic Mode",
+  "button.koniava.toggle_mode.tooltip_manual": "Manual Mode",
+  "button.koniava.configure_io": "Configure Input/Output",
+  "button.koniava.toggle_auto_crafting": "Toggle",
+  "button.koniava.auto_crafting_enabled": "AutoCrafting: Enabled",
+  "button.koniava.auto_crafting_disabled": "AutoCrafting: Disabled",
+
+
+  "block.koniava.mana_block": "Mana Block",
+  "block.koniava.magic_ore": "Magic Ore",
+  "block.koniava.deepslate_magic_ore": "Deepslate Magic Ore",
+  "block.koniava.mana_generator": "Mana Generator",
+  "block.koniava.mana_crafting_table": "Mana Crafting Table",
+  "block.koniava.advanced_mana_crafting_table": "Advanced Mana Crafting Table",
+  "block.koniava.mana_conduit": "Mana Conduit",
+  "block.koniava.solar_mana_collector": "Solar Mana Collector",
+  "block.koniava.modular_machine": "Modular Machine",
+
+  "button.mode.auto": "auto mode",
+  "button.mode.manual": "manual mode",
+
+
+
+
+  "creativetab.koniava_items": "Koniavacraft - Items",
+  "creativetab.koniava_blocks": "Koniavacraft - Blocks",
+  "creativetab.koniava_modules": "Koniavacraft - Modules",
+
+  "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)"
+
+
+}

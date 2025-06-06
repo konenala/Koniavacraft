@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.utils.data;
 
-import com.github.nalamodikk.common.register.ModDataComponents;
-import com.github.nalamodikk.common.API.IConfigurableBlock;
+import com.github.nalamodikk.register.ModDataComponents;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,11 +35,11 @@ public class TechDataComponents {
                 if (map.containsKey(dir)) {
                     boolean isOutput = map.get(dir);
                     tooltip.add(Component.translatable(
-                            "tooltip.magical_industry.saved_direction_config",
+                            "tooltip.koniava.saved_direction_config",
                             dir.getName(),
                             Component.translatable(isOutput
-                                    ? "mode.magical_industry.output"
-                                    : "mode.magical_industry.input")
+                                    ? "mode.koniava.output"
+                                    : "mode.koniava.input")
                     ));
                 }
             }
@@ -48,7 +48,7 @@ public class TechDataComponents {
         BlockPos pos = stack.get(ModDataComponents.SAVED_BLOCK_POS); // ⚠️ 這需要你有對應的 component
         if (pos != null) {
             tooltip.add(Component.translatable(
-                    "tooltip.magical_industry.saved_block_position",
+                    "tooltip.koniava.saved_block_position",
                     pos.getX(), pos.getY(), pos.getZ()
             ));
         }

@@ -1,10 +1,10 @@
 package com.github.nalamodikk.common.block.mana_generator.jei;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
-import com.github.nalamodikk.common.register.ModBlocks;
-import com.github.nalamodikk.common.register.ModRecipes;
+import com.github.nalamodikk.register.ModBlocks;
+import com.github.nalamodikk.register.ModRecipes;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -16,8 +16,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,7 @@ import java.util.List;
 
 @JeiPlugin
 public class ManaGeneratorJEIPlugin implements IModPlugin {
-    private static final ResourceLocation UID =  ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_generator_jei_plugin");
+    private static final ResourceLocation UID =  ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_generator_jei_plugin");
     private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorJEIPlugin.class);
 
     @Override
@@ -47,7 +45,7 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         LOGGER.info("[JEI] 註冊 Mana Generator 為 FuelRecipeCategory 的催化劑！");
         registration.addRecipeCatalyst(
-                new ItemStack(ModBlocks.MANA_GENERATOR.get()), ManaGeneratorFuelRecipeCategory.JEI_RECIPE_TYPE
+                new ItemStack(ModBlocks.MANA_GENERATOR.get()), ManaGeneratorFuelRecipeCategory.manaGenFuelRecipeType
         );
     }
 
@@ -55,7 +53,7 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addRecipeClickArea(ManaGeneratorScreen.class,30,15 ,25,45, ManaGeneratorFuelRecipeCategory.JEI_RECIPE_TYPE);
+        registration.addRecipeClickArea(ManaGeneratorScreen.class,30,15 ,25,45, ManaGeneratorFuelRecipeCategory.manaGenFuelRecipeType);
     }
 
     @Override
@@ -82,7 +80,7 @@ public class ManaGeneratorJEIPlugin implements IModPlugin {
 
         // ✅ 正確：使用已取得的清單，不要再重抓一次！
         registration.addRecipes(
-                ManaGeneratorFuelRecipeCategory.JEI_RECIPE_TYPE,
+                ManaGeneratorFuelRecipeCategory.manaGenFuelRecipeType,
                 manaGenFuelRecipes
         );
 

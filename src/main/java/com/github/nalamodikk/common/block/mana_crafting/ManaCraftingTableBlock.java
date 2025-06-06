@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.common.register.ModBlockEntities;
+import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
+import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class ManaCraftingTableBlock extends BaseEntityBlock  {
+public class ManaCraftingTableBlock extends BaseMachineBlock {
     public static final MapCodec<ManaCraftingTableBlock> CODEC = simpleCodec(ManaCraftingTableBlock::new);
     public static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
@@ -49,13 +49,12 @@ public class ManaCraftingTableBlock extends BaseEntityBlock  {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                              Player player, InteractionHand hand, BlockHitResult hitResult) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ManaCraftingTableBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
-                        new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
+                        new SimpleMenuProvider(generator, Component.translatable("block.koniava.mana_generator")),
                         pos
                 );
             } else {

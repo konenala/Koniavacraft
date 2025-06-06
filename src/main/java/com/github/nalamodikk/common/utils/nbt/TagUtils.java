@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.utils.nbt;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -14,7 +14,7 @@ public class TagUtils {
      */
     public static boolean isItemInTag(ResourceLocation itemId, String tagName) {
         TagKey<Item> tag = TagKey.create(BuiltInRegistries.ITEM.key(),
-                ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, tagName));
+                ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, tagName));
 
         return BuiltInRegistries.ITEM.getTag(tag)
                 .stream()

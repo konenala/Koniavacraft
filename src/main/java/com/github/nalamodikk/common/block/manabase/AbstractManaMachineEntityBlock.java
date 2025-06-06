@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.manabase;
 
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
@@ -26,11 +26,13 @@ import java.math.BigInteger;
  * 可選擇性支援魔力儲存、能量儲存、流體儲存、物品儲存等功能，
  * 並可透過覆寫對應方法客製化運作邏輯。
  */
-public abstract class AbstractManaMachineEntityBlock extends BlockEntity implements MenuProvider {
+public abstract class AbstractManaMachineEntityBlock extends BlockEntity implements MenuProvider , IConfigurableBlock {
 
     /** 魔力儲存（可選） */
+    private static final int MAX_MANA = 200000;
+
     @Nullable
-    protected final ManaStorage manaStorage;
+    protected final  ManaStorage manaStorage;
 
     /** 能量儲存（可選） */
     @Nullable

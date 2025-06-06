@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ManaCraftingScreen extends AbstractContainerScreen<ManaCraftingMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_crafting_table_gui.png");
-    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_crafting_table_gui.png");
+    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final Logger LOGGER = LogManager.getLogger();
 
     public ManaCraftingScreen(ManaCraftingMenu container, Inventory inv, Component title) {
@@ -100,7 +100,7 @@ public class ManaCraftingScreen extends AbstractContainerScreen<ManaCraftingMenu
 
             // 创建要显示的工具提示内容
             List<Component> tooltip = new ArrayList<>();
-            tooltip.add(Component.translatable("tooltip.magical_industry.mana_stored", manaStored, maxMana));
+            tooltip.add(Component.translatable("tooltip.koniava.mana_stored", manaStored, maxMana));
 
             // 显示工具提示
             guiGraphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);

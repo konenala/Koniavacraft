@@ -1,0 +1,6 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "koniava:block/conduit/mana_conduit"
+  }
+}

@@ -9,10 +9,32 @@ import java.util.List;
 // 同步管理器類，負責多個機器的同步
 public class MachineSyncManager implements ContainerData {
     private final List<DataSlot> dataSlots = new ArrayList<>();
+    private final int[] values;
 
-    // 添加一個 DataSlot
-    public void addDataSlot(DataSlot dataSlot) {
-        dataSlots.add(dataSlot);
+    public boolean setIfChanged(int index, int value) {
+        if (get(index) != value) {
+            set(index, value);
+            return true;
+        }
+        return false;
+    }
+
+    public MachineSyncManager(int slotCount) {
+        this.values = new int[slotCount];
+        for (int i = 0; i < slotCount; i++) {
+            final int index = i;
+            addDataSlot(new DataSlot() {
+                @Override
+                public int get() {
+                    return values[index];
+                }
+
+                @Override
+                public void set(int value) {
+                    values[index] = value;
+                }
+            });
+        }
     }
 
     @Override
@@ -28,6 +50,18 @@ public class MachineSyncManager implements ContainerData {
     @Override
     public int getCount() {
         return dataSlots.size();
+    }
+
+    public void setDirect(int index, int value) {
+        values[index] = value;
+    }
+
+    public int getDirect(int index) {
+        return values[index];
+    }
+
+    private void addDataSlot(DataSlot slot) {
+        this.dataSlots.add(slot);
     }
 
     // 工具方法，用於添加不同類型的數據

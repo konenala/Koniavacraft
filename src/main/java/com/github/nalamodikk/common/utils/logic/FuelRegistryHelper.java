@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.utils.logic;
 
-import com.github.nalamodikk.common.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.utils.nbt.TagUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,20 +44,7 @@ public class FuelRegistryHelper {
         return getBurnTime(new ItemStack(item));
     }
 
-    /**
-     * 取得所有可用作燃料的物品及其對應燃燒時間。
-     * 僅包含內建 Furnace 系統支援的燃料。
-     */
-    public static Map<Item, Integer> getAllFuelItems() {
-        Map<Item, Integer> fuelMap = new HashMap<>();
-        for (Item item : BuiltInRegistries.ITEM) {
-            int burnTime = getBurnTime(item);
-            if (burnTime > 0) {
-                fuelMap.put(item, burnTime);
-            }
-        }
-        return fuelMap;
-    }
+
 
     /**
      * 取得所有自定義 + 系統可識別的有效燃料（ManaFuel JSON / tag / 系統爐）。
@@ -92,8 +79,8 @@ public class FuelRegistryHelper {
                                 it.builtInRegistryHolder().key().location().getPath()
                         )));
 
-        if (MagicalIndustryMod.IS_DEV && !hasCustomFuelRate(item)) {
-            MagicalIndustryMod.LOGGER.debug("⚠️ 未定義燃料倍率: {}", item);
+        if (KoniavacraftMod.IS_DEV && !hasCustomFuelRate(item)) {
+            KoniavacraftMod.LOGGER.debug("⚠️ 未定義燃料倍率: {}", item);
         }
 
         return rate;
