@@ -19,7 +19,7 @@ public class ModKeyMappings {
             GLFW.GLFW_KEY_UNKNOWN,
             "key.categories.koniava" // 顯示在控制選單分組
                 );
-        @SubscribeEvent
+    @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(OPEN_FLOATING_GUI);
     }
