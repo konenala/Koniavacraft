@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.datagen;
 
+import com.github.nalamodikk.common.utils.loot.LootTableUtils;
 import com.github.nalamodikk.register.ModBlocks;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.core.Holder;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
+
 import java.util.Set;
 
 public class ModBlockLootTableProvider extends BlockLootSubProvider {
@@ -33,10 +35,23 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
 
 
         // dropSelf(ModBlocks.MAGIC_BLOCK.get());
-        this.add(ModBlocks.MAGIC_ORE.get(),
-                block -> createMultipleOreDrops(ModBlocks.MAGIC_ORE.get(), ModItems.CORRUPTED_MANA_DUST.get(),1,8));
-        this.add(ModBlocks.DEEPSLATE_MAGIC_ORE.get(),
-                block -> createMultipleOreDrops(ModBlocks.DEEPSLATE_MAGIC_ORE.get(), ModItems.CORRUPTED_MANA_DUST.get(),2,9));
+        this.add(ModBlocks.MAGIC_ORE.get(), block ->
+                LootTableUtils.createOreDropsWithBonusAndSilkTouch(
+                        block,
+                        ModItems.RAW_MANA_DUST.get(),
+                        1, 4,                             // 主掉落範圍
+                        ModItems.CORRUPTED_MANA_DUST.get(), 0.2f, // 額外掉落 + 機率
+                        this.registries.lookupOrThrow(Registries.ENCHANTMENT)
+                ));
+    this.add(ModBlocks.DEEPSLATE_MAGIC_ORE.get(), block ->
+                LootTableUtils.createOreDropsWithBonusAndSilkTouch(
+                        block,
+                        ModItems.RAW_MANA_DUST.get(),
+                        2, 5,                             // 主掉落範圍
+                        ModItems.CORRUPTED_MANA_DUST.get(), 0.2f, // 額外掉落 + 機率
+                        this.registries.lookupOrThrow(Registries.ENCHANTMENT)
+                ));
+
 
     }
 
