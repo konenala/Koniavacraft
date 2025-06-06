@@ -1,10 +1,10 @@
-package com.github.nalamodikk.draft.screen3d.client;
+package com.github.nalamodikk.experimental.screen3d.client;
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.draft.screen3d.api.FloatingPanelManager;
-import com.github.nalamodikk.draft.screen3d.api.FloatingScreen;
-import com.github.nalamodikk.draft.screen3d.keyinput.ModKeyMappings;
-import com.github.nalamodikk.draft.screen3d.screen.ExampleFloatingScreen;
+import com.github.nalamodikk.experimental.screen3d.api.FloatingPanelManager;
+import com.github.nalamodikk.experimental.screen3d.api.FloatingScreen;
+import com.github.nalamodikk.experimental.screen3d.keyinput.ModKeyMappings;
+import com.github.nalamodikk.experimental.screen3d.screen.ExampleFloatingScreen;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;

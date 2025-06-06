@@ -1,8 +1,8 @@
-    package com.github.nalamodikk.draft.screen3d.screen;
+    package com.github.nalamodikk.experimental.screen3d.screen;
 
     import com.github.nalamodikk.MagicalIndustryMod;
-    import com.github.nalamodikk.draft.screen3d.api.FloatingScreen;
-    import com.github.nalamodikk.draft.screen3d.util.GuiQuadBatcher;
+    import com.github.nalamodikk.experimental.screen3d.api.FloatingScreen;
+    import com.github.nalamodikk.experimental.screen3d.util.GuiQuadBatcher;
     import com.mojang.blaze3d.vertex.PoseStack;
     import com.mojang.blaze3d.vertex.VertexConsumer;
     import net.minecraft.client.Camera;

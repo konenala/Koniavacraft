@@ -1,4 +1,4 @@
-package com.github.nalamodikk.draft.screen3d.keyinput;
+package com.github.nalamodikk.experimental.screen3d.keyinput;
 
 
 import com.github.nalamodikk.MagicalIndustryMod;

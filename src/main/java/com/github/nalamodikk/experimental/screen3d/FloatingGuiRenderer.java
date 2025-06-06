@@ -1,8 +1,8 @@
-package com.github.nalamodikk.draft.screen3d;
+package com.github.nalamodikk.experimental.screen3d;
 
 
 import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.draft.screen3d.api.FloatingPanelManager;
+import com.github.nalamodikk.experimental.screen3d.api.FloatingPanelManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.resources.ResourceLocation;

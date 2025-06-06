@@ -1,4 +1,4 @@
-package com.github.nalamodikk.draft.screen3d.api;
+package com.github.nalamodikk.experimental.screen3d.api;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
