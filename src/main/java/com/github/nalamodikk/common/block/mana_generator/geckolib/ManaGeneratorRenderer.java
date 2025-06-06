@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.geckolib;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +14,7 @@ public class ManaGeneratorRenderer extends GeoBlockRenderer<ManaGeneratorBlockEn
 
     @Override
     public ResourceLocation getTextureLocation(ManaGeneratorBlockEntity animatable) {
-        return ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID,
+        return ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID,
                 animatable.isWorking() ? "textures/block/mana_generator_active.png" : "textures/block/mana_generator_texture.png"
         );
     }

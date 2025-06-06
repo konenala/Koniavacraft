@@ -14,8 +14,8 @@
 
 package com.github.nalamodikk.common.item.tool;
 
-import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
@@ -75,8 +75,8 @@ public class BasicTechWandItem extends Item {
             TechWandMode next = current.next();
             setMode(stack, next);
             serverPlayer.displayClientMessage(Component.translatable(
-                    "message.magical_industry.mode_changed",
-                    Component.translatable("mode.magical_industry." + next.getSerializedName())
+                    "message.koniava.mode_changed",
+                    Component.translatable("mode.koniava." + next.getSerializedName())
             ), true);
         }
     }
@@ -93,17 +93,17 @@ public class BasicTechWandItem extends Item {
 
         BlockPos target = BlockSelectorUtils.getTargetBlock(player, 5.0);
         if (target == null) {
-            player.displayClientMessage(Component.translatable("message.magical_industry.no_block_selected"), true);
+            player.displayClientMessage(Component.translatable("message.koniava.no_block_selected"), true);
             return;
         }
 
         BlockEntity be = level.getBlockEntity(target);
         if (be instanceof IConfigurableBlock configBlock) {
             TechDataComponents.saveConfigDirections(stack, target, configBlock);
-            player.displayClientMessage(Component.translatable("message.magical_industry.block_selected", target), true);
+            player.displayClientMessage(Component.translatable("message.koniava.block_selected", target), true);
             event.setCanceled(true);
         } else {
-            player.displayClientMessage(Component.translatable("message.magical_industry.block_not_configurable"), true);
+            player.displayClientMessage(Component.translatable("message.koniava.block_not_configurable"), true);
         }
     }
 
@@ -133,9 +133,9 @@ public class BasicTechWandItem extends Item {
                     }
 
                     player.displayClientMessage(Component.translatable(
-                            "message.magical_industry.config_changed",
+                            "message.koniava.config_changed",
                             face.getName(),
-                            Component.translatable("mode.magical_industry." + next.name().toLowerCase()) // ✅ 改為使用 next.name()
+                            Component.translatable("mode.koniava." + next.name().toLowerCase()) // ✅ 改為使用 next.name()
                     ), true);
 
                     return InteractionResult.SUCCESS;
@@ -152,7 +152,7 @@ public class BasicTechWandItem extends Item {
                         sp.openMenu(new MenuProvider() {
                             @Override
                             public Component getDisplayName() {
-                                return Component.translatable("screen.magical_industry.configure_io");
+                                return Component.translatable("screen.koniava.configure_io");
                             }
 
                             @Override
@@ -177,15 +177,15 @@ public class BasicTechWandItem extends Item {
                     if (state.hasProperty(BlockStateProperties.FACING)) {
                         level.setBlock(pos, state.setValue(BlockStateProperties.FACING,
                                 state.getValue(BlockStateProperties.FACING).getClockWise()), 3);
-                        player.displayClientMessage(Component.translatable("message.magical_industry.block_rotated_facing"), true);
+                        player.displayClientMessage(Component.translatable("message.koniava.block_rotated_facing"), true);
                         return InteractionResult.SUCCESS;
                     } else if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                         level.setBlock(pos, state.setValue(BlockStateProperties.HORIZONTAL_FACING,
                                 state.getValue(BlockStateProperties.HORIZONTAL_FACING).getClockWise()), 3);
-                        player.displayClientMessage(Component.translatable("message.magical_industry.block_rotated_horizontal"), true);
+                        player.displayClientMessage(Component.translatable("message.koniava.block_rotated_horizontal"), true);
                         return InteractionResult.SUCCESS;
                     } else {
-                        player.displayClientMessage(Component.translatable("message.magical_industry.block_cannot_rotate"), true);
+                        player.displayClientMessage(Component.translatable("message.koniava.block_cannot_rotate"), true);
                     }
                 }
             }
@@ -206,14 +206,14 @@ public class BasicTechWandItem extends Item {
         TechWandMode next = current.cycle(forward); // ⬅ 你需要這個方法
         TechWandModePacket.sendToServer(next);
 
-        MagicalIndustryMod.LOGGER.debug("Sending TechWandModePacket: " + next);
+        KoniavacraftMod.LOGGER.debug("Sending TechWandModePacket: " + next);
         event.setCanceled(true);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.magical_industry.mode",
-                Component.translatable("mode.magical_industry." + getMode(stack).getSerializedName())));
+        tooltipComponents.add(Component.translatable("tooltip.koniava.mode",
+                Component.translatable("mode.koniava." + getMode(stack).getSerializedName())));
 
         EnumMap<Direction, Boolean> config = stack.get(ModDataComponents.CONFIGURED_DIRECTIONS);
 //        MagicalIndustryMod.LOGGER.info("[Tooltip] Stack: {}, HasConfig = {}", stack.getItem(), config != null);
@@ -238,13 +238,13 @@ public class BasicTechWandItem extends Item {
                             .map(String::toLowerCase)
                             .collect(Collectors.joining(", "));
                     String configType = entry.getKey() ? "output" : "input";
-                    tooltipComponents.add(Component.translatable("tooltip.magical_industry.saved_direction_config", names,
-                            Component.translatable("screen.magical_industry." + configType)
+                    tooltipComponents.add(Component.translatable("tooltip.koniava.saved_direction_config", names,
+                            Component.translatable("screen.koniava." + configType)
                     ));
                 }
             }
         } else {
-            tooltipComponents.add(Component.translatable("tooltip.magical_industry.no_saved_block"));
+            tooltipComponents.add(Component.translatable("tooltip.koniava.no_saved_block"));
         }
 
     }

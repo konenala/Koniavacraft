@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.animation.PlayState;
@@ -24,7 +24,7 @@ public class ManaGeneratorAnimator {
             state.getController().setAnimation(RawAnimation.begin().thenLoop(targetAnimation));
             currentAnimation = targetAnimation;
             forceRefreshAnimation = false;
-            MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
+            KoniavacraftMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
         }
 
         return PlayState.CONTINUE;

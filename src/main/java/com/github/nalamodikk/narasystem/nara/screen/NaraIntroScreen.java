@@ -1,6 +1,6 @@
 package com.github.nalamodikk.narasystem.nara.screen;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Axis;
@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 public class NaraIntroScreen extends Screen {
-    private static final ResourceLocation CIRCLE_TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/nara_circle.png");
+    private static final ResourceLocation CIRCLE_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/nara_circle.png");
     public static final Logger LOGGER = LogUtils.getLogger();
 
     private static final int INTRO_DURATION = 80; // 播 4 秒（20 tick = 1 秒）

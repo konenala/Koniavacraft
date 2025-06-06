@@ -12,7 +12,7 @@ package com.github.nalamodikk.register;
  * registerMenuType("mana_generator", entityMenu(ManaGeneratorBlockEntity.class, ManaGeneratorMenu::new));
  */
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorMenu;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
@@ -45,7 +45,7 @@ import java.util.function.BiFunction;
 
 public class ModMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(Registries.MENU, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(Registries.MENU, KoniavacraftMod.MOD_ID);
 
     public static final DeferredHolder<MenuType<?>, MenuType<ManaCraftingMenu>> MANA_CRAFTING_MENU =
             registerMenuType("mana_crafting", ManaCraftingMenu::create);
@@ -83,7 +83,7 @@ public class ModMenuTypes {
         Level level = playerInv.player.level();
 
         if (!level.isLoaded(pos)) {
-            MagicalIndustryMod.LOGGER.warn("UpgradeMenu open failed: chunk at {} not loaded.", pos);
+            KoniavacraftMod.LOGGER.warn("UpgradeMenu open failed: chunk at {} not loaded.", pos);
             return new FallbackUpgradeMenu(id, playerInv);
 
         }
@@ -93,7 +93,7 @@ public class ModMenuTypes {
             return new UpgradeMenu(id, playerInv, machine.getUpgradeInventory(), machine);
         }
 
-        MagicalIndustryMod.LOGGER.warn("UpgradeMenu open failed: BlockEntity at {} is not IUpgradeableMachine.", pos);
+        KoniavacraftMod.LOGGER.warn("UpgradeMenu open failed: BlockEntity at {} is not IUpgradeableMachine.", pos);
         return new FallbackUpgradeMenu(id, playerInv);
     }
 

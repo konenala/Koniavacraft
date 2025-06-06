@@ -1,6 +1,6 @@
 package com.github.nalamodikk.narasystem.nara.network.server;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.narasystem.nara.util.NaraHelper;
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
@@ -18,7 +18,7 @@ public record NaraBindRequestPacket(boolean bind) implements CustomPacketPayload
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final Type<NaraBindRequestPacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "nara_bind_request"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "nara_bind_request"));
 
     public static final StreamCodec<FriendlyByteBuf, NaraBindRequestPacket> STREAM_CODEC =
             StreamCodec.composite(

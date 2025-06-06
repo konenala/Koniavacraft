@@ -1,6 +1,6 @@
 package com.github.nalamodikk.narasystem.nara.network.server;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.narasystem.nara.network.client.NaraSyncPacketclient;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -11,7 +11,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public record NaraSyncPacket(boolean isBound) implements CustomPacketPayload {
     public static final Type<NaraSyncPacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "nara_sync"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "nara_sync"));
 
     public static final StreamCodec<FriendlyByteBuf, NaraSyncPacket> STREAM_CODEC =
             StreamCodec.composite(

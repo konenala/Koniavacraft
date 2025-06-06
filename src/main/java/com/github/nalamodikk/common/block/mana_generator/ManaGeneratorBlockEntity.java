@@ -1,7 +1,7 @@
     // ⚠ 自動產生：結合 NeoForge 能量與魔力產出邏輯
     package com.github.nalamodikk.common.block.mana_generator;
 
-    import com.github.nalamodikk.MagicalIndustryMod;
+    import com.github.nalamodikk.KoniavacraftMod;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
@@ -304,7 +304,7 @@
 
         @Override
         public Component getDisplayName() {
-            return Component.translatable("block." + MagicalIndustryMod.MOD_ID + ".mana_generator");
+            return Component.translatable("block." + KoniavacraftMod.MOD_ID + ".mana_generator");
         }
 
         @Override

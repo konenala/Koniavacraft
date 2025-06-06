@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.register.ModBlocks;
 import com.github.nalamodikk.register.ModRecipes;
 import mezz.jei.api.IModPlugin;
@@ -22,7 +22,7 @@ import java.util.List;
 @JeiPlugin
 public class ManaCraftingJEIPlugin implements IModPlugin {
 
-    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_crafting");
+    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_crafting");
     private static final Logger LOGGER = LoggerFactory.getLogger(ManaCraftingJEIPlugin.class);
 
     @Override

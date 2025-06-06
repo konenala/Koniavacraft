@@ -66,7 +66,7 @@ public class ManaGeneratorBlock extends BaseMachineBlock {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ManaGeneratorBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
-                        new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
+                        new SimpleMenuProvider(generator, Component.translatable("block.koniava.mana_generator")),
                         pos
                 );
             } else {

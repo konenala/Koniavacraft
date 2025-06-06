@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public record TechWandModePacket(BasicTechWandItem.TechWandMode mode) implements CustomPacketPayload {
 
     public static final Type<TechWandModePacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "tech_wand_mode"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "tech_wand_mode"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, TechWandModePacket> STREAM_CODEC =
             StreamCodec.composite(
@@ -42,8 +42,8 @@ public record TechWandModePacket(BasicTechWandItem.TechWandMode mode) implements
                     wand.setMode(stack, packet.mode());
 
                     player.displayClientMessage(Component.translatable(
-                            "message.magical_industry.mode_changed",
-                            Component.translatable("mode.magical_industry." + packet.mode().getSerializedName())
+                            "message.koniava.mode_changed",
+                            Component.translatable("mode.koniava." + packet.mode().getSerializedName())
                     ), true);
                 }
             }

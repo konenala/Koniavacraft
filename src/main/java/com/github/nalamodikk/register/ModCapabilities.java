@@ -1,6 +1,6 @@
 package com.github.nalamodikk.register;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 
 import com.mojang.serialization.Codec;
@@ -15,11 +15,11 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 
-@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class ModCapabilities {
     public static final BlockCapability<IUnifiedManaHandler, Direction> MANA =
             BlockCapability.create(
-                    ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana"),
+                    ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana"),
                     IUnifiedManaHandler.class,
                     Direction.class
             );

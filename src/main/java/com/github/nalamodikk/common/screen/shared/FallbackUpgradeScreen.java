@@ -14,7 +14,7 @@ public class FallbackUpgradeScreen extends UpgradeScreen{
         super.renderLabels(graphics, mouseX, mouseY);
 
         // ✅ 顯示錯誤提示訊息（紅色）
-        Component errorText = Component.translatable("screen.magical_industry.upgrade.fallback_error");
+        Component errorText = Component.translatable("screen.koniava.upgrade.fallback_error");
         graphics.drawString(this.font, errorText, 8, 6, 0xFF5555, false);
     }
 

@@ -1,6 +1,6 @@
 package com.github.nalamodikk.experimental.screen3d.client;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.experimental.screen3d.api.FloatingPanelManager;
 import com.github.nalamodikk.experimental.screen3d.api.FloatingScreen;
 import com.github.nalamodikk.experimental.screen3d.keyinput.ModKeyMappings;
@@ -29,7 +29,7 @@ public class ClientInitcore {
     /**
      * ✅ 鍵位註冊用：只能在 MOD BUS 上執行，不能與下面的 runtime 混在一起
      */
-    @EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {

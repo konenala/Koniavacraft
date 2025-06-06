@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.jei;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.register.ModBlocks;
@@ -24,7 +24,7 @@ import java.util.List;
 
 @JeiPlugin
 public class ManaGeneratorJEIPlugin implements IModPlugin {
-    private static final ResourceLocation UID =  ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_generator_jei_plugin");
+    private static final ResourceLocation UID =  ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_generator_jei_plugin");
     private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorJEIPlugin.class);
 
     @Override

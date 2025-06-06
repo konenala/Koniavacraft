@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.recipe;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
@@ -43,7 +43,7 @@ public class ManaGenFuelRecipeBuilder implements RecipeBuilder {
 
         Item resultItem = stacks[0].getItem();
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                MagicalIndustryMod.MOD_ID,
+                KoniavacraftMod.MOD_ID,
                 FUEL_RECIPE_PATH_PREFIX + BuiltInRegistries.ITEM.getKey(resultItem).getPath() + "_fuel"
         );
 

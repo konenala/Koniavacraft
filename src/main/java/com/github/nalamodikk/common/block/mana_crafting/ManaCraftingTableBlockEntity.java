@@ -1,9 +1,9 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
-import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.common.API.IManaCraftingMachine;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
+import com.github.nalamodikk.common.API.block.mana.IManaCraftingMachine;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
@@ -106,7 +106,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
                 long elapsed = System.nanoTime() - start;
 
                 if (elapsed > MAX_RECIPE_QUERY_TIME_NANOS) {
-                    MagicalIndustryMod.LOGGER.warn("[Performance] Recipe check took {} ns at {}", elapsed, pos);
+                    KoniavacraftMod.LOGGER.warn("[Performance] Recipe check took {} ns at {}", elapsed, pos);
                 }
             }
         }
@@ -233,14 +233,14 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.magical_industry.mana_crafting_table");
+        return Component.translatable("block.koniava.mana_crafting_table");
     }
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
         if (level == null) {
             assert false : "Level is null in createMenu(), this should not happen.";
-            MagicalIndustryMod.LOGGER.error("Level is null in createMenu() at position {}", worldPosition);
+            KoniavacraftMod.LOGGER.error("Level is null in createMenu() at position {}", worldPosition);
             return null;
         }
 

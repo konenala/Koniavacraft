@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.screen.shared;
 
-import com.github.nalamodikk.client.screenAPI.UniversalTexturedButton;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.client.screenAPI.component.button.TexturedButton;
+import com.github.nalamodikk.KoniavacraftMod;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -9,8 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class UpgradeScreen extends AbstractContainerScreen<UpgradeMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/upgrade_gui.png");
-    private UniversalTexturedButton upgradeButton;
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/upgrade_gui.png");
+    private TexturedButton upgradeButton;
 
     public UpgradeScreen(UpgradeMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

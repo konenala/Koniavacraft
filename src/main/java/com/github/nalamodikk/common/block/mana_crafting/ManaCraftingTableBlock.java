@@ -54,7 +54,7 @@ public class ManaCraftingTableBlock extends BaseMachineBlock {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ManaCraftingTableBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
-                        new SimpleMenuProvider(generator, Component.translatable("block.magical_industry.mana_generator")),
+                        new SimpleMenuProvider(generator, Component.translatable("block.koniava.mana_generator")),
                         pos
                 );
             } else {

@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.utils.logic;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.utils.nbt.TagUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -79,8 +79,8 @@ public class FuelRegistryHelper {
                                 it.builtInRegistryHolder().key().location().getPath()
                         )));
 
-        if (MagicalIndustryMod.IS_DEV && !hasCustomFuelRate(item)) {
-            MagicalIndustryMod.LOGGER.debug("⚠️ 未定義燃料倍率: {}", item);
+        if (KoniavacraftMod.IS_DEV && !hasCustomFuelRate(item)) {
+            KoniavacraftMod.LOGGER.debug("⚠️ 未定義燃料倍率: {}", item);
         }
 
         return rate;

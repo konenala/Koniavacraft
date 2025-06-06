@@ -1,6 +1,6 @@
 package com.github.nalamodikk.register;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 public class ModBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, KoniavacraftMod.MOD_ID);
 
     public static final Supplier<BlockEntityType<ManaCraftingTableBlockEntity>> MANA_CRAFTING_TABLE_BLOCK_BE =
             BLOCK_ENTITY_TYPES.register("mana_crafting_table_be", () ->

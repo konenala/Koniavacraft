@@ -118,7 +118,7 @@ public class SolarManaCollectorBlock extends BaseMachineBlock {
             if (!level.isClientSide()) {
                 BlockEntity blockEntity = level.getBlockEntity(pos);
                 if (blockEntity instanceof SolarManaCollectorBlockEntity solarMana) {
-                    player.openMenu(new SimpleMenuProvider(solarMana, Component.translatable("block.magical_industry.mana_generator")), pos
+                    player.openMenu(new SimpleMenuProvider(solarMana, Component.translatable("block.koniava.mana_generator")), pos
                     );
                 } else {
                     throw new IllegalStateException("Our Container provider is missing!");

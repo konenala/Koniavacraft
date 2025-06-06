@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
-import com.github.nalamodikk.client.screenAPI.DynamicTooltip;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.client.screenAPI.tooltip.DynamicTooltip;
 import com.github.nalamodikk.register.ModBlocks;
 import com.github.nalamodikk.common.utils.gui.GuiRenderUtils;
 import mezz.jei.api.constants.VanillaTypes;
@@ -28,9 +28,9 @@ import java.util.Optional;
 
 public class ManaCraftingTableCategory implements IRecipeCategory<ManaCraftingTableRecipe> {
 
-    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_crafting");
-    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_crafting_table_gui.png");
-    public static final ResourceLocation MANA_BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
+    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_crafting");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_crafting_table_gui.png");
+    public static final ResourceLocation MANA_BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
     public static final int WIDTH = 173;
     public static final int HEIGHT = 80;
 
@@ -53,7 +53,7 @@ public class ManaCraftingTableCategory implements IRecipeCategory<ManaCraftingTa
 
     @Override
     public Component getTitle() {
-        return Component.translatable("block.magical_industry.mana_crafting_table");
+        return Component.translatable("block.koniava.mana_crafting_table");
     }
 
     @Override
@@ -138,7 +138,7 @@ public class ManaCraftingTableCategory implements IRecipeCategory<ManaCraftingTa
         boolean inArea = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
         if (inArea) {
             DynamicTooltip tooltip = new DynamicTooltip(() ->
-                    List.of(Component.translatable("tooltip.magical_industry.mana_cost", recipe.getManaCost()))
+                    List.of(Component.translatable("tooltip.koniava.mana_cost", recipe.getManaCost()))
             );
 
             graphics.renderTooltip(

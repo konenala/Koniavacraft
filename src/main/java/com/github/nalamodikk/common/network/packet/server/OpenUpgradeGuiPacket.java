@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
@@ -24,7 +24,7 @@ public record OpenUpgradeGuiPacket(BlockPos pos) implements CustomPacketPayload 
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final Type<OpenUpgradeGuiPacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "open_upgrade_gui"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "open_upgrade_gui"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenUpgradeGuiPacket> STREAM_CODEC =
             StreamCodec.composite(
@@ -53,7 +53,7 @@ public record OpenUpgradeGuiPacket(BlockPos pos) implements CustomPacketPayload 
             if (be instanceof IUpgradeableMachine machine) {
                 player.openMenu(new SimpleMenuProvider(
                         (id, inv, p) -> new UpgradeMenu(id, inv, machine.getUpgradeInventory(), machine),
-                        Component.translatable("screen.magical_industry.upgrade.title")
+                        Component.translatable("screen.koniava.upgrade.title")
 
                 ), buf -> buf.writeBlockPos(packet.pos()));
             }

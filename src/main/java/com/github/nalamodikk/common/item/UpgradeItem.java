@@ -26,9 +26,9 @@ public class UpgradeItem extends Item {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
 
         if (Screen.hasShiftDown()) {
-            tooltipComponents.add(Component.translatable("tooltip.magical_industry.upgrade." + type.getSerializedName()));
+            tooltipComponents.add(Component.translatable("tooltip.koniava.upgrade." + type.getSerializedName()));
         } else {
-            tooltipComponents.add(Component.translatable("tooltip.magical_industry.upgrade.hold_shift"));
+            tooltipComponents.add(Component.translatable("tooltip.koniava.upgrade.hold_shift"));
         }
     }
 

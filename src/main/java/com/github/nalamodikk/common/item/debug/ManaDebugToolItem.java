@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.item.debug;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.register.ModCapabilities;
@@ -26,9 +26,9 @@ public class ManaDebugToolItem extends Item {
 
     private static final int[] MANA_AMOUNTS = {10, 100, 1000};
     private static final String[] MODES = {
-            "message.magical_industry.mana_mode_add_10",
-            "message.magical_industry.mana_mode_add_100",
-            "message.magical_industry.mana_mode_add_1000"
+            "message.koniava.mana_mode_add_10",
+            "message.koniava.mana_mode_add_100",
+            "message.koniava.mana_mode_add_1000"
     };
 
     public ManaDebugToolItem(Properties properties) {
@@ -66,7 +66,7 @@ public class ManaDebugToolItem extends Item {
                 Player player = context.getPlayer();
                 if (player instanceof ServerPlayer serverPlayer) {
                     serverPlayer.displayClientMessage(
-                            Component.translatable("message.magical_industry.mana_added", manaToAdd, manaStorage.getManaStored()), true);
+                            Component.translatable("message.koniava.mana_added", manaToAdd, manaStorage.getManaStored()), true);
                 }
 
                 BlockEntity blockEntity = level.getBlockEntity(pos);
@@ -100,12 +100,12 @@ public class ManaDebugToolItem extends Item {
         String modeKey = MODES[newIndex];
 
         player.displayClientMessage(Component.translatable(
-                "message.magical_industry.mode_changed",
+                "message.koniava.mode_changed",
                 Component.translatable(modeKey)
         ), true);
 
-        if (MagicalIndustryMod.IS_DEV) {
-            MagicalIndustryMod.LOGGER.info("[ModeChange] {} switched wand mode: {} → {}", player.getGameProfile().getName(), currentIndex, newIndex);
+        if (KoniavacraftMod.IS_DEV) {
+            KoniavacraftMod.LOGGER.info("[ModeChange] {} switched wand mode: {} → {}", player.getGameProfile().getName(), currentIndex, newIndex);
         }
     }
 

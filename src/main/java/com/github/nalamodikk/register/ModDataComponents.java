@@ -1,7 +1,7 @@
 package com.github.nalamodikk.register;
 
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
-import com.github.nalamodikk.MagicalIndustryMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
@@ -22,7 +22,7 @@ import java.util.EnumMap;
 
 import java.util.Map;
 
-@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class ModDataComponents {
 
 
@@ -96,11 +96,11 @@ public class ModDataComponents {
     @SubscribeEvent
     public static void register(RegisterEvent event) {
         event.register(Registries.DATA_COMPONENT_TYPE, helper -> {
-            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mode_index"), ManaDebugToolItem.MODE_INDEX);
-            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "tech_wand_mode"), TECH_WAND_MODE);
-            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "saved_directions"), SAVED_DIRECTIONS);
-            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "configured_directions"), CONFIGURED_DIRECTIONS);
-            helper.register(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "configured_directions_io"), CONFIGURED_DIRECTIONS_IO);
+            helper.register(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mode_index"), ManaDebugToolItem.MODE_INDEX);
+            helper.register(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "tech_wand_mode"), TECH_WAND_MODE);
+            helper.register(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "saved_directions"), SAVED_DIRECTIONS);
+            helper.register(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "configured_directions"), CONFIGURED_DIRECTIONS);
+            helper.register(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "configured_directions_io"), CONFIGURED_DIRECTIONS_IO);
 
         });
     }

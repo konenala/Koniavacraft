@@ -1,6 +1,6 @@
     package com.github.nalamodikk.experimental.screen3d.screen;
 
-    import com.github.nalamodikk.MagicalIndustryMod;
+    import com.github.nalamodikk.KoniavacraftMod;
     import com.github.nalamodikk.experimental.screen3d.api.FloatingScreen;
     import com.github.nalamodikk.experimental.screen3d.util.GuiQuadBatcher;
     import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,7 +14,7 @@
     import net.minecraft.world.phys.Vec3;
     public class ExampleFloatingScreen extends FloatingScreen {
 
-        private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/modular_panel.png");
+        private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/modular_panel.png");
         private final BlockPos anchorPos;
 
         public ExampleFloatingScreen( BlockPos anchorPos, float width, float height) {

@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.network.packet.client.ManaUpdatePacketClient;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import net.minecraft.core.BlockPos;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public record ManaUpdatePacket(BlockPos pos, int mana) implements CustomPacketPayload {
 
     public static final Type<ManaUpdatePacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mana_update"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_update"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ManaUpdatePacket> STREAM_CODEC =
             StreamCodec.composite(

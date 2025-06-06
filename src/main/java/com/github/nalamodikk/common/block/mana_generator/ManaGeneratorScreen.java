@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.block.mana_generator;
 
-import com.github.nalamodikk.client.screenAPI.UniversalTexturedButton;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.client.screenAPI.component.button.TexturedButton;
 
 import com.github.nalamodikk.common.network.packet.server.manatool.ToggleModePacket;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -17,11 +17,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_generator_gui.png");
-    private static final ResourceLocation BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/mana_generator_button_texture.png");
-    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
-    private static final ResourceLocation ENERGY_BAR_FULL =  ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/energy_bar_full.png");
-    private static final ResourceLocation FUEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/fuel_bar.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_generator_gui.png");
+    private static final ResourceLocation BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/mana_generator_button_texture.png");
+    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
+    private static final ResourceLocation ENERGY_BAR_FULL =  ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/energy_bar_full.png");
+    private static final ResourceLocation FUEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/fuel_bar.png");
     private static final int MANA_BAR_HEIGHT = 47;
     private static final int MANA_BAR_WIDTH = 7;
     private static final int ENERGY_BAR_HEIGHT = 47;
@@ -30,7 +30,7 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
     private static final int TOGGLE_BUTTON_Y_OFFSET = 25;
     private boolean showWarning = false;
     private long warningStartTime = 0;
-    private UniversalTexturedButton toggleModeButton;
+    private TexturedButton toggleModeButton;
 
     public ManaGeneratorScreen(ManaGeneratorMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -44,14 +44,14 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        toggleModeButton = new UniversalTexturedButton(
+        toggleModeButton = new TexturedButton(
                 x + TOGGLE_BUTTON_X_OFFSET, y + TOGGLE_BUTTON_Y_OFFSET, 20, 20,
                 Component.empty(),
                 BUTTON_TEXTURE, 20, 20,
                 btn -> {
                     // 如果機器正在運行，顯示紅字並記錄時間
                     if (this.menu.getBurnTime() > 0) {
-                        MagicalIndustryMod.LOGGER.info("⚠ 發電機正在運行，無法切換模式！");
+                        KoniavacraftMod.LOGGER.info("⚠ 發電機正在運行，無法切換模式！");
                         showWarning = true;
                         warningStartTime = System.currentTimeMillis(); // 記錄警告開始時間
                         return;
@@ -64,7 +64,7 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
         );
 
         this.addRenderableWidget(toggleModeButton);
-        toggleModeButton.setTooltip(Tooltip.create(Component.translatable("screen.magical_industry.toggle_mode")));
+        toggleModeButton.setTooltip(Tooltip.create(Component.translatable("screen.koniava.toggle_mode")));
     }
 
 
@@ -153,9 +153,9 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
 
 
         String modeText = this.menu.getCurrentMode() == 1
-                ? Component.translatable("mode.magical_industry.energy").getString()
-                : Component.translatable("mode.magical_industry.mana").getString();
-        Component currentMode = Component.translatable("screen.magical_industry.current_mode", modeText);
+                ? Component.translatable("mode.koniava.energy").getString()
+                : Component.translatable("mode.koniava.mana").getString();
+        Component currentMode = Component.translatable("screen.koniava.current_mode", modeText);
 
 
         // 設置文字的初始渲染位置（在縮放之前）
@@ -214,7 +214,7 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
             int warningY = (int) ((this.topPos + 65) / scale) + shakeY; // **改這裡！調整 Y 軸到 85**
 
             // 畫出警告訊息
-            pGuiGraphics.drawCenteredString(font, Component.translatable("screen.magical_industry.cannot_toggle")
+            pGuiGraphics.drawCenteredString(font, Component.translatable("screen.koniava.cannot_toggle")
                     .withStyle(ChatFormatting.RED), warningX, warningY, 0xFF0000);
 
             poseStack.popPose();

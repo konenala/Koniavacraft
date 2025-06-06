@@ -1,6 +1,6 @@
 package com.github.nalamodikk.register;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
 import net.minecraft.core.registries.Registries;
@@ -12,17 +12,17 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ModRecipes {
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
-            DeferredRegister.create(Registries.RECIPE_SERIALIZER, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(Registries.RECIPE_SERIALIZER, KoniavacraftMod.MOD_ID);
 
     public static final DeferredRegister<RecipeType<?>> TYPES =
-            DeferredRegister.create(Registries.RECIPE_TYPE, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(Registries.RECIPE_TYPE, KoniavacraftMod.MOD_ID);
 
     // 魔法合成台配方--註冊實例
     private static final RecipeType<ManaCraftingTableRecipe> MANA_CRAFTING_TYPE_INSTANCE =
             new RecipeType<>() {
                 @Override
                 public String toString() {
-                    return MagicalIndustryMod.MOD_ID + ":mana_crafting";
+                    return KoniavacraftMod.MOD_ID + ":mana_crafting";
                 }
             };
     // 註冊 serializer
@@ -38,7 +38,7 @@ public class ModRecipes {
     private static final RecipeType<ManaGenFuelRecipe> MANA_FUEL_TYPE_INSTANCE = new RecipeType<>() {
         @Override
         public String toString() {
-            return MagicalIndustryMod.MOD_ID + ":mana_fuel";
+            return KoniavacraftMod.MOD_ID + ":mana_fuel";
         }
     };
 
@@ -47,7 +47,7 @@ public class ModRecipes {
             TYPES.register("mana_fuel", () -> new RecipeType<>() {
                 @Override
                 public String toString() {
-                    return MagicalIndustryMod.MOD_ID + ":mana_fuel";
+                    return KoniavacraftMod.MOD_ID + ":mana_fuel";
                 }
             });
 

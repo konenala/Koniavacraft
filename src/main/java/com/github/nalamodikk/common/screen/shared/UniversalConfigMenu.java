@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.screen.shared;
 
-import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
@@ -70,8 +70,8 @@ public class UniversalConfigMenu extends AbstractContainerMenu {
                 wand.set(ModDataComponents.CONFIGURED_DIRECTIONS_IO, new EnumMap<>(currentConfig)); // ✅ 寫入新資料欄位
             }
 
-            if (MagicalIndustryMod.IS_DEV) {
-                MagicalIndustryMod.LOGGER.info("[Menu] [Server] Current IO Config = {}", this.currentConfig);
+            if (KoniavacraftMod.IS_DEV) {
+                KoniavacraftMod.LOGGER.info("[Menu] [Server] Current IO Config = {}", this.currentConfig);
             }
         }
     }

@@ -2,7 +2,7 @@ package com.github.nalamodikk.register;
 
 
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.mojang.serialization.Codec;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public class ModDataAttachments {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
-            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MagicalIndustryMod.MOD_ID);
+            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, KoniavacraftMod.MOD_ID);
 
     public static final Supplier<AttachmentType<Boolean>> NARA_BOUND =
             ATTACHMENT_TYPES.register("nara_bound", () ->

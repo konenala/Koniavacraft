@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.datagen.recipe.ManaCraftingRecipeProvider;
 import com.github.nalamodikk.common.datagen.recipe.ManaFuelRecipeProvider;
 import com.github.nalamodikk.register.ModBlocks;
@@ -98,7 +98,7 @@ public class ModRecipeProvider extends RecipeProvider {
                             Items.ANDESITE_SLAB,
                             2)
                     .unlockedBy("has_andesite", has(Items.ANDESITE))
-                    .save(recipeOutput, MagicalIndustryMod.MOD_ID + ":andesite_slab_from_stonecutting");
+                    .save(recipeOutput, KoniavacraftMod.MOD_ID + ":andesite_slab_from_stonecutting");
 
             // 🌟 基礎模板：Smithing Transform
             SmithingTransformRecipeBuilder.smithing(
@@ -108,7 +108,7 @@ public class ModRecipeProvider extends RecipeProvider {
                             RecipeCategory.TOOLS,
                             Items.NETHERITE_AXE)
                     .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                    .save(recipeOutput, MagicalIndustryMod.MOD_ID + ":netherite_axe_smithing");
+                    .save(recipeOutput, KoniavacraftMod.MOD_ID + ":netherite_axe_smithing");
 
 //            // 🌟 基礎模板：Smithing Trim
 //            SmithingTrimRecipeBuilder.smithingTrim(
@@ -139,7 +139,7 @@ public class ModRecipeProvider extends RecipeProvider {
             for (ItemLike item : ingredients) {
                 SimpleCookingRecipeBuilder.generic(Ingredient.of(item), category, result, xp, time, serializer, factory)
                         .group(group).unlockedBy(getHasName(item), has(item))
-                        .save(recipeOutput, MagicalIndustryMod.MOD_ID + ":" + getItemName(result) + suffix + "_" + getItemName(item));
+                        .save(recipeOutput, KoniavacraftMod.MOD_ID + ":" + getItemName(result) + suffix + "_" + getItemName(item));
             }
         }
     }

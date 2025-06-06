@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public record ModeChangePacket(boolean forward) implements CustomPacketPayload {
 
     public static final Type<ModeChangePacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "mode_change"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mode_change"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ModeChangePacket> STREAM_CODEC =
             StreamCodec.composite(

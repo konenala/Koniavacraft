@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.block.collector.solarmana;
 
-import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
+import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
 import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,11 +15,10 @@ import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaCollectorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/solar_mana_collector_gui.png");
-    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/mana_bar_full.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/solar_mana_collector_gui.png");
+    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final int MANA_BAR_HEIGHT = 47;
     private static final int MANA_BAR_WIDTH = 7;
     private final int imageWidth = 176;
@@ -87,15 +86,15 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
 
         // 📌 升級按鈕 Tooltip（支援滑鼠座標）
         TooltipSupplier.Positioned tooltip = (mouseX, mouseY) -> List.of(
-                Component.translatable("screen.magical_industry.upgrade_button.tooltip")
+                Component.translatable("screen.koniava.upgrade_button.tooltip")
         );
 
         // 📌 升級按鈕元件
-        this.addRenderableWidget(new GenericButtonWithTooltip(
+        this.addRenderableWidget(new TooltipButton(
                 this.leftPos + 150, this.topPos + 5, // 位置
                 18, 18, // 尺寸
                 Component.empty(),
-                ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/upgrade_button.png"),
+                ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/upgrade_button.png"),
                 18, 18, // 紋理尺寸
                 button -> {
                     // 傳送封包：打開 Upgrade GUI
@@ -118,8 +117,8 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         super.render(guiGraphics, mouseX, mouseY, partialTick);  // 基礎 Slot + 按鈕處理
 
 
-        Component speedLabel = Component.translatable("screen.magical_industry.upgrade.speed", menu.getSpeedLevel());
-        Component efficiencyLabel = Component.translatable("screen.magical_industry.upgrade.efficiency", menu.getEfficiencyLevel());
+        Component speedLabel = Component.translatable("screen.koniava.upgrade.speed", menu.getSpeedLevel());
+        Component efficiencyLabel = Component.translatable("screen.koniava.upgrade.efficiency", menu.getEfficiencyLevel());
 
         float scale = 0.8f;
         int drawX = leftPos + 22; // ❗你可以調整這個 X（越大越靠右）

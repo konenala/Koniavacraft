@@ -1,6 +1,6 @@
 package com.github.nalamodikk.register;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorScreen;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingScreen;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
@@ -11,7 +11,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ModMenuScreens {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {

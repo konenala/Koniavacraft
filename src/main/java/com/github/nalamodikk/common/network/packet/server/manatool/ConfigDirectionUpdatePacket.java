@@ -9,8 +9,8 @@
 
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.MagicalIndustryMod;
-import com.github.nalamodikk.common.API.IConfigurableBlock;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
@@ -34,7 +34,7 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, IOH
         implements CustomPacketPayload {
 
     public static final Type<ConfigDirectionUpdatePacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "config_direction_update"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "config_direction_update"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ConfigDirectionUpdatePacket> STREAM_CODEC =
             StreamCodec.composite(
@@ -58,8 +58,8 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, IOH
                 if (be instanceof IConfigurableBlock configurable) {
                     // ✅ 若內容沒變，就直接略過處理（防止多次封包）
                     if (configurable.getIOConfig(packet.direction()) == packet.ioType()) {
-                        if (MagicalIndustryMod.IS_DEV) {
-                            MagicalIndustryMod.LOGGER.info("[Server] ⏩ Skipped duplicate config for {} → {}", packet.direction(),packet.ioType());
+                        if (KoniavacraftMod.IS_DEV) {
+                            KoniavacraftMod.LOGGER.info("[Server] ⏩ Skipped duplicate config for {} → {}", packet.direction(),packet.ioType());
                         }
                         return;
                     }
@@ -81,12 +81,12 @@ public record ConfigDirectionUpdatePacket(BlockPos pos, Direction direction, IOH
                         if (!updatedConfig.equals(existing)) {
                             wand.set(ModDataComponents.CONFIGURED_DIRECTIONS, updatedConfig);
 
-                            if (MagicalIndustryMod.IS_DEV) {
-                                MagicalIndustryMod.LOGGER.info("[Server] 🔁 Updated wand config: {}", updatedConfig);
+                            if (KoniavacraftMod.IS_DEV) {
+                                KoniavacraftMod.LOGGER.info("[Server] 🔁 Updated wand config: {}", updatedConfig);
                             }
                         } else {
-                            if (MagicalIndustryMod.IS_DEV) {
-                                MagicalIndustryMod.LOGGER.info("[Server] ⏩ Skipped wand update (already up-to-date)");
+                            if (KoniavacraftMod.IS_DEV) {
+                                KoniavacraftMod.LOGGER.info("[Server] ⏩ Skipped wand update (already up-to-date)");
                             }
                         }
                     }

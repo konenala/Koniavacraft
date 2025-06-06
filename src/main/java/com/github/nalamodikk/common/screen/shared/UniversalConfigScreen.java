@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.screen.shared;
 
-import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
-import com.github.nalamodikk.common.API.IConfigurableBlock;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.client.Minecraft;
@@ -27,14 +27,14 @@ import java.util.Map;
 
 public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConfigMenu> {
 
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/universal_config.png");
-    private static final ResourceLocation BUTTON_TEXTURE_INPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_input.png");
-    private static final ResourceLocation BUTTON_TEXTURE_OUTPUT = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_output.png");
-    private static final ResourceLocation BUTTON_TEXTURE_BOTH = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_both.png");
-    private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/button_config_disabled.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/universal_config.png");
+    private static final ResourceLocation BUTTON_TEXTURE_INPUT = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/button_config_input.png");
+    private static final ResourceLocation BUTTON_TEXTURE_OUTPUT = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/button_config_output.png");
+    private static final ResourceLocation BUTTON_TEXTURE_BOTH = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/button_config_both.png");
+    private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/button_config_disabled.png");
     private static final int BUTTON_WIDTH = 20;
     private static final int BUTTON_HEIGHT = 20;
-    private final EnumMap<Direction, GenericButtonWithTooltip> directionButtonMap = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, TooltipButton> directionButtonMap = new EnumMap<>(Direction.class);
 
     private final EnumMap<Direction, IOHandlerUtils.IOType> currentIOMap = new EnumMap<>(Direction.class);
     private final BlockEntity blockEntity;
@@ -107,9 +107,9 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
                     case DISABLED -> BUTTON_TEXTURE_DISABLED;
                 };
 
-                Component label = Component.translatable("direction.magical_industry." + direction.getName());
+                Component label = Component.translatable("direction.koniava." + direction.getName());
 
-                GenericButtonWithTooltip button = new GenericButtonWithTooltip(
+                TooltipButton button = new TooltipButton(
                         buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT,
                         label,
                         currentTexture, 20, 20,
@@ -133,7 +133,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
     private void updateAllButtonTooltipsAndTextures() {
         for (Direction direction : Direction.values()) {
-            GenericButtonWithTooltip button = getButtonByDirection(direction);
+            TooltipButton button = getButtonByDirection(direction);
             if (button != null) {
                 updateButtonTooltip(button, direction);
                 updateButtonTexture(button, direction);
@@ -141,7 +141,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         }
     }
 
-    private GenericButtonWithTooltip getButtonByDirection(Direction direction) {
+    private TooltipButton getButtonByDirection(Direction direction) {
         return directionButtonMap.get(direction);
     }
 
@@ -164,9 +164,9 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
             // 顯示玩家通知（用本地化）
             Minecraft.getInstance().player.displayClientMessage(Component.translatable(
-                    "message.magical_industry.config_button_clicked",
+                    "message.koniava.config_button_clicked",
                     direction.getName(),
-                    Component.translatable("mode.magical_industry." + next.name().toLowerCase()) // 本地化鍵如 mode.magical_industry.output
+                    Component.translatable("mode.koniava." + next.name().toLowerCase()) // 本地化鍵如 mode.koniava.output
             ), true);
 
             updateAllButtonTooltipsAndTextures();
@@ -186,8 +186,8 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
                 if (oldValue != newValue) {
                     PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newValue));
 
-                    if (MagicalIndustryMod.IS_DEV) {
-                        MagicalIndustryMod.LOGGER.info("[Client] Changed direction: {} → {}, sending packet", direction.getName(), newValue.name());
+                    if (KoniavacraftMod.IS_DEV) {
+                        KoniavacraftMod.LOGGER.info("[Client] Changed direction: {} → {}, sending packet", direction.getName(), newValue.name());
                     }
                 }
             }
@@ -196,12 +196,12 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
 
 
-    private void updateButtonTooltip(GenericButtonWithTooltip button, Direction direction) {
+    private void updateButtonTooltip(TooltipButton button, Direction direction) {
         button.setTooltip(null); // 禁用靜態 tooltip
         directionButtonMap.put(direction, button);
     }
 
-    private void updateButtonTexture(GenericButtonWithTooltip button, Direction direction) {
+    private void updateButtonTexture(TooltipButton button, Direction direction) {
         IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
         ResourceLocation newTexture = switch (type) {
             case INPUT -> BUTTON_TEXTURE_INPUT;
@@ -216,18 +216,18 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         IOHandlerUtils.IOType type = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
         String configType = type.name().toLowerCase();
 
-        Component localizedDirection = Component.translatable("direction.magical_industry." + direction.getName());
-        Component modeText = Component.translatable("screen.magical_industry." + configType);
+        Component localizedDirection = Component.translatable("direction.koniava." + direction.getName());
+        Component modeText = Component.translatable("screen.koniava." + configType);
 
-        MutableComponent tooltip = Component.translatable("screen.magical_industry.configure_side.full", localizedDirection, modeText);
+        MutableComponent tooltip = Component.translatable("screen.koniava.configure_side.full", localizedDirection, modeText);
 
         // Shift 顯示進階資訊
         if (Screen.hasShiftDown()) {
             tooltip.append("\n")
-                    .append(Component.translatable("screen.magical_industry.debug_world_direction", direction.getName()));
+                    .append(Component.translatable("screen.koniava.debug_world_direction", direction.getName()));
         } else {
             tooltip.append("\n")
-                    .append(Component.translatable("screen.magical_industry.hold_shift"));
+                    .append(Component.translatable("screen.koniava.hold_shift"));
         }
 
         return tooltip;
@@ -255,9 +255,9 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     }
 
     private boolean renderButtonTooltips(GuiGraphics pGuiGraphics, int mouseX, int mouseY) {
-        for (Map.Entry<Direction, GenericButtonWithTooltip> entry : directionButtonMap.entrySet()) {
+        for (Map.Entry<Direction, TooltipButton> entry : directionButtonMap.entrySet()) {
             Direction direction = entry.getKey();
-            GenericButtonWithTooltip button = entry.getValue();
+            TooltipButton button = entry.getValue();
 
             if (button.isMouseOver(mouseX, mouseY)) {
                 MutableComponent tooltip = getTooltipText(direction);

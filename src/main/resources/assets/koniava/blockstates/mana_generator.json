@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "koniava:block/generator/mana_generator"
+    }
+  }
+}

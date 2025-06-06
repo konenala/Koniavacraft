@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.recipe.loader;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.utils.logic.FuelRegistryHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -34,7 +34,7 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new Gson();
     private static final Map<String, FuelRate> FUEL_RATES = new HashMap<>();
 
-    private static final String DEFAULT_NAMESPACE = MagicalIndustryMod.MOD_ID;
+    private static final String DEFAULT_NAMESPACE = KoniavacraftMod.MOD_ID;
     private static final int DEFAULT_BURN_TIME = 0;  // 默認燃燒時間
     private static final int DEFAULT_ENERGY_RATE = 0;
     public static final int DEFAULT_INTERVAL = 0;

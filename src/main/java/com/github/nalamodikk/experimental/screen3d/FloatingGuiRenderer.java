@@ -1,7 +1,7 @@
 package com.github.nalamodikk.experimental.screen3d;
 
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.experimental.screen3d.api.FloatingPanelManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -13,11 +13,11 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 @OnlyIn(Dist.CLIENT)
-@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class FloatingGuiRenderer {
 
     private static final ResourceLocation PANEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            MagicalIndustryMod.MOD_ID, "textures/gui/modular_panel.png"
+            KoniavacraftMod.MOD_ID, "textures/gui/modular_panel.png"
     );
 
     @SubscribeEvent

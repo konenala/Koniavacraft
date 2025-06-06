@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 
 import java.util.function.Consumer;
 
@@ -41,7 +41,7 @@ public class ManaGeneratorStateManager {
 
     public boolean toggleMode(int burnTime) {
         if (isWorking || burnTime > 0) {
-            MagicalIndustryMod.LOGGER.info("⚠ 無法切換模式，發電機正在運行中！");
+            KoniavacraftMod.LOGGER.info("⚠ 無法切換模式，發電機正在運行中！");
             return false;
         }
         currentMode = (currentMode == Mode.MANA) ? Mode.ENERGY : Mode.MANA;

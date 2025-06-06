@@ -1,8 +1,8 @@
 package com.github.nalamodikk.narasystem.nara.screen;
 
 
-import com.github.nalamodikk.client.screenAPI.GenericButtonWithTooltip;
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
 import com.github.nalamodikk.narasystem.nara.network.server.NaraBindRequestPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,22 +21,22 @@ public class NaraInitScreen extends Screen {
     private Stage currentStage = Stage.SHOWING_LINES;
     private int visibleLines = 0;
 
-    private static final ResourceLocation overlayTexture = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/nara_overlay.png");
+    private static final ResourceLocation overlayTexture = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/nara_overlay.png");
 
-    ResourceLocation buttonTexture = ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "textures/gui/widget/nara_button.png");
+    ResourceLocation buttonTexture = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/nara_button.png");
     private int ticksElapsed = 0;
 
-    private final Component title = Component.translatable("screen.magical_industry.nara.title");
+    private final Component title = Component.translatable("screen.koniava.nara.title");
     private final Component[] lines = new Component[] {
-            Component.translatable("screen.magical_industry.nara.line1"),
-            Component.translatable("screen.magical_industry.nara.line2"),
-            Component.translatable("screen.magical_industry.nara.line3"),
-            Component.translatable("screen.magical_industry.nara.line4"),
-            Component.translatable("screen.magical_industry.nara.line5",
-                    ModList.get().getModFileById(MagicalIndustryMod.MOD_ID)
+            Component.translatable("screen.koniava.nara.line1"),
+            Component.translatable("screen.koniava.nara.line2"),
+            Component.translatable("screen.koniava.nara.line3"),
+            Component.translatable("screen.koniava.nara.line4"),
+            Component.translatable("screen.koniava.nara.line5",
+                    ModList.get().getModFileById(KoniavacraftMod.MOD_ID)
                             .getMods().getFirst().getVersion().toString()
             ),
-            Component.translatable("screen.magical_industry.nara.line6")
+            Component.translatable("screen.koniava.nara.line6")
     };
 
     public NaraInitScreen() {
@@ -70,20 +70,20 @@ public class NaraInitScreen extends Screen {
         int texWidth = 90;
         int texHeight = 20;
 
-        addRenderableWidget(new GenericButtonWithTooltip(
+        addRenderableWidget(new TooltipButton(
                 centerX - 100, centerY + 60, 90, 20,
-                Component.translatable("screen.magical_industry.nara.bind"),
+                Component.translatable("screen.koniava.nara.bind"),
                 buttonTexture, texWidth, texHeight,
                 btn -> {
                     NaraBindRequestPacket.send(true);
                     onClose();
                 },
-                () -> List.of(Component.translatable("tooltip.magical_industry.nara.bind"))
+                () -> List.of(Component.translatable("tooltip.koniava.nara.bind"))
         ));
 
-        addRenderableWidget(new GenericButtonWithTooltip(
+        addRenderableWidget(new TooltipButton(
                 centerX + 10, centerY + 60, 90, 20,
-                Component.translatable("screen.magical_industry.nara.cancel"),
+                Component.translatable("screen.koniava.nara.cancel"),
                 buttonTexture, texWidth, texHeight,
                 btn -> {
                     NaraBindRequestPacket.send(false);
@@ -92,10 +92,10 @@ public class NaraInitScreen extends Screen {
                     // ❗中斷連線，顯示提示訊息
                     var connection = Minecraft.getInstance().getConnection();
                     if (connection != null) {
-                        connection.disconnect(Component.translatable("message.magical_industry.nara.disconnect_message"));
+                        connection.disconnect(Component.translatable("message.koniava.nara.disconnect_message"));
                     }
                 },
-                () -> List.of(Component.translatable("tooltip.magical_industry.nara.cancel"))
+                () -> List.of(Component.translatable("tooltip.koniava.nara.cancel"))
         ));
     }
 

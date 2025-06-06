@@ -1,6 +1,6 @@
 package com.github.nalamodikk.narasystem.nara.message;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.register.ModDataAttachments;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-@EventBusSubscriber(modid = MagicalIndustryMod.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
 public class NaraMessageRenderer {
     private static final Queue<Component> messageQueue = new ArrayDeque<>();

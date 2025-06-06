@@ -1,7 +1,7 @@
 package com.github.nalamodikk.register;
 
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlock;
@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS =
-            DeferredRegister.createBlocks(MagicalIndustryMod.MOD_ID);
+            DeferredRegister.createBlocks(KoniavacraftMod.MOD_ID);
 
 
     public static final DeferredBlock<Block> MANA_BLOCK =

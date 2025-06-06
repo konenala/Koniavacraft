@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.datagen.worldgen;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class ModDatapackProvider extends DatapackBuiltinEntriesProvider {
     public ModDatapackProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-        super(output, registries, ModWorldgenRegistries.BUILDER, Set.of(MagicalIndustryMod.MOD_ID));
+        super(output, registries, ModWorldgenRegistries.BUILDER, Set.of(KoniavacraftMod.MOD_ID));
     }
 
 

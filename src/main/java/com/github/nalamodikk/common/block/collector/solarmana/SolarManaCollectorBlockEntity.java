@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.collector.solarmana;
 
-import com.github.nalamodikk.common.API.IConfigurableBlock;
+import com.github.nalamodikk.common.API.block.IConfigurableBlock;
 import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
@@ -109,7 +109,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.magical_industry.solar_mana_collector");
+        return Component.translatable("block.koniava.solar_mana_collector");
     }
 
     @Override

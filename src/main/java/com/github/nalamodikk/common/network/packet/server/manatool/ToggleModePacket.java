@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
-import com.github.nalamodikk.MagicalIndustryMod;
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import net.minecraft.core.BlockPos;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 public record ToggleModePacket(BlockPos pos) implements CustomPacketPayload {
 
     public static final Type<ToggleModePacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(MagicalIndustryMod.MOD_ID, "toggle_mode"));
+            new Type<>(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "toggle_mode"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ToggleModePacket> STREAM_CODEC =
             StreamCodec.composite(

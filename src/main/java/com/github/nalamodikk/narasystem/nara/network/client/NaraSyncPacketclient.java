@@ -15,7 +15,7 @@ public class NaraSyncPacketclient {
             NaraHelper.setBound(player, packet.isBound());
 
         }).exceptionally(e -> {
-            context.disconnect(Component.translatable("message.magical_industry.nara.sync_error", e.getMessage()));
+            context.disconnect(Component.translatable("message.koniava.nara.sync_error", e.getMessage()));
             return null;
         });
     }
