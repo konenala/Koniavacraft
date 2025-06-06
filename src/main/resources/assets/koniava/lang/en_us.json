@@ -16,7 +16,7 @@
   "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
 
   "key.koniava.open_floating_gui": "[Experimental] Open Floating Panel",
-  "key.categories.koniava": "Magical Industry",
+  "key.categories.koniava": "Koniavacraft",
 
 
   "tooltip.koniava.saved_direction_config": "%s: %s",
@@ -137,7 +137,7 @@
   "screen.koniava.nara.line2": "▸ Verifying soul identification code…",
   "screen.koniava.nara.line3": "▸ Result: Unbound",
   "screen.koniava.nara.line4": "▸ Initiating 'Nara System' initialization sequence…",
-  "screen.koniava.nara.line5": "▸ Loading module core: Magical Industry (Ver. {%s)",
+  "screen.koniava.nara.line5": "▸ Loading module core: Koniavacraft (Ver. {%s)",
   "screen.koniava.nara.line6": "▸ Scan complete. Connection conditions fulfilled.",
   "screen.koniava.nara.confirm": "Would you like to bind with the Nara System?",
   "screen.koniava.nara.warning": "This operation is irreversible. Please proceed with caution.",
@@ -181,9 +181,9 @@
 
 
 
-  "creativetab.koniava_items": "Magical Industry - Items",
-  "creativetab.koniava_blocks": "Magical Industry - Blocks",
-  "creativetab.koniava_modules": "Magical Industry - Modules",
+  "creativetab.koniava_items": "Koniavacraft - Items",
+  "creativetab.koniava_blocks": "Koniavacraft - Blocks",
+  "creativetab.koniava_modules": "Koniavacraft - Modules",
 
   "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)"
 
