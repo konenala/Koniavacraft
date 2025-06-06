@@ -42,6 +42,8 @@ public class MagicalIndustryMod {
 
         modContainer.registerConfig(ModConfig.Type.COMMON, ModCommonConfig.SPEC);
 
+
+
         // debug test
         LOGGER.debug("這是一條 DEBUG 測試訊息");
         LOGGER.info("這是一條 INFO 測試訊息");
@@ -87,6 +89,9 @@ public class MagicalIndustryMod {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
+
+            // 在 mod 主類的 FMLClientSetupEvent 中註冊 runtime handler
+
             // Some client setup code
 
             LOGGER.info("HELLO FROM CLIENT SETUP");
