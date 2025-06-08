@@ -276,6 +276,12 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
     }
 
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+
+    }
+
     public void drops() {
         if (this.level == null || this.level.isClientSide) return;
 
