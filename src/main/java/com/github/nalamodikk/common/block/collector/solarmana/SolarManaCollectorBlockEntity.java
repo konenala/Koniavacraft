@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.block.collector.solarmana;
 
 import com.github.nalamodikk.common.api.block.IConfigurableBlock;
 import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
-import com.github.nalamodikk.common.api.machine.logic.IO.OutputHandler;
+import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.register.ModBlockEntities;

@@ -1,5 +1,5 @@
 
-package com.github.nalamodikk.common.api.machine.logic.IO;
+package com.github.nalamodikk.common.block.mana_generator.logic;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
