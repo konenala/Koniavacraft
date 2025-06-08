@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.logic.generation;
+package com.github.nalamodikk.common.api.machine.logic.gen;
 
 import java.util.Optional;
 import java.util.function.Supplier;
