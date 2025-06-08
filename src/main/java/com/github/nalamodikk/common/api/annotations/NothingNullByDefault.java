@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.API.annotations;
+package com.github.nalamodikk.common.api.annotations;
 
 import org.jetbrains.annotations.NotNull;
 

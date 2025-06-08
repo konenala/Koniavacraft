@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.manabase;
 
-import com.github.nalamodikk.common.API.block.IConfigurableBlock;
+import com.github.nalamodikk.common.api.block.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
 import net.minecraft.core.BlockPos;

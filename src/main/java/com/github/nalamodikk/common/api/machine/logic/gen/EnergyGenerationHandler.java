@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.mana_generator.logic;
+package com.github.nalamodikk.common.api.machine.logic.gen;
 
 
 import net.neoforged.neoforge.energy.IEnergyStorage;

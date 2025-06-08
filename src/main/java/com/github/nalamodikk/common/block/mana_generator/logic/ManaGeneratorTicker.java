@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
+import com.github.nalamodikk.common.api.machine.logic.IO.OutputHandler;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerLevel;

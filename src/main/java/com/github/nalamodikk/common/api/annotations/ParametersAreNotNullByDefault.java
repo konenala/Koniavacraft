@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.API.annotations;
+package com.github.nalamodikk.common.api.annotations;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -9,11 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Interface to declare that all fields in a class are {@link @NotNull}
+ * Interface to declare that all parameters in a class are {@link @NotNull}
  */
 @NotNull
 @Nonnull//Note: Must use the javax nonnull for intellij to recognize it properly in warnings
-@TypeQualifierDefault(ElementType.FIELD)
+@TypeQualifierDefault(ElementType.PARAMETER)
 @Retention(RetentionPolicy.CLASS)
-public @interface FieldsAreNotNullByDefault {
+public @interface ParametersAreNotNullByDefault {
 }
