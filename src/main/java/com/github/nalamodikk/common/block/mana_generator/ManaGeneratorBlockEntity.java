@@ -3,7 +3,7 @@
 
     import com.github.nalamodikk.KoniavacraftMod;
     import com.github.nalamodikk.common.api.machine.logic.gen.EnergyGenerationHandler;
-    import com.github.nalamodikk.common.api.machine.logic.gen.ManaGenerationHelper;
+    import com.github.nalamodikk.common.api.machine.logic.gen.FuelManaGenHelper;
     import com.github.nalamodikk.common.api.machine.logic.IO.OutputHandler;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
@@ -74,7 +74,7 @@
         private static final int DEFAULT_ENERGY_PER_TICK = 40; // 或你想用的預設值
         // 替代原本的 UnifiedSyncManager syncManager
         private final ManaGeneratorSyncHelper syncHelper = new ManaGeneratorSyncHelper();
-        private final ManaGenerationHelper manaGenHandler;
+        private final FuelManaGenHelper manaGenHandler;
         private final EnergyGenerationHandler energyGenHandler;
         private final ManaGeneratorTicker ticker = new ManaGeneratorTicker(this);
         private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
@@ -101,7 +101,7 @@
             if (this.level != null) {
                 this.access = ContainerLevelAccess.create(this.level, this.worldPosition);
             }
-            this.manaGenHandler = new ManaGenerationHelper(this.manaStorage, this::getCurrentFuelRate, (amount) -> {});
+            this.manaGenHandler = new FuelManaGenHelper(this.manaStorage, this::getCurrentFuelRate, (amount) -> {});
 
             this.energyGenHandler = new EnergyGenerationHandler(this.energyStorage, () -> {
                 Optional<ManaGenFuelRateLoader.FuelRate> rate = getCurrentFuelRate();
@@ -138,7 +138,7 @@
         public static int getMaxMana() {return MAX_MANA;}
         public static int getMaxEnergy() {return MAX_ENERGY;}
         public ManaGeneratorStateManager getStateManager() {return stateManager;}
-        public ManaGenerationHelper getManaGenHandler() {return manaGenHandler;}
+        public FuelManaGenHelper getManaGenHandler() {return manaGenHandler;}
         public EnergyGenerationHandler getEnergyGenHandler() {return energyGenHandler;}
         public ManaStorage getManaStorage() {return manaStorage;}
         public ModNeoNalaEnergyStorage getEnergyStorage() {return energyStorage;}

@@ -9,13 +9,13 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ManaGenerationHelper {
+public class FuelManaGenHelper {
     private final IUnifiedManaHandler manaStorage;
     private final Supplier<Optional<ManaGenFuelRateLoader.FuelRate>> fuelRateSupplier;
     private int tickCounter = 0;
     private final Consumer<Integer> onGenerate;
 
-    public ManaGenerationHelper(IUnifiedManaHandler manaStorage, Supplier<Optional<ManaGenFuelRateLoader.FuelRate>> fuelRateSupplier, Consumer<Integer> onGenerate) {
+    public FuelManaGenHelper(IUnifiedManaHandler manaStorage, Supplier<Optional<ManaGenFuelRateLoader.FuelRate>> fuelRateSupplier, Consumer<Integer> onGenerate) {
         this.manaStorage = manaStorage;
         this.fuelRateSupplier = fuelRateSupplier;
         this.onGenerate = onGenerate;
