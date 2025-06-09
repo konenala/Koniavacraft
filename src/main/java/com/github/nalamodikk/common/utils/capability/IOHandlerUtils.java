@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.utils.capability;
 
 
-import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+import com.github.nalamodikk.common.core.block.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import net.minecraft.core.BlockPos;

@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
-import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
-import com.github.nalamodikk.common.coreapi.block.mana.IManaCraftingMachine;
+import com.github.nalamodikk.common.core.block.IConfigurableBlock;
+import com.github.nalamodikk.common.core.block.mana.IManaCraftingMachine;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;

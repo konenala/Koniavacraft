@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.block.collector.solarmana;
 
-import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+import com.github.nalamodikk.common.core.block.IConfigurableBlock;
 import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;

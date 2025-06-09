@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.coreapi.machine.logic.IO;
+package com.github.nalamodikk.common.core.machine.logic.IO;
 
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.BlockPos;
