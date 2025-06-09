@@ -15,7 +15,7 @@
 package com.github.nalamodikk.common.item.tool;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.api.block.IConfigurableBlock;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;

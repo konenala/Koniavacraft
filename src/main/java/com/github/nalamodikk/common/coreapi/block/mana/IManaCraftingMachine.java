@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.api.block.mana;
+package com.github.nalamodikk.common.coreapi.block.mana;
 
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
 

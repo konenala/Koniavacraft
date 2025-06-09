@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.screen.shared;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.api.block.IConfigurableBlock;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.register.ModMenuTypes;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;

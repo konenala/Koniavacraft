@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.api.block.mana;
+package com.github.nalamodikk.common.coreapi.block.mana;
 
 public interface IManaUsingMachine {
     int getManaStored();

@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.api.block;
+package com.github.nalamodikk.common.coreapi.block;
 
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.Direction;

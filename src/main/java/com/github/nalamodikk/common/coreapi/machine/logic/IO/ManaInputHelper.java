@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.api.machine.logic.IO;
+package com.github.nalamodikk.common.coreapi.machine.logic.IO;
 
 
-import com.github.nalamodikk.common.api.block.IConfigurableBlock;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.IHasMana;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
