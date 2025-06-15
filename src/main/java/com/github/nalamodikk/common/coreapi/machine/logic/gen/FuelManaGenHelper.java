@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.core.machine.logic.gen;
+package com.github.nalamodikk.common.coreapi.machine.logic.gen;
 
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;

@@ -2,8 +2,8 @@
     package com.github.nalamodikk.common.block.mana_generator;
 
     import com.github.nalamodikk.KoniavacraftMod;
-    import com.github.nalamodikk.common.core.machine.logic.gen.EnergyGenerationHandler;
-    import com.github.nalamodikk.common.core.machine.logic.gen.FuelManaGenHelper;
+    import com.github.nalamodikk.common.coreapi.machine.logic.gen.EnergyGenerationHandler;
+    import com.github.nalamodikk.common.coreapi.machine.logic.gen.FuelManaGenHelper;
     import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;

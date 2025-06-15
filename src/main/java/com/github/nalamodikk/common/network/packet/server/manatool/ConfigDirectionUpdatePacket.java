@@ -10,7 +10,7 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.core.block.IConfigurableBlock;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;

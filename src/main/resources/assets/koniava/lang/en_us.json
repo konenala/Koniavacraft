@@ -185,7 +185,8 @@
   "creativetab.koniava_blocks": "Koniavacraft - Blocks",
   "creativetab.koniava_modules": "Koniavacraft - Modules",
 
-  "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)"
+  "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)",
+  "koniava.config.showIntroAnimation": "Enable Login Animation"
 
 
 }

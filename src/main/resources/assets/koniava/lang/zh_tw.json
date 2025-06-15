@@ -179,7 +179,8 @@
   "creativetab.koniava_blocks": "果果工藝-方塊",
   "creativetab.koniava_modules": "果果工藝-模塊零件",
 
-  "koniava.config.manaRecipeRefreshInterval": "每幾 tick 更新一次魔力合成配方結果（建議值：2～10）"
+  "koniava.config.manaRecipeRefreshInterval": "每幾 tick 更新一次魔力合成配方結果（建議值：2～10）",
+  "koniava.config.showIntroAnimation": "啟用登入動畫"
 
 
 }
