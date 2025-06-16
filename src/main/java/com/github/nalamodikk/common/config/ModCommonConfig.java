@@ -47,6 +47,8 @@ public class ModCommonConfig {
     public static void onConfigLoad(ModConfigEvent.Loading event) {
         if (event.getConfig().getSpec() == SPEC) {
             KoniavacraftMod.LOGGER.info("載入魔力設定: manaRecipeRefreshInterval = {}", INSTANCE.manaRecipeRefreshInterval.get());
+            KoniavacraftMod.LOGGER.info("載入動畫設定: showIntroAnimation = {}", INSTANCE.showIntroAnimation.get());
+
         }
     }
 
@@ -54,6 +56,8 @@ public class ModCommonConfig {
     public static void onConfigReload(ModConfigEvent.Reloading event) {
         if (event.getConfig().getSpec() == SPEC) {
             KoniavacraftMod.LOGGER.info("重新載入魔力設定: manaRecipeRefreshInterval = {}", INSTANCE.manaRecipeRefreshInterval.get());
+            KoniavacraftMod.LOGGER.info("重新載入動畫設定: showIntroAnimation = {}", INSTANCE.showIntroAnimation.get());
+
         }
     }
 
