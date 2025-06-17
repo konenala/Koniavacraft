@@ -75,8 +75,13 @@ public class ModMenuTypes {
             registerMenuType("upgrade_menu", ModMenuTypes::createUpgradeMenu);
 
 
-
-
+    /***
+     *
+     * @param id
+     * @param playerInv
+     * @param extraData
+     * @return
+     */
     @SuppressWarnings("resource")
     private static UpgradeMenu createUpgradeMenu(int id, Inventory playerInv, FriendlyByteBuf extraData) {
         BlockPos pos = extraData.readBlockPos();
