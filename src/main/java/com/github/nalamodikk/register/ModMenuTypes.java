@@ -18,9 +18,9 @@ import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollector
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
-import com.github.nalamodikk.common.screen.shared.FallbackUpgradeMenu;
-import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
-import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
+import com.github.nalamodikk.common.screen.block.shared.FallbackUpgradeMenu;
+import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
+import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import net.minecraft.core.BlockPos;

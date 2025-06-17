@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.screen.shared;
+package com.github.nalamodikk.common.screen.block.shared;
 
 
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;

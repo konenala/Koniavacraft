@@ -20,7 +20,7 @@ import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirecti
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
 import com.github.nalamodikk.register.ModDataComponents;
-import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
+import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;

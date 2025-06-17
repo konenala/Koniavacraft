@@ -20,7 +20,7 @@ import org.slf4j.Logger;
  * 負責登錄鍵位（MOD BUS）與遊戲中執行邏輯（EVENT BUS）
  */
 
-public class ClientInitcore {
+public class screen3dClientInitcore {
 
     private static boolean initialized = false;
     public static final Logger LOGGER = LogUtils.getLogger();
@@ -32,7 +32,7 @@ public class ClientInitcore {
     public static class ModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            NeoForge.EVENT_BUS.register(ClientInitcore.RuntimeEvents.class); // ✅ 一次就好
+            NeoForge.EVENT_BUS.register(screen3dClientInitcore.RuntimeEvents.class); // ✅ 一次就好
 
             LOGGER.info("✅ Registered RuntimeEvents");
         }
@@ -63,4 +63,6 @@ public class ClientInitcore {
             }
         }
     }
+
+
 }

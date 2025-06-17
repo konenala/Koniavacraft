@@ -124,6 +124,9 @@
   "screen.koniava.disabled": "Disabled",
   "screen.koniava.both": "Input & Output",
 
+  "screen.inventory.koniava.extra_equipment": "Extra Equipment",
+
+
   "screen.koniava.configure_side.full": "Configured side: %s %s",
   "screen.koniava.hold_shift": "Hold Shift for more information",
   "screen.koniava.debug_world_direction": "World direction key: %s",

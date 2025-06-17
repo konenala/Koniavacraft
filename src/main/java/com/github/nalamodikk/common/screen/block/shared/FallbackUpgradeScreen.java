@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.screen.shared;
+package com.github.nalamodikk.common.screen.block.shared;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
