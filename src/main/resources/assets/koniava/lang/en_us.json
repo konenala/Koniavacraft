@@ -123,6 +123,7 @@
   "screen.koniava.upgrade.title": "Upgrade Module Manager",
   "screen.koniava.disabled": "Disabled",
   "screen.koniava.both": "Input & Output",
+  "screen.koniava.inventory.extra_equipment": "Extra Equipment Slots",
 
 
   "tooltip.koniava.open_extra_equipment": "Open Extra Equipment",

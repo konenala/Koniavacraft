@@ -16,9 +16,9 @@ import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
-public class ClientGuiEvents {
+public class ClientVanillaInvGuiEvents {
 
     @SubscribeEvent
     public static void onInventoryInit(ScreenEvent.Init.Post event) {
@@ -28,10 +28,10 @@ public class ClientGuiEvents {
         int y = screen.getGuiTop();
 
         TooltipButton button = new TooltipButton(
-                x + 150, y + 5, 20, 20,
+                x + 63, y + 172, 20, 20,
                 Component.empty(), // 不需要文字，完全圖示
-                ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/extra_equipment_button.png"),
-                20, 40,
+                ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/extra_equipment_button.png"),
+                20, 20,
                 btn -> OpenExtraEquipmentPacket.sendToServer(),
                 () -> List.of(Component.translatable("tooltip.koniava.open_extra_equipment"))
         );
@@ -42,6 +42,6 @@ public class ClientGuiEvents {
 
 
     public static void register() {
-        NeoForge.EVENT_BUS.register(ClientGuiEvents.class);
+        NeoForge.EVENT_BUS.register(ClientVanillaInvGuiEvents.class);
     }
 }

@@ -123,6 +123,8 @@
   "screen.koniava.upgrade_button.tooltip": "開啟升級模組介面",
   "screen.koniava.upgrade.title": "升級模組管理介面",
 
+  "screen.koniava.inventory.extra_equipment": "額外裝備欄位",
+
   "screen.koniava.nara.bind": "綁定",
   "screen.koniava.nara.cancel": "離開",
   "screen.koniava.nara.title": "叮───！",

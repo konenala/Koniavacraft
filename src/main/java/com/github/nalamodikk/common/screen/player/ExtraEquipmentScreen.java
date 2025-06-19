@@ -13,8 +13,8 @@ public class ExtraEquipmentScreen extends AbstractContainerScreen<ExtraEquipment
 
         public ExtraEquipmentScreen(ExtraEquipmentMenu menu, Inventory playerInventory, Component title) {
             super(menu, playerInventory, title);
-            this.imageWidth = 176;
-            this.imageHeight = 166;
+            this.imageWidth = 256;
+            this.imageHeight = 256;
         }
 
         @Override

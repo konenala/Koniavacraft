@@ -32,7 +32,7 @@ public record OpenExtraEquipmentPacket() implements CustomPacketPayload {
             if (context.player() instanceof ServerPlayer player) {
                 player.openMenu(new SimpleMenuProvider(
                         (id, inv, p) -> new ExtraEquipmentMenu(id, inv),
-                        Component.translatable("screen.inventory.koniava.extra_equipment")
+                        Component.translatable("screen.koniava.inventory.extra_equipment")
                 ));
             }
         });
