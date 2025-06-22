@@ -24,10 +24,20 @@ public class ModItemTagProvider extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
 
         tag(ItemTags.create(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana")))
-                .add(ModItems.CORRUPTED_MANA_DUST.get(),
+                .add(
+                        ModItems.CONDENSED_MANA_DUST.get(),
+                        ModItems.CORRUPTED_MANA_DUST.get(),
                         ModItems.MANA_DUST.get(),
                         ModBlocks.MANA_BLOCK.get().asItem(),
-                        ModItems.MANA_INGOT.get()
+                        ModItems.MANA_INGOT.get(),
+                        ModItems.MANA_CRYSTAL_FRAGMENT.get(),
+                        ModItems.RAW_MANA_DUST.get()
+                );
+
+        tag(ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "mana")))
+                .add(
+
+                        ModItems.RAW_MANA_DUST.get()
                 );
 
     }
