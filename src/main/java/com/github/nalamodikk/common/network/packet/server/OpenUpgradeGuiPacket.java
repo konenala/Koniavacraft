@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.network.packet.server;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
+import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import com.mojang.logging.LogUtils;

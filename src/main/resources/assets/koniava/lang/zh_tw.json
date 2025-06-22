@@ -123,9 +123,14 @@
   "screen.koniava.upgrade_button.tooltip": "開啟升級模組介面",
   "screen.koniava.upgrade.title": "升級模組管理介面",
 
+  "screen.koniava.inventory.extra_equipment": "額外裝備欄位",
+
   "screen.koniava.nara.bind": "綁定",
   "screen.koniava.nara.cancel": "離開",
   "screen.koniava.nara.title": "叮───！",
+
+  "tooltip.koniava.open_extra_equipment": "打開額外裝備欄位",
+
 
   "screen.koniava.nara.line1": "▸ 檢測到新生意識波動…",
   "screen.koniava.nara.line2": "▸ 核對靈魂識別碼中…",
@@ -179,7 +184,8 @@
   "creativetab.koniava_blocks": "果果工藝-方塊",
   "creativetab.koniava_modules": "果果工藝-模塊零件",
 
-  "koniava.config.manaRecipeRefreshInterval": "每幾 tick 更新一次魔力合成配方結果（建議值：2～10）"
+  "koniava.config.manaRecipeRefreshInterval": "每幾 tick 更新一次魔力合成配方結果（建議值：2～10）",
+  "koniava.config.showIntroAnimation": "啟用登入動畫"
 
 
 }

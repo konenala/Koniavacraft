@@ -4,12 +4,15 @@ import com.github.nalamodikk.common.block.manabase.BaseMachineBlock;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -66,20 +69,25 @@ public class ManaCraftingTableBlock extends BaseMachineBlock {
     }
 
 
-
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof ManaCraftingTableBlockEntity blockEntity) {
-                blockEntity.drops();  // 處理物品掉落
-                level.invalidateCapabilities(pos); // ❗❗通知 NeoForge: 這個位置的能力不可靠了，清除快取！
+                blockEntity.drops();  // 掉落內部儲存物品
 
+                // ✅ 新增：保存資料進物品
+                ItemStack drop = new ItemStack(this); // 這個方塊對應的物品
+                CompoundTag tag = blockEntity.saveWithoutMetadata(level.registryAccess());
+                BlockItem.setBlockEntityData(drop, blockEntity.getType(), tag); // 寫入 NBT
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), drop); // 掉落方塊物品
 
+                level.invalidateCapabilities(pos); // ❗清除快取
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
+
 
 
     @Nullable

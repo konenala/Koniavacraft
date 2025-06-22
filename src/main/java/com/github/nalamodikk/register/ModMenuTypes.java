@@ -18,9 +18,10 @@ import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollector
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
-import com.github.nalamodikk.common.screen.shared.FallbackUpgradeMenu;
-import com.github.nalamodikk.common.screen.shared.UniversalConfigMenu;
-import com.github.nalamodikk.common.screen.shared.UpgradeMenu;
+import com.github.nalamodikk.common.screen.block.shared.FallbackUpgradeMenu;
+import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
+import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;
+import com.github.nalamodikk.common.screen.player.ExtraEquipmentMenu;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import net.minecraft.core.BlockPos;
@@ -74,9 +75,22 @@ public class ModMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<UpgradeMenu>> UPGRADE_MENU =
             registerMenuType("upgrade_menu", ModMenuTypes::createUpgradeMenu);
 
+    /**
+     *
+     * 關於玩家
+     *
+     */
+    public static final DeferredHolder<MenuType<?>, MenuType<ExtraEquipmentMenu>> EXTRA_EQUIPMENT_MENU =
+            registerMenuType("extra_equipment", ExtraEquipmentMenu::new);
 
 
-
+    /***
+     *
+     * @param id
+     * @param playerInv
+     * @param extraData
+     * @return
+     */
     @SuppressWarnings("resource")
     private static UpgradeMenu createUpgradeMenu(int id, Inventory playerInv, FriendlyByteBuf extraData) {
         BlockPos pos = extraData.readBlockPos();

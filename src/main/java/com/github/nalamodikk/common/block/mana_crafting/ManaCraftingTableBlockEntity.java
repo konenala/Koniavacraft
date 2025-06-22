@@ -1,8 +1,8 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
-import com.github.nalamodikk.common.API.block.IConfigurableBlock;
-import com.github.nalamodikk.common.API.block.mana.IManaCraftingMachine;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+import com.github.nalamodikk.common.coreapi.block.mana.IManaCraftingMachine;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
@@ -275,6 +275,12 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+
+    }
 
     public void drops() {
         if (this.level == null || this.level.isClientSide) return;

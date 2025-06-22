@@ -123,6 +123,10 @@
   "screen.koniava.upgrade.title": "Upgrade Module Manager",
   "screen.koniava.disabled": "Disabled",
   "screen.koniava.both": "Input & Output",
+  "screen.koniava.inventory.extra_equipment": "Extra Equipment Slots",
+
+
+  "tooltip.koniava.open_extra_equipment": "Open Extra Equipment",
 
   "screen.koniava.configure_side.full": "Configured side: %s %s",
   "screen.koniava.hold_shift": "Hold Shift for more information",
@@ -185,7 +189,8 @@
   "creativetab.koniava_blocks": "Koniavacraft - Blocks",
   "creativetab.koniava_modules": "Koniavacraft - Modules",
 
-  "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)"
+  "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)",
+  "koniava.config.showIntroAnimation": "Enable Login Animation"
 
 
 }

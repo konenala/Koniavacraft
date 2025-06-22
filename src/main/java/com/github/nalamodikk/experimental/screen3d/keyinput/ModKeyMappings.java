@@ -16,7 +16,7 @@ import org.lwjgl.glfw.GLFW;
 public class ModKeyMappings {
     public static final KeyMapping OPEN_FLOATING_GUI = new KeyMapping(
             "key.koniava.open_floating_gui", // 對應 lang 的翻譯鍵
-            GLFW.GLFW_KEY_UNKNOWN,
+            GLFW.GLFW_KEY_G,
             "key.categories.koniava" // 顯示在控制選單分組
                 );
     @SubscribeEvent

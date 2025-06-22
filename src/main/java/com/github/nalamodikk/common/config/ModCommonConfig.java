@@ -23,6 +23,7 @@ public class ModCommonConfig {
 
     // 設定值本體
     public final ModConfigSpec.IntValue manaRecipeRefreshInterval;
+    public final ModConfigSpec.BooleanValue showIntroAnimation;
 
     private ModCommonConfig(ModConfigSpec.Builder builder) {
         manaRecipeRefreshInterval = builder
@@ -30,7 +31,15 @@ public class ModCommonConfig {
                 .comment("How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)")
                 .translation("koniava.config.manaRecipeRefreshInterval")
                 .defineInRange("manaRecipeRefreshInterval", 2, 1, 40);
+
+        // ✅ 加入登入動畫設定
+        showIntroAnimation = builder
+                .comment("是否啟用登入動畫（預設開啟）")
+                .comment("Enable intro animation on player login (default: true)")
+                .translation("koniava.config.showIntroAnimation")
+                .define("showIntroAnimation", true);
     }
+
 
 
     // 讀取事件處理器
@@ -38,6 +47,8 @@ public class ModCommonConfig {
     public static void onConfigLoad(ModConfigEvent.Loading event) {
         if (event.getConfig().getSpec() == SPEC) {
             KoniavacraftMod.LOGGER.info("載入魔力設定: manaRecipeRefreshInterval = {}", INSTANCE.manaRecipeRefreshInterval.get());
+            KoniavacraftMod.LOGGER.info("載入動畫設定: showIntroAnimation = {}", INSTANCE.showIntroAnimation.get());
+
         }
     }
 
@@ -45,6 +56,8 @@ public class ModCommonConfig {
     public static void onConfigReload(ModConfigEvent.Reloading event) {
         if (event.getConfig().getSpec() == SPEC) {
             KoniavacraftMod.LOGGER.info("重新載入魔力設定: manaRecipeRefreshInterval = {}", INSTANCE.manaRecipeRefreshInterval.get());
+            KoniavacraftMod.LOGGER.info("重新載入動畫設定: showIntroAnimation = {}", INSTANCE.showIntroAnimation.get());
+
         }
     }
 

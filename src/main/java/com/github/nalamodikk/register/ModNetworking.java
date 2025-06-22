@@ -2,7 +2,11 @@ package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
-import com.github.nalamodikk.common.network.packet.server.manatool.*;
+import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ModeChangePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ToggleModePacket;
+import com.github.nalamodikk.common.network.packet.server.player.gui.OpenExtraEquipmentPacket;
 import com.github.nalamodikk.narasystem.nara.network.server.NaraBindRequestPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -24,6 +28,9 @@ public class ModNetworking {
 
         // 娜拉系統
         NaraBindRequestPacket.registerTo(registrar);
+
+        //玩家的額外裝備gui封包
+        OpenExtraEquipmentPacket.registerTo(registrar);
 
     }
 

@@ -173,6 +173,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             neo_version            : neo_version,
             neo_version_range      : neo_version_range,
             loader_version_range   : loader_version_range,
+            mod_logo               : mod_logo,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
@@ -215,4 +216,7 @@ idea {
         downloadSources = true
         downloadJavadoc = true
     }
+}
+jar {
+    exclude('log4j2.xml')
 }
