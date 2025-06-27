@@ -1,21 +1,24 @@
 package com.github.nalamodikk.common.block.collector.solarmana;
 
-import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
-import com.github.nalamodikk.register.ModBlockEntities;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.nbt.NbtUtils;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
-import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
+import com.github.nalamodikk.register.ModBlockEntities;
+import com.github.nalamodikk.register.ModCapabilities;
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -27,8 +30,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.HolderLookup;
-
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.slf4j.Logger;
 
 import java.util.EnumMap;
@@ -43,6 +47,8 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     private final UpgradeInventory upgrades = new UpgradeInventory(UPGRADE_SLOT_COUNT);
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
     private static final int BASE_OUTPUT = 5;
+    private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
 
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
@@ -73,7 +79,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
         int inserted = manaStorage.insertMana(amount, ManaAction.EXECUTE);
         if (inserted > 0 && level instanceof ServerLevel server) {
-            OutputHandler.tryOutput(server, worldPosition, manaStorage, null, ioMap);
+            OutputHandler.tryOutput(server, worldPosition, manaStorage, null, ioMap, manaCaches, energyCaches);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             setChanged();
 
@@ -120,7 +126,38 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     }
 
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel serverLevel) {
+            initializeCapabilityCaches(serverLevel);
+        }
+    }
 
+    private void initializeCapabilityCaches(ServerLevel serverLevel) {
+        for (Direction dir : Direction.values()) {
+            BlockPos targetPos = worldPosition.relative(dir);
+            Direction inputSide = dir.getOpposite();
+
+            manaCaches.put(dir, BlockCapabilityCache.create(
+                    ModCapabilities.MANA,
+                    serverLevel,
+                    targetPos,
+                    inputSide,
+                    () -> !this.isRemoved(),
+                    () -> {}
+            ));
+
+            energyCaches.put(dir, BlockCapabilityCache.create(
+                    Capabilities.EnergyStorage.BLOCK,
+                    serverLevel,
+                    targetPos,
+                    inputSide,
+                    () -> !this.isRemoved(),
+                    () -> {}
+            ));
+        }
+    }
 
     public UpgradeInventory getUpgradeInventory() {
         return upgrades;
