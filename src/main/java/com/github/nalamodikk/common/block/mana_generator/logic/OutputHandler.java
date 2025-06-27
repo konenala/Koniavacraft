@@ -2,16 +2,14 @@
 package com.github.nalamodikk.common.block.mana_generator.logic;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
-import com.github.nalamodikk.register.ModCapabilities;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import com.github.nalamodikk.common.capability.ManaStorage;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -21,7 +19,17 @@ public class OutputHandler {
 
     private static final int MAX_OUTPUT_PER_TICK = 40;
 
-    public static boolean tryOutput(ServerLevel level, BlockPos pos, ManaStorage manaStorage, IEnergyStorage energyStorage, EnumMap<Direction, IOHandlerUtils.IOType> ioMap) {
+    // 新增這個方法到 OutputHandler 類別中
+    public static boolean tryOutput(
+            ServerLevel level,
+            BlockPos pos,
+            ManaStorage manaStorage,
+            IEnergyStorage energyStorage,
+            EnumMap<Direction, IOHandlerUtils.IOType> ioMap,
+            // 新增這兩個參數
+            EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches,
+            EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches
+    ) {
         List<IUnifiedManaHandler> manaTargets = new ArrayList<>();
         List<Integer> manaDemands = new ArrayList<>();
         int totalManaDemand = 0;
@@ -34,11 +42,14 @@ public class OutputHandler {
             IOHandlerUtils.IOType type = ioMap.getOrDefault(dir, IOHandlerUtils.IOType.DISABLED);
             if (!type.outputs()) continue;
 
-            BlockPos targetPos = pos.relative(dir);
-            Direction inputSide = dir.getOpposite();
+            // ✅ 使用快取獲取 capability
+            var manaCache = manaCaches.get(dir);
+            var energyCache = energyCaches.get(dir);
 
-            // 魔力接收端
-            IUnifiedManaHandler manaTarget = BlockCapabilityCache.create(ModCapabilities.MANA, level, targetPos, inputSide).getCapability();
+            IUnifiedManaHandler manaTarget = manaCache != null ? manaCache.getCapability() : null;
+            IEnergyStorage energyTarget = energyCache != null ? energyCache.getCapability() : null;
+
+            // 魔力接收端處理
             if (manaTarget != null && manaStorage != null && manaTarget.canReceive()) {
                 int demand = manaTarget.getMaxManaStored() - manaTarget.getManaStored();
                 // TODO [OutputHandlerV2]：目前的「需求值」是使用「最大容量 - 當前儲量」來估算接收端的可接收空間
@@ -64,8 +75,7 @@ public class OutputHandler {
                 }
             }
 
-            // 能量接收端
-            IEnergyStorage energyTarget = BlockCapabilityCache.create(Capabilities.EnergyStorage.BLOCK, level, targetPos, inputSide).getCapability();
+            // 能量接收端處理
             if (energyTarget != null && energyStorage != null && energyTarget.canReceive()) {
                 int demand = energyTarget.getMaxEnergyStored() - energyTarget.getEnergyStored();
                 // TODO: [OutputHandlerV2] 目前的「需求值」是使用「最大容量 - 當前儲量」來估算接收端的可接收空間。
@@ -98,7 +108,7 @@ public class OutputHandler {
         // 魔力輸出
         if (manaStorage != null && totalManaDemand > 0 && manaStorage.getManaStored() > 0) {
             int totalToSend = Math.min(manaStorage.getManaStored(), MAX_OUTPUT_PER_TICK);
-            int sentTotal = 0; // 👈 新增：實際送出的總和
+            int sentTotal = 0; // 實際送出的總和
 
             for (int i = 0; i < manaTargets.size(); i++) {
                 int portion = (int) Math.round(totalToSend * (manaDemands.get(i) / (double) totalManaDemand));
@@ -107,8 +117,10 @@ public class OutputHandler {
                     manaStorage.extractMana(accepted, ManaAction.EXECUTE);
                     didOutput = true;
                 }
-                sentTotal += accepted; // 👈 累加實際送出量
+                sentTotal += accepted; // 累加實際送出量
             }
+
+            // 處理剩餘的魔力
             int remainder = totalToSend - sentTotal;
             if (remainder > 0 && !manaTargets.isEmpty()) {
                 int accepted = manaTargets.get(0).receiveMana(remainder, ManaAction.EXECUTE);
@@ -119,7 +131,6 @@ public class OutputHandler {
             }
         }
 
-        // 能量輸出
         // 能量輸出
         if (energyStorage != null && totalEnergyDemand > 0 && energyStorage.getEnergyStored() > 0) {
             int sentTotal = 0;
@@ -132,12 +143,13 @@ public class OutputHandler {
                     energyStorage.extractEnergy(accepted, false);
                     didOutput = true;
                 }
-                sentTotal += accepted; // ✅ 漏了這行！
+                sentTotal += accepted; // 累加實際送出量
             }
 
+            // 處理剩餘的能量
             int remainder = totalToSend - sentTotal;
             if (remainder > 0 && !energyTargets.isEmpty()) {
-                int accepted = energyTargets.get(0).receiveEnergy(remainder, false); // ✅ 修正 manaTargets → energyTargets
+                int accepted = energyTargets.get(0).receiveEnergy(remainder, false);
                 if (accepted > 0) {
                     energyStorage.extractEnergy(accepted, false);
                     didOutput = true;
@@ -147,7 +159,6 @@ public class OutputHandler {
 
         return didOutput;
     }
-
 
     public static class OutputThrottleController {
         private int noOutputStreak = 0;
@@ -167,6 +178,8 @@ public class OutputHandler {
             }
         }
     }
+
+
 
 
 }

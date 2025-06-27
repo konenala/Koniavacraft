@@ -57,9 +57,8 @@
     public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements   GeoBlockEntity {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
-
-        private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, @Nullable Direction>> manaOutputCaches = new EnumMap<>(Direction.class);
-        private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, @Nullable Direction>> energyOutputCaches = new EnumMap<>(Direction.class);
+ private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
+        private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
 
         private static final int MAX_MANA = 200000;
         private static final int MAX_ENERGY = 200000;
@@ -151,6 +150,15 @@
         public void forceRefreshAnimationFromNbt() {this.forceRefreshAnimation = true;}
 
         private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+        public EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler,  Direction>> getManaOutputCaches() {
+            return manaCaches;
+        }
+
+        public EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> getEnergyOutputCaches() {
+            return energyCaches;
+        }
+
         @Override
         public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
             AnimationController<ManaGeneratorBlockEntity> controller =
@@ -187,12 +195,48 @@
             nbtManager.save(tag, provider);
         }
 
+
         @Override
         public void onLoad() {
             super.onLoad();
-            if (!this.getLevel().isClientSide()) {
-                initOutputCaches();
+            if (level instanceof ServerLevel serverLevel) {
+                initializeCapabilityCaches(serverLevel);
             }
+        }
+
+        private void initializeCapabilityCaches(ServerLevel serverLevel) {
+            for (Direction dir : Direction.values()) {
+                BlockPos targetPos = worldPosition.relative(dir);
+                Direction inputSide = dir.getOpposite();
+
+                manaCaches.put(dir, BlockCapabilityCache.create(
+                        ModCapabilities.MANA,
+                        serverLevel,
+                        targetPos,
+                        inputSide,
+                        () -> !this.isRemoved(),
+                        () -> {}
+                ));
+
+                energyCaches.put(dir, BlockCapabilityCache.create(
+                        Capabilities.EnergyStorage.BLOCK,
+                        serverLevel,
+                        targetPos,
+                        inputSide,
+                        () -> !this.isRemoved(),
+                        () -> {}
+                ));
+            }
+        }
+
+        public @Nullable IUnifiedManaHandler getCachedManaCapability(Direction dir) {
+            var cache = manaCaches.get(dir);
+            return cache != null ? cache.getCapability() : null;
+        }
+
+        public @Nullable IEnergyStorage getCachedEnergyCapability(Direction dir) {
+            var cache = energyCaches.get(dir);
+            return cache != null ? cache.getCapability() : null;
         }
 
         @Override
@@ -356,23 +400,4 @@
         }
 
 
-        public void initOutputCaches() {
-            if (!(level instanceof ServerLevel serverLevel)) return;
-
-            for (Direction dir : Direction.values()) {
-                manaOutputCaches.put(dir, BlockCapabilityCache.create(
-                        ModCapabilities.MANA,
-                        serverLevel,
-                        worldPosition.relative(dir),
-                        dir.getOpposite()
-                ));
-
-                energyOutputCaches.put(dir, BlockCapabilityCache.create(
-                        Capabilities.EnergyStorage.BLOCK,
-                        serverLevel,
-                        worldPosition.relative(dir),
-                        dir.getOpposite()
-                ));
-            }
-        }
     }

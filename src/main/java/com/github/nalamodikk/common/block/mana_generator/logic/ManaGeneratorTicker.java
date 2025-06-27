@@ -70,7 +70,9 @@ public class ManaGeneratorTicker {
                             machine.getBlockPos(),
                             machine.getManaStorage(),
                             machine.getEnergyStorage(),
-                            machine.getIOMap()
+                            machine.getIOMap(),
+                            machine.getManaOutputCaches(),
+                            machine.getEnergyOutputCaches()    // 👈 加上這個
                     );
                     machine.getOutputThrottle().recordOutputResult(outputSuccess);
                 }
