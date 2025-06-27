@@ -57,7 +57,7 @@ public class ManaCraftingTableBlock extends BaseMachineBlock {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ManaCraftingTableBlockEntity generator) {
                 ((ServerPlayer) player).openMenu(
-                        new SimpleMenuProvider(generator, Component.translatable("block.koniava.solar_mana_collector")),
+                        new SimpleMenuProvider(generator, Component.translatable("block.koniava.mana_crafting_table")),
                         pos
                 );
             } else {
