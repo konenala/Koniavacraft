@@ -74,7 +74,6 @@ public class ManaCraftingTableBlock extends BaseMachineBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof ManaCraftingTableBlockEntity blockEntity) {
-                blockEntity.drops();  // 掉落內部儲存物品
 
                 // ✅ 新增：保存資料進物品
                 ItemStack drop = new ItemStack(this); // 這個方塊對應的物品

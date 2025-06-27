@@ -1,25 +1,25 @@
 package com.github.nalamodikk.common.block.mana_crafting;
 
 // ManaCraftingTableBlockEntity.java - NeoForge 1.21.1
-import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
-import com.github.nalamodikk.common.coreapi.block.mana.IManaCraftingMachine;
+
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.config.ModCommonConfig;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+import com.github.nalamodikk.common.coreapi.block.mana.IManaCraftingMachine;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.github.nalamodikk.register.ModRecipes;
-import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -30,9 +30,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
 import java.util.EnumMap;
@@ -282,20 +280,7 @@ public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuPro
 
     }
 
-    public void drops() {
-        if (this.level == null || this.level.isClientSide) return;
 
-        // 取得該方塊實體內部的物品處理器
-        IItemHandler handler = this.getItemHandler();
-        if (handler == null) return;
-
-        for (int slot = 0; slot < handler.getSlots(); slot++) {
-            ItemStack stack = handler.getStackInSlot(slot);
-            if (!stack.isEmpty()) {
-                Containers.dropItemStack(this.level, this.worldPosition.getX(), this.worldPosition.getY(), this.worldPosition.getZ(), stack);
-            }
-        }
-    }
 
     @Override
     public void setChanged() {
