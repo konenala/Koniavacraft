@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.player.equipment.EquipmentType;
 import com.github.nalamodikk.common.player.equipment.slot.SpecificEquipmentSlot;
 import com.github.nalamodikk.register.ModDataAttachments;
 import com.github.nalamodikk.register.ModMenuTypes;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
@@ -14,10 +15,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.slf4j.Logger;
 
 public class ExtraEquipmentMenu extends AbstractContainerMenu {
     public static final int NINE_GRID_SLOT_COUNT = 9;
     public static final int EQUIPMENT_SLOT_COUNT = 8;
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final Player player;
     private final NonNullList<ItemStack> gridRef;
@@ -101,44 +104,18 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         }
         this.gridRef = grid;
 
-        // 🔥 修正：建立 handler 並覆寫所有相關方法
-        this.nineGridHandler = new SimpleContainer(grid.size()) {
-            @Override
-            public void setChanged() {
-                // 立即同步到 DataAttachment
-                for (int i = 0; i < this.getContainerSize(); i++) {
-                    gridRef.set(i, this.getItem(i));
-                }
-                player.setData(ModDataAttachments.NINE_GRID.get(), gridRef);
-                super.setChanged();
-            }
 
-            @Override
-            public void setItem(int slot, ItemStack stack) {
-                super.setItem(slot, stack);
-                // 🔥 新增：每次設置物品時立即同步
-                if (slot >= 0 && slot < gridRef.size()) {
-                    gridRef.set(slot, stack);
-                    player.setData(ModDataAttachments.NINE_GRID.get(), gridRef);
-                }
-            }
+        // 🔥 修正：建立 handler（簡單版本）
+        this.nineGridHandler = new SimpleContainer(this.gridRef.size());
 
-            @Override
-            public ItemStack removeItem(int slot, int amount) {
-                ItemStack removed = super.removeItem(slot, amount);
-                // 🔥 新增：移除物品時立即同步
-                if (slot >= 0 && slot < gridRef.size()) {
-                    gridRef.set(slot, this.getItem(slot));
-                    player.setData(ModDataAttachments.NINE_GRID.get(), gridRef);
-                }
-                return removed;
-            }
-        };
-
-        // 🔥 修正：初始化 handler 內容
-        for (int i = 0; i < grid.size(); i++) {
-            this.nineGridHandler.setItem(i, grid.get(i));
+        // 初始化內容
+        for (int i = 0; i < this.gridRef.size(); i++) {
+            this.nineGridHandler.setItem(i, this.gridRef.get(i));
         }
+
+
+
+
 
         addNineGridSlots(this.nineGridHandler, 176, 170);
     }
