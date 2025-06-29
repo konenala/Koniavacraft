@@ -3,6 +3,7 @@ package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlock;
+import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlock;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -33,8 +34,13 @@ public class ModBlocks {
     public static final DeferredBlock<Block> MANA_GENERATOR =
             registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
-//    public static final DeferredBlock<Block> MANA_CONDUIT =
-//            registerBlock("mana_conduit", () -> new ManaConduitBlock());
+    public static final DeferredBlock<Block> ARCANE_CONDUIT =
+            registerBlock("arcane_conduit", () -> new ArcaneConduitBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS)
+                            .strength(1.5f)
+                            .noOcclusion()
+                            .lightLevel(state -> 7) // 發光等級
+            ));
 
     public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
             registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));

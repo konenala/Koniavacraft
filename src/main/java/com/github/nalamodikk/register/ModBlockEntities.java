@@ -2,6 +2,7 @@ package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -31,11 +32,10 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new,
                             ModBlocks.SOLAR_MANA_COLLECTOR.get()).build(null));
 
-//    public static final Supplier<BlockEntityType<ManaConduitBlockEntity>> MANA_CONDUIT_BE =
-//            BLOCK_ENTITY_TYPES.register("mana_conduit", () ->
-//                    BlockEntityType.Builder.of(ManaConduitBlockEntity::new,
-//                            ModBlocks.MANA_CONDUIT.get()).build());
-//
+    public static final Supplier<BlockEntityType<ArcaneConduitBlockEntity>> ARCANE_CONDUIT_BE =
+            BLOCK_ENTITY_TYPES.register("arcane_conduit", () ->
+                    BlockEntityType.Builder.of(ArcaneConduitBlockEntity::new,
+                            ModBlocks.ARCANE_CONDUIT.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->
