@@ -4,6 +4,7 @@ package com.github.nalamodikk.client.event;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
 import com.github.nalamodikk.common.network.packet.server.player.gui.OpenExtraEquipmentPacket;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,13 +23,21 @@ public class ClientVanillaInvGuiEvents {
 
     @SubscribeEvent
     public static void onInventoryInit(ScreenEvent.Init.Post event) {
-        if (!(event.getScreen() instanceof InventoryScreen screen)) return;
-
-        int x = screen.getGuiLeft();
-        int y = screen.getGuiTop();
+        if (!(event.getScreen() instanceof InventoryScreen screen) &&
+                !(event.getScreen() instanceof CreativeModeInventoryScreen)) return;
+        int x, y;
+        if (event.getScreen() instanceof InventoryScreen inventoryScreen) {
+            x = inventoryScreen.getGuiLeft();
+            y = inventoryScreen.getGuiTop();
+        } else if (event.getScreen() instanceof CreativeModeInventoryScreen creativeScreen) {
+            x = creativeScreen.getGuiLeft();
+            y = creativeScreen.getGuiTop();
+        } else {
+            return;
+        }
 
         TooltipButton button = new TooltipButton(
-                x + 63, y + 172, 20, 20,
+                x + 76, y + 170, 20, 20,
                 Component.empty(), // 不需要文字，完全圖示
                 ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/extra_equipment_button.png"),
                 20, 20,

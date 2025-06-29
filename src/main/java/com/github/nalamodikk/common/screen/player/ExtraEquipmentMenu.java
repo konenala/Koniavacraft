@@ -7,6 +7,7 @@ import com.github.nalamodikk.register.ModMenuTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,7 +22,11 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
     public static final int NINE_GRID_SLOT_COUNT = 9;
     public static final int EQUIPMENT_SLOT_COUNT = 8;
     private static final Logger LOGGER = LogUtils.getLogger();
-
+    public static final ResourceLocation BLOCK_ATLAS = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
+    public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_helmet");
+    public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_chestplate");
+    public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_leggings");
+    public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_boots");
     private final Player player;
     private final NonNullList<ItemStack> gridRef;
     private final NonNullList<ItemStack> extraEquipmentRef;
@@ -44,7 +49,7 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         addPlayerInventorySlots(playerInventory, 8, 170);
 
         // *** 新增：原版裝備槽位（直接同步） ***
-        addVanillaEquipmentSlots(playerInventory, 8, 23);
+        addVanillaEquipmentSlots(playerInventory, 61, 23);
 
         // === 🔥 修正：飾品裝備欄位的同步機制 ===
         NonNullList<ItemStack> extraEquipment = player.getData(ModDataAttachments.EXTRA_EQUIPMENT.get());
@@ -94,7 +99,7 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         }
 
         // 新增額外裝備欄位（使用修正後的 handler）
-        addSpecificEquipmentSlots(this.extraEquipmentHandler, 61, 23);
+        addSpecificEquipmentSlots(this.extraEquipmentHandler, 79, 23);
 
         // === 🔥 修正：9格儲存欄位的同步機制 ===
         NonNullList<ItemStack> grid = player.getData(ModDataAttachments.NINE_GRID.get());
@@ -138,10 +143,14 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
      */
     protected void addVanillaEquipmentSlots(Inventory playerInventory, int baseX, int baseY) {
         // 原版裝備欄位：頭盔(39)、胸甲(38)、腿甲(37)、靴子(36)
-        this.addSlot(new SpecificEquipmentSlot(playerInventory, 39, baseX, baseY, EquipmentType.HELMET));
-        this.addSlot(new SpecificEquipmentSlot(playerInventory, 38, baseX, baseY + 18, EquipmentType.CHESTPLATE));
-        this.addSlot(new SpecificEquipmentSlot(playerInventory, 37, baseX, baseY + 36, EquipmentType.LEGGINGS));
-        this.addSlot(new SpecificEquipmentSlot(playerInventory, 36, baseX, baseY + 54, EquipmentType.BOOTS));
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 39, baseX, baseY,
+                EquipmentType.HELMET, EMPTY_ARMOR_SLOT_HELMET));
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 38, baseX, baseY + 18,
+                EquipmentType.CHESTPLATE, EMPTY_ARMOR_SLOT_CHESTPLATE));
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 37, baseX, baseY + 36,
+                EquipmentType.LEGGINGS, EMPTY_ARMOR_SLOT_LEGGINGS));
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 36, baseX, baseY + 54,
+                EquipmentType.BOOTS, EMPTY_ARMOR_SLOT_BOOTS));
     }
 
     // 在 GUI 中以兩列排列方式，加入 8 個「自訂裝備欄位」
