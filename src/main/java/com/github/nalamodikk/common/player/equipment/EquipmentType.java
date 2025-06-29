@@ -3,6 +3,8 @@ package com.github.nalamodikk.common.player.equipment;
 import com.github.nalamodikk.KoniavacraftMod;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 
 // EquipmentType.java
 public enum EquipmentType {
@@ -22,13 +24,10 @@ public enum EquipmentType {
     REACTOR("equipment.koniava.reactor", false, 96, 0),            // 第7個圖示
     EXOSKELETON("equipment.koniava.exoskeleton", false, 112, 0);   // 第8個圖示
 
-
     private final String translationKey;
     private final boolean isVanillaSlot;
     private final int iconU;  // 圖示在紋理中的 U 座標
     private final int iconV;  // 圖示在紋理中的 V 座標
-    public int getIconU() { return iconU; }
-    public int getIconV() { return iconV; }
 
     EquipmentType(String translationKey, boolean isVanillaSlot, int iconU, int iconV) {
         this.translationKey = translationKey;
@@ -36,12 +35,21 @@ public enum EquipmentType {
         this.iconU = iconU;
         this.iconV = iconV;
     }
+
     public String getTranslationKey() {
         return translationKey;
     }
 
     public boolean isVanillaSlot() {
         return isVanillaSlot;
+    }
+
+    public int getIconU() {
+        return iconU;
+    }
+
+    public int getIconV() {
+        return iconV;
     }
 
     // 獲取本地化的顯示名稱
@@ -56,5 +64,43 @@ public enum EquipmentType {
 
     public static ResourceLocation getSlotIconTexture() {
         return ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "equipment_slots");
+    }
+
+    /**
+     * *** 新增方法：檢查原版裝備物品是否適合此槽位 ***
+     * 這個方法用於驗證原版 Minecraft 裝備物品
+     */
+    public boolean isValidVanillaItem(ItemStack itemStack) {
+        if (!this.isVanillaSlot || itemStack.isEmpty()) {
+            return false;
+        }
+
+        if (!(itemStack.getItem() instanceof ArmorItem armorItem)) {
+            return false;
+        }
+
+        // 根據裝備類型檢查 ArmorItem 的類型
+        return switch (this) {
+            case HELMET -> armorItem.getType() == ArmorItem.Type.HELMET;
+            case CHESTPLATE -> armorItem.getType() == ArmorItem.Type.CHESTPLATE;
+            case LEGGINGS -> armorItem.getType() == ArmorItem.Type.LEGGINGS;
+            case BOOTS -> armorItem.getType() == ArmorItem.Type.BOOTS;
+            default -> false;
+        };
+
+    }
+
+    /**
+     * *** 新增方法：根據 ArmorItem.Type 獲取對應的 EquipmentType ***
+     */
+    public static EquipmentType fromArmorType(ArmorItem.Type armorType) {
+        return switch (armorType) {
+            case HELMET -> HELMET;
+            case CHESTPLATE -> CHESTPLATE;
+            case LEGGINGS -> LEGGINGS;
+            case BOOTS -> BOOTS;
+            case BODY -> null; // BODY 類型暫時不支援，或者您可以新增對應的 EquipmentType
+            // 不需要 default，因為已經涵蓋所有情況
+        };
     }
 }

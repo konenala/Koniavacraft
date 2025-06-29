@@ -35,7 +35,8 @@ public class SpecificEquipmentSlot extends Slot {
     }
 
     /**
-     * 檢查物品是否可以放置在此槽位
+     * *** 修改後的方法：檢查物品是否可以放置在此槽位 ***
+     * 現在支援原版裝備和自定義裝備
      */
     @Override
     public boolean mayPlace(ItemStack stack) {
@@ -43,7 +44,12 @@ public class SpecificEquipmentSlot extends Slot {
             return false;
         }
 
-        // 檢查是否為指定類型的裝備
+        // 如果是原版裝備槽位，檢查原版裝備
+        if (this.allowedType.isVanillaSlot()) {
+            return this.allowedType.isValidVanillaItem(stack);
+        }
+
+        // 如果是自定義裝備槽位，檢查是否為指定類型的裝備
         if (stack.getItem() instanceof ISpecificEquipment equipment) {
             return equipment.getEquipmentType() == this.allowedType;
         }
@@ -77,20 +83,31 @@ public class SpecificEquipmentSlot extends Slot {
     }
 
     /**
-     * 當玩家設置物品時觸發（裝備/卸下裝備時）
+     * *** 修改後的方法：當玩家設置物品時觸發（裝備/卸下裝備時） ***
+     * 現在支援原版裝備和自定義裝備的效果處理
      */
     @Override
     public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
-        // 移除舊裝備的效果
-        if (!oldStack.isEmpty() && oldStack.getItem() instanceof ISpecificEquipment oldEquipment) {
-            // 這裡可以添加移除裝備效果的邏輯
-            // oldEquipment.removeEffects(player);
+        // 處理舊裝備的移除效果
+        if (!oldStack.isEmpty()) {
+            if (oldStack.getItem() instanceof ISpecificEquipment oldEquipment) {
+                // 自定義裝備的移除效果
+                // oldEquipment.removeEffects(player);
+            } else if (this.allowedType.isVanillaSlot()) {
+                // 原版裝備的移除效果（如果需要的話）
+                // handleVanillaEquipmentRemoval(oldStack);
+            }
         }
 
-        // 應用新裝備的效果
-        if (!newStack.isEmpty() && newStack.getItem() instanceof ISpecificEquipment newEquipment) {
-            // 這裡可以添加應用裝備效果的邏輯
-            // newEquipment.applyEffects(player);
+        // 處理新裝備的應用效果
+        if (!newStack.isEmpty()) {
+            if (newStack.getItem() instanceof ISpecificEquipment newEquipment) {
+                // 自定義裝備的應用效果
+                // newEquipment.applyEffects(player);
+            } else if (this.allowedType.isVanillaSlot()) {
+                // 原版裝備的應用效果（如果需要的話）
+                // handleVanillaEquipmentApplication(newStack);
+            }
         }
 
         super.setByPlayer(newStack, oldStack);
@@ -119,5 +136,21 @@ public class SpecificEquipmentSlot extends Slot {
      */
     public boolean isVanillaSlot() {
         return allowedType.isVanillaSlot();
+    }
+
+    /**
+     * *** 新增方法：處理原版裝備移除效果（可選） ***
+     */
+    private void handleVanillaEquipmentRemoval(ItemStack oldStack) {
+        // 在這裡可以添加原版裝備移除時的特殊處理邏輯
+        // 例如：移除屬性修飾符、特殊效果等
+    }
+
+    /**
+     * *** 新增方法：處理原版裝備應用效果（可選） ***
+     */
+    private void handleVanillaEquipmentApplication(ItemStack newStack) {
+        // 在這裡可以添加原版裝備裝備時的特殊處理邏輯
+        // 例如：應用屬性修飾符、特殊效果等
     }
 }

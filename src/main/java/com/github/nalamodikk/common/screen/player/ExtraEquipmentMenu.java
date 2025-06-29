@@ -16,15 +16,15 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+
 public class ExtraEquipmentMenu extends AbstractContainerMenu {
     public static final int NINE_GRID_SLOT_COUNT = 9;
-
     public static final int EQUIPMENT_SLOT_COUNT = 8;
+
     private final Player player;
     private final NonNullList<ItemStack> gridRef;
-    private final NonNullList<ItemStack> extraEquipmentRef; // 新增這個
-    private final Container nineGridHandler; // 加上這一行！
-
+    private final NonNullList<ItemStack> extraEquipmentRef;
+    private final Container nineGridHandler;
 
     public ExtraEquipmentMenu(int syncId, Inventory playerInventory, FriendlyByteBuf buf) {
         this(ModMenuTypes.EXTRA_EQUIPMENT_MENU.get(), syncId, playerInventory, new SimpleContainer(EQUIPMENT_SLOT_COUNT));
@@ -40,6 +40,9 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
 
         // 新增玩家欄位
         addPlayerInventorySlots(playerInventory, 8, 170);
+
+        // *** 新增：原版裝備槽位（直接同步） ***
+        addVanillaEquipmentSlots(playerInventory, 8, 23); // 調整位置根據您的GUI設計
 
         // === 飾品裝備欄位的同步機制 ===
         NonNullList<ItemStack> extraEquipment = player.getData(ModDataAttachments.EXTRA_EQUIPMENT.get());
@@ -66,7 +69,7 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
             extraSlotHandler.setItem(i, extraEquipment.get(i));
         }
 
-        // 新增裝備欄位（使用有同步功能的 handler）
+        // 新增額外裝備欄位（使用有同步功能的 handler）
         addExtraEquipmentSlots(extraSlotHandler, 61, 23);
 
         // === 9格儲存欄位的同步機制 ===
@@ -95,6 +98,7 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
 
         addNineGridSlots(this.nineGridHandler, 176, 170);
     }
+
     //新增玩家欄位
     protected void addPlayerInventorySlots(Inventory playerInventory, int startX, int startY) {
         for (int row = 0; row < 3; ++row) {
@@ -106,6 +110,19 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, startX + i * 18, startY + 58));
         }
+    }
+
+    /**
+     * *** 新增方法：原版裝備槽位 - 直接與玩家背包同步 ***
+     * 這四個槽位直接對應並同步原版玩家的裝備欄位（頭盔、胸甲、護腿、靴子）
+     */
+    protected void addVanillaEquipmentSlots(Inventory playerInventory, int baseX, int baseY) {
+        // 原版裝備欄位：頭盔(39)、胸甲(38)、腿甲(37)、靴子(36)
+        // 使用 SpecificEquipmentSlot 來限制裝備類型，但直接操作玩家背包
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 39, baseX, baseY, EquipmentType.HELMET));          // 頭盔
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 38, baseX, baseY + 18, EquipmentType.CHESTPLATE)); // 胸甲
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 37, baseX, baseY + 36, EquipmentType.LEGGINGS));    // 腿甲
+        this.addSlot(new SpecificEquipmentSlot(playerInventory, 36, baseX, baseY + 54, EquipmentType.BOOTS));       // 靴子
     }
 
     protected void addSpecificEquipmentSlots(Container handler, int baseX, int baseY) {
@@ -124,12 +141,6 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         }
     }
 
-    protected void addVanillaEquipmentSlots(Inventory playerInventory, int baseX, int baseY) {
-        // 原版裝備欄位：頭盔、胸甲、腿甲、靴子
-        for (int i = 0; i < 4; i++) {
-            this.addSlot(new Slot(playerInventory, 39 - i, baseX, baseY + i * 18));
-        }
-    }
     // 額外裝備欄位
     protected void addExtraEquipmentSlots(Container handler, int baseX, int baseY) {
         int slotIndex = 0;
@@ -150,13 +161,12 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         }
     }
 
-
-
     @Override
     public void removed(Player player) {
         super.removed(player);
         // 不再需要寫回，因為已在 setChanged() 時即時同步
     }
+
     @Override
     public boolean stillValid(Player player) {
         return true;
