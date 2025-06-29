@@ -24,10 +24,21 @@ public class PlayerLoginEvent {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
+        // ===== 初始化附加資料（這部分要放在外面，總是執行） =====
+        // 初始化玩家9格儲存資料
+        if (!player.hasData(ModDataAttachments.NINE_GRID.get())) {
+            player.setData(ModDataAttachments.NINE_GRID.get(), NonNullList.withSize(9, ItemStack.EMPTY));
+        }
+
+        // 初始化玩家飾品裝備資料
+        if (!player.hasData(ModDataAttachments.EXTRA_EQUIPMENT.get())) {
+            player.setData(ModDataAttachments.EXTRA_EQUIPMENT.get(), NonNullList.withSize(8, ItemStack.EMPTY));
+        }
+
+        // ===== 動畫相關邏輯（這部分可以被設定關閉） =====
         // ✅ 若關閉登入動畫，不執行動畫相關封包
         if (!ModCommonConfig.INSTANCE.showIntroAnimation.get()) {
             LOGGER.debug("Login animation disabled by config. Skipping intro for player {}", player.getGameProfile().getName());
-
             return;
         }
 
@@ -39,11 +50,5 @@ public class PlayerLoginEvent {
             PacketDistributor.sendToPlayer(player, new OpenNaraInitScreenPacket());
             LOGGER.debug("open player one login gui!");
         }
-
-        // 初始化玩家額外裝備附帶資料
-        if (!player.hasData(ModDataAttachments.NINE_GRID.get())) {
-            player.setData(ModDataAttachments.NINE_GRID.get(), NonNullList.withSize(9, ItemStack.EMPTY));
-        }
-
     }
 }

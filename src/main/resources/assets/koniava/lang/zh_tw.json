@@ -15,6 +15,20 @@
   "item.koniava.condensed_mana_dust": "濃縮魔塵",
   "item.koniava.mana_crystal_fragment": "魔力晶核碎片",
 
+  "equipment.koniava.helmet": "戰術頭盔",
+  "equipment.koniava.chestplate": "動力胸甲",
+  "equipment.koniava.leggings": "裝甲護腿",
+  "equipment.koniava.boots": "推進靴",
+
+  "equipment.koniava.shoulder_pad": "肩部裝甲",
+  "equipment.koniava.arm_armor": "臂部護具",
+  "equipment.koniava.belt": "戰術腰帶",
+  "equipment.koniava.gloves": "機械手套",
+  "equipment.koniava.goggles": "戰術護目鏡",
+  "equipment.koniava.engine": "動力引擎",
+  "equipment.koniava.reactor": "能量反應爐",
+  "equipment.koniava.exoskeleton": "外骨骼系統",
+
   "key.koniava.open_floating_gui": "[實驗性] 開啟浮空面板",
   "key.categories.koniava": "魔法工業",
 

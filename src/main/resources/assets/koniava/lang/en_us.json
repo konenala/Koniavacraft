@@ -15,6 +15,20 @@
   "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
   "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
 
+  "equipment.koniava.helmet": "Tactical Helmet",
+  "equipment.koniava.chestplate": "Power Chestplate",
+  "equipment.koniava.leggings": "Armored Leggings",
+  "equipment.koniava.boots": "Propulsion Boots",
+
+  "equipment.koniava.shoulder_pad": "Shoulder Armor",
+  "equipment.koniava.arm_armor": "Arm Guards",
+  "equipment.koniava.belt": "Tactical Belt",
+  "equipment.koniava.gloves": "Mechanical Gloves",
+  "equipment.koniava.goggles": "Tactical Goggles",
+  "equipment.koniava.engine": "Power Engine",
+  "equipment.koniava.reactor": "Energy Reactor",
+  "equipment.koniava.exoskeleton": "Exoskeleton System",
+
   "key.koniava.open_floating_gui": "[Experimental] Open Floating Panel",
   "key.categories.koniava": "Koniavacraft",
 

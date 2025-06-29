@@ -1,6 +1,8 @@
 package com.github.nalamodikk.common.screen.player;
 
 
+import com.github.nalamodikk.common.player.equipment.EquipmentType;
+import com.github.nalamodikk.common.player.equipment.slot.SpecificEquipmentSlot;
 import com.github.nalamodikk.register.ModDataAttachments;
 import com.github.nalamodikk.register.ModMenuTypes;
 import net.minecraft.core.NonNullList;
@@ -18,9 +20,10 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
     public static final int NINE_GRID_SLOT_COUNT = 9;
 
     public static final int EQUIPMENT_SLOT_COUNT = 8;
-    private final Container nineGridHandler;
     private final Player player;
     private final NonNullList<ItemStack> gridRef;
+    private final NonNullList<ItemStack> extraEquipmentRef; // 新增這個
+    private final Container nineGridHandler; // 加上這一行！
 
 
     public ExtraEquipmentMenu(int syncId, Inventory playerInventory, FriendlyByteBuf buf) {
@@ -38,14 +41,38 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         // 新增玩家欄位
         addPlayerInventorySlots(playerInventory, 8, 170);
 
-        // 新增裝備欄位
-        Container extraSlotHandler = new SimpleContainer(EQUIPMENT_SLOT_COUNT);
+        // === 飾品裝備欄位的同步機制 ===
+        NonNullList<ItemStack> extraEquipment = player.getData(ModDataAttachments.EXTRA_EQUIPMENT.get());
+        if (extraEquipment == null) {
+            extraEquipment = NonNullList.withSize(8, ItemStack.EMPTY);
+            player.setData(ModDataAttachments.EXTRA_EQUIPMENT.get(), extraEquipment);
+        }
+        this.extraEquipmentRef = extraEquipment;
+
+        // 建立有同步功能的 handler
+        Container extraSlotHandler = new SimpleContainer(extraEquipment.size()) {
+            @Override
+            public void setChanged() {
+                for (int i = 0; i < this.getContainerSize(); i++) {
+                    extraEquipmentRef.set(i, this.getItem(i));
+                }
+                player.setData(ModDataAttachments.EXTRA_EQUIPMENT.get(), extraEquipmentRef);
+                super.setChanged();
+            }
+        };
+
+        // 初始化 handler 內容
+        for (int i = 0; i < extraEquipment.size(); i++) {
+            extraSlotHandler.setItem(i, extraEquipment.get(i));
+        }
+
+        // 新增裝備欄位（使用有同步功能的 handler）
         addExtraEquipmentSlots(extraSlotHandler, 61, 23);
 
-        // 從玩家取得 9 格附加資料（若沒有就初始化）
+        // === 9格儲存欄位的同步機制 ===
         NonNullList<ItemStack> grid = player.getData(ModDataAttachments.NINE_GRID.get());
         if (grid == null) {
-            grid = NonNullList.withSize(9, ItemStack.EMPTY);
+            grid = NonNullList.withSize(NINE_GRID_SLOT_COUNT, ItemStack.EMPTY);
             player.setData(ModDataAttachments.NINE_GRID.get(), grid);
         }
         this.gridRef = grid;
@@ -66,9 +93,8 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
             this.nineGridHandler.setItem(i, grid.get(i));
         }
 
-        addNineGridSlots(nineGridHandler, 194, 111);
+        addNineGridSlots(this.nineGridHandler, 176, 170);
     }
-
     //新增玩家欄位
     protected void addPlayerInventorySlots(Inventory playerInventory, int startX, int startY) {
         for (int row = 0; row < 3; ++row) {
@@ -82,6 +108,28 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         }
     }
 
+    protected void addSpecificEquipmentSlots(Container handler, int baseX, int baseY) {
+        EquipmentType[] types = {
+                EquipmentType.SHOULDER_PAD, EquipmentType.ARM_ARMOR,
+                EquipmentType.BELT, EquipmentType.GLOVES,
+                EquipmentType.GOGGLES, EquipmentType.ENGINE,
+                EquipmentType.REACTOR, EquipmentType.EXOSKELETON
+        };
+
+        for (int i = 0; i < types.length; i++) {
+            int row = i / 4;
+            int col = i % 4;
+            this.addSlot(new SpecificEquipmentSlot(handler, i,
+                    baseX + col * 18, baseY + row * 18, types[i]));
+        }
+    }
+
+    protected void addVanillaEquipmentSlots(Inventory playerInventory, int baseX, int baseY) {
+        // 原版裝備欄位：頭盔、胸甲、腿甲、靴子
+        for (int i = 0; i < 4; i++) {
+            this.addSlot(new Slot(playerInventory, 39 - i, baseX, baseY + i * 18));
+        }
+    }
     // 額外裝備欄位
     protected void addExtraEquipmentSlots(Container handler, int baseX, int baseY) {
         int slotIndex = 0;
