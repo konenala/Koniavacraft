@@ -91,7 +91,7 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         }
 
         // 新增額外裝備欄位（使用修正後的 handler）
-        addExtraEquipmentSlots(this.extraEquipmentHandler, 61, 23);
+        addSpecificEquipmentSlots(this.extraEquipmentHandler, 61, 23);
 
         // === 🔥 修正：9格儲存欄位的同步機制 ===
         NonNullList<ItemStack> grid = player.getData(ModDataAttachments.NINE_GRID.get());
@@ -167,6 +167,7 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         this.addSlot(new SpecificEquipmentSlot(playerInventory, 36, baseX, baseY + 54, EquipmentType.BOOTS));
     }
 
+    // 在 GUI 中以兩列排列方式，加入 8 個「自訂裝備欄位」
     protected void addSpecificEquipmentSlots(Container handler, int baseX, int baseY) {
         EquipmentType[] types = {
                 EquipmentType.SHOULDER_PAD, EquipmentType.ARM_ARMOR,
@@ -176,22 +177,13 @@ public class ExtraEquipmentMenu extends AbstractContainerMenu {
         };
 
         for (int i = 0; i < types.length; i++) {
-            int row = i / 4;
-            int col = i % 4;
+            int col = i / 4;  // 🔥 改：列數 = i除以4 (0,0,0,0,1,1,1,1)
+            int row = i % 4;  // 🔥 改：行數 = i模4 (0,1,2,3,0,1,2,3)
             this.addSlot(new SpecificEquipmentSlot(handler, i,
                     baseX + col * 18, baseY + row * 18, types[i]));
         }
     }
 
-    // 額外裝備欄位
-    protected void addExtraEquipmentSlots(Container handler, int baseX, int baseY) {
-        int slotIndex = 0;
-        for (int col = 0; col < 2; col++) {
-            for (int row = 0; row < 4; row++) {
-                this.addSlot(new Slot(handler, slotIndex++, baseX + col * 18, baseY + row * 18));
-            }
-        }
-    }
 
     // 新增裝備儲存欄位
     protected void addNineGridSlots(Container handler, int baseX, int baseY) {
