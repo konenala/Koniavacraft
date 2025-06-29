@@ -74,6 +74,11 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
         tickCounter++;
 
+        // 🔧 修復1：限制拉取頻率 (每10tick拉取一次)
+        if (tickCounter % 10 == 0 && internalBuffer.getManaStored() < internalBuffer.getMaxManaStored()) {
+            pullManaFromNeighbors();
+        }
+
         //  性能優化：分階段更新，避免單tick過載
         boolean shouldUpdateCache = (tickCounter % CACHE_UPDATE_INTERVAL == 0);
         boolean shouldUpdateConnections = (tickCounter % CONNECTION_UPDATE_INTERVAL == 0) || needsConnectionUpdate;
@@ -92,6 +97,35 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             distributeMana();
         }
     }
+
+    private void pullManaFromNeighbors() {
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = worldPosition.relative(direction);
+            IUnifiedManaHandler neighbor = level.getCapability(
+                    ModCapabilities.MANA, neighborPos, direction.getOpposite());
+
+            if (neighbor != null && neighbor.canExtract()) {
+                // 🔥 修復3：排除其他導管，避免循環
+                if (level.getBlockEntity(neighborPos) instanceof ArcaneConduitBlockEntity) {
+                    continue; // 跳過其他導管
+                }
+
+                // 🔥 修復4：只在真正需要時拉取
+                int needed = internalBuffer.getMaxManaStored() - internalBuffer.getManaStored();
+                if (needed < 50) break; // 如果需求太少就不拉取
+
+                // 🔥 修復5：限制拉取量
+                int toPull = Math.min(needed, 50); // 每次最多50，而不是100
+                int extracted = neighbor.extractMana(toPull, ManaAction.EXECUTE);
+                if (extracted > 0) {
+                    internalBuffer.receiveMana(extracted, ManaAction.EXECUTE);
+                    System.out.println("導管從 " + direction + " 拉取了 " + extracted + " 魔力");
+                    break; // 一次只從一個鄰居拉取
+                }
+            }
+        }
+    }
+
 
     private void updateCapabilityCache() {
         if (!(level instanceof ServerLevel serverLevel)) return;
@@ -122,6 +156,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
+    // 🔧 修復6：改進分配邏輯，避免反向流動
     private void distributeMana() {
         if (cachedCapabilities.isEmpty()) return;
 
@@ -140,6 +175,15 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
             IUnifiedManaHandler capability = cachedCapabilities.get(direction);
             if (capability == null) continue;
+
+            // 🔥 修復7：避免向其他導管輸出（除非它們魔力更少）
+            BlockPos neighborPos = worldPosition.relative(direction);
+            if (level.getBlockEntity(neighborPos) instanceof ArcaneConduitBlockEntity otherConduit) {
+                // 只向魔力更少的導管傳輸
+                if (otherConduit.getManaStored() >= this.getManaStored() - 100) {
+                    continue; // 跳過魔力差不多或更多的導管
+                }
+            }
 
             try {
                 // 🚀 性能優化：預檢查避免無效調用

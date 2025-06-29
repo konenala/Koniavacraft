@@ -18,11 +18,11 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
 
     // 材質資源位置
     private static final ResourceLocation CRYSTAL_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/arcane_crystal.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/conduit/arcane_crystal.png");
     private static final ResourceLocation RUNE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/magic_runes.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/magic_runes.png");
     private static final ResourceLocation MANA_FLOW_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/mana_flow.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/mana_flow.png");
 
     public ArcaneConduitBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -40,19 +40,20 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         poseStack.translate(0.5, 0.5, 0.5);
 
         // 🔮 渲染發光水晶核心
-        renderCrystalCore(conduit, partialTick, poseStack, bufferSource, packedLight);
+        renderCrystalCore(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
         // ✨ 渲染旋轉符文
-        renderRotatingRunes(conduit, partialTick, poseStack, bufferSource);
+        renderRotatingRunes(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
         // 💫 渲染魔力流動效果
-        renderManaFlow(conduit, partialTick, poseStack, bufferSource);
+        renderManaFlow(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
         poseStack.popPose();
     }
 
     private void renderCrystalCore(ArcaneConduitBlockEntity conduit, float partialTick,
-                                   PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+                                   PoseStack poseStack, MultiBufferSource bufferSource,
+                                   int packedLight, int packedOverlay) {
 
         // 水晶脈動效果
         long gameTime = conduit.getLevel().getGameTime();
@@ -76,13 +77,14 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         VertexConsumer crystalConsumer = bufferSource.getBuffer(
                 RenderType.entityTranslucentEmissive(CRYSTAL_TEXTURE));
 
-        renderCube(poseStack, crystalConsumer, 1.0f, 1.0f, 1.0f, brightness, packedLight);
+        renderCube(poseStack, crystalConsumer, 1.0f, 1.0f, 1.0f, brightness, packedLight, packedOverlay);
 
         poseStack.popPose();
     }
 
     private void renderRotatingRunes(ArcaneConduitBlockEntity conduit, float partialTick,
-                                     PoseStack poseStack, MultiBufferSource bufferSource) {
+                                     PoseStack poseStack, MultiBufferSource bufferSource,
+                                     int packedLight, int packedOverlay) {
 
         // 只在有魔力時顯示符文
         if (conduit.getManaStored() <= 0) return;
@@ -119,7 +121,7 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
             // 符文透明度根據魔力量變化
             float alpha = 0.5f + 0.5f * ((float) conduit.getManaStored() / conduit.getMaxManaStored());
 
-            renderQuad(poseStack, runeConsumer, 1.0f, 0.8f, 0.2f, alpha, 15728880);
+            renderQuad(poseStack, runeConsumer, 1.0f, 0.8f, 0.2f, alpha, packedLight, packedOverlay);
 
             poseStack.popPose();
         }
@@ -128,7 +130,8 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
     }
 
     private void renderManaFlow(ArcaneConduitBlockEntity conduit, float partialTick,
-                                PoseStack poseStack, MultiBufferSource bufferSource) {
+                                PoseStack poseStack, MultiBufferSource bufferSource,
+                                int packedLight, int packedOverlay) {
 
         // 只在傳輸魔力時顯示流動效果
         if (conduit.getManaStored() <= 0) return;
@@ -173,48 +176,47 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
             float b = 1.0f;
             float alpha = intensity * (1.0f - flowProgress);
 
-            renderQuad(poseStack, flowConsumer, r, g, b, alpha, 15728880);
+            renderQuad(poseStack, flowConsumer, r, g, b, alpha, packedLight, packedOverlay);
 
             poseStack.popPose();
         }
     }
 
-    // 🔧 修復：正確的 VertexConsumer.vertex 用法
+    // 🔧 修復：正確的立方體渲染方法
     private void renderCube(PoseStack poseStack, VertexConsumer consumer,
-                            float r, float g, float b, float a, int light) {
+                            float r, float g, float b, float a, int packedLight, int packedOverlay) {
         Matrix4f matrix = poseStack.last().pose();
 
         // 簡化的立方體渲染 - 只渲染前面作為示例
-        // 前面 (4個頂點組成2個三角形)
-        addVertex(consumer, matrix, -0.5f, -0.5f, 0.5f, r, g, b, a, 0, 0, light);
-        addVertex(consumer, matrix, 0.5f, -0.5f, 0.5f, r, g, b, a, 1, 0, light);
-        addVertex(consumer, matrix, 0.5f, 0.5f, 0.5f, r, g, b, a, 1, 1, light);
-        addVertex(consumer, matrix, -0.5f, 0.5f, 0.5f, r, g, b, a, 0, 1, light);
-
-        // 注意：實際使用時需要實現完整的6個面
+        // 前面 (使用三角形帶渲染四邊形)
+        addVertex(consumer, matrix, -0.5f, -0.5f, 0.5f, r, g, b, a, 0, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, 0.5f, -0.5f, 0.5f, r, g, b, a, 1, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -0.5f, 0.5f, 0.5f, r, g, b, a, 0, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, 0.5f, 0.5f, 0.5f, r, g, b, a, 1, 0, packedLight, packedOverlay);
     }
 
     private void renderQuad(PoseStack poseStack, VertexConsumer consumer,
-                            float r, float g, float b, float a, int light) {
+                            float r, float g, float b, float a, int packedLight, int packedOverlay) {
         Matrix4f matrix = poseStack.last().pose();
 
-        // 渲染一個四邊形 (4個頂點)
-        addVertex(consumer, matrix, -0.5f, -0.5f, 0, r, g, b, a, 0, 0, light);
-        addVertex(consumer, matrix, 0.5f, -0.5f, 0, r, g, b, a, 1, 0, light);
-        addVertex(consumer, matrix, 0.5f, 0.5f, 0, r, g, b, a, 1, 1, light);
-        addVertex(consumer, matrix, -0.5f, 0.5f, 0, r, g, b, a, 0, 1, light);
+        // 渲染一個四邊形 (使用三角形帶)
+        addVertex(consumer, matrix, -0.5f, -0.5f, 0, r, g, b, a, 0, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, 0.5f, -0.5f, 0, r, g, b, a, 1, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -0.5f, 0.5f, 0, r, g, b, a, 0, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, 0.5f, 0.5f, 0, r, g, b, a, 1, 0, packedLight, packedOverlay);
     }
 
-    // 🔧 修復：正確的頂點添加方法
+    // 🔧 修復：完整的頂點數據
     private void addVertex(VertexConsumer consumer, Matrix4f matrix,
                            float x, float y, float z,
                            float r, float g, float b, float a,
-                           float u, float v, int light) {
+                           float u, float v, int packedLight, int packedOverlay) {
         consumer.addVertex(matrix, x, y, z)
                 .setColor(r, g, b, a)
                 .setUv(u, v)
-                .setLight(light)
-                .setNormal(0, 0, 1);
+                .setOverlay(packedOverlay)  // 🔥 添加覆蓋層UV
+                .setLight(packedLight)      // 🔥 光照信息
+                .setNormal(0, 0, 1);        // 🔥 法線向量
     }
 
     @Override

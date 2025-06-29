@@ -91,3 +91,13 @@ repo
 /src/generated/resources/assets/koniava/models/item/raw_mana_dust.json
 /src/generated/resources/assets/koniava/models/item/speed_upgrade.json
 /src/generated/resources/data/c/tags/item/mana.json
+/src/generated/resources/assets/koniava/blockstates/arcane_conduit.json
+/src/generated/resources/assets/koniava/models/item/arcane_conduit.json
+/src/generated/resources/data/koniava/loot_table/blocks/arcane_conduit.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_core.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_down.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_east.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_north.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_south.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_up.json
+/src/generated/resources/assets/koniava/models/block/arcane_conduit_west.json
