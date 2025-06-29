@@ -19,6 +19,8 @@ public class ModDataAttachments {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, KoniavacraftMod.MOD_ID);
 
+    private static final Codec<ItemStack> ITEMSTACK_CODEC_ALLOW_EMPTY =
+            ItemStack.OPTIONAL_CODEC;
 
 
     public static final Supplier<AttachmentType<Boolean>> NARA_BOUND =
@@ -32,7 +34,7 @@ public class ModDataAttachments {
     public static final Supplier<AttachmentType<NonNullList<ItemStack>>> EXTRA_EQUIPMENT =
             ATTACHMENT_TYPES.register("extra_equipment", () ->
                     AttachmentType.<NonNullList<ItemStack>>builder(() -> NonNullList.withSize(8, ItemStack.EMPTY))
-                            .serialize(Codec.list(ItemStack.CODEC).xmap(
+                            .serialize(Codec.list(ITEMSTACK_CODEC_ALLOW_EMPTY).xmap(
                                     list -> {
                                         NonNullList<ItemStack> result = NonNullList.withSize(8, ItemStack.EMPTY);
                                         for (int i = 0; i < Math.min(list.size(), 8); i++) {
@@ -52,11 +54,12 @@ public class ModDataAttachments {
                             .build()
             );
 
+
 // 九格存儲飾品裝備
-    public static final Supplier<AttachmentType<NonNullList<ItemStack>>> NINE_GRID =
-            ATTACHMENT_TYPES.register("nine_grid", () ->
-                    AttachmentType.<NonNullList<ItemStack>>builder(() -> NonNullList.withSize(9, ItemStack.EMPTY))
-                            .serialize(Codec.list(ItemStack.CODEC).xmap(
+public static final Supplier<AttachmentType<NonNullList<ItemStack>>> NINE_GRID =
+        ATTACHMENT_TYPES.register("nine_grid", () ->
+                AttachmentType.<NonNullList<ItemStack>>builder(() -> NonNullList.withSize(9, ItemStack.EMPTY))
+                        .serialize(Codec.list(ITEMSTACK_CODEC_ALLOW_EMPTY).xmap(
                                     list -> {
                                         NonNullList<ItemStack> result = NonNullList.withSize(9, ItemStack.EMPTY);
                                         for (int i = 0; i < Math.min(list.size(), 9); i++) {
