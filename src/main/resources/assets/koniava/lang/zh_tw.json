@@ -87,6 +87,10 @@
   "message.koniava.machine.nothing_to_clear": "沒有模組物品可退還。",
   "message.koniava.machine.no_space": "沒有可用的模組插槽。",
 
+  "message.koniava.conduit.info_header": "§6=== 奧術導管狀態 ===",
+  "message.koniava.conduit.mana_status": "§b魔力: §f%s/%s",
+  "message.koniava.conduit.connections": "§a活躍連接: §f%s",
+  "message.koniava.conduit.direction_config": "§e%s: %s",
 
   "message.koniava.machine.restored_count": "已還原上一個拼裝狀態，並退回 %s 個模組。",
   "message.koniava.machine.no_history": "沒有可還原的拼裝記錄。",

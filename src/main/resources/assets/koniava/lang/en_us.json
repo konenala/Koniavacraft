@@ -92,6 +92,11 @@
   "message.koniava.nara.stabilized": "▸ Conscious alignment stabilized.",
   "message.koniava.nara.welcome": "▸ Welcome, Operator.",
 
+  "message.koniava.conduit.info_header": "§6=== Arcane Conduit Status ===",
+  "message.koniava.conduit.mana_status": "§bMana: §f%s/%s",
+  "message.koniava.conduit.connections": "§aActive Connections: §f%s",
+  "message.koniava.conduit.direction_config": "§e%s: %s",
+
   "message.koniava.screen.generator_working": "Generator is working. Mode switching is disabled.",
 
   "message.koniava.machine.restored_count": "Restored previous setup. Returned %s module(s) to you.",

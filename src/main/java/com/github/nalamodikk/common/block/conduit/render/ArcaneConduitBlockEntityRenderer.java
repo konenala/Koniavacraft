@@ -16,13 +16,13 @@ import org.joml.Matrix4f;
 
 public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<ArcaneConduitBlockEntity> {
 
-    // 材質資源位置
+    // 修復：材質路徑和你的項目結構匹配
     private static final ResourceLocation CRYSTAL_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/conduit/arcane_crystal.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/arcane_crystal.png");
     private static final ResourceLocation RUNE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/magic_runes.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/magic_runes.png");
     private static final ResourceLocation MANA_FLOW_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/mana_flow.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/mana_flow.png");
 
     public ArcaneConduitBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -59,8 +59,8 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         long gameTime = conduit.getLevel().getGameTime();
         float pulse = (float) (0.8 + 0.2 * Math.sin((gameTime + partialTick) * 0.1));
 
-        // 魔力量影響亮度
-        float manaRatio = (float) conduit.getManaStored() / conduit.getMaxManaStored();
+        // 魔力量影響亮度和大小
+        float manaRatio = Math.max(0.1f, (float) conduit.getManaStored() / Math.max(1, conduit.getMaxManaStored()));
         float brightness = 0.3f + 0.7f * manaRatio;
 
         poseStack.pushPose();
@@ -68,16 +68,22 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         // 緩慢旋轉
         float rotation = (gameTime + partialTick) * 0.5f;
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotation * 0.7f)); // 添加多軸旋轉
 
-        // 脈動縮放
-        float scale = 0.3f * pulse;
+        // 脈動縮放，基於魔力量
+        float scale = 0.15f + (0.15f * manaRatio * pulse);
         poseStack.scale(scale, scale, scale);
 
         // 渲染發光水晶
         VertexConsumer crystalConsumer = bufferSource.getBuffer(
                 RenderType.entityTranslucentEmissive(CRYSTAL_TEXTURE));
 
-        renderCube(poseStack, crystalConsumer, 1.0f, 1.0f, 1.0f, brightness, packedLight, packedOverlay);
+        // 藍色水晶顏色，亮度基於魔力
+        float r = 0.3f + 0.3f * manaRatio;
+        float g = 0.6f + 0.4f * manaRatio;
+        float b = 1.0f;
+
+        renderCube(poseStack, crystalConsumer, r, g, b, brightness, packedLight, packedOverlay);
 
         poseStack.popPose();
     }
@@ -90,11 +96,14 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         if (conduit.getManaStored() <= 0) return;
 
         long gameTime = conduit.getLevel().getGameTime();
-        float runeRotation = (gameTime + partialTick) * 2.0f;
+        float runeRotation = (gameTime + partialTick) * 1.5f;
 
         // 獲取活躍連接數決定符文數量
         int activeConnections = conduit.getActiveConnectionCount();
-        if (activeConnections <= 0) return;
+        if (activeConnections <= 0) {
+            // 如果沒有外部連接，顯示基礎符文
+            activeConnections = 3;
+        }
 
         VertexConsumer runeConsumer = bufferSource.getBuffer(
                 RenderType.entityTranslucentEmissive(RUNE_TEXTURE));
@@ -102,25 +111,33 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         poseStack.pushPose();
 
         // 符文環繞核心旋轉
-        for (int i = 0; i < Math.min(activeConnections, 6); i++) {
+        int runeCount = Math.min(activeConnections, 6);
+        for (int i = 0; i < runeCount; i++) {
             poseStack.pushPose();
 
-            float angle = (360.0f / activeConnections) * i + runeRotation;
+            float angleOffset = (360.0f / runeCount) * i;
+            float angle = angleOffset + runeRotation;
+
+            // 垂直搖擺效果
+            float verticalOffset = 0.1f * (float) Math.sin((gameTime + partialTick + i * 20) * 0.05);
+
             poseStack.mulPose(Axis.YP.rotationDegrees(angle));
 
-            // 距離核心0.8格
-            poseStack.translate(0.8f, 0, 0);
+            // 距離核心0.6格，添加垂直偏移
+            poseStack.translate(0.6f, verticalOffset, 0);
 
             // 始終面向玩家（廣告牌效果）
             poseStack.mulPose(Axis.YP.rotationDegrees(-angle));
 
-            // 符文大小
-            float runeSize = 0.2f;
+            // 符文大小變化
+            float runeSize = 0.15f + 0.05f * (float) Math.sin((gameTime + partialTick + i * 10) * 0.1);
             poseStack.scale(runeSize, runeSize, runeSize);
 
             // 符文透明度根據魔力量變化
-            float alpha = 0.5f + 0.5f * ((float) conduit.getManaStored() / conduit.getMaxManaStored());
+            float manaRatio = (float) conduit.getManaStored() / Math.max(1, conduit.getMaxManaStored());
+            float alpha = 0.4f + 0.6f * manaRatio;
 
+            // 金色符文
             renderQuad(poseStack, runeConsumer, 1.0f, 0.8f, 0.2f, alpha, packedLight, packedOverlay);
 
             poseStack.popPose();
@@ -133,8 +150,8 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
                                 PoseStack poseStack, MultiBufferSource bufferSource,
                                 int packedLight, int packedOverlay) {
 
-        // 只在傳輸魔力時顯示流動效果
-        if (conduit.getManaStored() <= 0) return;
+        // 只在有足夠魔力時顯示流動效果
+        if (conduit.getManaStored() < 10) return;
 
         VertexConsumer flowConsumer = bufferSource.getBuffer(
                 RenderType.entityTranslucentEmissive(MANA_FLOW_TEXTURE));
@@ -144,69 +161,81 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         // 為每個有傳輸歷史的方向渲染流動效果
         for (Direction direction : Direction.values()) {
             int transferHistory = conduit.getTransferHistory(direction);
-            if (transferHistory <= 0) continue;
+
+            // 即使沒有歷史，也顯示基礎的魔力流動
+            if (transferHistory <= 0 && conduit.getManaStored() < 50) continue;
 
             poseStack.pushPose();
 
-            // 計算流動強度（基於傳輸歷史）
-            float intensity = Math.min(1.0f, transferHistory / 1000.0f);
-            if (intensity < 0.1f) {
+            // 計算流動強度
+            float intensity = Math.max(0.3f, Math.min(1.0f, transferHistory / 500.0f));
+
+            // 多個粒子流動效果
+            for (int particle = 0; particle < 3; particle++) {
+                poseStack.pushPose();
+
+                // 流動動畫，每個粒子有不同的相位
+                float phase = (float) particle / 3.0f;
+                float flowProgress = ((gameTime + partialTick + phase * 60) * 0.15f) % 1.0f;
+
+                // 沿著方向移動
+                float distance = 0.2f + 0.5f * flowProgress;
+                poseStack.translate(
+                        direction.getStepX() * distance,
+                        direction.getStepY() * distance,
+                        direction.getStepZ() * distance
+                );
+
+                // 粒子大小隨距離和強度變化
+                float size = 0.06f * (1.0f - flowProgress * 0.5f) * intensity;
+                poseStack.scale(size, size, size);
+
+                // 顏色：藍色能量球，隨流動進度變化
+                float r = 0.2f + 0.5f * flowProgress;
+                float g = 0.4f + 0.6f * flowProgress;
+                float b = 1.0f;
+                float alpha = intensity * (1.0f - flowProgress * 0.7f);
+
+                renderQuad(poseStack, flowConsumer, r, g, b, alpha, packedLight, packedOverlay);
+
                 poseStack.popPose();
-                continue;
             }
-
-            // 流動動畫
-            float flowProgress = ((gameTime + partialTick) * 0.2f) % 1.0f;
-
-            // 沿著方向移動
-            float distance = 0.3f + 0.4f * flowProgress;
-            poseStack.translate(
-                    direction.getStepX() * distance,
-                    direction.getStepY() * distance,
-                    direction.getStepZ() * distance
-            );
-
-            // 粒子大小隨距離變化
-            float size = 0.1f * (1.0f - flowProgress) * intensity;
-            poseStack.scale(size, size, size);
-
-            // 顏色：藍色到白色漸變
-            float r = 0.3f + 0.7f * flowProgress;
-            float g = 0.6f + 0.4f * flowProgress;
-            float b = 1.0f;
-            float alpha = intensity * (1.0f - flowProgress);
-
-            renderQuad(poseStack, flowConsumer, r, g, b, alpha, packedLight, packedOverlay);
 
             poseStack.popPose();
         }
     }
 
-    // 🔧 修復：正確的立方體渲染方法
+    // 🔧 簡化的立方體渲染（性能友好）
     private void renderCube(PoseStack poseStack, VertexConsumer consumer,
                             float r, float g, float b, float a, int packedLight, int packedOverlay) {
         Matrix4f matrix = poseStack.last().pose();
 
-        // 簡化的立方體渲染 - 只渲染前面作為示例
-        // 前面 (使用三角形帶渲染四邊形)
+        // 使用 6 個面但簡化的方法
+        // 前面
         addVertex(consumer, matrix, -0.5f, -0.5f, 0.5f, r, g, b, a, 0, 1, packedLight, packedOverlay);
         addVertex(consumer, matrix, 0.5f, -0.5f, 0.5f, r, g, b, a, 1, 1, packedLight, packedOverlay);
-        addVertex(consumer, matrix, -0.5f, 0.5f, 0.5f, r, g, b, a, 0, 0, packedLight, packedOverlay);
         addVertex(consumer, matrix, 0.5f, 0.5f, 0.5f, r, g, b, a, 1, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -0.5f, 0.5f, 0.5f, r, g, b, a, 0, 0, packedLight, packedOverlay);
+
+        // 後面
+        addVertex(consumer, matrix, 0.5f, -0.5f, -0.5f, r, g, b, a, 0, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -0.5f, -0.5f, -0.5f, r, g, b, a, 1, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -0.5f, 0.5f, -0.5f, r, g, b, a, 1, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, 0.5f, 0.5f, -0.5f, r, g, b, a, 0, 0, packedLight, packedOverlay);
     }
 
     private void renderQuad(PoseStack poseStack, VertexConsumer consumer,
                             float r, float g, float b, float a, int packedLight, int packedOverlay) {
         Matrix4f matrix = poseStack.last().pose();
 
-        // 渲染一個四邊形 (使用三角形帶)
+        // 渲染一個四邊形 (順時針頂點順序)
         addVertex(consumer, matrix, -0.5f, -0.5f, 0, r, g, b, a, 0, 1, packedLight, packedOverlay);
         addVertex(consumer, matrix, 0.5f, -0.5f, 0, r, g, b, a, 1, 1, packedLight, packedOverlay);
-        addVertex(consumer, matrix, -0.5f, 0.5f, 0, r, g, b, a, 0, 0, packedLight, packedOverlay);
         addVertex(consumer, matrix, 0.5f, 0.5f, 0, r, g, b, a, 1, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -0.5f, 0.5f, 0, r, g, b, a, 0, 0, packedLight, packedOverlay);
     }
 
-    // 🔧 修復：完整的頂點數據
+    // 🔧 完整的頂點數據
     private void addVertex(VertexConsumer consumer, Matrix4f matrix,
                            float x, float y, float z,
                            float r, float g, float b, float a,
@@ -214,13 +243,13 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         consumer.addVertex(matrix, x, y, z)
                 .setColor(r, g, b, a)
                 .setUv(u, v)
-                .setOverlay(packedOverlay)  // 🔥 添加覆蓋層UV
-                .setLight(packedLight)      // 🔥 光照信息
-                .setNormal(0, 0, 1);        // 🔥 法線向量
+                .setOverlay(packedOverlay)  // UV1 - 覆蓋層座標
+                .setLight(packedLight)      // UV2 - 光照座標
+                .setNormal(0, 0, 1);        // 法線向量
     }
 
     @Override
     public int getViewDistance() {
-        return 64; // 渲染距離
+        return 48; // 適中的渲染距離，性能友好
     }
 }

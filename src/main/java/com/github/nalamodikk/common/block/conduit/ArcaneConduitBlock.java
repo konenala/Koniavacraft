@@ -1,9 +1,13 @@
 package com.github.nalamodikk.common.block.conduit;
 
 
+import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -15,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -89,6 +94,8 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
                 (level1, pos, state1, blockEntity) -> ((ArcaneConduitBlockEntity) blockEntity).tick() : null;
     }
 
+
+
     // 檢查是否應該連接到某個方向
     public boolean shouldConnectTo(Level level, BlockPos pos, Direction direction) {
         BlockPos neighborPos = pos.relative(direction);
@@ -109,14 +116,41 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
     }
 
     // 更新連接狀態
-    public BlockState updateConnections(Level level, BlockPos pos, BlockState state) {
-        return state
-                .setValue(NORTH, shouldConnectTo(level, pos, Direction.NORTH))
-                .setValue(SOUTH, shouldConnectTo(level, pos, Direction.SOUTH))
-                .setValue(WEST, shouldConnectTo(level, pos, Direction.WEST))
-                .setValue(EAST, shouldConnectTo(level, pos, Direction.EAST))
-                .setValue(UP, shouldConnectTo(level, pos, Direction.UP))
-                .setValue(DOWN, shouldConnectTo(level, pos, Direction.DOWN));
+
+    // 你還需要確保有這個方法：
+    private BlockState updateConnections(Level level, BlockPos pos, BlockState state) {
+        BlockState newState = state;
+
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            boolean shouldConnect = canConnectTo(level, neighborPos, direction);
+
+            // 根據你的 ArcaneConduitBlock 屬性名稱調整
+            BooleanProperty property = switch (direction) {
+                case NORTH -> ArcaneConduitBlock.NORTH;
+                case SOUTH -> ArcaneConduitBlock.SOUTH;
+                case WEST -> ArcaneConduitBlock.WEST;
+                case EAST -> ArcaneConduitBlock.EAST;
+                case UP -> ArcaneConduitBlock.UP;
+                case DOWN -> ArcaneConduitBlock.DOWN;
+            };
+
+            newState = newState.setValue(property, shouldConnect);
+        }
+
+        return newState;
+    }
+
+    private boolean canConnectTo(Level level, BlockPos pos, Direction direction) {
+        // 檢查是否應該連接到該位置
+        // 1. 是否為其他導管
+        if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity) {
+            return true;
+        }
+
+        // 2. 是否有魔力能力
+        IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, pos, direction);
+        return handler != null;
     }
 
     @Override
@@ -127,5 +161,14 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
                 level.setBlock(pos, newState, 3);
             }
         }
+    }
+
+    @Override
+    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                            Player player, BlockHitResult hit) {
+        if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
+            return conduit.onUse(state, level, pos, player, hit);
+        }
+        return InteractionResult.PASS;
     }
 }
