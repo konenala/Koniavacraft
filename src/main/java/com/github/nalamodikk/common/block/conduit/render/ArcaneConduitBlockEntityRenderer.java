@@ -18,11 +18,11 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
 
     // 修復：材質路徑和你的項目結構匹配
     private static final ResourceLocation CRYSTAL_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/arcane_crystal.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/conduit/arcane_crystal.png");
     private static final ResourceLocation RUNE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/magic_runes.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/magic_runes.png");
     private static final ResourceLocation MANA_FLOW_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/mana_flow.png");
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/mana_flow.png");
 
     public ArcaneConduitBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }

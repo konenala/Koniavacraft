@@ -84,26 +84,30 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .texture("particle", modLoc("block/" + coreTexture))
                 .texture("core", modLoc("block/" + coreTexture));
 
-        // 添加水晶材質（如果有）
+        // 🔥 只有當水晶材質不為 null 時才添加
         if (crystalTexture != null) {
             coreBuilder.texture("crystal", modLoc("block/" + crystalTexture));
         }
 
-        // 創建核心元素
+
+        // 🎨 修復材質UV設定 - 讓材質完全填滿每個面
+
+        // 修復 createConduitModel 中的核心元素：
         var coreElement = coreBuilder.element()
                 .from(coreSize[0], coreSize[0], coreSize[0])
                 .to(coreSize[1], coreSize[1], coreSize[1]);
 
-        // 🔧 修復：直接調用面的設置
-        coreElement.face(Direction.NORTH).texture("#core").end()
-                .face(Direction.SOUTH).texture("#core").end()
-                .face(Direction.WEST).texture("#core").end()
-                .face(Direction.EAST).texture("#core").end()
-                .face(Direction.UP).texture("#core").end()
-                .face(Direction.DOWN).texture("#core").end()
+        // 🔧 為所有面添加正確的UV設定，讓材質填滿整個面
+        coreElement.face(Direction.NORTH).texture("#core").uvs(0, 0, 16, 16).end()
+                .face(Direction.SOUTH).texture("#core").uvs(0, 0, 16, 16).end()
+                .face(Direction.WEST).texture("#core").uvs(0, 0, 16, 16).end()
+                .face(Direction.EAST).texture("#core").uvs(0, 0, 16, 16).end()
+                .face(Direction.UP).texture("#core").uvs(0, 0, 16, 16).end()
+                .face(Direction.DOWN).texture("#core").uvs(0, 0, 16, 16).end()
                 .end();
 
-        // 如果有水晶，添加水晶元素
+
+        // 🔥 只有當水晶材質和大小都不為 null 時才添加水晶
         if (crystalTexture != null && crystalSize != null) {
             var crystalElement = coreBuilder.element()
                     .from(crystalSize[0], crystalSize[0], crystalSize[0])
@@ -119,7 +123,6 @@ public class ModBlockStateProvider extends BlockStateProvider {
         }
 
         ModelFile coreModel = coreBuilder;
-
 
         // 創建各方向的管道模型
         ModelFile northModel = createPipeModel(conduitName + "_north", pipeTexture,
@@ -161,6 +164,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
     }
 
 
+
+
     /**
      * 添加導管的連接邏輯 (假設所有導管都使用相同的連接屬性名)
      */
@@ -186,37 +191,120 @@ public class ModBlockStateProvider extends BlockStateProvider {
         builder.part().modelFile(down).addModel()
                 .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.DOWN, true);
     }
+
+    private float[] getSmartUV(String modelName, String face) {
+
+        // 🎨 關鍵：不同方向使用不同的材質區域，形成連貫的視覺效果
+
+        if (modelName.contains("_west") || modelName.contains("_east")) {
+            // 東西向管道 - 水平延伸效果
+            if (face.equals("north") || face.equals("south")) {
+                // 前後面：只顯示水平線，讓視覺上看起來是延伸的
+                return new float[]{0, 6, 16, 10};  // 只取中間水平帶
+            }
+            if (face.equals("up") || face.equals("down")) {
+                // 上下面：顯示水平線
+                return new float[]{0, 6, 16, 10};
+            }
+            // 左右面：顯示完整十字，這是連接面
+            return new float[]{0, 0, 16, 16};
+
+        } else if (modelName.contains("_north") || modelName.contains("_south")) {
+            // 南北向管道 - 垂直延伸效果
+            if (face.equals("west") || face.equals("east")) {
+                // 左右面：只顯示垂直線
+                return new float[]{6, 0, 10, 16};  // 只取中間垂直帶
+            }
+            if (face.equals("up") || face.equals("down")) {
+                // 上下面：顯示垂直線
+                return new float[]{6, 0, 10, 16};
+            }
+            // 前後面：顯示完整十字，這是連接面
+            return new float[]{0, 0, 16, 16};
+
+        } else if (modelName.contains("_up") || modelName.contains("_down")) {
+            // 上下向管道 - 垂直延伸效果
+            if (face.equals("north") || face.equals("south") ||
+                    face.equals("west") || face.equals("east")) {
+                // 側面：只顯示垂直線
+                return new float[]{6, 0, 10, 16};
+            }
+            // 上下面：顯示完整十字，這是連接面
+            return new float[]{0, 0, 16, 16};
+        }
+
+        // 核心或其他情況：完整十字
+        return new float[]{0, 0, 16, 16};
+    }
+
+    // 📚 步驟2: 添加UV分量提取方法
+    private float getSmartU1(String modelName, String face) {
+        return getSmartUV(modelName, face)[0]; // 左上角 U 座標
+    }
+
+    private float getSmartV1(String modelName, String face) {
+        return getSmartUV(modelName, face)[1]; // 左上角 V 座標
+    }
+
+    private float getSmartU2(String modelName, String face) {
+        return getSmartUV(modelName, face)[2]; // 右下角 U 座標
+    }
+
+    private float getSmartV2(String modelName, String face) {
+        return getSmartUV(modelName, face)[3]; // 右下角 V 座標
+    }
     /**
      * 改進的管道模型創建方法
      */
+
+// 3️⃣ 優化的管道模型創建
     private ModelFile createPipeModel(String modelName, String pipeTexture,
                                       int x1, int y1, int z1, int x2, int y2, int z2) {
+
         return models().getBuilder(modelName)
                 .parent(models().getExistingFile(mcLoc("block/block")))
                 .texture("particle", modLoc("block/" + pipeTexture))
                 .texture("pipe", modLoc("block/" + pipeTexture))
                 .element()
                 .from(x1, y1, z1).to(x2, y2, z2)
-                .face(Direction.NORTH).texture("#pipe").end()
-                .face(Direction.SOUTH).texture("#pipe").end()
-                .face(Direction.WEST).texture("#pipe").end()
-                .face(Direction.EAST).texture("#pipe").end()
-                .face(Direction.UP).texture("#pipe").end()
-                .face(Direction.DOWN).texture("#pipe").end()
+                // 🎨 關鍵：每個面都使用智能UV，實現無縫連接
+                .face(Direction.NORTH).texture("#pipe").uvs(getSmartU1(modelName, "north"),
+                        getSmartV1(modelName, "north"),
+                        getSmartU2(modelName, "north"),
+                        getSmartV2(modelName, "north")).end()
+                .face(Direction.SOUTH).texture("#pipe").uvs(getSmartU1(modelName, "south"),
+                        getSmartV1(modelName, "south"),
+                        getSmartU2(modelName, "south"),
+                        getSmartV2(modelName, "south")).end()
+                .face(Direction.WEST).texture("#pipe").uvs(getSmartU1(modelName, "west"),
+                        getSmartV1(modelName, "west"),
+                        getSmartU2(modelName, "west"),
+                        getSmartV2(modelName, "west")).end()
+                .face(Direction.EAST).texture("#pipe").uvs(getSmartU1(modelName, "east"),
+                        getSmartV1(modelName, "east"),
+                        getSmartU2(modelName, "east"),
+                        getSmartV2(modelName, "east")).end()
+                .face(Direction.UP).texture("#pipe").uvs(getSmartU1(modelName, "up"),
+                        getSmartV1(modelName, "up"),
+                        getSmartU2(modelName, "up"),
+                        getSmartV2(modelName, "up")).end()
+                .face(Direction.DOWN).texture("#pipe").uvs(getSmartU1(modelName, "down"),
+                        getSmartV1(modelName, "down"),
+                        getSmartU2(modelName, "down"),
+                        getSmartV2(modelName, "down")).end()
                 .end();
     }
-
 // 🔥 使用方法：
 
     private void createArcaneConduitModel() {
         createConduitModel(
                 "arcane_conduit",                    // 導管名稱
                 ModBlocks.ARCANE_CONDUIT.get(),      // 方塊實例
-                "conduit/arcane_conduit_core",               // 核心材質
-                "conduit/arcane_conduit_pipe",               // 管道材質
-                "conduit/arcane_crystal",                    // 水晶材質
+                "conduit/arcane_conduit_core",       // 核心材質
+                "conduit/arcane_conduit_pipe",       // 管道材質
+                null,                                // 🔥 不要水晶材質
                 new int[]{6, 10},                    // 核心大小 6-10
-                new int[]{7, 9},                     // 水晶大小 7-9
+                null,                                // 🔥 不要水晶大小
                 new int[]{6, 10}                     // 管道粗細 6-10
         );
     }
