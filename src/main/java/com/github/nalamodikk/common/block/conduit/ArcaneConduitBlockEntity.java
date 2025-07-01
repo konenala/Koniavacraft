@@ -436,8 +436,19 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             IUnifiedManaHandler source = endpoint.handler;
             if (!source.canExtract()) continue;
 
+            // 🔧 修正：計算鄰居位置
+            BlockPos neighborPos = worldPosition.relative(dir);
+
+            LOGGER.debug("準備從 {} 抽取魔力", neighborPos);
+            LOGGER.debug("目標魔力量: {}/{}", source.getManaStored(), source.getMaxManaStored());
+            LOGGER.debug("目標類型: {}", source.getClass().getSimpleName());
+
             int toPull = Math.min(needed, PULL_RATE);
             int extracted = source.extractMana(toPull, ManaAction.EXECUTE);
+
+            // 🔍 抽取後檢查
+            LOGGER.debug("請求抽取: {}, 實際抽取: {}", toPull, extracted);
+            LOGGER.debug("抽取後魔力: {}/{}", source.getManaStored(), source.getMaxManaStored());
 
             if (extracted > 0) {
                 buffer.receiveMana(extracted, ManaAction.EXECUTE);
