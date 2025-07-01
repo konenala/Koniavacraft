@@ -197,6 +197,8 @@
   "block.koniava.mana_conduit": "Mana Conduit",
   "block.koniava.solar_mana_collector": "Solar Mana Collector",
   "block.koniava.modular_machine": "Modular Machine",
+  "block.koniava.arcane_conduit": "Arcane Conduit",
+
 
   "button.mode.auto": "auto mode",
   "button.mode.manual": "manual mode",
