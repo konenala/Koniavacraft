@@ -328,7 +328,16 @@
 
         @Override
         public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
-            ioMap.put(direction, type);
+            IOHandlerUtils.IOType oldType = ioMap.get(direction);
+            if (oldType != type) {
+                ioMap.put(direction, type);
+                setChanged();
+
+                // 🔧 關鍵：通知能力系統刷新
+                if (level != null && !level.isClientSide) {
+                    level.invalidateCapabilities(worldPosition);
+                }
+            }
         }
 
         @Override
@@ -338,15 +347,29 @@
 
         @Override
         public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
-            return ioMap;
+            return new EnumMap<>(ioMap); // 返回副本，避免外部修改
         }
 
         @Override
         public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> map) {
-            ioMap.clear();
-            ioMap.putAll(map);
-        }
+            boolean changed = false;
+            for (Direction dir : Direction.values()) {
+                IOHandlerUtils.IOType newType = map.getOrDefault(dir, IOHandlerUtils.IOType.DISABLED);
+                if (!ioMap.get(dir).equals(newType)) {
+                    ioMap.put(dir, newType);
+                    changed = true;
+                }
+            }
 
+            if (changed) {
+                setChanged();
+
+                // 🔧 關鍵：通知能力系統刷新
+                if (level != null && !level.isClientSide) {
+                    level.invalidateCapabilities(worldPosition);
+                }
+            }
+        }
 
 
         @Override

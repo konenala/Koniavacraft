@@ -419,7 +419,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         int needed = BUFFER_SIZE - buffer.getManaStored();
         if (needed <= 0) return;
 
-        // 輪轉拉取，避免總是從同一個源拉取
         Direction[] dirs = Direction.values();
         int attempts = 0;
 
@@ -431,39 +430,35 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             if (!canInput(dir)) continue;
 
             ManaEndpoint endpoint = endpoints.get(dir);
-            if (endpoint == null || endpoint.isConduit) continue; // 不從其他導管拉取
+            if (endpoint == null || endpoint.isConduit) continue;
 
             IUnifiedManaHandler source = endpoint.handler;
             if (!source.canExtract()) continue;
 
-            // 🔧 修正：計算鄰居位置
             BlockPos neighborPos = worldPosition.relative(dir);
-
-            LOGGER.debug("準備從 {} 抽取魔力", neighborPos);
-            LOGGER.debug("目標魔力量: {}/{}", source.getManaStored(), source.getMaxManaStored());
-            LOGGER.debug("目標類型: {}", source.getClass().getSimpleName());
-
             int toPull = Math.min(needed, PULL_RATE);
-            int extracted = source.extractMana(toPull, ManaAction.EXECUTE);
 
-            // 🔍 抽取後檢查
-            LOGGER.debug("請求抽取: {}, 實際抽取: {}", toPull, extracted);
-            LOGGER.debug("抽取後魔力: {}/{}", source.getManaStored(), source.getMaxManaStored());
+            // 🔍 只記錄抽取前後的魔力，檢查是否真的扣除了
+            int beforeMana = source.getManaStored();
+            int extracted = source.extractMana(toPull, ManaAction.EXECUTE);
+            int afterMana = source.getManaStored();
+
+            // 🚨 只在有問題時才 log
+            if (extracted > 0 && beforeMana == afterMana) {
+                LOGGER.warn("🚨 抽取BUG: 從 {} 抽取了 {} 魔力，但目標魔力未減少！({}/{})",
+                        neighborPos, extracted, beforeMana, source.getMaxManaStored());
+                LOGGER.warn("目標類型: {}", source.getClass().getSimpleName());
+            }
 
             if (extracted > 0) {
                 buffer.receiveMana(extracted, ManaAction.EXECUTE);
                 needed -= extracted;
-
-                // 記錄拉取統計
                 transferStats.get(dir).recordTransfer(extracted, true);
                 setChanged();
-
-                // 限制：每tick只從一個源拉取
                 break;
             }
         }
     }
-
     /**
      * 🧹 優化的數據清理 - 減少清理頻率
      */

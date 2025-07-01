@@ -2,7 +2,9 @@ package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
+import com.github.nalamodikk.common.utils.capability.RestrictedManaHandler;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
@@ -46,15 +48,41 @@ public class ModCapabilities {
         // 方塊機器能力
         event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), (blockEntity, side) -> blockEntity.getManaStorage());
         event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), (blockEntity, side) -> blockEntity.getManaStorage());
-        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_GENERATOR_BE.get(), (blockEntity, side) -> blockEntity.getManaStorage());
 
+        // 魔力能力 - 根據 IO 配置決定功能
+        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_GENERATOR_BE.get(),
+                (blockEntity, side) -> {
+                    if (side != null && blockEntity instanceof IConfigurableBlock configurable) {
+                        IOHandlerUtils.IOType ioType = configurable.getIOConfig(side);
+
+                        return switch (ioType) {
+                            case DISABLED -> null; // 禁用面不提供能力
+                            case INPUT -> new RestrictedManaHandler(blockEntity.getManaStorage(), true, false); // 只能接收
+                            case OUTPUT -> new RestrictedManaHandler(blockEntity.getManaStorage(), false, true); // 只能被抽取
+                            case BOTH -> blockEntity.getManaStorage(); // 完整功能
+                        };
+                    }
+                    return blockEntity.getManaStorage(); // 默認完整功能
+                });
+
+        // 物品能力 - 根據 IO 配置決定功能
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.MANA_GENERATOR_BE.get(),
+                (blockEntity, side) -> {
+                    if (side != null && blockEntity instanceof IConfigurableBlock configurable) {
+                        IOHandlerUtils.IOType ioType = configurable.getIOConfig(side);
+                        if (ioType == IOHandlerUtils.IOType.DISABLED) {
+                            return null; // 該面禁用，不提供能力
+                        }
+                    }
+                    return blockEntity.getInventory(); // 🔧 修正：使用 getInventory()
+                });
         // 導管能力
         event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.ARCANE_CONDUIT_BE.get(), (blockEntity, side) -> blockEntity);
         // 物品欄能力：ManaCraftingTableBlockEntity;
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.MANA_CRAFTING_TABLE_BLOCK_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.MANA_GENERATOR_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
 
+        //rf能量註冊
 
         // 實體能力
 //        event.registerEntity(ModCapability.NARA,EntityType.PLAYER, (player, ctx) -> new NaraData());
