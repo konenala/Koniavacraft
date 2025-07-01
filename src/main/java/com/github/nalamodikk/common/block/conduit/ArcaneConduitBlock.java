@@ -153,12 +153,18 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
         return handler != null;
     }
 
+    // 在 ArcaneConduitBlock.java 的 neighborChanged 方法中添加：
     @Override
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
         if (!level.isClientSide) {
             BlockState newState = updateConnections(level, pos, state);
             if (newState != state) {
                 level.setBlock(pos, newState, 3);
+            }
+
+            // 🔧 添加這行：通知 BlockEntity 鄰居變化
+            if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
+                conduit.onNeighborChanged();
             }
         }
     }
@@ -171,4 +177,6 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
         }
         return InteractionResult.PASS;
     }
+
+
 }

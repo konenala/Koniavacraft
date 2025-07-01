@@ -4,15 +4,12 @@ import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFu
 import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader.FuelRate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 public class ManaFuelHandler {
@@ -27,7 +24,9 @@ public class ManaFuelHandler {
     private boolean isPaused;        // 是否暫停（因產出空間滿了）
     private boolean needsFuel = true;
     private boolean recoveryAttempted = false;
-
+    private int pauseLogCounter = 0;
+    private int resumeLogCounter = 0;
+    private static final int LOG_EVERY = 5;
 
 
     public ManaFuelHandler( ItemStackHandler fuelHandler,ManaGeneratorStateManager stateManager) {
@@ -158,19 +157,25 @@ public class ManaFuelHandler {
         }
     }
 
+
     public void pauseBurn() {
         if (!isPaused) {
             isPaused = true;
-            failedFuelCooldown = Math.max(failedFuelCooldown, 20); // 最少 1 秒後會重試
-            LOGGER.debug("pauseBurn(): machine paused, cooldown = {}", failedFuelCooldown);
+            failedFuelCooldown = Math.max(failedFuelCooldown, 20);
+            if (++pauseLogCounter >= LOG_EVERY) {
+                LOGGER.debug("pauseBurn(): machine paused, cooldown = {}", failedFuelCooldown);
+                pauseLogCounter = 0;
+            }
         }
     }
-
 
     public void resumeBurn() {
         if (isPaused) {
             this.isPaused = false;
-            LOGGER.debug("resumeBurn(): machine resumed from pause");
+            if (++resumeLogCounter >= LOG_EVERY) {
+                LOGGER.debug("resumeBurn(): machine resumed from pause");
+                resumeLogCounter = 0;
+            }
         }
     }
 

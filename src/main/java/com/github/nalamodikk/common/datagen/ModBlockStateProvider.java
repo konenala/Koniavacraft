@@ -7,7 +7,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
@@ -84,6 +83,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .texture("particle", modLoc("block/" + coreTexture))
                 .texture("core", modLoc("block/" + coreTexture));
 
+
         // 🔥 只有當水晶材質不為 null 時才添加
         if (crystalTexture != null) {
             coreBuilder.texture("crystal", modLoc("block/" + crystalTexture));
@@ -95,7 +95,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
         // 修復 createConduitModel 中的核心元素：
         var coreElement = coreBuilder.element()
                 .from(coreSize[0], coreSize[0], coreSize[0])
-                .to(coreSize[1], coreSize[1], coreSize[1]);
+                .to(coreSize[1], coreSize[1], coreSize[1])
+                .shade(false);
 
         // 🔧 為所有面添加正確的UV設定，讓材質填滿整個面
         coreElement.face(Direction.NORTH).texture("#core").uvs(0, 0, 16, 16).end()
@@ -151,20 +152,6 @@ public class ModBlockStateProvider extends BlockStateProvider {
         itemModels().getBuilder(conduitName).parent(coreModel);
     }
 
-    /**
-     * 為立方體元素添加6個面的材質
-     */
-    private void addCubeFaces(BlockModelBuilder.ElementBuilder element, String texture) {
-        element.face(Direction.NORTH).texture(texture).end()
-                .face(Direction.SOUTH).texture(texture).end()
-                .face(Direction.WEST).texture(texture).end()
-                .face(Direction.EAST).texture(texture).end()
-                .face(Direction.UP).texture(texture).end()
-                .face(Direction.DOWN).texture(texture).end();
-    }
-
-
-
 
     /**
      * 添加導管的連接邏輯 (假設所有導管都使用相同的連接屬性名)
@@ -192,74 +179,17 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.DOWN, true);
     }
 
-    private float[] getSmartUV(String modelName, String face) {
 
-        // 🎨 關鍵：不同方向使用不同的材質區域，形成連貫的視覺效果
-
-        if (modelName.contains("_west") || modelName.contains("_east")) {
-            // 東西向管道 - 水平延伸效果
-            if (face.equals("north") || face.equals("south")) {
-                // 前後面：只顯示水平線，讓視覺上看起來是延伸的
-                return new float[]{0, 6, 16, 10};  // 只取中間水平帶
-            }
-            if (face.equals("up") || face.equals("down")) {
-                // 上下面：顯示水平線
-                return new float[]{0, 6, 16, 10};
-            }
-            // 左右面：顯示完整十字，這是連接面
-            return new float[]{0, 0, 16, 16};
-
-        } else if (modelName.contains("_north") || modelName.contains("_south")) {
-            // 南北向管道 - 垂直延伸效果
-            if (face.equals("west") || face.equals("east")) {
-                // 左右面：只顯示垂直線
-                return new float[]{6, 0, 10, 16};  // 只取中間垂直帶
-            }
-            if (face.equals("up") || face.equals("down")) {
-                // 上下面：顯示垂直線
-                return new float[]{6, 0, 10, 16};
-            }
-            // 前後面：顯示完整十字，這是連接面
-            return new float[]{0, 0, 16, 16};
-
-        } else if (modelName.contains("_up") || modelName.contains("_down")) {
-            // 上下向管道 - 垂直延伸效果
-            if (face.equals("north") || face.equals("south") ||
-                    face.equals("west") || face.equals("east")) {
-                // 側面：只顯示垂直線
-                return new float[]{6, 0, 10, 16};
-            }
-            // 上下面：顯示完整十字，這是連接面
-            return new float[]{0, 0, 16, 16};
-        }
-
-        // 核心或其他情況：完整十字
-        return new float[]{0, 0, 16, 16};
-    }
-
-    // 📚 步驟2: 添加UV分量提取方法
-    private float getSmartU1(String modelName, String face) {
-        return getSmartUV(modelName, face)[0]; // 左上角 U 座標
-    }
-
-    private float getSmartV1(String modelName, String face) {
-        return getSmartUV(modelName, face)[1]; // 左上角 V 座標
-    }
-
-    private float getSmartU2(String modelName, String face) {
-        return getSmartUV(modelName, face)[2]; // 右下角 U 座標
-    }
-
-    private float getSmartV2(String modelName, String face) {
-        return getSmartUV(modelName, face)[3]; // 右下角 V 座標
-    }
     /**
      * 改進的管道模型創建方法
      */
 
-// 3️⃣ 優化的管道模型創建
+// 2️⃣ 完全簡化的管道模型創建
     private ModelFile createPipeModel(String modelName, String pipeTexture,
                                       int x1, int y1, int z1, int x2, int y2, int z2) {
+
+        // 🎯 正常導管邏輯：判斷連接方向
+        boolean isEastWest = modelName.contains("_east") || modelName.contains("_west");
 
         return models().getBuilder(modelName)
                 .parent(models().getExistingFile(mcLoc("block/block")))
@@ -267,35 +197,43 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .texture("pipe", modLoc("block/" + pipeTexture))
                 .element()
                 .from(x1, y1, z1).to(x2, y2, z2)
-                // 🎨 關鍵：每個面都使用智能UV，實現無縫連接
-                .face(Direction.NORTH).texture("#pipe").uvs(getSmartU1(modelName, "north"),
-                        getSmartV1(modelName, "north"),
-                        getSmartU2(modelName, "north"),
-                        getSmartV2(modelName, "north")).end()
-                .face(Direction.SOUTH).texture("#pipe").uvs(getSmartU1(modelName, "south"),
-                        getSmartV1(modelName, "south"),
-                        getSmartU2(modelName, "south"),
-                        getSmartV2(modelName, "south")).end()
-                .face(Direction.WEST).texture("#pipe").uvs(getSmartU1(modelName, "west"),
-                        getSmartV1(modelName, "west"),
-                        getSmartU2(modelName, "west"),
-                        getSmartV2(modelName, "west")).end()
-                .face(Direction.EAST).texture("#pipe").uvs(getSmartU1(modelName, "east"),
-                        getSmartV1(modelName, "east"),
-                        getSmartU2(modelName, "east"),
-                        getSmartV2(modelName, "east")).end()
-                .face(Direction.UP).texture("#pipe").uvs(getSmartU1(modelName, "up"),
-                        getSmartV1(modelName, "up"),
-                        getSmartU2(modelName, "up"),
-                        getSmartV2(modelName, "up")).end()
-                .face(Direction.DOWN).texture("#pipe").uvs(getSmartU1(modelName, "down"),
-                        getSmartV1(modelName, "down"),
-                        getSmartU2(modelName, "down"),
-                        getSmartV2(modelName, "down")).end()
+                .shade(false)
+
+                // 🔧 針對特定面的旋轉處理
+                .face(Direction.NORTH).texture("#pipe").uvs(0, 0, 16, 16)
+                .rotation(isEastWest ?
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO :
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90)
+                .end()
+
+                .face(Direction.SOUTH).texture("#pipe").uvs(0, 0, 16, 16)
+                .rotation(isEastWest ?
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO :
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90)
+                .end()
+
+                .face(Direction.EAST).texture("#pipe").uvs(0, 0, 16, 16)
+                .rotation(net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO)  // 🔧 East面永遠橫的
+                .end()
+
+                .face(Direction.WEST).texture("#pipe").uvs(0, 0, 16, 16)
+                .rotation(net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO)  // 🔧 West面永遠橫的
+                .end()
+
+                .face(Direction.UP).texture("#pipe").uvs(0, 0, 16, 16)
+                .rotation(isEastWest ?
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO :
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90)
+                .end()
+
+                .face(Direction.DOWN).texture("#pipe").uvs(0, 0, 16, 16)
+                .rotation(isEastWest ?
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO :
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90)
+                .end()
+
                 .end();
     }
-// 🔥 使用方法：
-
     private void createArcaneConduitModel() {
         createConduitModel(
                 "arcane_conduit",                    // 導管名稱

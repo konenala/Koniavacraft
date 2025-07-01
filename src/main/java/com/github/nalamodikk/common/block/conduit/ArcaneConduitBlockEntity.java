@@ -26,6 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 融合 Mekanism 和 EnderIO 風格的智能魔力導管
@@ -44,13 +45,23 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private static final int PULL_RATE = 50;        // 每次拉取量（防止過度拉取）
 
     // === EnderIO 風格：智能路由配置 ===
-    private static final int NETWORK_SCAN_INTERVAL = 60;  // 3秒掃描一次網絡
-    private static final int CACHE_REFRESH_INTERVAL = 20; // 1秒刷新緩存
-    private static final int BALANCE_CHECK_INTERVAL = 10; // 0.5秒檢查負載平衡
+    private static final int NETWORK_SCAN_INTERVAL = 200;  // 10秒掃描一次（原本3秒）
+    private static final int CACHE_REFRESH_INTERVAL = 100; // 5秒刷新緩存（原本1秒）
+    private static final int BALANCE_CHECK_INTERVAL = 20;  // 保持1秒檢查負載平衡
 
     // === 核心組件 ===
     private final ManaStorage buffer = new ManaStorage(BUFFER_SIZE);
     private final EnumMap<Direction, IOHandlerUtils.IOType> ioConfig = new EnumMap<>(Direction.class);
+
+
+
+    // 🎯 新增：全域緩存系統
+    private static final Map<BlockPos, Long> lastScanTime = new ConcurrentHashMap<>();
+    private static final Map<BlockPos, Map<Direction, ManaEndpoint>> sharedCache = new ConcurrentHashMap<>();
+    private static final Map<BlockPos, Set<BlockPos>> sharedNetworkNodes = new ConcurrentHashMap<>();
+
+    // 🔧 清理計數器
+    private static long globalCleanupCounter = 0;
 
     // === EnderIO 風格：智能網絡管理 ===
     private final Set<BlockPos> networkNodes = new HashSet<>();           // 網絡中的所有節點
@@ -123,40 +134,69 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
+    /**
+     * 🎯 優化的 tick 方法 - 更智能的執行時機
+     */
     public void tick() {
         if (level == null || level.isClientSide) return;
 
         tickCounter++;
 
-        // === EnderIO 風格：分階段處理 ===
+        // === 🚀 優化的分階段處理 ===
+
+        // 網絡掃描：10秒一次或有變化時
         if (tickCounter % NETWORK_SCAN_INTERVAL == 0 || networkDirty) {
             scanNetworkTopology();
             networkDirty = false;
         }
 
+        // 緩存刷新：5秒一次，且只檢查部分端點
         if (tickCounter % CACHE_REFRESH_INTERVAL == 0) {
             refreshEndpointCache();
         }
 
+        // 負載平衡：1秒一次（保持響應性）
         if (tickCounter % BALANCE_CHECK_INTERVAL == 0) {
             performLoadBalancing();
         }
 
-        // === Mekanism 風格：主動處理流量 ===
+        // === 主動處理流量 ===
         handleManaFlow();
 
-        // === 清理過期數據 ===
-        if (tickCounter % 1200 == 0) { // 每分鐘清理
+        // === 清理過期數據：10分鐘一次 ===
+        if (tickCounter % 12000 == 0) { // 從1分鐘改為10分鐘
             cleanupStaleData();
         }
     }
-
     /**
-     * EnderIO 風格：網絡拓撲掃描
+     * 🚀 優化的網絡拓撲掃描 - 使用緩存和智能跳過
      */
     private void scanNetworkTopology() {
         if (!(level instanceof ServerLevel serverLevel)) return;
 
+        long now = System.currentTimeMillis();
+        long lastScan = lastScanTime.getOrDefault(worldPosition, 0L);
+
+        // 🎯 緩存檢查：3秒內不重複掃描相同位置
+        if (now - lastScan < 3000 && !networkDirty) {
+            // 嘗試使用緩存結果
+            Map<Direction, ManaEndpoint> cached = sharedCache.get(worldPosition);
+            Set<BlockPos> cachedNodes = sharedNetworkNodes.get(worldPosition);
+
+            if (cached != null && cachedNodes != null) {
+                endpoints.clear();
+                endpoints.putAll(cached);
+                networkNodes.clear();
+                networkNodes.addAll(cachedNodes);
+
+                LOGGER.trace("使用緩存掃描結果: {} 個端點", endpoints.size());
+                return;
+            }
+        }
+
+
+        // 🔍 執行實際掃描
+        int oldEndpointCount = endpoints.size();
         networkNodes.clear();
         endpoints.clear();
 
@@ -179,8 +219,68 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             networkNodes.add(neighborPos);
         }
 
-        LOGGER.debug("掃描網絡: 發現 {} 個端點", endpoints.size());
+        // 🎯 更新緩存
+        lastScanTime.put(worldPosition, now);
+        sharedCache.put(worldPosition, new HashMap<>(endpoints));
+        sharedNetworkNodes.put(worldPosition, new HashSet<>(networkNodes));
+
+        // 🧹 定期清理緩存
+        globalCleanupCounter++;
+        if (globalCleanupCounter % 50 == 0) { // 每50次掃描清理一次
+            cleanupGlobalCache();
+        }
+
+        if (endpoints.size() != oldEndpointCount) {
+            LOGGER.debug("網絡拓撲變化: {} -> {} 個端點", oldEndpointCount, endpoints.size());
+        }
     }
+
+    /**
+     * 🧹 清理全域緩存 - 移除過期和無效的緩存
+     */
+    private static void cleanupGlobalCache() {
+        long now = System.currentTimeMillis();
+
+        // 移除超過30秒沒更新的緩存
+        lastScanTime.entrySet().removeIf(entry -> now - entry.getValue() > 30000);
+
+        // 清理對應的緩存數據
+        sharedCache.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
+        sharedNetworkNodes.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
+
+        LOGGER.trace("清理全域緩存，剩餘: {} 個緩存項目", lastScanTime.size());
+    }
+
+    /**
+     * 🔧 優化的刷新端點緩存 - 減少不必要的檢查
+     */
+    private void refreshEndpointCache() {
+        if (endpoints.isEmpty()) return; // 沒有端點就不檢查
+
+        // 只檢查一個端點，避免每次都檢查全部
+        if (!endpoints.isEmpty()) {
+            Direction[] dirs = endpoints.keySet().toArray(new Direction[0]);
+            Direction dirToCheck = dirs[(int)(tickCounter % dirs.length)];
+
+            ManaEndpoint endpoint = endpoints.get(dirToCheck);
+            if (endpoint != null) {
+                // 重新獲取能力
+                IUnifiedManaHandler current = CapabilityUtils.getNeighborMana(level,
+                        worldPosition.relative(dirToCheck), dirToCheck);
+
+                if (current == null || current != endpoint.handler) {
+                    // 這個端點無效了，觸發重新掃描
+                    endpoints.remove(dirToCheck);
+                    networkDirty = true;
+
+                    // 清除緩存
+                    sharedCache.remove(worldPosition);
+                    sharedNetworkNodes.remove(worldPosition);
+                }
+            }
+        }
+    }
+
 
     /**
      * EnderIO 風格：優先級計算
@@ -205,22 +305,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         return Math.max(0, Math.min(100, basePriority));
     }
 
-    /**
-     * Mekanism 風格：刷新端點緩存
-     */
-    private void refreshEndpointCache() {
-        // 檢查端點是否仍然有效
-        endpoints.entrySet().removeIf(entry -> {
-            Direction dir = entry.getKey();
-            ManaEndpoint endpoint = entry.getValue();
 
-            // 重新獲取能力
-            IUnifiedManaHandler current = CapabilityUtils.getNeighborMana(level,
-                    worldPosition.relative(dir), dir);
-
-            return current == null || current != endpoint.handler;
-        });
-    }
 
     /**
      * EnderIO 風格：負載平衡處理
@@ -369,19 +454,20 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     }
 
     /**
-     * 清理過期數據
+     * 🧹 優化的數據清理 - 減少清理頻率
      */
     private void cleanupStaleData() {
         long now = System.currentTimeMillis();
 
-        // 清理長時間無傳輸的統計
+        // 清理長時間無傳輸的統計（衰減而不是清除）
         transferStats.values().forEach(stats -> {
-            if (now - stats.lastTransfer > 60000) { // 1分鐘
-                stats.averageRate *= 0.5; // 衰減
+            if (now - stats.lastTransfer > 300000) { // 5分鐘
+                stats.averageRate *= 0.8; // 輕度衰減
             }
         });
-    }
 
+        LOGGER.trace("清理過期數據: {}", worldPosition);
+    }
     // === 工具方法 ===
 
     private boolean canInput(Direction dir) {
@@ -605,7 +691,15 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 網絡同步觸發 ===
 
     public void onNeighborChanged() {
+        // 清除本位置的緩存
+        sharedCache.remove(worldPosition);
+        sharedNetworkNodes.remove(worldPosition);
+        lastScanTime.remove(worldPosition);
+
+        // 標記需要重新掃描
         networkDirty = true;
+
+        LOGGER.trace("鄰居變化，清除緩存: {}", worldPosition);
     }
 
     @Override
@@ -748,4 +842,24 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+
+        // 清理此位置的所有緩存
+        sharedCache.remove(worldPosition);
+        sharedNetworkNodes.remove(worldPosition);
+        lastScanTime.remove(worldPosition);
+    }
+
+    /**
+     * 🔧 強制重新掃描（給外部調用）
+     */
+    public void forceNetworkRescan() {
+        sharedCache.remove(worldPosition);
+        sharedNetworkNodes.remove(worldPosition);
+        lastScanTime.remove(worldPosition);
+        networkDirty = true;
+    }
 }
