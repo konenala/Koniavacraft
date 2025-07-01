@@ -45,6 +45,17 @@ public class ManaGeneratorBlock extends BaseMachineBlock {
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active"); // 定義運作狀態
 
 
+
+// 1. 在 ManaGeneratorBlock.java 中添加 neighborChanged 方法（重要！）
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        // 魔力發電機收到鄰居變化通知
+        // 雖然發電機本身可能不需要特殊處理，但這確保了 neighborChanged 鏈能正常工作
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
+    }
+
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, ACTIVE); // 註冊 ACTIVE 屬性

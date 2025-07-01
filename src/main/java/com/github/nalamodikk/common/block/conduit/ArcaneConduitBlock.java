@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.conduit;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
+import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -118,7 +119,8 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
     // 更新連接狀態
 
     // 你還需要確保有這個方法：
-    private BlockState updateConnections(Level level, BlockPos pos, BlockState state) {
+
+    public BlockState updateConnections(Level level, BlockPos pos, BlockState state) {
         BlockState newState = state;
 
         for (Direction direction : Direction.values()) {
@@ -141,7 +143,17 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
         return newState;
     }
 
+
     private boolean canConnectTo(Level level, BlockPos pos, Direction direction) {
+        // 🔧 【重要】：檢查自己的IO配置，如果該方向是DISABLED則不連接
+        BlockEntity thisBE = level.getBlockEntity(pos.relative(direction.getOpposite()));
+        if (thisBE instanceof ArcaneConduitBlockEntity thisConduit) {
+            IOHandlerUtils.IOType thisConfig = thisConduit.getIOConfig(direction);
+            if (thisConfig == IOHandlerUtils.IOType.DISABLED) {
+                return false; // 該方向已禁用，不顯示連接
+            }
+        }
+
         // 檢查是否應該連接到該位置
         // 1. 是否為其他導管
         if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity) {
@@ -152,7 +164,6 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
         IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, pos, direction);
         return handler != null;
     }
-
     @Override
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
         if (!level.isClientSide) {

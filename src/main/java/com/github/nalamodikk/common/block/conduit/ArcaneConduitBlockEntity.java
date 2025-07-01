@@ -724,16 +724,30 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             // 清除該方向的緩存
             endpoints.remove(direction);
 
+            // 🔧 【關鍵修復】：觸發 BlockState 連接更新
+            if (level != null && !level.isClientSide) {
+                // 通知 Block 更新連接狀態
+                BlockState currentState = level.getBlockState(worldPosition);
+                if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
+                    BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
+                    if (newState != currentState) {
+                        level.setBlock(worldPosition, newState, 3); // 更新 BlockState
+                    }
+                }
+            }
+
             // 日誌記錄
-            LOGGER.debug("導管 {} 方向 {} 設定從 {} 改為 {}",
+            LOGGER.debug("導管 {} 方向 {} 設定從 {} 改為 {}, 已觸發連接更新",
                     worldPosition, direction, oldType, type);
         }
     }
+
 
     @Override
     public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
         return new EnumMap<>(ioConfig);
     }
+
 
     @Override
     public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> newIOMap) {
@@ -750,9 +764,22 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             networkDirty = true;
             endpoints.clear(); // 清除所有緩存
             setChanged();
-            LOGGER.debug("導管 {} 批量更新IO配置", worldPosition);
+
+            // 🔧 【關鍵修復】：批量更新後也要觸發連接狀態更新
+            if (level != null && !level.isClientSide) {
+                BlockState currentState = level.getBlockState(worldPosition);
+                if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
+                    BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
+                    if (newState != currentState) {
+                        level.setBlock(worldPosition, newState, 3);
+                    }
+                }
+            }
+
+            LOGGER.debug("導管 {} 批量更新IO配置並觸發連接更新", worldPosition);
         }
     }
+
     public InteractionResult onUse(BlockState state, Level level, BlockPos pos,
                                    Player player, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;

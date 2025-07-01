@@ -2,19 +2,19 @@
     package com.github.nalamodikk.common.block.mana_generator;
 
     import com.github.nalamodikk.KoniavacraftMod;
-    import com.github.nalamodikk.common.coreapi.machine.logic.gen.EnergyGenerationHandler;
-    import com.github.nalamodikk.common.coreapi.machine.logic.gen.FuelManaGenHelper;
-    import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
+    import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
     import com.github.nalamodikk.common.block.mana_generator.logic.*;
+    import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
     import com.github.nalamodikk.common.block.mana_generator.sync.ManaGeneratorSyncHelper;
     import com.github.nalamodikk.common.block.manabase.AbstractManaMachineEntityBlock;
-    import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
     import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
     import com.github.nalamodikk.common.capability.ManaStorage;
     import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
+    import com.github.nalamodikk.common.coreapi.machine.logic.gen.EnergyGenerationHandler;
+    import com.github.nalamodikk.common.coreapi.machine.logic.gen.FuelManaGenHelper;
+    import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import com.github.nalamodikk.register.ModBlockEntities;
     import com.github.nalamodikk.register.ModCapabilities;
-    import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import net.minecraft.core.BlockPos;
     import net.minecraft.core.Direction;
     import net.minecraft.core.HolderLookup;
@@ -51,7 +51,6 @@
     import software.bernie.geckolib.util.GeckoLibUtil;
 
     import java.util.EnumMap;
-
     import java.util.Optional;
 
     public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements   GeoBlockEntity {
@@ -326,6 +325,8 @@
             return stateManager.getCurrentModeIndex();
         }
 
+
+
         @Override
         public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
             IOHandlerUtils.IOType oldType = ioMap.get(direction);
@@ -336,6 +337,9 @@
                 // 🔧 關鍵：通知能力系統刷新
                 if (level != null && !level.isClientSide) {
                     level.invalidateCapabilities(worldPosition);
+
+                    // ✅ 【新增】：通知鄰近方塊 (特別是導管) 重新檢查連接
+                    notifyNeighborsOfIOChange();
                 }
             }
         }
@@ -367,10 +371,34 @@
                 // 🔧 關鍵：通知能力系統刷新
                 if (level != null && !level.isClientSide) {
                     level.invalidateCapabilities(worldPosition);
+
+                    // ✅ 【新增】：通知鄰近方塊重新檢查連接
+                    notifyNeighborsOfIOChange();
                 }
             }
         }
 
+        // ✅ 【新增方法】：通知所有鄰居IO配置已改變
+        private void notifyNeighborsOfIOChange() {
+            if (level == null || level.isClientSide) return;
+
+            BlockState currentState = level.getBlockState(worldPosition);
+
+            for (Direction direction : Direction.values()) {
+                BlockPos neighborPos = worldPosition.relative(direction);
+
+                // 觸發鄰居方塊的 neighborChanged 方法
+                level.neighborChanged(neighborPos, currentState.getBlock(), worldPosition);
+
+                // 如果鄰居是導管，額外調用其特定的鄰居變化處理
+                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+                if (neighborBE instanceof ArcaneConduitBlockEntity conduit) {
+                    conduit.onNeighborChanged();
+                }
+            }
+
+            LOGGER.debug("魔力發電機 {} IO設定變更，已通知所有鄰居", worldPosition);
+        }
 
         @Override
         public Component getDisplayName() {
