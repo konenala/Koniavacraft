@@ -211,5 +211,47 @@ public class ManaFuelHandler {
         return Optional.of(rate);
     }
 
+    public boolean isValidFuel(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
 
+        // 使用現有的燃料系統檢查
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        ManaGenFuelRateLoader.FuelRate rate = ManaGenFuelRateLoader.getFuelRateForItem(itemId);
+
+        // 檢查燃燒時間是否大於 0
+        if (rate == null || rate.getBurnTime() <= 0) {
+            return false;
+        }
+
+        // 根據當前模式檢查是否有對應的產出
+        return switch (stateManager.getCurrentMode()) {
+            case MANA -> rate.getManaRate() > 0;
+            case ENERGY -> rate.getEnergyRate() > 0;
+        };
+    }
+
+    // 或者如果您需要更詳細的檢查：
+    public boolean canAcceptFuel(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+
+        // 檢查當前槽位是否有空間
+        ItemStack currentFuel = fuelHandler.getStackInSlot(0);
+        if (!currentFuel.isEmpty()) {
+            // 如果已有燃料，檢查是否可以堆疊
+            if (!ItemStack.isSameItemSameComponents(currentFuel, stack)) {
+                return false;
+            }
+            // 檢查是否還有空間堆疊
+            if (currentFuel.getCount() >= currentFuel.getMaxStackSize()) {
+                return false;
+            }
+        }
+
+        // 檢查是否為有效燃料
+        return isValidFuel(stack);
+    }
 }

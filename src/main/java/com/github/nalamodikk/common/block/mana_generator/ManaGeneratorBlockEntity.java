@@ -24,6 +24,8 @@
     import net.minecraft.network.protocol.game.ClientGamePacketListener;
     import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
     import net.minecraft.server.level.ServerLevel;
+    import net.minecraft.world.Container;
+    import net.minecraft.world.WorldlyContainer;
     import net.minecraft.world.entity.player.Inventory;
     import net.minecraft.world.entity.player.Player;
     import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -53,11 +55,12 @@
     import java.util.EnumMap;
     import java.util.Optional;
 
-    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements   GeoBlockEntity {
+    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements GeoBlockEntity , Container , WorldlyContainer {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
  private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
         private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
+        private boolean isSyncing = false;
 
         private static final int MAX_MANA = 200000;
         private static final int MAX_ENERGY = 200000;
@@ -284,12 +287,22 @@
         }
 
         public void sync() {
-            if (this.level != null && !this.level.isClientSide()) {
-                this.setChanged();
-                this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+            if (isSyncing) {
+                return; // 防止遞歸調用
             }
-            syncHelper.syncFrom(this);         // ➤ 更新資料並標記 dirty
-            syncHelper.flushSyncState(this);   // ➤ ✅ 現在就清掉 dirty
+
+            isSyncing = true;
+            try {
+                if (this.level != null && !this.level.isClientSide()) {
+                    // 直接調用父類的 setChanged()，避免觸發自定義的 setChanged()
+                    super.setChanged();
+                    this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+                }
+                syncHelper.syncFrom(this);         // ➤ 更新資料並標記 dirty
+                syncHelper.flushSyncState(this);   // ➤ ✅ 現在就清掉 dirty
+            } finally {
+                isSyncing = false;
+            }
         }
 
 
@@ -450,5 +463,100 @@
             }
         }
 
+        @Override
+        public int getContainerSize() {
+            return fuelHandler.getSlots(); // 返回燃料槽位數量
+        }
+
+        @Override
+        public boolean isEmpty() {
+            for (int i = 0; i < fuelHandler.getSlots(); i++) {
+                if (!fuelHandler.getStackInSlot(i).isEmpty()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public ItemStack getItem(int slot) {
+            return fuelHandler.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack removeItem(int slot, int amount) {
+            return fuelHandler.extractItem(slot, amount, false);
+        }
+
+        @Override
+        public ItemStack removeItemNoUpdate(int slot) {
+            ItemStack stack = fuelHandler.getStackInSlot(slot);
+            fuelHandler.setStackInSlot(slot, ItemStack.EMPTY);
+            return stack;
+        }
+
+        @Override
+        public void setItem(int slot, ItemStack stack) {
+            fuelHandler.setStackInSlot(slot, stack);
+            setChanged();
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            // 使用 Container 接口提供的靜態方法，更標準
+            return Container.stillValidBlockEntity(this, player);
+        }
+
+        @Override
+        public void clearContent() {
+            for (int i = 0; i < fuelHandler.getSlots(); i++) {
+                fuelHandler.setStackInSlot(i, ItemStack.EMPTY);
+            }
+            setChanged();
+        }
+
+        // 3. 實現 WorldlyContainer 接口以支持方向性輸入
+
+        @Override
+        public int[] getSlotsForFace(Direction side) {
+            // 返回該面可以訪問的槽位
+            // 假設所有面都可以訪問燃料槽（槽位 0）
+            return new int[]{0};
+        }
+
+        @Override
+        public boolean canPlaceItemThroughFace(int index, ItemStack itemStack, Direction direction) {
+            // 檢查是否可以從該方向放入物品
+            // 這裡可以加入燃料驗證邏輯
+            return canPlaceItem(index, itemStack);
+        }
+
+        @Override
+        public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
+            // 檢查是否可以從該方向取出物品
+            // 通常發電機不允許取出燃料，除非是空桶等副產品
+            return false; // 根據需求調整
+        }
+
+        @Override
+        public boolean canPlaceItem(int index, ItemStack stack) {
+            // 檢查物品是否可以放入指定槽位
+            // 這裡應該檢查是否為有效燃料
+            if (index != 0) return false; // 只有槽位 0 是燃料槽
+
+            // 檢查是否為有效燃料
+            return fuelLogic.isValidFuel(stack); // 您需要在 ManaFuelHandler 中實現這個方法
+        }
+
+        // 4. 重寫 setChanged() 以確保數據同步
+        @Override
+        public void setChanged() {
+            super.setChanged();
+
+            // 只有在不是由 sync() 觸發時才調用 sync()
+            if (level != null && !level.isClientSide && !isSyncing) {
+                sync();
+            }
+        }
 
     }
