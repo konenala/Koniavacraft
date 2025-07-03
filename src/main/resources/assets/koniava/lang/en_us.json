@@ -66,6 +66,9 @@
   "tooltip.koniava.machine.grid_entry": "• [%s] %s",
   "tooltip.koniava.machine.inserted": "Component item inserted into the modular machine.",
 
+  "tooltip.koniava.priority_config": "Right-click to increase priority, Shift+Right-click to decrease priority",
+
+
   "jei.koniava.fuel.mana": "Mana Output: %s",
   "jei.koniava.fuel.energy": "Energy Output: %s",
   "jei.koniava.fuel.burn_time": "Burn Time: %s",
@@ -96,6 +99,13 @@
   "message.koniava.conduit.mana_status": "§bMana: §f%s/%s",
   "message.koniava.conduit.connections": "§aActive Connections: §f%s",
   "message.koniava.conduit.direction_config": "§e%s: %s",
+  "message.koniava.conduit.quick_info": "§bMana: §f%s/%s §aConnections: §f%s",
+  "message.koniava.conduit.config_gui_placeholder": "§eConfiguration GUI not yet implemented, stay tuned!",
+  "message.koniava.priority_changed": "Priority for %s direction set to %d",
+  "message.koniava.tech_wand.mode.priority_config": "Priority Configuration Mode",
+
+  "message.koniava.not_conduit_block": "§cThis block is not a conduit!",
+
 
   "message.koniava.screen.generator_working": "Generator is working. Mode switching is disabled.",
 
@@ -177,6 +187,7 @@
   "mode.koniava.direction_config": "Direction Configuration Mode",
   "mode.koniava.disabled": "Disabled",
   "mode.koniava.both": "Input & Output",
+  "mode.koniava.priority_config": "Priority Config",
 
 
 

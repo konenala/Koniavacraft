@@ -2,17 +2,24 @@ package com.github.nalamodikk.common.block.conduit;
 
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
+import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -27,7 +34,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
-public class ArcaneConduitBlock extends Block implements EntityBlock {
+public class ArcaneConduitBlock extends BaseEntityBlock {
 
     // 6個方向的連接屬性
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -56,6 +63,11 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
                 .setValue(EAST, false)
                 .setValue(UP, false)
                 .setValue(DOWN, false));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return null;
     }
 
     @Override
@@ -180,14 +192,57 @@ public class ArcaneConduitBlock extends Block implements EntityBlock {
         }
         super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
     }
+
+
+
+
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                             Player player, BlockHitResult hit) {
-        if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
-            return conduit.onUse(state, level, pos, player, hit);
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
         }
+
+        if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
+            ItemStack heldItem = player.getMainHandItem();
+
+            if (heldItem.getItem() instanceof BasicTechWandItem) {
+                // 使用現有的 conduit.onUse() 邏輯
+                return conduit.onUse(state, level, pos, player, hit);
+            } else if (player.isCrouching()) {
+                // 🆕 Shift + 右鍵：打開配置 GUI
+                if (player instanceof ServerPlayer serverPlayer) {
+                    MenuProvider menuProvider = new SimpleMenuProvider(
+                            (id, inventory, p) -> new ArcaneConduitConfigMenu(id, inventory, conduit),
+                            Component.translatable("gui.koniava.conduit_config")
+                    );
+
+                    serverPlayer.openMenu(menuProvider, extraData -> {
+                        extraData.writeBlockPos(conduit.getBlockPos());
+                    });
+                }
+                return InteractionResult.CONSUME;
+
+            } else {
+                // 🆕 普通右鍵：顯示狀態信息
+                showQuickInfo(conduit, player);
+                return InteractionResult.SUCCESS;
+            }
+        }
+
         return InteractionResult.PASS;
     }
 
+    private void showQuickInfo(ArcaneConduitBlockEntity conduit, Player player) {
+        // 簡單的狀態顯示
+        int manaStored = conduit.getManaStored();
+        int maxMana = conduit.getMaxManaStored();
+        int connections = conduit.getActiveConnectionCount();
 
+        player.displayClientMessage(
+                Component.translatable("message.koniava.conduit.quick_info",
+                        manaStored, maxMana, connections),
+                true // 顯示在 ActionBar
+        );
+    }
 }

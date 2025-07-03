@@ -2,6 +2,8 @@ package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
+import com.github.nalamodikk.common.network.packet.server.conduit.PriorityUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.conduit.ResetPrioritiesPacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ModeChangePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
@@ -32,6 +34,10 @@ public class ModNetworking {
         //玩家的額外裝備gui封包
         OpenExtraEquipmentPacket.registerTo(registrar);
 
+
+        //導管
+        PriorityUpdatePacket.registerTo(registrar);
+        ResetPrioritiesPacket.registerTo(registrar);
     }
 
 }

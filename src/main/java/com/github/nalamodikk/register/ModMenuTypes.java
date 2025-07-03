@@ -15,6 +15,7 @@ package com.github.nalamodikk.register;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
 import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorMenu;
+import com.github.nalamodikk.common.block.conduit.ArcaneConduitConfigMenu;
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
@@ -74,6 +75,10 @@ public class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<UpgradeMenu>> UPGRADE_MENU =
             registerMenuType("upgrade_menu", ModMenuTypes::createUpgradeMenu);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<ArcaneConduitConfigMenu>> CONDUIT_CONFIG_MENU =
+            registerMenuType("conduit_config_menu", ArcaneConduitConfigMenu::new);
+
 
     /**
      *

@@ -19,13 +19,13 @@ import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ManaUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
-import com.github.nalamodikk.register.ModDataComponents;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
+import com.github.nalamodikk.common.utils.block.BlockSelectorUtils;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.data.TechDataComponents;
-import com.github.nalamodikk.common.utils.block.BlockSelectorUtils;
+import com.github.nalamodikk.register.ModDataComponents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -40,7 +40,9 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -110,7 +112,7 @@ public class BasicTechWandItem extends Item {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
-        if (player == null || !player.isCrouching()) return InteractionResult.PASS;
+        if (player == null) return InteractionResult.PASS;  // ✅ 移除 !player.isCrouching() 檢查
 
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
@@ -123,6 +125,8 @@ public class BasicTechWandItem extends Item {
 
             switch (mode) {
                 case DIRECTION_CONFIG -> {
+                    if (!player.isCrouching()) return InteractionResult.PASS;
+
                     IOHandlerUtils.IOType current = configBlock.getIOConfig(face);
                     IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
                     configBlock.setIOConfig(face, next);
@@ -142,6 +146,8 @@ public class BasicTechWandItem extends Item {
                 }
 
                 case CONFIGURE_IO -> {
+                    if (!player.isCrouching()) return InteractionResult.PASS;
+
                     if (player instanceof ServerPlayer sp) {
                         IConfigurableBlock configurableBlock = (IConfigurableBlock) be;
                         var manaStorage = CapabilityUtils.getMana(sp.level(), be.getBlockPos(), null);
@@ -173,6 +179,8 @@ public class BasicTechWandItem extends Item {
 
 
                 case ROTATE -> {
+                    if (!player.isCrouching()) return InteractionResult.PASS;
+
                     BlockState state = level.getBlockState(pos);
                     if (state.hasProperty(BlockStateProperties.FACING)) {
                         level.setBlock(pos, state.setValue(BlockStateProperties.FACING,
@@ -186,6 +194,36 @@ public class BasicTechWandItem extends Item {
                         return InteractionResult.SUCCESS;
                     } else {
                         player.displayClientMessage(Component.translatable("message.koniava.block_cannot_rotate"), true);
+                    }
+                }
+
+
+                case PRIORITY_CONFIG -> {
+                    // 🆕 優先級配置模式：不需要檢查 Crouch，因為我們要用它來區分增加/減少
+                    if (be instanceof com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity conduit) {
+                        if (player.isCrouching()) {
+                            // Shift + 右鍵：降低優先級
+                            conduit.adjustPriority(face, -5);
+                        } else {
+                            // 右鍵：提高優先級
+                            conduit.adjustPriority(face, +5);
+                        }
+
+                        int newPriority = conduit.getPriority(face);
+                        String dirName = face.name().toLowerCase();
+
+                        player.displayClientMessage(Component.translatable(
+                                "message.koniava.priority_changed",
+                                Component.translatable("direction.koniava." + dirName),
+                                newPriority
+                        ), true);
+
+                        return InteractionResult.SUCCESS;
+                    } else {
+                        player.displayClientMessage(Component.translatable(
+                                "message.koniava.not_conduit_block"
+                        ), true);
+                        return InteractionResult.PASS;
                     }
                 }
             }
@@ -252,7 +290,8 @@ public class BasicTechWandItem extends Item {
     public enum TechWandMode implements StringRepresentable {
         CONFIGURE_IO,
         DIRECTION_CONFIG,
-        ROTATE;
+        ROTATE,
+        PRIORITY_CONFIG; // 🆕 新增優先級配置模式
 
         public TechWandMode next() {
             return values()[(this.ordinal() + 1) % values().length];

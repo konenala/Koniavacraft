@@ -65,6 +65,8 @@
   "tooltip.koniava.machine.inserted": "已放入拼裝模組物品。",
   "tooltip.koniava.machine.cleared": "已清空拼裝模組物品。",
 
+  "tooltip.koniava.priority_config": "右鍵提高優先級，Shift+右鍵降低優先級",
+
 
   "jei.koniava.fuel.mana": "魔力產出: %s",
   "jei.koniava.fuel.energy": "能量產出: %s",
@@ -91,6 +93,12 @@
   "message.koniava.conduit.mana_status": "§b魔力: §f%s/%s",
   "message.koniava.conduit.connections": "§a活躍連接: §f%s",
   "message.koniava.conduit.direction_config": "§e%s: %s",
+  "message.koniava.conduit.quick_info": "§b魔力: §f%s/%s §a連接: §f%s",
+  "message.koniava.conduit.config_gui_placeholder": "§e配置 GUI 尚未實現，敬請期待！",
+  "message.koniava.priority_changed": "%s 方向的優先級已設為 %d",
+  "message.koniava.tech_wand.mode.priority_config": "優先級配置模式",
+
+  "message.koniava.not_conduit_block": "§c此方塊不是導管！",
 
   "message.koniava.machine.restored_count": "已還原上一個拼裝狀態，並退回 %s 個模組。",
   "message.koniava.machine.no_history": "沒有可還原的拼裝記錄。",

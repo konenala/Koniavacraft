@@ -288,24 +288,21 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private int calculatePriority(Direction dir, IUnifiedManaHandler handler, boolean isConduit) {
         int basePriority = routePriority.get(dir);
 
-        // 導管優先級較低（避免在導管間過度傳輸）
-        if (isConduit) basePriority -= 20;
+        // 🔧 修復：移除導管優先級懲罰
+        // if (isConduit) basePriority -= 20;
 
-        // 根據歷史性能調整
-        TransferStats stats = transferStats.get(dir);
-        double reliability = stats.getReliability();
-        basePriority += (int) (reliability * 30 - 15); // -15 到 +15
-
-        // 根據目標需求調整
+        // 只有一個簡單的調整：空的容器優先級稍微高一點
         if (handler.canReceive()) {
             int demand = handler.getMaxManaStored() - handler.getManaStored();
-            if (demand > TRANSFER_RATE) basePriority += 10; // 高需求優先
+            double fillRatio = (double) demand / handler.getMaxManaStored();
+
+            if (fillRatio > 0.5) { // 超過一半空間
+                basePriority += 10;
+            }
         }
 
         return Math.max(0, Math.min(100, basePriority));
     }
-
-
 
     /**
      * EnderIO 風格：負載平衡處理
@@ -648,6 +645,12 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
         tag.put("Stats", statsTag);
 
+        CompoundTag priorityTag = new CompoundTag();
+        for (Direction dir : Direction.values()) {
+            priorityTag.putInt(dir.name(), routePriority.get(dir));
+        }
+        tag.put("RoutePriority", priorityTag);
+
         tag.putLong("TickCounter", tickCounter);
     }
 
@@ -689,7 +692,14 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 }
             }
         }
-
+        if (tag.contains("RoutePriority")) {
+            CompoundTag priorityTag = tag.getCompound("RoutePriority");
+            for (Direction dir : Direction.values()) {
+                if (priorityTag.contains(dir.name())) {
+                    routePriority.put(dir, priorityTag.getInt(dir.name()));
+                }
+            }
+        }
         tickCounter = tag.getLong("TickCounter");
         networkDirty = true; // 加載後需要重新掃描網絡
     }
@@ -895,4 +905,44 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         lastScanTime.remove(worldPosition);
         networkDirty = true;
     }
+    public void setPriority(Direction direction, int priority) {
+        int clampedPriority = Math.max(1, Math.min(100, priority));
+
+        if (routePriority.get(direction) != clampedPriority) {
+            routePriority.put(direction, clampedPriority);
+            networkDirty = true;
+            setChanged();
+
+            LOGGER.debug("導管 {} 方向 {} 優先級設為 {}",
+                    worldPosition, direction, clampedPriority);
+        }
+    }
+
+    public int getPriority(Direction direction) {
+        return routePriority.getOrDefault(direction, 50);
+    }
+
+    // 🆕 調整優先級（+5 或 -5）
+    public void adjustPriority(Direction direction, int delta) {
+        int currentPriority = getPriority(direction);
+        setPriority(direction, currentPriority + delta);
+    }
+
+    // 🆕 重置優先級
+    public void resetPriority(Direction direction) {
+        setPriority(direction, 50);
+    }
+
+    // 🆕 重置所有優先級
+    public void resetAllPriorities() {
+        for (Direction dir : Direction.values()) {
+            routePriority.put(dir, 50);
+        }
+        networkDirty = true;
+        setChanged();
+    }
+
+
+
+
 }
