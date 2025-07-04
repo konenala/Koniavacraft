@@ -67,7 +67,12 @@
   "tooltip.koniava.machine.inserted": "Component item inserted into the modular machine.",
 
   "tooltip.koniava.priority_config": "Right-click to increase priority, Shift+Right-click to decrease priority",
+  "tooltip.koniava.open_extra_equipment": "Open Extra Equipment",
+  "tooltip.koniava.close": "Close configuration window",
 
+  "tooltip.koniava.priority_input": "Enter priority (1-100)\nHigher values = higher priority",
+  "tooltip.koniava.io_type": "IO Type: %s",
+  "tooltip.koniava.reset_priorities": "Reset all direction priorities to default (50)",
 
   "jei.koniava.fuel.mana": "Mana Output: %s",
   "jei.koniava.fuel.energy": "Energy Output: %s",
@@ -105,6 +110,8 @@
   "message.koniava.tech_wand.mode.priority_config": "Priority Configuration Mode",
 
   "message.koniava.not_conduit_block": "§cThis block is not a conduit!",
+  "message.koniava.debug_tool_interaction": "§bDebug Tool§r - Mana: %s/%s",
+  "message.koniava.conduit.transfer_stats": "§7Connections: %s | Transfer Rate: %s",
 
 
   "message.koniava.screen.generator_working": "Generator is working. Mode switching is disabled.",
@@ -112,7 +119,9 @@
   "message.koniava.machine.restored_count": "Restored previous setup. Returned %s module(s) to you.",
   "message.koniava.machine.no_history": "No previous setup to restore.",
 
-
+  "message.koniava.conduit.detailed_config": "§e%s: §f%s §7(Priority: %d)",
+  "message.koniava.conduit.technical_info": "§6Technical Info§r\nPosition: %s\nMana: %s\nNetwork: %s",
+  "message.koniava.manual_mana_transfer_todo": "§eManual mana transfer feature in development...",
 
   "message.koniava.add_mana_success": "Added 10 mana!",
   "message.koniava.block_rotated_facing": "Block rotated! ",
@@ -154,8 +163,12 @@
   "screen.koniava.both": "Input & Output",
   "screen.koniava.inventory.extra_equipment": "Extra Equipment Slots",
 
+  "gui.koniava.conduit_config": "Conduit Configuration",
+  "gui.koniava.io_type": "IO Type",
+  "gui.koniava.priority": "Priority",
+  "button.koniava.reset_priorities": "Reset",
+  "gui.koniava.priority_input": "Priority Input",
 
-  "tooltip.koniava.open_extra_equipment": "Open Extra Equipment",
 
   "screen.koniava.configure_side.full": "Configured side: %s %s",
   "screen.koniava.hold_shift": "Hold Shift for more information",
@@ -197,6 +210,8 @@
   "button.koniava.toggle_auto_crafting": "Toggle",
   "button.koniava.auto_crafting_enabled": "AutoCrafting: Enabled",
   "button.koniava.auto_crafting_disabled": "AutoCrafting: Disabled",
+
+  "button.koniava.close": "Close",
 
 
   "block.koniava.mana_block": "Mana Block",

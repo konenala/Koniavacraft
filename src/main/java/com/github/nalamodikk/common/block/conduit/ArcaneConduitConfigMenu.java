@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-
 public class ArcaneConduitConfigMenu extends AbstractContainerMenu {
 
     private final ArcaneConduitBlockEntity conduit;
@@ -35,8 +34,6 @@ public class ArcaneConduitConfigMenu extends AbstractContainerMenu {
 
         // 同步當前設置到客戶端
         syncFromConduit();
-
-        // 這是純配置界面，不需要物品槽
     }
 
     private static ArcaneConduitBlockEntity getConduitFromBuf(Inventory playerInventory, FriendlyByteBuf buf) {
@@ -60,6 +57,17 @@ public class ArcaneConduitConfigMenu extends AbstractContainerMenu {
         }
     }
 
+    // 🔧 添加：定期同步數據
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+
+        // 🆕 每次廣播時重新同步數據
+        if (conduit != null && !conduit.getLevel().isClientSide) {
+            syncFromConduit();
+        }
+    }
+
     @Override
     public boolean stillValid(Player player) {
         return conduit != null &&
@@ -77,13 +85,25 @@ public class ArcaneConduitConfigMenu extends AbstractContainerMenu {
 
     // 獲取方向的 IO 類型
     public IOHandlerUtils.IOType getIOType(Direction dir) {
-        int value = data.get(dir.ordinal() * 2);
-        return IOHandlerUtils.IOType.values()[value];
+        if (data != null) {
+            int value = data.get(dir.ordinal() * 2);
+            // 🔧 添加邊界檢查
+            if (value >= 0 && value < IOHandlerUtils.IOType.values().length) {
+                return IOHandlerUtils.IOType.values()[value];
+            }
+        }
+        // 🔧 返回默認值而不是崩潰
+        return IOHandlerUtils.IOType.BOTH;
     }
 
     // 獲取方向的優先級
     public int getPriority(Direction dir) {
-        return data.get(dir.ordinal() * 2 + 1);
+        if (data != null) {
+            int priority = data.get(dir.ordinal() * 2 + 1);
+            // 🔧 確保優先級在有效範圍內
+            return Math.max(1, Math.min(100, priority));
+        }
+        return 50; // 默認優先級
     }
 
     // 獲取導管實例

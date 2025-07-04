@@ -206,43 +206,162 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
             ItemStack heldItem = player.getMainHandItem();
 
+            // 🎯 情況1：手持科技魔杖 - 使用魔杖的邏輯
             if (heldItem.getItem() instanceof BasicTechWandItem) {
-                // 使用現有的 conduit.onUse() 邏輯
                 return conduit.onUse(state, level, pos, player, hit);
-            } else if (player.isCrouching()) {
-                // 🆕 Shift + 右鍵：打開配置 GUI
-                if (player instanceof ServerPlayer serverPlayer) {
-                    MenuProvider menuProvider = new SimpleMenuProvider(
-                            (id, inventory, p) -> new ArcaneConduitConfigMenu(id, inventory, conduit),
-                            Component.translatable("gui.koniava.conduit_config")
-                    );
-
-                    serverPlayer.openMenu(menuProvider, extraData -> {
-                        extraData.writeBlockPos(conduit.getBlockPos());
-                    });
-                }
-                return InteractionResult.CONSUME;
-
-            } else {
-                // 🆕 普通右鍵：顯示狀態信息
-                showQuickInfo(conduit, player);
-                return InteractionResult.SUCCESS;
             }
+
+            // 🎯 情況2：空手或手持其他物品
+            return handleEmptyHandInteraction(conduit, player, heldItem);
         }
 
         return InteractionResult.PASS;
     }
 
+    /**
+     * 處理空手或手持其他物品時的交互
+     */
+    private InteractionResult handleEmptyHandInteraction(ArcaneConduitBlockEntity conduit, Player player, ItemStack heldItem) {
+        boolean isEmptyHand = heldItem.isEmpty();
+        boolean isCrouching = player.isCrouching();
+
+        // 🎯 優先級順序：
+        // 1. Shift + 空手 → 打開配置 GUI（最高優先級）
+        // 2. 空手 → 顯示快速信息
+        // 3. Shift + 手持物品 → 嘗試打開配置 GUI
+        // 4. 手持物品 → 顯示基本信息或執行其他邏輯
+
+        if (isCrouching && isEmptyHand) {
+            // 🔧 最佳體驗：Shift + 空手 = 配置 GUI
+            return openConfigurationGUI(conduit, player);
+        }
+
+        if (isEmptyHand) {
+            // 🔧 空手右鍵 = 快速信息
+            showQuickInfo(conduit, player);
+            return InteractionResult.SUCCESS;
+        }
+
+        if (isCrouching) {
+            // 🔧 Shift + 手持物品 = 也能打開配置（便利性）
+            return openConfigurationGUI(conduit, player);
+        }
+
+        // 🔧 手持物品 + 普通右鍵 = 嘗試使用物品或顯示信息
+        return handleItemInteraction(conduit, player, heldItem);
+    }
+
+    /**
+     * 打開配置 GUI
+     */
+    private InteractionResult openConfigurationGUI(ArcaneConduitBlockEntity conduit, Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            MenuProvider menuProvider = new SimpleMenuProvider(
+                    (id, inventory, p) -> new ArcaneConduitConfigMenu(id, inventory, conduit),
+                    Component.translatable("gui.koniava.conduit_config")
+            );
+
+            serverPlayer.openMenu(menuProvider, extraData -> {
+                extraData.writeBlockPos(conduit.getBlockPos());
+            });
+
+            return InteractionResult.CONSUME;
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * 顯示快速信息
+     */
     private void showQuickInfo(ArcaneConduitBlockEntity conduit, Player player) {
-        // 簡單的狀態顯示
         int manaStored = conduit.getManaStored();
         int maxMana = conduit.getMaxManaStored();
         int connections = conduit.getActiveConnectionCount();
 
+        // 🔧 添加更多有用信息
         player.displayClientMessage(
                 Component.translatable("message.koniava.conduit.quick_info",
                         manaStored, maxMana, connections),
                 true // 顯示在 ActionBar
         );
+
+        // 🆕 可選：在聊天中顯示詳細信息
+        if (player.isCrouching()) {
+            showDetailedInfo(conduit, player);
+        }
+    }
+
+    /**
+     * 處理手持物品時的交互
+     */
+    private InteractionResult handleItemInteraction(ArcaneConduitBlockEntity conduit, Player player, ItemStack heldItem) {
+        // TODO: 手持魔力相關物品時可以直接充能
+//        if (isManualManaItem(heldItem)) {
+//            return tryManualManaTransfer(conduit, player, heldItem);
+//        }
+
+        // TODO: 手持工具時顯示技術信息
+        if (isTechnicalTool(heldItem)) {
+            showTechnicalInfo(conduit, player);
+            return InteractionResult.SUCCESS;
+        }
+
+        // 🔧 默認：顯示基本信息
+        showQuickInfo(conduit, player);
+        return InteractionResult.SUCCESS;
+    }
+    /**
+     * 顯示詳細信息（可選功能）
+     */
+    private void showDetailedInfo(ArcaneConduitBlockEntity conduit, Player player) {
+        // 🆕 顯示每個方向的配置
+        player.displayClientMessage(Component.translatable("message.koniava.conduit.info_header"), false);
+
+        for (Direction dir : Direction.values()) {
+            IOHandlerUtils.IOType type = conduit.getIOConfig(dir);
+            int priority = conduit.getPriority(dir);
+
+            if (type != IOHandlerUtils.IOType.DISABLED) {
+                player.displayClientMessage(Component.translatable(
+                        "message.koniava.conduit.detailed_config",
+                        Component.translatable("direction.koniava." + dir.name().toLowerCase()),
+                        Component.translatable("mode.koniava." + type.name().toLowerCase()),
+                        priority
+                ), false);
+            }
+        }
+    }
+
+    // 🔧 輔助方法
+
+
+
+    private boolean isTechnicalTool(ItemStack stack) {
+        // 檢查是否為技術工具（除了科技魔杖之外）
+        return stack.getItem().toString().contains("debug") ||
+                stack.getItem().toString().contains("analyzer");
+    }
+
+    private InteractionResult tryManualManaTransfer(ArcaneConduitBlockEntity conduit, Player player, ItemStack heldItem) {
+        // TODO: 實現手動魔力傳輸功能
+        // - 檢查物品魔力容量
+        // - 計算傳輸量
+        // - 消耗物品或減少物品魔力
+        // - 給導管充能
+        // - 顯示傳輸成功信息
+
+        player.displayClientMessage(Component.translatable("message.koniava.manual_mana_transfer_todo"), true);
+        return InteractionResult.SUCCESS;
+    }
+
+
+    private void showTechnicalInfo(ArcaneConduitBlockEntity conduit, Player player) {
+        // 🆕 顯示技術信息：網路ID、傳輸速率、性能統計等
+        player.displayClientMessage(Component.translatable(
+                "message.koniava.conduit.technical_info",
+                conduit.getBlockPos().toString(),
+                conduit.getManaStored(),
+                "TODO: 網路統計"
+        ), false);
     }
 }

@@ -188,8 +188,10 @@ public class ModBlockStateProvider extends BlockStateProvider {
     private ModelFile createPipeModel(String modelName, String pipeTexture,
                                       int x1, int y1, int z1, int x2, int y2, int z2) {
 
-        // 🎯 正常導管邏輯：判斷連接方向
+        // 🎯 判斷連接方向
         boolean isEastWest = modelName.contains("_east") || modelName.contains("_west");
+        boolean isUpDown = modelName.contains("_up") || modelName.contains("_down");
+        boolean isNorthSouth = modelName.contains("_north") || modelName.contains("_south");
 
         return models().getBuilder(modelName)
                 .parent(models().getExistingFile(mcLoc("block/block")))
@@ -199,7 +201,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .from(x1, y1, z1).to(x2, y2, z2)
                 .shade(false)
 
-                // 🔧 針對特定面的旋轉處理
+                // 🔧 North/South 面
                 .face(Direction.NORTH).texture("#pipe").uvs(0, 0, 16, 16)
                 .rotation(isEastWest ?
                         net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO :
@@ -212,14 +214,20 @@ public class ModBlockStateProvider extends BlockStateProvider {
                         net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90)
                 .end()
 
+                // 🔧 East/West 面 - 智能判斷
                 .face(Direction.EAST).texture("#pipe").uvs(0, 0, 16, 16)
-                .rotation(net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO)  // 🔧 East面永遠橫的
+                .rotation(isUpDown ?
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90 :  // 上下連接時 → 豎的
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO)           // 其他情況 → 橫的
                 .end()
 
                 .face(Direction.WEST).texture("#pipe").uvs(0, 0, 16, 16)
-                .rotation(net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO)  // 🔧 West面永遠橫的
+                .rotation(isUpDown ?
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.CLOCKWISE_90 :  // 上下連接時 → 豎的
+                        net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO)           // 其他情況 → 橫的
                 .end()
 
+                // 🔧 Up/Down 面
                 .face(Direction.UP).texture("#pipe").uvs(0, 0, 16, 16)
                 .rotation(isEastWest ?
                         net.neoforged.neoforge.client.model.generators.ModelBuilder.FaceRotation.ZERO :
@@ -234,6 +242,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
                 .end();
     }
+
     private void createArcaneConduitModel() {
         createConduitModel(
                 "arcane_conduit",                    // 導管名稱
