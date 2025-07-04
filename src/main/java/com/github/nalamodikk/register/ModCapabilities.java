@@ -83,7 +83,19 @@ public class ModCapabilities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), (blockEntity, side) -> blockEntity.getItemHandler());
 
         //rf能量註冊
-
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.MANA_GENERATOR_BE.get(),
+                (blockEntity, side) -> {
+                    if (side != null && blockEntity instanceof IConfigurableBlock configurable) {
+                        IOHandlerUtils.IOType ioType = configurable.getIOConfig(side);
+                        if (ioType == IOHandlerUtils.IOType.DISABLED) {
+                            return null; // 該面禁用，不提供能力
+                        }
+                        if (ioType == IOHandlerUtils.IOType.INPUT) {
+                            return null; // 發電機不應該從輸入面接收能量
+                        }
+                    }
+                    return blockEntity.getEnergyStorage(); // 🔧 返回你的能量儲存
+                });
         // 實體能力
 //        event.registerEntity(ModCapability.NARA,EntityType.PLAYER, (player, ctx) -> new NaraData());
 

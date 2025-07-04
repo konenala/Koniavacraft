@@ -2,7 +2,6 @@ package com.github.nalamodikk.common.block.conduit;
 
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
@@ -196,6 +195,50 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
 
 
 
+
+
+    /**
+     * 🆕 判斷是否為方塊物品
+     */
+    private boolean isBlockItem(ItemStack stack) {
+        return stack.getItem() instanceof net.minecraft.world.item.BlockItem;
+    }
+
+
+    private InteractionResult tryPlaceBlock(Player player, ItemStack heldItem) {
+        // 🎯 策略1：完全讓出控制權給原版放置邏輯
+        // 返回 PASS 會讓 Minecraft 的原版放置邏輯接管
+        return InteractionResult.PASS;
+
+        // 🎯 策略2：如果你想要控制放置行為，可以用以下代碼：
+    /*
+    if (heldItem.getItem() instanceof BlockItem blockItem) {
+        Block block = blockItem.getBlock();
+
+        // 檢查是否允許在這裡放置這種方塊
+        if (isAllowedToPlace(block)) {
+            // 讓原版邏輯處理放置
+            return InteractionResult.PASS;
+        } else {
+            // 阻止放置，顯示訊息
+            player.displayClientMessage(
+                Component.translatable("message.koniava.cannot_place_here",
+                    block.getName()),
+                true
+            );
+            return InteractionResult.FAIL;
+        }
+    }
+    return InteractionResult.PASS;
+    */
+    }
+
+
+    /**
+     * 🔧 完整的 useWithoutItem 方法實現
+     * 加入到你現有的 ArcaneConduitBlock 類中
+     */
+
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                             Player player, BlockHitResult hit) {
@@ -205,17 +248,44 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
 
         if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
             ItemStack heldItem = player.getMainHandItem();
+            boolean isCrouching = player.isCrouching();
 
-            // 🎯 情況1：手持科技魔杖 - 使用魔杖的邏輯
-            if (heldItem.getItem() instanceof BasicTechWandItem) {
+            // 🎯 情況1：手持科技魔杖 - 使用魔杖的邏輯（最高優先級）
+            if (heldItem.getItem() instanceof com.github.nalamodikk.common.item.tool.BasicTechWandItem) {
                 return conduit.onUse(state, level, pos, player, hit);
             }
 
-            // 🎯 情況2：空手或手持其他物品
+            // 🆕 情況2：手持方塊物品 = 放置方塊（無論是否蹲下）
+            if (!heldItem.isEmpty() && isBlockItem(heldItem)) {
+                return tryPlaceBlock(player, heldItem);
+            }
+
+            // 🎯 情況3：空手或手持其他物品
             return handleEmptyHandInteraction(conduit, player, heldItem);
         }
 
         return InteractionResult.PASS;
+    }
+
+
+    /**
+     * 🆕 缺少的 isAllowedToPlace 方法（如果你想要控制放置行為）
+     */
+    private boolean isAllowedToPlace(Block block) {
+        // 你可以在這裡定義哪些方塊不允許放置在導管上
+
+        // 示例：禁止放置流體
+        if (block.defaultBlockState().liquid()) {
+            return false;
+        }
+
+        // 示例：禁止放置其他導管類型
+        if (block instanceof ArcaneConduitBlock) {
+            return false;
+        }
+
+        // 默認允許放置
+        return true;
     }
 
     /**
@@ -228,8 +298,8 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         // 🎯 優先級順序：
         // 1. Shift + 空手 → 打開配置 GUI（最高優先級）
         // 2. 空手 → 顯示快速信息
-        // 3. Shift + 手持物品 → 嘗試打開配置 GUI
-        // 4. 手持物品 → 顯示基本信息或執行其他邏輯
+        // 3. Shift + 手持非方塊物品 → 嘗試打開配置 GUI
+        // 4. 手持非方塊物品 → 顯示基本信息或執行其他邏輯
 
         if (isCrouching && isEmptyHand) {
             // 🔧 最佳體驗：Shift + 空手 = 配置 GUI
@@ -242,12 +312,12 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (isCrouching) {
-            // 🔧 Shift + 手持物品 = 也能打開配置（便利性）
+        if (isCrouching && !isBlockItem(heldItem)) {
+            // 🔧 Shift + 手持非方塊物品 = 也能打開配置（便利性）
             return openConfigurationGUI(conduit, player);
         }
 
-        // 🔧 手持物品 + 普通右鍵 = 嘗試使用物品或顯示信息
+        // 🔧 手持非方塊物品 + 普通右鍵 = 嘗試使用物品或顯示信息
         return handleItemInteraction(conduit, player, heldItem);
     }
 
@@ -291,22 +361,29 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         }
     }
 
-    /**
-     * 處理手持物品時的交互
-     */
-    private InteractionResult handleItemInteraction(ArcaneConduitBlockEntity conduit, Player player, ItemStack heldItem) {
-        // TODO: 手持魔力相關物品時可以直接充能
-//        if (isManualManaItem(heldItem)) {
-//            return tryManualManaTransfer(conduit, player, heldItem);
-//        }
 
-        // TODO: 手持工具時顯示技術信息
+
+  /*
+   * 處理手持物品時的交互
+   */
+    private InteractionResult handleItemInteraction(ArcaneConduitBlockEntity conduit, Player player, ItemStack heldItem) {
+        // 🆕 1. 判斷是否為方塊物品，如果是則嘗試放置方塊
+        if (isBlockItem(heldItem)) {
+            return tryPlaceBlock(player, heldItem);
+        }
+
+        // TODO: 2. 手持魔力相關物品時可以直接充能
+//    if (isManualManaItem(heldItem)) {
+//        return tryManualManaTransfer(conduit, player, heldItem);
+//    }
+
+        // 3. 手持工具時顯示技術信息
         if (isTechnicalTool(heldItem)) {
             showTechnicalInfo(conduit, player);
             return InteractionResult.SUCCESS;
         }
 
-        // 🔧 默認：顯示基本信息
+        // 🔧 4. 默認：顯示基本信息
         showQuickInfo(conduit, player);
         return InteractionResult.SUCCESS;
     }
