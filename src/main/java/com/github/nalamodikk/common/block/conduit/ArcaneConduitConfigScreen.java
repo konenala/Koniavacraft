@@ -132,6 +132,8 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
         PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(menu.getConduitPos(), dir, nextType));
     }
 
+    // 🔧 修復關閉按鈕的 NullPointerException 問題
+
     private void addGlobalControls() {
         // 重置所有優先級按鈕
         TooltipButton resetButton = new TooltipButton(
@@ -152,19 +154,28 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
                 () -> List.of(Component.translatable("tooltip.koniava.reset_priorities"))
         );
 
-        // 關閉按鈕
+        // 🔧 修復關閉按鈕的安全問題
         TooltipButton closeButton = new TooltipButton(
                 leftPos + 110, topPos + 150, 60, 20,
                 Component.translatable("button.koniava.close"),
                 ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/close_button.png"),
                 60, 20,
-                button -> this.minecraft.setScreen(null),
+                button -> {
+                    // 🔧 安全的關閉方式
+                    if (this.minecraft != null) {
+                        this.minecraft.setScreen(null);
+                    } else {
+                        // 備用關閉方式
+                        this.onClose();
+                    }
+                },
                 () -> List.of(Component.translatable("tooltip.koniava.close"))
         );
 
         this.addRenderableWidget(resetButton);
         this.addRenderableWidget(closeButton);
     }
+
 
     @Override
     protected void containerTick() {
