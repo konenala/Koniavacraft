@@ -145,7 +145,8 @@
         public ModNeoNalaEnergyStorage getEnergyStorage() {return energyStorage;}
         private final ManaGeneratorNbtManager nbtManager = new ManaGeneratorNbtManager(this);
         public ManaGeneratorSyncHelper getSyncHelper() {return syncHelper;}
-
+        private int clientSyncTimer = 0;
+        private static final int CLIENT_SYNC_INTERVAL = 10; // 每10 tick同步一次到客戶端
         // set
         public void setBurnTimeFromNbt(int value) {this.burnTime = value;}
         public void setCurrentBurnTimeFromNbt(int value) {this.currentBurnTime = value;}
@@ -279,6 +280,23 @@
         @Override
         public void tickMachine() {
             ticker.tick();
+
+            // ✅ 新增：定期同步到客戶端
+            if (!level.isClientSide) {
+                clientSyncTimer++;
+                if (clientSyncTimer >= CLIENT_SYNC_INTERVAL) {
+                    clientSyncTimer = 0;
+
+                    // 確保數據最新
+                    syncHelper.syncFrom(this);
+
+                    // 如果有變化，同步到客戶端
+                    if (syncHelper.hasDirty()) {
+                        syncToClient();
+                        syncHelper.flushSyncState(this);
+                    }
+                }
+            }
         }
 
         @Override
@@ -294,17 +312,20 @@
             isSyncing = true;
             try {
                 if (this.level != null && !this.level.isClientSide()) {
-                    // 直接調用父類的 setChanged()，避免觸發自定義的 setChanged()
+                    // 更新同步數據
+                    syncHelper.syncFrom(this);
+
+                    // 立即同步到客戶端
                     super.setChanged();
                     this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+
+                    // 清除dirty狀態
+                    syncHelper.flushSyncState(this);
                 }
-                syncHelper.syncFrom(this);         // ➤ 更新資料並標記 dirty
-                syncHelper.flushSyncState(this);   // ➤ ✅ 現在就清掉 dirty
             } finally {
                 isSyncing = false;
             }
         }
-
 
         public ContainerData getContainerData() {
             return syncHelper.getContainerData();
@@ -553,10 +574,11 @@
         public void setChanged() {
             super.setChanged();
 
-            // 只有在不是由 sync() 觸發時才調用 sync()
+            // 立即更新同步數據
             if (level != null && !level.isClientSide && !isSyncing) {
-                sync();
+                syncHelper.syncFrom(this);
             }
         }
+
 
     }

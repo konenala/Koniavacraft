@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -125,6 +126,15 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
 
     public int getCurrentBurnTime() {
         return syncHelper.getContainerData().get(ManaGeneratorBlockEntity.getCurrentBurnTimeIndex());
+    }
+    public ContainerData getContainerData() {
+        return syncHelper.getContainerData();
+    }
+
+    // 便利方法，方便Screen獲取數據
+
+    public boolean isWorking() {
+        return getContainerData().get(5) != 0;
     }
 
 }

@@ -33,8 +33,6 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
     // === 材質資源 ===
     private static final ResourceLocation CRYSTAL_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/block/conduit/arcane_crystal.png");
-    private static final ResourceLocation ARROW_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/effect/conduit/io_arrow.png");
 
     public ArcaneConduitBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -53,7 +51,6 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         renderCleanCore(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
         // 🎯 渲染IO方向指示
-        renderIODirectionIndicators(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
         poseStack.popPose();
     }
@@ -108,71 +105,6 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
 
         poseStack.popPose();
     }
-
-    /**
-     * 🎯 IO方向指示渲染 - 保持不變
-     */
-    private void renderIODirectionIndicators(ArcaneConduitBlockEntity conduit, float partialTick,
-                                             PoseStack poseStack, MultiBufferSource bufferSource,
-                                             int packedLight, int packedOverlay) {
-
-        VertexConsumer arrowConsumer = bufferSource.getBuffer(
-                RenderType.entityTranslucentEmissive(ARROW_TEXTURE));
-
-        long gameTime = conduit.getLevel().getGameTime();
-        float globalTime = gameTime + partialTick;
-
-        for (Direction direction : Direction.values()) {
-            IOHandlerUtils.IOType ioType = conduit.getIOConfig(direction);
-
-            // 跳過禁用的方向
-            if (ioType == IOHandlerUtils.IOType.DISABLED) continue;
-
-            poseStack.pushPose();
-
-            // 移動到方向位置
-            float distance = 0.65f;
-            poseStack.translate(
-                    direction.getStepX() * distance,
-                    direction.getStepY() * distance,
-                    direction.getStepZ() * distance
-            );
-
-            // 根據方向旋轉箭頭
-            applyDirectionRotation(poseStack, direction);
-
-            // 輕微的脈動效果
-            float pulse = 0.9f + 0.1f * Mth.sin(globalTime * 0.1f);
-            float scale = 0.08f * pulse;
-            poseStack.scale(scale, scale, scale);
-
-            // 根據IO類型決定顏色
-            float[] color = getIOTypeColor(ioType);
-            float alpha = 0.7f;
-
-            // 雙向類型渲染兩個箭頭
-            if (ioType == IOHandlerUtils.IOType.BOTH) {
-                // 輸入箭頭（藍色）
-                renderDirectionalArrow(poseStack, arrowConsumer,
-                        0.0f, 0.4f, 1.0f, alpha,
-                        packedLight, packedOverlay, true);
-
-                // 輸出箭頭（紅色）
-                poseStack.translate(0, 0.2f, 0);
-                renderDirectionalArrow(poseStack, arrowConsumer,
-                        1.0f, 0.2f, 0.0f, alpha,
-                        packedLight, packedOverlay, false);
-            } else {
-                boolean isInput = (ioType == IOHandlerUtils.IOType.INPUT);
-                renderDirectionalArrow(poseStack, arrowConsumer,
-                        color[0], color[1], color[2], alpha,
-                        packedLight, packedOverlay, isInput);
-            }
-
-            poseStack.popPose();
-        }
-    }
-
     /**
      * 應用方向旋轉
      */

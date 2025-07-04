@@ -135,7 +135,11 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
                     49, 11, manaBarWidth, renderHeight);
         }
     }
-
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        // 這會確保GUI每tick都重新繪製，讓數值變化立即顯示
+    }
 
     private int getFuelProgressHeight() {
         int burnTime = this.menu.getBurnTime();
