@@ -90,12 +90,15 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         final int storedMana;
         final boolean canReceive;
         final long scanTime;
+        final boolean isConduit; // ← 新增這個字段
 
-        TargetInfo(IUnifiedManaHandler handler) {
+        TargetInfo(IUnifiedManaHandler handler, boolean isConduit) {
             this.availableSpace = handler.getMaxManaStored() - handler.getManaStored();
             this.storedMana = handler.getManaStored();
             this.canReceive = handler.canReceive() && availableSpace > 0;
             this.scanTime = System.currentTimeMillis();
+            this.isConduit = isConduit; // ← 新增這行
+
         }
 
         boolean isValid() {
@@ -127,6 +130,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         int failedTransfers = 0;
         long lastTransfer = 0;
         double averageRate = 0.0;
+
 
         void recordTransfer(int amount, boolean success) {
             if (success) {
@@ -240,6 +244,8 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     }
 
     private Direction findBestTarget(long currentTick) {
+        if (level == null) return null; // ✅ 安全檢查
+
         // 定期重新掃描目標
         if (currentTick % 10 == 0 || needsTargetRescan()) {
             rescanTargets();
@@ -249,15 +255,30 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         int maxPriority = 0;
 
         for (Direction dir : Direction.values()) {
-            // 跳過不能輸出的方向
-            IOHandlerUtils.IOType ioType = ioConfig.get(dir);
-            if (ioType == IOHandlerUtils.IOType.DISABLED ||
-                    ioType == IOHandlerUtils.IOType.INPUT) {
+            IOHandlerUtils.IOType myIOType = ioConfig.get(dir);
+            if (myIOType == IOHandlerUtils.IOType.DISABLED ||
+                    myIOType == IOHandlerUtils.IOType.INPUT) {
                 continue;
             }
 
             TargetInfo target = cachedTargets.get(dir);
             if (target != null && target.canReceive) {
+
+                if (target.isConduit) {
+                    BlockPos neighborPos = worldPosition.relative(dir);
+                    BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+                    if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
+                        Direction neighborInputSide = dir.getOpposite();
+                        IOHandlerUtils.IOType neighborIOType = neighborConduit.getIOConfig(neighborInputSide);
+
+                        if (neighborIOType == IOHandlerUtils.IOType.DISABLED ||
+                                neighborIOType == IOHandlerUtils.IOType.OUTPUT) {
+                            continue;
+                        }
+                    }
+                }
+
                 int priority = target.getPriority() + routePriority.get(dir);
                 if (priority > maxPriority) {
                     maxPriority = priority;
@@ -298,6 +319,22 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         TargetInfo target = cachedTargets.get(targetDir);
         if (target == null || !target.canReceive) return;
 
+        // ✅ 新增：再次檢查目標的IO配置（雙重保險）
+        if (target.isConduit) {
+            BlockPos neighborPos = worldPosition.relative(targetDir);
+            BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+            if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
+                Direction neighborInputSide = targetDir.getOpposite();
+                IOHandlerUtils.IOType neighborIOType = neighborConduit.getIOConfig(neighborInputSide);
+
+                if (neighborIOType == IOHandlerUtils.IOType.DISABLED ||
+                        neighborIOType == IOHandlerUtils.IOType.OUTPUT) {
+                    return; // 目標不能接收，取消傳輸
+                }
+            }
+        }
+
         // 計算最優傳輸量
         int maxTransfer = Math.min(TRANSFER_RATE, buffer.getManaStored());
         int transferAmount = Math.min(maxTransfer, target.availableSpace);
@@ -316,42 +353,70 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 int actualReceived = handler.receiveMana(simulated, ManaAction.EXECUTE);
                 buffer.extractMana(actualReceived, ManaAction.EXECUTE);
 
-                // 記錄防循環信息
+                // 更新統計和狀態
+                updateTransferStats(targetDir, actualReceived);
                 lastTransferDirection = targetDir;
                 lastTransferTick = currentTick;
                 busyDirections.add(targetDir);
-                transfersThisTick++; // 計數本tick傳輸次數
 
-                // === 記錄活動時間，避免進入閒置狀態 ===
-                lastActivity = System.currentTimeMillis();
-
-                // 更新統計
-                transferStats.get(targetDir).recordTransfer(actualReceived, true);
-
-                // 清除緩存（狀態已改變）
-                cachedTargets.remove(targetDir);
+                setChanged();
             }
         }
     }
 
+
     // === 目標掃描與緩存 ===
 
     private void rescanTargets() {
-        // === 安全檢查 ===
-        if (level == null) return;
+        if (level == null) return; // ✅ 安全檢查
 
         cachedTargets.clear();
 
         for (Direction dir : Direction.values()) {
+            IOHandlerUtils.IOType myIOType = ioConfig.get(dir);
+            if (myIOType == IOHandlerUtils.IOType.DISABLED ||
+                    myIOType == IOHandlerUtils.IOType.INPUT) {
+                continue;
+            }
+
             BlockPos neighborPos = worldPosition.relative(dir);
             IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
 
             if (handler != null) {
-                cachedTargets.put(dir, new TargetInfo(handler));
+                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+                boolean isConduit = neighborBE instanceof ArcaneConduitBlockEntity;
+
+                if (isConduit) {
+                    ArcaneConduitBlockEntity neighborConduit = (ArcaneConduitBlockEntity) neighborBE;
+                    Direction neighborInputSide = dir.getOpposite();
+                    IOHandlerUtils.IOType neighborIOType = neighborConduit.getIOConfig(neighborInputSide);
+
+                    if (neighborIOType == IOHandlerUtils.IOType.DISABLED ||
+                            neighborIOType == IOHandlerUtils.IOType.OUTPUT) {
+                        continue;
+                    }
+                }
+
+                cachedTargets.put(dir, new TargetInfo(handler, isConduit));
             }
         }
 
         lastTargetScan = System.currentTimeMillis();
+    }
+    private int calculateMachinePriority(IUnifiedManaHandler handler) {
+        int maxMana = handler.getMaxManaStored();
+        int currentMana = handler.getManaStored();
+        int availableSpace = maxMana - currentMana;
+        return maxMana == 0 ? 0 : (availableSpace * 100) / maxMana;
+    }
+
+    private void updateTransferStats(Direction direction, int amount) {
+        TransferStats stats = transferStats.get(direction);
+        if (stats != null) {
+            stats.recordTransfer(amount, true);
+            lastActivity = System.currentTimeMillis();
+            transfersThisTick++;
+        }
     }
 
     private boolean needsTargetRescan() {

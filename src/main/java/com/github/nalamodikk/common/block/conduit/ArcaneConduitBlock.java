@@ -154,27 +154,33 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         return newState;
     }
 
-
     private boolean canConnectTo(Level level, BlockPos pos, Direction direction) {
-        // 🔧 【重要】：檢查自己的IO配置，如果該方向是DISABLED則不連接
-        BlockEntity thisBE = level.getBlockEntity(pos.relative(direction.getOpposite()));
+        // 🔧 檢查自己的IO配置
+        BlockEntity thisBE = level.getBlockEntity(pos); // ← 就是當前位置
         if (thisBE instanceof ArcaneConduitBlockEntity thisConduit) {
-            IOHandlerUtils.IOType thisConfig = thisConduit.getIOConfig(direction);
-            if (thisConfig == IOHandlerUtils.IOType.DISABLED) {
-                return false; // 該方向已禁用，不顯示連接
+            IOHandlerUtils.IOType myConfig = thisConduit.getIOConfig(direction);
+            if (myConfig == IOHandlerUtils.IOType.DISABLED) {
+                return false; // 我自己禁用了這個方向
             }
         }
 
-        // 檢查是否應該連接到該位置
-        // 1. 是否為其他導管
-        if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity) {
-            return true;
+        // 🔧 檢查目標位置
+        BlockPos targetPos = pos.relative(direction); // ← 目標位置
+
+        // 如果目標是導管，還要檢查對方的配置
+        if (level.getBlockEntity(targetPos) instanceof ArcaneConduitBlockEntity targetConduit) {
+            Direction targetSide = direction.getOpposite();
+            IOHandlerUtils.IOType targetConfig = targetConduit.getIOConfig(targetSide);
+
+            // 如果對方也禁用了對應面，不連接
+            return targetConfig != IOHandlerUtils.IOType.DISABLED;// 雙方都允許，可以連接
         }
 
-        // 2. 是否有魔力能力
-        IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, pos, direction);
+        // 檢查是否有魔力能力
+        IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, targetPos, direction);
         return handler != null;
     }
+
     @Override
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
         if (!level.isClientSide) {
