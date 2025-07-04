@@ -104,6 +104,7 @@
   "message.koniava.conduit.config_gui_placeholder": "§e配置 GUI 尚未實現，敬請期待！",
   "message.koniava.priority_changed": "%s 方向的優先級已設為 %d",
   "message.koniava.tech_wand.mode.priority_config": "優先級配置模式",
+  "message.koniava.conduit.detailed_config_with_shape": "方向 %s：%s (優先級: %d) %s",
 
   "message.koniava.not_conduit_block": "§c此方塊不是導管！",
   "message.koniava.conduit.detailed_config": "§e%s: §f%s §7(優先級: %d)",

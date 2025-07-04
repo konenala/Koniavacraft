@@ -8,14 +8,12 @@ import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
-import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,68 +21,96 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 融合 Mekanism 和 EnderIO 風格的智能魔力導管
+ * 智能魔力導管 - 結合防循環和智能路由
  *
- * Mekanism 風格: 直通式傳輸，最小緩衝
- * EnderIO 風格: 智能路由，負載平衡
- * 你的特色: 統計記憶，性能優化
+ * 特色功能：
+ * 1. 防循環傳輸系統
+ * 2. 智能目標選擇
+ * 3. 優先級路由
+ * 4. 性能優化緩存
  */
 public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedManaHandler, IConfigurableBlock {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
+    // 移除未使用的 LOGGER
 
-    // === Mekanism 風格：最小化緩衝設計 ===
-    private static final int BUFFER_SIZE = 100;     // 極小緩衝，主要用於臨時平衡
-    private static final int TRANSFER_RATE = 200;   // 每tick傳輸量
-    private static final int PULL_RATE = 50;        // 每次拉取量（防止過度拉取）
+    // === 常量配置（1000+導管優化）===
+    private static final int BUFFER_SIZE = 100;
+    private static final int TRANSFER_RATE = 200;
+    private static final int NETWORK_SCAN_INTERVAL = 600; // 30秒 (大幅延長)
+    private static final int TARGET_CACHE_DURATION = 2000; // 2秒 (延長緩存)
+    private static final int IDLE_THRESHOLD = 600; // 30秒無活動視為閒置
+    private static final int MAX_TRANSFERS_PER_TICK = 2; // 限制每tick傳輸次數
 
-    // === EnderIO 風格：智能路由配置 ===
-    private static final int NETWORK_SCAN_INTERVAL = 200;  // 10秒掃描一次（原本3秒）
-    private static final int CACHE_REFRESH_INTERVAL = 100; // 5秒刷新緩存（原本1秒）
-    private static final int BALANCE_CHECK_INTERVAL = 20;  // 保持1秒檢查負載平衡
+    // === 性能優化：分批處理 ===
+    private static int globalTickOffset = 0; // 錯開不同導管的處理時間
+    private static final Map<BlockPos, Integer> conduitTickOffsets = new ConcurrentHashMap<>();
 
     // === 核心組件 ===
     private final ManaStorage buffer = new ManaStorage(BUFFER_SIZE);
     private final EnumMap<Direction, IOHandlerUtils.IOType> ioConfig = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, Integer> routePriority = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, TransferStats> transferStats = new EnumMap<>(Direction.class);
 
+    // === 防循環系統 ===
+    private Direction lastReceiveDirection = null;
+    private Direction lastTransferDirection = null;
+    private long lastTransferTick = 0;
+    private final Set<Direction> busyDirections = EnumSet.noneOf(Direction.class);
 
+    // === 智能目標緩存 ===
+    private final Map<Direction, TargetInfo> cachedTargets = new EnumMap<>(Direction.class);
+    private long lastTargetScan = 0;
 
-    // 🎯 新增：全域緩存系統
+    // === 網路管理 ===
+    private final Set<BlockPos> networkNodes = new HashSet<>();
+    private final Map<Direction, ManaEndpoint> endpoints = new EnumMap<>(Direction.class);
+    private long tickCounter = 0;
+    private boolean networkDirty = true;
+
+    // === 性能優化狀態 ===
+    private boolean isIdle = false; // 閒置狀態
+    private long lastActivity; // 最後活動時間（在建構子中初始化）
+    private int transfersThisTick = 0; // 本tick已傳輸次數
+    private int tickOffset; // 個別導管的tick偏移
+
+    // === 全域緩存 ===
     private static final Map<BlockPos, Long> lastScanTime = new ConcurrentHashMap<>();
     private static final Map<BlockPos, Map<Direction, ManaEndpoint>> sharedCache = new ConcurrentHashMap<>();
     private static final Map<BlockPos, Set<BlockPos>> sharedNetworkNodes = new ConcurrentHashMap<>();
 
-    // 🔧 清理計數器
-    private static long globalCleanupCounter = 0;
-
-    // === EnderIO 風格：智能網絡管理 ===
-    private final Set<BlockPos> networkNodes = new HashSet<>();           // 網絡中的所有節點
-    private final Map<Direction, ManaEndpoint> endpoints = new EnumMap<>(Direction.class);
-    private final Map<Direction, Integer> routePriority = new EnumMap<>(Direction.class);
-
-    // === 你的特色：統計與學習系統 ===
-    private final EnumMap<Direction, TransferStats> transferStats = new EnumMap<>(Direction.class);
-
-    // === 性能控制 ===
-    private long tickCounter = 0;
-    private boolean networkDirty = true;
-    private int roundRobinIndex = 0;
-
     // === 內部數據結構 ===
 
-    /**
-     * Mekanism 風格：端點信息
-     */
+    private static class TargetInfo {
+        final int availableSpace;
+        final int storedMana;
+        final boolean canReceive;
+        final long scanTime;
+
+        TargetInfo(IUnifiedManaHandler handler) {
+            this.availableSpace = handler.getMaxManaStored() - handler.getManaStored();
+            this.storedMana = handler.getManaStored();
+            this.canReceive = handler.canReceive() && availableSpace > 0;
+            this.scanTime = System.currentTimeMillis();
+        }
+
+        boolean isValid() {
+            return System.currentTimeMillis() - scanTime < TARGET_CACHE_DURATION;
+        }
+
+        int getPriority() {
+            return availableSpace; // 空間越大優先級越高
+        }
+    }
+
     private static class ManaEndpoint {
         final IUnifiedManaHandler handler;
-        final boolean isConduit;          // 是否為導管（避免循環）
-        final int priority;               // 優先級（距離或配置）
+        final boolean isConduit;
+        final int priority;
         long lastAccess;
 
         ManaEndpoint(IUnifiedManaHandler handler, boolean isConduit, int priority) {
@@ -95,9 +121,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
-    /**
-     * 你的特色：傳輸統計
-     */
     private static class TransferStats {
         int totalTransferred = 0;
         int successfulTransfers = 0;
@@ -109,7 +132,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             if (success) {
                 totalTransferred += amount;
                 successfulTransfers++;
-                // 指數移動平均
                 averageRate = averageRate * 0.9 + amount * 0.1;
             } else {
                 failedTransfers++;
@@ -123,63 +145,261 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
+    // === 建構子 ===
+
     public ArcaneConduitBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.ARCANE_CONDUIT_BE.get(), pos, blockState);
 
-        // 初始化 IO 配置（默認全雙向）
+        // 初始化配置
         for (Direction dir : Direction.values()) {
             ioConfig.put(dir, IOHandlerUtils.IOType.BOTH);
             transferStats.put(dir, new TransferStats());
-            routePriority.put(dir, 50); // 默認優先級
+            routePriority.put(dir, 50);
         }
+
+        // === 1000+導管優化：錯開處理時間 ===
+        this.tickOffset = conduitTickOffsets.computeIfAbsent(pos,
+                k -> (globalTickOffset++) % NETWORK_SCAN_INTERVAL);
+        this.lastActivity = System.currentTimeMillis();
     }
 
-    /**
-     * 🎯 優化的 tick 方法 - 更智能的執行時機
-     */
+    // === 主要Tick邏輯（1000+導管優化版）===
+
     public void tick() {
         if (level == null || level.isClientSide) return;
 
         tickCounter++;
+        transfersThisTick = 0;
 
-        // === 🚀 優化的分階段處理 ===
+        // === 閒置檢測：無魔力且長時間無活動則休眠 ===
+        long currentTime = System.currentTimeMillis();
+        boolean hasActivity = buffer.getManaStored() > 0 ||
+                (currentTime - lastActivity) < IDLE_THRESHOLD;
 
-        // 網絡掃描：10秒一次或有變化時
-        if (tickCounter % NETWORK_SCAN_INTERVAL == 0 || networkDirty) {
-            scanNetworkTopology();
+        if (!hasActivity && !networkDirty) {
+            isIdle = true;
+            // 閒置導管每10秒只處理一次
+            if (tickCounter % 200 != tickOffset % 200) {
+                return;
+            }
+        } else {
+            isIdle = false;
+        }
+
+        // === 錯開網路掃描：避免所有導管同時掃描 ===
+        if ((tickCounter + tickOffset) % NETWORK_SCAN_INTERVAL == 0 || networkDirty) {
+            // 只有1/4的導管會執行完整掃描，其他使用簡化版
+            if (tickCounter % 4 == 0 || networkDirty) {
+                scanNetworkTopology();
+            } else {
+                quickEndpointCheck(); // 輕量級檢查
+            }
             networkDirty = false;
         }
 
-        // 緩存刷新：5秒一次，且只檢查部分端點
-        if (tickCounter % CACHE_REFRESH_INTERVAL == 0) {
-            refreshEndpointCache();
+        // === 處理魔力流動（限制頻率）===
+        if (!isIdle) {
+            handleManaFlow();
         }
 
-        // 負載平衡：1秒一次（保持響應性）
-        if (tickCounter % BALANCE_CHECK_INTERVAL == 0) {
-            performLoadBalancing();
-        }
-
-        // === 主動處理流量 ===
-        handleManaFlow();
-
-        // === 清理過期數據：10分鐘一次 ===
-        if (tickCounter % 12000 == 0) { // 從1分鐘改為10分鐘
+        // === 大幅減少清理頻率：1小時一次 ===
+        if (tickCounter % 72000 == tickOffset) { // 1小時，且錯開時間
             cleanupStaleData();
         }
     }
+
+    // === 核心傳輸邏輯（1000+導管優化版）===
+
+    private void handleManaFlow() {
+        if (buffer.getManaStored() <= 0) return;
+
+        // === 安全檢查：確保 level 不為空 ===
+        if (level == null) return;
+
+        // === 限制每tick傳輸次數，避免單個導管佔用過多資源 ===
+        if (transfersThisTick >= MAX_TRANSFERS_PER_TICK) return;
+
+        long currentTick = level.getGameTime();
+
+        // 防循環：每tick清除忙碌標記
+        if (lastTransferTick != currentTick) {
+            busyDirections.clear();
+        }
+
+        // 找到最佳目標
+        Direction bestTarget = findBestTarget(currentTick);
+        if (bestTarget == null) return;
+
+        // 防循環檢查
+        if (shouldBlockTransfer(bestTarget, currentTick)) {
+            return;
+        }
+
+        // 執行傳輸
+        executeSmartTransfer(bestTarget, currentTick);
+    }
+
+    private Direction findBestTarget(long currentTick) {
+        // 定期重新掃描目標
+        if (currentTick % 10 == 0 || needsTargetRescan()) {
+            rescanTargets();
+        }
+
+        Direction bestDir = null;
+        int maxPriority = 0;
+
+        for (Direction dir : Direction.values()) {
+            // 跳過不能輸出的方向
+            IOHandlerUtils.IOType ioType = ioConfig.get(dir);
+            if (ioType == IOHandlerUtils.IOType.DISABLED ||
+                    ioType == IOHandlerUtils.IOType.INPUT) {
+                continue;
+            }
+
+            TargetInfo target = cachedTargets.get(dir);
+            if (target != null && target.canReceive) {
+                int priority = target.getPriority() + routePriority.get(dir);
+                if (priority > maxPriority) {
+                    maxPriority = priority;
+                    bestDir = dir;
+                }
+            }
+        }
+
+        return bestDir;
+    }
+
+    private boolean shouldBlockTransfer(Direction targetDir, long currentTick) {
+        // 1. 本tick已經傳輸過這個方向
+        if (busyDirections.contains(targetDir)) {
+            return true;
+        }
+
+        // 2. 不要立即傳回給剛給我魔力的方向
+        if (lastReceiveDirection != null &&
+                targetDir == lastReceiveDirection &&
+                currentTick - lastTransferTick <= 1) {
+            return true;
+        }
+
+        // 3. 避免連續傳輸到同一方向（減少振盪）
+        if (lastTransferDirection == targetDir &&
+                currentTick - lastTransferTick == 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void executeSmartTransfer(Direction targetDir, long currentTick) {
+        // === 安全檢查 ===
+        if (level == null) return;
+
+        TargetInfo target = cachedTargets.get(targetDir);
+        if (target == null || !target.canReceive) return;
+
+        // 計算最優傳輸量
+        int maxTransfer = Math.min(TRANSFER_RATE, buffer.getManaStored());
+        int transferAmount = Math.min(maxTransfer, target.availableSpace);
+
+        if (transferAmount <= 0) return;
+
+        // 執行傳輸
+        BlockPos neighborPos = worldPosition.relative(targetDir);
+        IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, neighborPos, targetDir);
+
+        if (handler != null) {
+            // 模擬傳輸
+            int simulated = handler.receiveMana(transferAmount, ManaAction.SIMULATE);
+            if (simulated > 0) {
+                // 執行實際傳輸
+                int actualReceived = handler.receiveMana(simulated, ManaAction.EXECUTE);
+                buffer.extractMana(actualReceived, ManaAction.EXECUTE);
+
+                // 記錄防循環信息
+                lastTransferDirection = targetDir;
+                lastTransferTick = currentTick;
+                busyDirections.add(targetDir);
+                transfersThisTick++; // 計數本tick傳輸次數
+
+                // === 記錄活動時間，避免進入閒置狀態 ===
+                lastActivity = System.currentTimeMillis();
+
+                // 更新統計
+                transferStats.get(targetDir).recordTransfer(actualReceived, true);
+
+                // 清除緩存（狀態已改變）
+                cachedTargets.remove(targetDir);
+            }
+        }
+    }
+
+    // === 目標掃描與緩存 ===
+
+    private void rescanTargets() {
+        // === 安全檢查 ===
+        if (level == null) return;
+
+        cachedTargets.clear();
+
+        for (Direction dir : Direction.values()) {
+            BlockPos neighborPos = worldPosition.relative(dir);
+            IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
+
+            if (handler != null) {
+                cachedTargets.put(dir, new TargetInfo(handler));
+            }
+        }
+
+        lastTargetScan = System.currentTimeMillis();
+    }
+
+    private boolean needsTargetRescan() {
+        return System.currentTimeMillis() - lastTargetScan > 5000 || cachedTargets.isEmpty(); // 延長到5秒
+    }
+
+    // === 輕量級端點檢查（1000+導管優化）===
+
     /**
-     * 🚀 優化的網絡拓撲掃描 - 使用緩存和智能跳過
+     * 輕量級檢查，只驗證現有端點是否仍然有效
+     * 避免完整的網路拓撲掃描
      */
+    private void quickEndpointCheck() {
+        // === 安全檢查 ===
+        if (level == null || endpoints.isEmpty()) return;
+
+        // 只檢查一個端點，避免每次都檢查全部
+        Direction[] dirs = endpoints.keySet().toArray(new Direction[0]);
+        // 移除永遠為false的檢查，因為上面已經檢查了 isEmpty()
+
+        Direction dirToCheck = dirs[(int)(tickCounter % dirs.length)];
+        ManaEndpoint endpoint = endpoints.get(dirToCheck);
+
+        if (endpoint != null) {
+            BlockPos neighborPos = worldPosition.relative(dirToCheck);
+            IUnifiedManaHandler current = CapabilityUtils.getNeighborMana(level, neighborPos, dirToCheck);
+
+            if (current == null || current != endpoint.handler) {
+                // 這個端點無效了，移除並標記需要重新掃描
+                endpoints.remove(dirToCheck);
+                networkDirty = true;
+
+                // 清除對應的緩存
+                cachedTargets.remove(dirToCheck);
+            }
+        }
+    }
+
+    // === 網路拓撲掃描（1000+導管優化版）===
+
     private void scanNetworkTopology() {
-        if (!(level instanceof ServerLevel serverLevel)) return;
+        if (!(level instanceof ServerLevel)) return;
 
         long now = System.currentTimeMillis();
         long lastScan = lastScanTime.getOrDefault(worldPosition, 0L);
 
-        // 🎯 緩存檢查：3秒內不重複掃描相同位置
-        if (now - lastScan < 3000 && !networkDirty) {
-            // 嘗試使用緩存結果
+        // === 大幅延長緩存有效期：從3秒改為30秒 ===
+        if (now - lastScan < 30000 && !networkDirty) {
             Map<Direction, ManaEndpoint> cached = sharedCache.get(worldPosition);
             Set<BlockPos> cachedNodes = sharedNetworkNodes.get(worldPosition);
 
@@ -188,302 +408,258 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 endpoints.putAll(cached);
                 networkNodes.clear();
                 networkNodes.addAll(cachedNodes);
-
-                LOGGER.trace("使用緩存掃描結果: {} 個端點", endpoints.size());
                 return;
             }
         }
 
-
-        // 🔍 執行實際掃描
-        int oldEndpointCount = endpoints.size();
+        // === 簡化掃描：只掃描必要的方向 ===
         networkNodes.clear();
         endpoints.clear();
 
         for (Direction dir : Direction.values()) {
-            if (ioConfig.get(dir) == IOHandlerUtils.IOType.DISABLED) continue;
+            IOHandlerUtils.IOType ioType = ioConfig.get(dir);
+            if (ioType == IOHandlerUtils.IOType.DISABLED) continue;
 
             BlockPos neighborPos = worldPosition.relative(dir);
 
-            // 使用你的工具類查詢能力
+            // === 批次查詢優化：減少 capability 查詢次數 ===
             IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
             if (handler == null) continue;
 
-            // 檢查是否為導管（避免循環）
             boolean isConduit = level.getBlockEntity(neighborPos) instanceof ArcaneConduitBlockEntity;
 
-            // 計算優先級（距離 + 配置 + 歷史性能）
-            int priority = calculatePriority(dir, handler, isConduit);
+            // === 簡化優先級計算，減少浮點運算 ===
+            int priority = routePriority.get(dir);
+            if (handler.canReceive() && handler.getManaStored() < handler.getMaxManaStored() / 2) {
+                priority += 10; // 簡化的空容器優先級
+            }
 
             endpoints.put(dir, new ManaEndpoint(handler, isConduit, priority));
-            networkNodes.add(neighborPos);
+            if (!isConduit) {
+                networkNodes.add(neighborPos); // 只記錄非導管節點
+            }
         }
 
-        // 🎯 更新緩存
+        // 更新緩存
         lastScanTime.put(worldPosition, now);
         sharedCache.put(worldPosition, new HashMap<>(endpoints));
         sharedNetworkNodes.put(worldPosition, new HashSet<>(networkNodes));
 
-        // 🧹 定期清理緩存
-        globalCleanupCounter++;
-        if (globalCleanupCounter % 50 == 0) { // 每50次掃描清理一次
+        // === 定期清理全域緩存，避免記憶體洩漏 ===
+        if (now % 100000 < 50) { // 大約每10萬毫秒清理一次
             cleanupGlobalCache();
-        }
-
-        if (endpoints.size() != oldEndpointCount) {
-            LOGGER.debug("網絡拓撲變化: {} -> {} 個端點", oldEndpointCount, endpoints.size());
         }
     }
 
     /**
-     * 🧹 清理全域緩存 - 移除過期和無效的緩存
+     * 清理全域緩存，避免記憶體累積
      */
     private static void cleanupGlobalCache() {
         long now = System.currentTimeMillis();
 
-        // 移除超過30秒沒更新的緩存
-        lastScanTime.entrySet().removeIf(entry -> now - entry.getValue() > 30000);
+        // 移除超過1分鐘沒更新的緩存
+        lastScanTime.entrySet().removeIf(entry -> now - entry.getValue() > 60000);
 
         // 清理對應的緩存數據
         sharedCache.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
         sharedNetworkNodes.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
-
-        LOGGER.trace("清理全域緩存，剩餘: {} 個緩存項目", lastScanTime.size());
     }
 
-    /**
-     * 🔧 優化的刷新端點緩存 - 減少不必要的檢查
-     */
-    private void refreshEndpointCache() {
-        if (endpoints.isEmpty()) return; // 沒有端點就不檢查
+    // === 接收魔力（帶方向追蹤）===
 
-        // 只檢查一個端點，避免每次都檢查全部
-        if (!endpoints.isEmpty()) {
-            Direction[] dirs = endpoints.keySet().toArray(new Direction[0]);
-            Direction dirToCheck = dirs[(int)(tickCounter % dirs.length)];
+    public int receiveManaFromDirection(int maxReceive, ManaAction action, Direction fromDirection) {
+        int received = buffer.receiveMana(maxReceive, action);
 
-            ManaEndpoint endpoint = endpoints.get(dirToCheck);
-            if (endpoint != null) {
-                // 重新獲取能力
-                IUnifiedManaHandler current = CapabilityUtils.getNeighborMana(level,
-                        worldPosition.relative(dirToCheck), dirToCheck);
+        if (action.execute() && received > 0) {
+            lastReceiveDirection = fromDirection.getOpposite();
+            lastActivity = System.currentTimeMillis(); // 記錄活動
+            cachedTargets.clear(); // 狀態改變，清除緩存
+        }
 
-                if (current == null || current != endpoint.handler) {
-                    // 這個端點無效了，觸發重新掃描
-                    endpoints.remove(dirToCheck);
-                    networkDirty = true;
+        return received;
+    }
 
-                    // 清除緩存
-                    sharedCache.remove(worldPosition);
-                    sharedNetworkNodes.remove(worldPosition);
+    // === 清理與維護 ===
+
+    private void cleanupStaleData() {
+        long now = System.currentTimeMillis();
+
+        // 衰減長時間無傳輸的統計
+        transferStats.values().forEach(stats -> {
+            if (now - stats.lastTransfer > 300000) { // 5分鐘
+                stats.averageRate *= 0.8;
+            }
+        });
+    }
+
+    public void onNeighborChanged() {
+        // 清除緩存
+        sharedCache.remove(worldPosition);
+        sharedNetworkNodes.remove(worldPosition);
+        lastScanTime.remove(worldPosition);
+        networkDirty = true;
+    }
+
+    // === 優先級管理 ===
+
+    public void setPriority(Direction direction, int priority) {
+        int clampedPriority = Math.max(1, Math.min(100, priority));
+        if (routePriority.get(direction) != clampedPriority) {
+            routePriority.put(direction, clampedPriority);
+            networkDirty = true;
+            setChanged();
+        }
+    }
+
+    public int getPriority(Direction direction) {
+        return routePriority.getOrDefault(direction, 50);
+    }
+
+    public void resetAllPriorities() {
+        for (Direction dir : Direction.values()) {
+            routePriority.put(dir, 50);
+        }
+        networkDirty = true;
+        setChanged();
+    }
+
+    // === IO配置管理 ===
+
+    @Override
+    public IOHandlerUtils.IOType getIOConfig(Direction direction) {
+        return ioConfig.getOrDefault(direction, IOHandlerUtils.IOType.BOTH);
+    }
+
+    @Override
+    public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
+        IOHandlerUtils.IOType oldType = ioConfig.get(direction);
+        if (oldType != type) {
+            ioConfig.put(direction, type);
+            networkDirty = true;
+            setChanged();
+
+            // 清除該方向的緩存
+            endpoints.remove(direction);
+
+            // 觸發連接狀態更新
+            if (level != null && !level.isClientSide) {
+                BlockState currentState = level.getBlockState(worldPosition);
+                if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
+                    BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
+                    if (newState != currentState) {
+                        level.setBlock(worldPosition, newState, 3);
+                    }
                 }
             }
         }
     }
 
+    @Override
+    public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
+        return new EnumMap<>(ioConfig);
+    }
 
-    /**
-     * EnderIO 風格：優先級計算
-     */
-    private int calculatePriority(Direction dir, IUnifiedManaHandler handler, boolean isConduit) {
-        int basePriority = routePriority.get(dir);
-
-        // 🔧 修復：移除導管優先級懲罰
-        // if (isConduit) basePriority -= 20;
-
-        // 只有一個簡單的調整：空的容器優先級稍微高一點
-        if (handler.canReceive()) {
-            int demand = handler.getMaxManaStored() - handler.getManaStored();
-            double fillRatio = (double) demand / handler.getMaxManaStored();
-
-            if (fillRatio > 0.5) { // 超過一半空間
-                basePriority += 10;
+    @Override
+    public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> newIOMap) {
+        boolean changed = false;
+        for (Direction dir : Direction.values()) {
+            IOHandlerUtils.IOType newType = newIOMap.getOrDefault(dir, IOHandlerUtils.IOType.BOTH);
+            if (ioConfig.get(dir) != newType) {
+                ioConfig.put(dir, newType);
+                changed = true;
             }
         }
 
-        return Math.max(0, Math.min(100, basePriority));
-    }
-
-    /**
-     * EnderIO 風格：負載平衡處理
-     */
-    private void performLoadBalancing() {
-        if (buffer.getManaStored() <= 0) return;
-
-        // 獲取所有可輸出的端點
-        List<Map.Entry<Direction, ManaEndpoint>> outputs = endpoints.entrySet().stream()
-                .filter(e -> canOutput(e.getKey()) && e.getValue().handler.canReceive())
-                .sorted((a, b) -> Integer.compare(b.getValue().priority, a.getValue().priority))
-                .toList();
-
-        if (outputs.isEmpty()) return;
-
-        int totalToTransfer = Math.min(buffer.getManaStored(), TRANSFER_RATE);
-
-        // === EnderIO 風格：智能分配 ===
-        distributeIntelligently(outputs, totalToTransfer);
-    }
-
-    /**
-     * 你的特色：智能分配算法
-     */
-    private void distributeIntelligently(List<Map.Entry<Direction, ManaEndpoint>> outputs, int totalAmount) {
-        if (outputs.isEmpty()) return;
-
-        // 計算每個端點的需求和權重
-        List<TransferTarget> targets = new ArrayList<>();
-        int totalWeight = 0;
-
-        for (var entry : outputs) {
-            Direction dir = entry.getKey();
-            ManaEndpoint endpoint = entry.getValue();
-            IUnifiedManaHandler handler = endpoint.handler;
-
-            int demand = handler.getMaxManaStored() - handler.getManaStored();
-            if (demand <= 0) continue;
-
-            // 權重 = 優先級 × 需求比例 × 可靠性
-            TransferStats stats = transferStats.get(dir);
-            double reliability = stats.getReliability();
-            double demandRatio = Math.min(1.0, (double) demand / TRANSFER_RATE);
-
-            int weight = (int) (endpoint.priority * demandRatio * reliability);
-
-            targets.add(new TransferTarget(dir, handler, demand, weight));
-            totalWeight += weight;
-        }
-
-        // 按權重分配
-        int remaining = totalAmount;
-        for (TransferTarget target : targets) {
-            if (remaining <= 0) break;
-
-            int allocation = totalWeight > 0 ?
-                    (totalAmount * target.weight / totalWeight) :
-                    (remaining / targets.size());
-
-            allocation = Math.min(allocation, Math.min(remaining, target.demand));
-
-            if (allocation > 0) {
-                performTransfer(target.direction, target.handler, allocation);
-                remaining -= allocation;
-            }
-        }
-    }
-
-    /**
-     * Mekanism 風格：執行傳輸
-     */
-    private void performTransfer(Direction dir, IUnifiedManaHandler target, int amount) {
-        // 模擬傳輸
-        int accepted = target.receiveMana(amount, ManaAction.SIMULATE);
-        if (accepted <= 0) {
-            transferStats.get(dir).recordTransfer(0, false);
-            return;
-        }
-
-        // 實際傳輸
-        int extracted = buffer.extractMana(accepted, ManaAction.EXECUTE);
-        if (extracted > 0) {
-            int inserted = target.receiveMana(extracted, ManaAction.EXECUTE);
-
-            // 記錄統計
-            transferStats.get(dir).recordTransfer(inserted, inserted > 0);
-
-            if (inserted != extracted) {
-                // 如果沒有完全插入，返還剩餘魔力
-                buffer.receiveMana(extracted - inserted, ManaAction.EXECUTE);
-            }
-
+        if (changed) {
+            networkDirty = true;
+            endpoints.clear();
             setChanged();
-        }
-    }
 
-    /**
-     * Mekanism 風格：處理魔力流動
-     */
-    private void handleManaFlow() {
-        // 1. 從輸入端拉取魔力（限制拉取量）
-        if (buffer.getManaStored() < BUFFER_SIZE) {
-            pullManaFromInputs();
-        }
-    }
-
-    /**
-     * 改進的拉取邏輯
-     */
-    private void pullManaFromInputs() {
-        int needed = BUFFER_SIZE - buffer.getManaStored();
-        if (needed <= 0) return;
-
-        Direction[] dirs = Direction.values();
-        int attempts = 0;
-
-        while (needed > 0 && attempts < dirs.length) {
-            Direction dir = dirs[roundRobinIndex];
-            roundRobinIndex = (roundRobinIndex + 1) % dirs.length;
-            attempts++;
-
-            if (!canInput(dir)) continue;
-
-            ManaEndpoint endpoint = endpoints.get(dir);
-            if (endpoint == null || endpoint.isConduit) continue;
-
-            IUnifiedManaHandler source = endpoint.handler;
-            if (!source.canExtract()) continue;
-
-            BlockPos neighborPos = worldPosition.relative(dir);
-            int toPull = Math.min(needed, PULL_RATE);
-
-            // 🔍 只記錄抽取前後的魔力，檢查是否真的扣除了
-            int beforeMana = source.getManaStored();
-            int extracted = source.extractMana(toPull, ManaAction.EXECUTE);
-            int afterMana = source.getManaStored();
-
-            // 🚨 只在有問題時才 log
-            if (extracted > 0 && beforeMana == afterMana) {
-                LOGGER.warn("🚨 抽取BUG: 從 {} 抽取了 {} 魔力，但目標魔力未減少！({}/{})",
-                        neighborPos, extracted, beforeMana, source.getMaxManaStored());
-                LOGGER.warn("目標類型: {}", source.getClass().getSimpleName());
-            }
-
-            if (extracted > 0) {
-                buffer.receiveMana(extracted, ManaAction.EXECUTE);
-                needed -= extracted;
-                transferStats.get(dir).recordTransfer(extracted, true);
-                setChanged();
-                break;
+            // 觸發連接狀態更新
+            if (level != null && !level.isClientSide) {
+                BlockState currentState = level.getBlockState(worldPosition);
+                if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
+                    BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
+                    if (newState != currentState) {
+                        level.setBlock(worldPosition, newState, 3);
+                    }
+                }
             }
         }
     }
-    /**
-     * 🧹 優化的數據清理 - 減少清理頻率
-     */
-    private void cleanupStaleData() {
-        long now = System.currentTimeMillis();
 
-        // 清理長時間無傳輸的統計（衰減而不是清除）
-        transferStats.values().forEach(stats -> {
-            if (now - stats.lastTransfer > 300000) { // 5分鐘
-                stats.averageRate *= 0.8; // 輕度衰減
+    // === 用戶交互 ===
+
+    public InteractionResult onUse(BlockState state, Level level, BlockPos pos,
+                                   Player player, BlockHitResult hit) {
+        if (level.isClientSide) return InteractionResult.SUCCESS;
+
+        ItemStack heldItem = player.getMainHandItem();
+
+        if (heldItem.getItem() instanceof BasicTechWandItem wand) {
+            BasicTechWandItem.TechWandMode mode = wand.getMode(heldItem);
+            Direction hitFace = hit.getDirection();
+
+            switch (mode) {
+                case DIRECTION_CONFIG -> {
+                    IOHandlerUtils.IOType current = getIOConfig(hitFace);
+                    IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
+                    setIOConfig(hitFace, next);
+
+                    player.displayClientMessage(Component.translatable(
+                            "message.koniava.wrench.conduit_mode",
+                            Component.translatable("direction.koniava." + hitFace.name().toLowerCase()),
+                            Component.translatable("mode.koniava." + next.name().toLowerCase())
+                    ), true);
+
+                    return InteractionResult.SUCCESS;
+                }
+
+                case CONFIGURE_IO -> {
+                    showConduitInfo(player);
+                    return InteractionResult.SUCCESS;
+                }
             }
-        });
+        }
 
-        LOGGER.trace("清理過期數據: {}", worldPosition);
-    }
-    // === 工具方法 ===
+        if (heldItem.isEmpty()) {
+            showConduitInfo(player);
+            return InteractionResult.SUCCESS;
+        }
 
-    private boolean canInput(Direction dir) {
-        IOHandlerUtils.IOType type = ioConfig.get(dir);
-        return type == IOHandlerUtils.IOType.INPUT || type == IOHandlerUtils.IOType.BOTH;
-    }
-
-    private boolean canOutput(Direction dir) {
-        IOHandlerUtils.IOType type = ioConfig.get(dir);
-        return type == IOHandlerUtils.IOType.OUTPUT || type == IOHandlerUtils.IOType.BOTH;
+        return InteractionResult.PASS;
     }
 
-    // === 渲染器需要的方法 ===
+    private void showConduitInfo(Player player) {
+        player.displayClientMessage(Component.translatable("message.koniava.conduit.info_header"), false);
+
+        player.displayClientMessage(Component.translatable(
+                "message.koniava.conduit.mana_status",
+                getManaStored(), getMaxManaStored()), false);
+
+        player.displayClientMessage(Component.translatable(
+                "message.koniava.conduit.connections",
+                getActiveConnectionCount()), false);
+
+        // 顯示IO配置
+        for (Direction dir : Direction.values()) {
+            IOHandlerUtils.IOType type = getIOConfig(dir);
+            String color = switch (type) {
+                case INPUT -> "§2";
+                case OUTPUT -> "§c";
+                case BOTH -> "§b";
+                case DISABLED -> "§8";
+            };
+
+            player.displayClientMessage(Component.translatable(
+                    "message.koniava.conduit.direction_config",
+                    Component.translatable("direction.koniava." + dir.name().toLowerCase()),
+                    Component.literal(color).append(Component.translatable("mode.koniava." + type.name().toLowerCase()))
+            ), false);
+        }
+    }
+
+    // === 統計與調試 ===
 
     public int getActiveConnectionCount() {
         return (int) endpoints.values().stream()
@@ -491,33 +667,19 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 .count();
     }
 
+    public Map<Direction, TransferStats> getTransferStats() {
+        return new EnumMap<>(transferStats);
+    }
+
+    /**
+     * 獲取傳輸歷史（渲染器需要）
+     */
     public int getTransferHistory(Direction direction) {
         TransferStats stats = transferStats.get(direction);
         return stats != null ? stats.totalTransferred : 0;
     }
 
-    // === 調試接口 ===
-
-    public Map<Direction, TransferStats> getTransferStats() {
-        return new EnumMap<>(transferStats);
-    }
-
-    public Set<BlockPos> getNetworkNodes() {
-        return new HashSet<>(networkNodes);
-    }
-
-    public void setDirectionConfig(Direction dir, IOHandlerUtils.IOType type) {
-        ioConfig.put(dir, type);
-        networkDirty = true;
-        setChanged();
-    }
-
-    // === 內部類 ===
-
-    private record TransferTarget(Direction direction, IUnifiedManaHandler handler,
-                                  int demand, int weight) {}
-
-    // === IUnifiedManaHandler 完整實現 ===
+    // === IUnifiedManaHandler 實現 ===
 
     @Override
     public int receiveMana(int maxReceive, ManaAction action) {
@@ -530,52 +692,13 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     }
 
     @Override
-    public int getManaContainerCount() {
-        return 1; // 導管只有一個緩衝容器
-    }
-
-    @Override
-    public int getManaStored(int container) {
-        return container == 0 ? buffer.getManaStored() : 0;
-    }
-
-    @Override
-    public void setMana(int container, int mana) {
-        if (container == 0) {
-            buffer.setMana(mana);
-            setChanged();
-        }
-    }
-
-    @Override
-    public int getMaxManaStored(int container) {
-        return container == 0 ? buffer.getMaxManaStored() : 0;
-    }
-
-    @Override
-    public int getNeededMana(int container) {
-        return container == 0 ? buffer.getMaxManaStored() - buffer.getManaStored() : 0;
-    }
-
-    @Override
-    public int insertMana(int container, int amount, ManaAction action) {
-        if (container == 0) {
-            return buffer.receiveMana(amount, action);
-        }
-        return 0;
-    }
-
-    @Override
-    public int extractMana(int container, int amount, ManaAction action) {
-        if (container == 0) {
-            return buffer.extractMana(amount, action);
-        }
-        return 0;
-    }
-
-    @Override
     public int getManaStored() {
         return buffer.getManaStored();
+    }
+
+    @Override
+    public int getMaxManaStored() {
+        return buffer.getMaxManaStored();
     }
 
     @Override
@@ -602,13 +725,8 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     }
 
     @Override
-    public int getMaxManaStored() {
-        return buffer.getMaxManaStored();
-    }
-
-    @Override
     public boolean canExtract() {
-        return buffer.getManaStored() > 0; // 有魔力時才能被提取
+        return buffer.getManaStored() > 0;
     }
 
     @Override
@@ -616,7 +734,45 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         return buffer.getManaStored() < buffer.getMaxManaStored();
     }
 
-    // === NBT 處理 ===
+    // === 多容器支援（簡化實現）===
+
+    @Override
+    public int getManaContainerCount() { return 1; }
+
+    @Override
+    public int getManaStored(int container) {
+        return container == 0 ? buffer.getManaStored() : 0;
+    }
+
+    @Override
+    public void setMana(int container, int mana) {
+        if (container == 0) {
+            buffer.setMana(mana);
+            setChanged();
+        }
+    }
+
+    @Override
+    public int getMaxManaStored(int container) {
+        return container == 0 ? buffer.getMaxManaStored() : 0;
+    }
+
+    @Override
+    public int getNeededMana(int container) {
+        return container == 0 ? buffer.getMaxManaStored() - buffer.getManaStored() : 0;
+    }
+
+    @Override
+    public int insertMana(int container, int amount, ManaAction action) {
+        return container == 0 ? buffer.receiveMana(amount, action) : 0;
+    }
+
+    @Override
+    public int extractMana(int container, int amount, ManaAction action) {
+        return container == 0 ? buffer.extractMana(amount, action) : 0;
+    }
+
+    // === NBT 序列化 ===
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -625,12 +781,19 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 保存緩衝區
         tag.put("Buffer", buffer.serializeNBT(registries));
 
-        // 保存 IO 配置
+        // 保存IO配置
         CompoundTag ioTag = new CompoundTag();
         for (Direction dir : Direction.values()) {
             ioTag.putString(dir.name(), ioConfig.get(dir).name());
         }
         tag.put("IOConfig", ioTag);
+
+        // 保存優先級
+        CompoundTag priorityTag = new CompoundTag();
+        for (Direction dir : Direction.values()) {
+            priorityTag.putInt(dir.name(), routePriority.get(dir));
+        }
+        tag.put("RoutePriority", priorityTag);
 
         // 保存統計數據
         CompoundTag statsTag = new CompoundTag();
@@ -645,12 +808,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
         tag.put("Stats", statsTag);
 
-        CompoundTag priorityTag = new CompoundTag();
-        for (Direction dir : Direction.values()) {
-            priorityTag.putInt(dir.name(), routePriority.get(dir));
-        }
-        tag.put("RoutePriority", priorityTag);
-
         tag.putLong("TickCounter", tickCounter);
     }
 
@@ -658,12 +815,12 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
-        // 加載緩衝區
+        // 載入緩衝區
         if (tag.contains("Buffer")) {
             buffer.deserializeNBT(registries, tag.getCompound("Buffer"));
         }
 
-        // 加載 IO 配置
+        // 載入IO配置
         if (tag.contains("IOConfig")) {
             CompoundTag ioTag = tag.getCompound("IOConfig");
             for (Direction dir : Direction.values()) {
@@ -678,7 +835,17 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             }
         }
 
-        // 加載統計數據
+        // 載入優先級
+        if (tag.contains("RoutePriority")) {
+            CompoundTag priorityTag = tag.getCompound("RoutePriority");
+            for (Direction dir : Direction.values()) {
+                if (priorityTag.contains(dir.name())) {
+                    routePriority.put(dir, priorityTag.getInt(dir.name()));
+                }
+            }
+        }
+
+        // 載入統計數據
         if (tag.contains("Stats")) {
             CompoundTag statsTag = tag.getCompound("Stats");
             for (Direction dir : Direction.values()) {
@@ -692,257 +859,18 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 }
             }
         }
-        if (tag.contains("RoutePriority")) {
-            CompoundTag priorityTag = tag.getCompound("RoutePriority");
-            for (Direction dir : Direction.values()) {
-                if (priorityTag.contains(dir.name())) {
-                    routePriority.put(dir, priorityTag.getInt(dir.name()));
-                }
-            }
-        }
+
         tickCounter = tag.getLong("TickCounter");
-        networkDirty = true; // 加載後需要重新掃描網絡
-    }
-
-    // === 網絡同步觸發 ===
-
-    public void onNeighborChanged() {
-        // 清除本位置的緩存
-        sharedCache.remove(worldPosition);
-        sharedNetworkNodes.remove(worldPosition);
-        lastScanTime.remove(worldPosition);
-
-        // 標記需要重新掃描
         networkDirty = true;
-
-        LOGGER.trace("鄰居變化，清除緩存: {}", worldPosition);
     }
-
-    @Override
-    public IOHandlerUtils.IOType getIOConfig(Direction direction) {
-        return ioConfig.getOrDefault(direction, IOHandlerUtils.IOType.BOTH);
-    }
-
-    @Override
-    public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
-        IOHandlerUtils.IOType oldType = ioConfig.get(direction);
-        if (oldType != type) {
-            ioConfig.put(direction, type);
-            networkDirty = true; // 觸發網絡重新掃描
-            setChanged();
-
-            // 清除該方向的緩存
-            endpoints.remove(direction);
-
-            // 🔧 【關鍵修復】：觸發 BlockState 連接更新
-            if (level != null && !level.isClientSide) {
-                // 通知 Block 更新連接狀態
-                BlockState currentState = level.getBlockState(worldPosition);
-                if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
-                    BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
-                    if (newState != currentState) {
-                        level.setBlock(worldPosition, newState, 3); // 更新 BlockState
-                    }
-                }
-            }
-
-            // 日誌記錄
-            LOGGER.debug("導管 {} 方向 {} 設定從 {} 改為 {}, 已觸發連接更新",
-                    worldPosition, direction, oldType, type);
-        }
-    }
-
-
-    @Override
-    public EnumMap<Direction, IOHandlerUtils.IOType> getIOMap() {
-        return new EnumMap<>(ioConfig);
-    }
-
-
-    @Override
-    public void setIOMap(EnumMap<Direction, IOHandlerUtils.IOType> newIOMap) {
-        boolean changed = false;
-        for (Direction dir : Direction.values()) {
-            IOHandlerUtils.IOType newType = newIOMap.getOrDefault(dir, IOHandlerUtils.IOType.BOTH);
-            if (ioConfig.get(dir) != newType) {
-                ioConfig.put(dir, newType);
-                changed = true;
-            }
-        }
-
-        if (changed) {
-            networkDirty = true;
-            endpoints.clear(); // 清除所有緩存
-            setChanged();
-
-            // 🔧 【關鍵修復】：批量更新後也要觸發連接狀態更新
-            if (level != null && !level.isClientSide) {
-                BlockState currentState = level.getBlockState(worldPosition);
-                if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
-                    BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
-                    if (newState != currentState) {
-                        level.setBlock(worldPosition, newState, 3);
-                    }
-                }
-            }
-
-            LOGGER.debug("導管 {} 批量更新IO配置並觸發連接更新", worldPosition);
-        }
-    }
-
-    public InteractionResult onUse(BlockState state, Level level, BlockPos pos,
-                                   Player player, BlockHitResult hit) {
-        if (level.isClientSide) return InteractionResult.SUCCESS;
-
-        ItemStack heldItem = player.getMainHandItem();
-
-        // 檢查是否手持科技魔杖
-        if (heldItem.getItem() instanceof BasicTechWandItem wand) {
-            BasicTechWandItem.TechWandMode mode = wand.getMode(heldItem);
-            Direction hitFace = hit.getDirection();
-
-            switch (mode) {
-                case DIRECTION_CONFIG -> {
-                    // 單方向配置模式
-                    IOHandlerUtils.IOType current = getIOConfig(hitFace);
-                    IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
-                    setIOConfig(hitFace, next);
-
-                    String dirName = hitFace.name().toLowerCase();
-                    String typeName = next.name().toLowerCase();
-
-                    player.displayClientMessage(Component.translatable(
-                            "message.koniava.wrench.conduit_mode",
-                            Component.translatable("direction.koniava." + dirName),
-                            Component.translatable("mode.koniava." + typeName)
-                    ), true);
-
-                    return InteractionResult.SUCCESS;
-                }
-
-                case CONFIGURE_IO -> {
-                    // 打開IO配置GUI（如果你有UniversalConfigMenu的話）
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        // 這個可以先註釋掉，等你確認有GUI再啟用
-                        // openIOConfigurationGUI(serverPlayer, heldItem);
-
-                        // 暫時顯示當前配置
-                        showConduitInfo(player);
-                    }
-                    return InteractionResult.SUCCESS;
-                }
-            }
-        }
-
-        // 空手右鍵顯示信息
-        if (heldItem.isEmpty()) {
-            showConduitInfo(player);
-            return InteractionResult.SUCCESS;
-        }
-
-        return InteractionResult.PASS;
-    }
-
-
-    private void showConduitInfo(Player player) {
-        // 使用本地化的標題
-        player.displayClientMessage(Component.translatable("message.koniava.conduit.info_header"), false);
-
-        // 使用本地化的魔力狀態
-        player.displayClientMessage(Component.translatable(
-                "message.koniava.conduit.mana_status",
-                getManaStored(),
-                getMaxManaStored()
-        ), false);
-
-        // 使用本地化的連接數
-        player.displayClientMessage(Component.translatable(
-                "message.koniava.conduit.connections",
-                getActiveConnectionCount()
-        ), false);
-
-        // 顯示各方向IO配置 - 使用本地化
-        for (Direction dir : Direction.values()) {
-            IOHandlerUtils.IOType type = getIOConfig(dir);
-
-            // 獲取本地化的方向名稱和類型名稱
-            Component dirName = Component.translatable("direction.koniava." + dir.name().toLowerCase());
-            Component typeName = Component.translatable("mode.koniava." + type.name().toLowerCase());
-
-            String color = switch (type) {
-                case INPUT -> "§2"; // 深綠色
-                case OUTPUT -> "§c"; // 紅色
-                case BOTH -> "§b"; // 青色
-                case DISABLED -> "§8"; // 深灰色
-            };
-
-            // 使用本地化的配置顯示格式
-            player.displayClientMessage(Component.translatable(
-                    "message.koniava.conduit.direction_config",
-                    dirName,
-                    Component.literal(color).append(typeName)
-            ), false);
-        }
-    }
-
 
     @Override
     public void setRemoved() {
         super.setRemoved();
 
-        // 清理此位置的所有緩存
+        // 清理緩存
         sharedCache.remove(worldPosition);
         sharedNetworkNodes.remove(worldPosition);
         lastScanTime.remove(worldPosition);
     }
-
-    /**
-     * 🔧 強制重新掃描（給外部調用）
-     */
-    public void forceNetworkRescan() {
-        sharedCache.remove(worldPosition);
-        sharedNetworkNodes.remove(worldPosition);
-        lastScanTime.remove(worldPosition);
-        networkDirty = true;
-    }
-    public void setPriority(Direction direction, int priority) {
-        int clampedPriority = Math.max(1, Math.min(100, priority));
-
-        if (routePriority.get(direction) != clampedPriority) {
-            routePriority.put(direction, clampedPriority);
-            networkDirty = true;
-            setChanged();
-
-            LOGGER.debug("導管 {} 方向 {} 優先級設為 {}",
-                    worldPosition, direction, clampedPriority);
-        }
-    }
-
-    public int getPriority(Direction direction) {
-        return routePriority.getOrDefault(direction, 50);
-    }
-
-    // 🆕 調整優先級（+5 或 -5）
-    public void adjustPriority(Direction direction, int delta) {
-        int currentPriority = getPriority(direction);
-        setPriority(direction, currentPriority + delta);
-    }
-
-    // 🆕 重置優先級
-    public void resetPriority(Direction direction) {
-        setPriority(direction, 50);
-    }
-
-    // 🆕 重置所有優先級
-    public void resetAllPriorities() {
-        for (Direction dir : Direction.values()) {
-            routePriority.put(dir, 50);
-        }
-        networkDirty = true;
-        setChanged();
-    }
-
-
-
-
 }

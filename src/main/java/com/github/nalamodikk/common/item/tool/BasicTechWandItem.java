@@ -197,35 +197,6 @@ public class BasicTechWandItem extends Item {
                     }
                 }
 
-
-                case PRIORITY_CONFIG -> {
-                    // 🆕 優先級配置模式：不需要檢查 Crouch，因為我們要用它來區分增加/減少
-                    if (be instanceof com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity conduit) {
-                        if (player.isCrouching()) {
-                            // Shift + 右鍵：降低優先級
-                            conduit.adjustPriority(face, -5);
-                        } else {
-                            // 右鍵：提高優先級
-                            conduit.adjustPriority(face, +5);
-                        }
-
-                        int newPriority = conduit.getPriority(face);
-                        String dirName = face.name().toLowerCase();
-
-                        player.displayClientMessage(Component.translatable(
-                                "message.koniava.priority_changed",
-                                Component.translatable("direction.koniava." + dirName),
-                                newPriority
-                        ), true);
-
-                        return InteractionResult.SUCCESS;
-                    } else {
-                        player.displayClientMessage(Component.translatable(
-                                "message.koniava.not_conduit_block"
-                        ), true);
-                        return InteractionResult.PASS;
-                    }
-                }
             }
         }
         return InteractionResult.PASS;
@@ -290,8 +261,7 @@ public class BasicTechWandItem extends Item {
     public enum TechWandMode implements StringRepresentable {
         CONFIGURE_IO,
         DIRECTION_CONFIG,
-        ROTATE,
-        PRIORITY_CONFIG; // 🆕 新增優先級配置模式
+        ROTATE; // 🆕 新增優先級配置模式
 
         public TechWandMode next() {
             return values()[(this.ordinal() + 1) % values().length];
