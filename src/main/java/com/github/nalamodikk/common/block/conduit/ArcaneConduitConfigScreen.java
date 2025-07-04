@@ -32,7 +32,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
     public ArcaneConduitConfigScreen(ArcaneConduitConfigMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 256;
-        this.imageHeight = 180;
+        this.imageHeight = 200;
     }
 
     @Override
@@ -54,10 +54,10 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
     private void createDirectionConfig(Direction dir, int x, int y) {
         // IO 類型按鈕 - 使用你現有的 TooltipButton
         TooltipButton ioButton = new TooltipButton(
-                x + 60, y, 50, 18,
+                x + 60, y, 20, 20,
                 getIOTypeLabel(menu.getIOType(dir)),
                 getIOTypeTexture(menu.getIOType(dir)),
-                50, 18,
+                20, 20,
                 button -> onIOButtonClick(dir),
                 () -> List.of(Component.translatable("tooltip.koniava.io_type", menu.getIOType(dir).name().toLowerCase()))
         );
@@ -137,7 +137,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
     private void addGlobalControls() {
         // 重置所有優先級按鈕
         TooltipButton resetButton = new TooltipButton(
-                leftPos + 20, topPos + 150, 80, 20,
+                leftPos + 20, topPos + 165, 80, 20,
                 Component.translatable("button.koniava.reset_priorities"),
                 ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/reset_button.png"),
                 80, 20,
@@ -156,7 +156,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
 
         // 🔧 修復關閉按鈕的安全問題
         TooltipButton closeButton = new TooltipButton(
-                leftPos + 110, topPos + 150, 60, 20,
+                leftPos + 110, topPos + 165, 60, 20,
                 Component.translatable("button.koniava.close"),
                 ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/close_button.png"),
                 60, 20,
@@ -191,7 +191,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
             if (ioButton != null) {
                 IOHandlerUtils.IOType currentType = menu.getIOType(dir);
                 ioButton.setMessage(getIOTypeLabel(currentType));
-                ioButton.setTexture(getIOTypeTexture(currentType), 50, 18);
+                ioButton.setTexture(getIOTypeTexture(currentType), 20, 20);
             }
 
             // 🆕 更新優先級輸入框
@@ -257,18 +257,15 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
         };
     }
 
+
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // 渲染背景（暫時使用純色，之後可以添加紋理）
-        guiGraphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xCC000000);
+        // 🎨 使用材質渲染背景
+        guiGraphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
-        // 渲染邊框
-        guiGraphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + 2, 0xFFFFFFFF);
-        guiGraphics.fill(leftPos, topPos + imageHeight - 2, leftPos + imageWidth, topPos + imageHeight, 0xFFFFFFFF);
-        guiGraphics.fill(leftPos, topPos, leftPos + 2, topPos + imageHeight, 0xFFFFFFFF);
-        guiGraphics.fill(leftPos + imageWidth - 2, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFFFFFFFF);
+        // 🔧 如果材質檔案不存在，可以使用備用方案
+        // guiGraphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
     }
-
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         // 標題
@@ -279,12 +276,12 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
         for (Direction dir : Direction.values()) {
             String dirName = dir.name().toLowerCase();
             Component label = Component.translatable("direction.koniava." + dirName);
-            guiGraphics.drawString(font, label, 8, 24 + dir.ordinal() * 22, 0xFFFFFF, false);
+            guiGraphics.drawString(font, label, 8, 35 + dir.ordinal() * 22, 0xFFFFFF, false);
         }
 
         // 列標題
-        guiGraphics.drawString(font, Component.translatable("gui.koniava.io_type"), 60, 14, 0xFFFFFF, false);
-        guiGraphics.drawString(font, Component.translatable("gui.koniava.priority"), 120, 14, 0xFFFFFF, false);
+        guiGraphics.drawString(font, Component.translatable("gui.koniava.io_type"), 75, 14, 0xFFFFFF, false);
+        guiGraphics.drawString(font, Component.translatable("gui.koniava.priority"), 140, 14, 0xFFFFFF, false);
 
         // 🆕 添加輸入提示
         guiGraphics.drawString(font, Component.literal("(1+)"), 185, 14, 0xAAAAAA, false);
