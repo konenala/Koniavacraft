@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -135,10 +136,9 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         BlockState newState = state;
 
         for (Direction direction : Direction.values()) {
-            BlockPos neighborPos = pos.relative(direction);
-            boolean shouldConnect = canConnectTo(level, neighborPos, direction);
+            // ✅ 修復：應該從當前位置 pos 朝 direction 方向檢查，不是從 neighborPos
+            boolean shouldConnect = canConnectTo(level, pos, direction);
 
-            // 根據你的 ArcaneConduitBlock 屬性名稱調整
             BooleanProperty property = switch (direction) {
                 case NORTH -> ArcaneConduitBlock.NORTH;
                 case SOUTH -> ArcaneConduitBlock.SOUTH;
@@ -154,9 +154,42 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         return newState;
     }
 
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state,
+                            @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+
+        if (!level.isClientSide) {
+            // 1. 放置時立即更新自己的連接
+            BlockState newState = updateConnections(level, pos, state);
+            if (newState != state) {
+                level.setBlock(pos, newState, 3);
+            }
+
+            // 2. ✅ 關鍵修復：通知所有鄰居導管重新檢查連接
+            for (Direction dir : Direction.values()) {
+                BlockPos neighborPos = pos.relative(dir);
+                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+                // 如果鄰居是導管，強制更新它的連接狀態
+                if (neighborBE instanceof ArcaneConduitBlockEntity) {
+                    BlockState neighborState = level.getBlockState(neighborPos);
+                    if (neighborState.getBlock() instanceof ArcaneConduitBlock) {
+                        BlockState updatedNeighbor = updateConnections(level, neighborPos, neighborState);
+                        if (updatedNeighbor != neighborState) {
+                            level.setBlock(neighborPos, updatedNeighbor, 3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
     private boolean canConnectTo(Level level, BlockPos pos, Direction direction) {
         // 🔧 檢查自己的IO配置
-        BlockEntity thisBE = level.getBlockEntity(pos); // ← 就是當前位置
+        BlockEntity thisBE = level.getBlockEntity(pos);
         if (thisBE instanceof ArcaneConduitBlockEntity thisConduit) {
             IOHandlerUtils.IOType myConfig = thisConduit.getIOConfig(direction);
             if (myConfig == IOHandlerUtils.IOType.DISABLED) {
@@ -165,18 +198,23 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         }
 
         // 🔧 檢查目標位置
-        BlockPos targetPos = pos.relative(direction); // ← 目標位置
+        BlockPos targetPos = pos.relative(direction);
 
-        // 如果目標是導管，還要檢查對方的配置
+        // ✅ 修復：如果目標是導管，檢查對方配置後還要檢查是否有魔力能力
         if (level.getBlockEntity(targetPos) instanceof ArcaneConduitBlockEntity targetConduit) {
             Direction targetSide = direction.getOpposite();
             IOHandlerUtils.IOType targetConfig = targetConduit.getIOConfig(targetSide);
 
-            // 如果對方也禁用了對應面，不連接
-            return targetConfig != IOHandlerUtils.IOType.DISABLED;// 雙方都允許，可以連接
+            // 如果對方禁用了對應面，不連接
+            if (targetConfig == IOHandlerUtils.IOType.DISABLED) {
+                return false;
+            }
+
+            // ✅ 雙方都允許，且目標是導管，所以可以連接
+            return true;
         }
 
-        // 檢查是否有魔力能力
+        // 🔧 如果目標不是導管，檢查是否有魔力能力
         IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, targetPos, direction);
         return handler != null;
     }

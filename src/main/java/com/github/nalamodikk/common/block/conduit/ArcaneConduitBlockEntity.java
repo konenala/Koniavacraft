@@ -292,24 +292,15 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
     private boolean shouldBlockTransfer(Direction targetDir, long currentTick) {
         // 1. 本tick已經傳輸過這個方向
-        if (busyDirections.contains(targetDir)) {
-            return true;
-        }
+        if (busyDirections.contains(targetDir)) return true;
 
         // 2. 不要立即傳回給剛給我魔力的方向
         if (lastReceiveDirection != null &&
                 targetDir == lastReceiveDirection &&
-                currentTick - lastTransferTick <= 1) {
-            return true;
-        }
+                currentTick - lastTransferTick <= 1) return true;
 
         // 3. 避免連續傳輸到同一方向（減少振盪）
-        if (lastTransferDirection == targetDir &&
-                currentTick - lastTransferTick == 0) {
-            return true;
-        }
-
-        return false;
+        return lastTransferDirection == targetDir && currentTick - lastTransferTick == 0;
     }
 
     private void executeSmartTransfer(Direction targetDir, long currentTick) {
@@ -563,7 +554,13 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         sharedNetworkNodes.remove(worldPosition);
         lastScanTime.remove(worldPosition);
         networkDirty = true;
+
+        // ✅ 新增：更新 BlockState
+        if (level != null && !level.isClientSide) {
+            updateBlockStateConnections();
+        }
     }
+
 
     // === 優先級管理 ===
 
@@ -615,6 +612,16 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                         level.setBlock(worldPosition, newState, 3);
                     }
                 }
+            }
+        }
+    }
+    // 在 setIOConfig 方法中的最後添加
+    private void updateBlockStateConnections() {
+        BlockState currentState = level.getBlockState(worldPosition);
+        if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
+            BlockState newState = conduitBlock.updateConnections(level, worldPosition, currentState);
+            if (newState != currentState) {
+                level.setBlock(worldPosition, newState, 3);
             }
         }
     }
@@ -938,4 +945,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         sharedNetworkNodes.remove(worldPosition);
         lastScanTime.remove(worldPosition);
     }
+
+
 }
