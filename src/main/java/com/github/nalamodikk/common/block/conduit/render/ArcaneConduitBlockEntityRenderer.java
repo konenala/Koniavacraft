@@ -3,10 +3,13 @@ package com.github.nalamodikk.common.block.conduit.render;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock;
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
+import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -14,6 +17,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -41,6 +46,48 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
     public ArcaneConduitBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
+    // 1. 🎨 更豐富的顏色方案
+    private float[] getIOTypeColor(IOHandlerUtils.IOType ioType, boolean isActive) {
+        float brightness = isActive ? 1.0f : 0.6f; // 活躍狀態更亮
+
+        return switch (ioType) {
+            case INPUT -> new float[]{0.2f * brightness, 0.8f * brightness, 1.0f * brightness};   // 藍色
+            case OUTPUT -> new float[]{1.0f * brightness, 0.3f * brightness, 0.2f * brightness};  // 紅色
+            case BOTH -> new float[]{0.2f * brightness, 1.0f * brightness, 0.3f * brightness};    // 綠色
+            default -> new float[]{0.5f * brightness, 0.5f * brightness, 0.5f * brightness};      // 灰色
+        };
+    }
+
+
+    // 5. ⚡ 性能優化版本
+    private void renderOptimizedIOIndicators(ArcaneConduitBlockEntity conduit, float partialTick,
+                                             PoseStack poseStack, MultiBufferSource bufferSource,
+                                             int packedLight, int packedOverlay) {
+
+        // 距離檢查 - 遠距離時不渲染細節
+        double distanceToPlayer = getDistanceToPlayer(conduit);
+        if (distanceToPlayer > 16) return; // 16格外不渲染
+
+        boolean renderHighDetail = distanceToPlayer < 8; // 8格內高品質渲染
+
+        for (Direction direction : Direction.values()) {
+            IOHandlerUtils.IOType ioType = conduit.getIOConfig(direction);
+            if (ioType == IOHandlerUtils.IOType.DISABLED) continue;
+
+            boolean isConnected = isConnected(conduit.getBlockState(), direction);
+            if (!isConnected) continue;
+
+            if (renderHighDetail) {
+                renderDetailedIOIndicator(poseStack, bufferSource, direction, ioType,
+                        partialTick, packedLight, packedOverlay);
+            } else {
+                renderSimpleIOIndicator(poseStack, bufferSource, direction, ioType,
+                        partialTick, packedLight, packedOverlay);
+            }
+        }
+    }
+
+    // === 🎯 使用您現有系統的完整渲染方法 ===
     @Override
     public void render(ArcaneConduitBlockEntity conduit, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -51,13 +98,197 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         poseStack.pushPose();
         poseStack.translate(0.5, 0.5, 0.5);
 
-        // 🔮 渲染核心（保持原有實現）
+        // 🔮 您的核心渲染 (保持不變)
         renderCleanCore(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
-        // 🎯 新增：渲染 Mek 風格的 IO 指示器
+        // 🎯 您的 Mek 風格 IO 指示器 (保持不變)
         renderMekStyleIOIndicators(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
+        // 🚀 新增功能 (可選)
+        if (shouldRenderEnhancements()) {
+            renderManaFlowAnimation(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+            renderPriorityNumbers(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        }
+
         poseStack.popPose();
+    }
+
+    // 2. 🔄 優先級可視化 (數字顯示)
+    private void renderPriorityIndicator(PoseStack poseStack, MultiBufferSource bufferSource,
+                                         Direction direction, int priority,
+                                         int packedLight, int packedOverlay) {
+        if (priority == 0) return; // 不顯示默認優先級
+
+        poseStack.pushPose();
+
+        // 移動到指示器旁邊
+        moveToDirectionEnd(poseStack, direction);
+        poseStack.translate(0, 0.15f, 0); // 稍微上移
+
+        // 渲染優先級數字
+        String priorityText = String.valueOf(priority);
+        float scale = 0.01f;
+
+        poseStack.scale(scale, scale, scale);
+        poseStack.mulPose(Axis.YP.rotationDegrees(180)); // 面向玩家
+
+        // 使用 Minecraft 的字體渲染系統
+        // (這裡需要 Minecraft.getInstance().font)
+
+        poseStack.popPose();
+    }
+
+    // 3. 🌊 魔力流動動畫
+    private void renderManaFlowAnimation(ArcaneConduitBlockEntity conduit, float partialTick,
+                                         PoseStack poseStack, MultiBufferSource bufferSource,
+                                         int packedLight, int packedOverlay) {
+
+        // 獲取傳輸統計
+        var transferStats = conduit.getTransferStats();
+        long gameTime = conduit.getLevel().getGameTime();
+
+        for (Direction dir : Direction.values()) {
+            int transferHistory = conduit.getTransferHistory(dir);
+            if (transferHistory > 0) {
+                // 渲染魔力粒子流動效果
+                renderManaParticles(poseStack, bufferSource, dir, transferHistory,
+                        gameTime, partialTick, packedLight, packedOverlay);
+            }
+        }
+    }
+
+    private void renderEnhancedInputIndicator(PoseStack poseStack, VertexConsumer consumer,
+                                              float[] color, float pulse, int packedLight, int packedOverlay) {
+        // 多層圓環，營造深度感
+        float[] radii = {0.06f, 0.08f, 0.10f};
+        float[] depths = {0.01f, 0.02f, 0.03f};
+        float[] alphas = {0.9f, 0.7f, 0.5f};
+
+        for (int i = 0; i < radii.length; i++) {
+            float[] layerColor = {color[0], color[1], color[2], alphas[i] * pulse};
+            renderCircularInset(poseStack, consumer, radii[i] * pulse, depths[i],
+                    layerColor, packedLight, packedOverlay);
+        }
+    }
+
+
+
+    /**
+     * 渲染優先級數字 - 添加到 ArcaneConduitBlockEntityRenderer 中
+     */
+    private void renderPriorityNumbers(ArcaneConduitBlockEntity conduit, float partialTick,
+                                       PoseStack poseStack, MultiBufferSource bufferSource,
+                                       int packedLight, int packedOverlay) {
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+
+        // 只有在特定條件下才顯示數字
+        boolean shouldShowNumbers = shouldShowPriorityNumbers(conduit, mc.player);
+        if (!shouldShowNumbers) return;
+
+        Font font = mc.font;
+
+        for (Direction direction : Direction.values()) {
+            IOHandlerUtils.IOType ioType = conduit.getIOConfig(direction);
+            if (ioType == IOHandlerUtils.IOType.DISABLED) continue;
+
+            boolean isConnected = isConnected(conduit.getBlockState(), direction);
+            if (!isConnected) continue;
+
+            int priority = conduit.getPriority(direction);
+            if (priority == 0) continue; // 不顯示默認優先級
+
+            poseStack.pushPose();
+
+            // 移動到方向末端
+            moveToDirectionEnd(poseStack, direction);
+
+            // 稍微偏移避免與IO指示器重疊
+            switch (direction) {
+                case UP, DOWN -> poseStack.translate(0.2f, 0, 0);
+                default -> poseStack.translate(0, 0.2f, 0);
+            }
+
+            // 面向玩家
+            poseStack.mulPose(mc.getEntityRenderDispatcher().cameraOrientation());
+            poseStack.mulPose(Axis.YP.rotationDegrees(180));
+
+            // 縮放
+            float scale = 0.015f;
+            poseStack.scale(-scale, -scale, scale);
+
+            // 準備文字
+            String text = formatPriorityNumber(priority);
+            int color = getPriorityTextColor(priority);
+
+            // 渲染背景
+            int textWidth = font.width(text);
+            int bgColor = 0x80000000; // 半透明黑色背景
+
+            // 渲染文字
+            font.drawInBatch(text, -textWidth / 2f, -4, color, false,
+                    poseStack.last().pose(), bufferSource,
+                    Font.DisplayMode.NORMAL, bgColor, packedLight);
+
+            poseStack.popPose();
+        }
+    }
+
+    /**
+     * 決定是否顯示優先級數字
+     */
+    private boolean shouldShowPriorityNumbers(ArcaneConduitBlockEntity conduit, Player player) {
+        // 1. 距離檢查
+        double distance = player.distanceToSqr(conduit.getBlockPos().getCenter());
+        if (distance > 64) return false; // 8格外不顯示
+
+        // 2. 手持科技魔杖時顯示
+        ItemStack mainHand = player.getMainHandItem();
+        if (mainHand.getItem() instanceof BasicTechWandItem) {
+            return true;
+        }
+
+        // 3. 潛行時顯示
+        if (player.isCrouching()) {
+            return true;
+        }
+
+        // 4. 特殊模式下顯示 (可通過配置開關)
+        return false;
+    }
+
+    /**
+     * 格式化優先級數字顯示
+     */
+    private String formatPriorityNumber(int priority) {
+        if (priority == 0) return "";
+
+        // 大數值使用簡化顯示
+        if (Math.abs(priority) >= 1_000_000) {
+            return String.format("%.1fM", priority / 1_000_000.0);
+        } else if (Math.abs(priority) >= 1_000) {
+            return String.format("%.1fK", priority / 1_000.0);
+        } else {
+            return String.valueOf(priority);
+        }
+    }
+
+    /**
+     * 根據優先級數值選擇顏色
+     */
+    private int getPriorityTextColor(int priority) {
+        if (priority > 1000) {
+            return 0xFF55FF55; // 亮綠色 - 超高優先級
+        } else if (priority > 100) {
+            return 0xFF55FFFF; // 青色 - 高優先級
+        } else if (priority > 0) {
+            return 0xFFFFFFFF; // 白色 - 正常優先級
+        } else if (priority > -100) {
+            return 0xFFFFFF55; // 黃色 - 低優先級
+        } else {
+            return 0xFFFF5555; // 紅色 - 很低優先級
+        }
     }
 
     /**
@@ -260,28 +491,164 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
     }
 
     /**
+     * 計算到玩家的距離
+     */
+    private double getDistanceToPlayer(ArcaneConduitBlockEntity conduit) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return Double.MAX_VALUE;
+
+        return mc.player.distanceToSqr(conduit.getBlockPos().getCenter());
+    }
+
+    /**
+     * 是否應該渲染增強效果
+     */
+    private boolean shouldRenderEnhancements() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return false;
+
+        // 可以根據配置、距離、性能模式等決定
+        return true; // 簡單實現，總是渲染
+    }
+
+    /**
+     * 渲染詳細的IO指示器（近距離）
+     */
+    private void renderDetailedIOIndicator(PoseStack poseStack, MultiBufferSource bufferSource,
+                                           Direction direction, IOHandlerUtils.IOType ioType,
+                                           float partialTick, int packedLight, int packedOverlay) {
+
+        poseStack.pushPose();
+        moveToDirectionEnd(poseStack, direction);
+
+        // 獲取活躍狀態（可以根據實際傳輸狀態決定）
+        boolean isActive = true; // 簡化實現
+        float[] color = getIOTypeColor(ioType, isActive);
+
+        long gameTime = System.currentTimeMillis();
+        float pulse = 0.8f + 0.2f * Mth.sin(gameTime * 0.003f + direction.ordinal());
+
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
+
+        // 渲染增強版的形狀（更多細節）
+        switch (ioType) {
+            case INPUT -> renderEnhancedInputIndicator(poseStack, consumer, color, pulse, packedLight, packedOverlay);
+            case OUTPUT -> renderOutputIndicator(poseStack, consumer, color, pulse, packedLight, packedOverlay);
+            case BOTH -> renderBothIndicator(poseStack, consumer, color, pulse, packedLight, packedOverlay);
+        }
+
+        poseStack.popPose();
+    }
+
+    /**
+     * 渲染簡單的IO指示器（遠距離）
+     */
+    private void renderSimpleIOIndicator(PoseStack poseStack, MultiBufferSource bufferSource,
+                                         Direction direction, IOHandlerUtils.IOType ioType,
+                                         float partialTick, int packedLight, int packedOverlay) {
+
+        poseStack.pushPose();
+        moveToDirectionEnd(poseStack, direction);
+
+        float[] color = getIOTypeColor(ioType);
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
+
+        // 簡化的渲染，只用顏色區分
+        renderSimpleColoredSquare(poseStack, consumer, color, 0.05f, packedLight, packedOverlay);
+
+        poseStack.popPose();
+    }
+
+    /**
+     * 渲染簡單的彩色方塊（遠距離用）
+     */
+    private void renderSimpleColoredSquare(PoseStack poseStack, VertexConsumer consumer,
+                                           float[] color, float size, int packedLight, int packedOverlay) {
+        Matrix4f matrix = poseStack.last().pose();
+
+        // 簡單的方形面
+        addVertex(consumer, matrix, -size, -size, 0.01f, color[0], color[1], color[2], 0.7f, 0, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, size, -size, 0.01f, color[0], color[1], color[2], 0.7f, 1, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, size, size, 0.01f, color[0], color[1], color[2], 0.7f, 1, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, -size, size, 0.01f, color[0], color[1], color[2], 0.7f, 0, 1, packedLight, packedOverlay);
+    }
+
+    /**
+     * 渲染魔力粒子效果
+     */
+    private void renderManaParticles(PoseStack poseStack, MultiBufferSource bufferSource,
+                                     Direction direction, int transferHistory,
+                                     long gameTime, float partialTick,
+                                     int packedLight, int packedOverlay) {
+
+        // 根據傳輸歷史決定粒子數量和強度
+        int particleCount = Math.min(transferHistory / 100, 5); // 最多5個粒子
+        if (particleCount <= 0) return;
+
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
+
+        for (int i = 0; i < particleCount; i++) {
+            poseStack.pushPose();
+
+            // 沿著方向移動粒子
+            float progress = ((gameTime + i * 200) % 1000) / 1000.0f; // 1秒循環
+            moveAlongDirection(poseStack, direction, progress);
+
+            // 渲染小的發光粒子
+            float size = 0.02f + 0.01f * Mth.sin(gameTime * 0.01f + i);
+            float[] particleColor = {0.5f, 0.8f, 1.0f}; // 魔力藍色
+
+            renderSimpleColoredSquare(poseStack, consumer, particleColor, size, packedLight, packedOverlay);
+
+            poseStack.popPose();
+        }
+    }
+
+    /**
+     * 沿著指定方向移動
+     */
+    private void moveAlongDirection(PoseStack poseStack, Direction direction, float progress) {
+        // 從中心到邊緣
+        float distance = progress * 0.5f;
+
+        switch (direction) {
+            case NORTH -> poseStack.translate(0, 0, -distance);
+            case SOUTH -> poseStack.translate(0, 0, distance);
+            case WEST -> poseStack.translate(-distance, 0, 0);
+            case EAST -> poseStack.translate(distance, 0, 0);
+            case UP -> poseStack.translate(0, distance, 0);
+            case DOWN -> poseStack.translate(0, -distance, 0);
+        }
+    }
+
+
+    /**
      * ⚪ 菱形指示器渲染
      */
+
     private void renderDiamondIndicator(PoseStack poseStack, VertexConsumer consumer,
                                         float size, float[] color,
                                         int packedLight, int packedOverlay) {
         Matrix4f matrix = poseStack.last().pose();
 
         // 菱形的四個頂點
-        float[] vertices = {
-                0,  size, 0,    // 上
-                size, 0, 0,     // 右
-                0, -size, 0,    // 下
-                -size, 0, 0      // 左
+        float[][] vertices = {
+                {0, size, 0.01f},    // 上
+                {size, 0, 0.01f},    // 右
+                {0, -size, 0.01f},   // 下
+                {-size, 0, 0.01f}    // 左
         };
 
-        // 渲染菱形面
-        addVertex(consumer, matrix, vertices[0], vertices[1], 0.01f, color[0], color[1], color[2], 0.8f, 0.5f, 0, packedLight, packedOverlay);
-        addVertex(consumer, matrix, vertices[3], vertices[4], 0.01f, color[0], color[1], color[2], 0.8f, 1, 0.5f, packedLight, packedOverlay);
-        addVertex(consumer, matrix, vertices[6], vertices[7], 0.01f, color[0], color[1], color[2], 0.8f, 0.5f, 1, packedLight, packedOverlay);
-        addVertex(consumer, matrix, vertices[9], vertices[10], 0.01f, color[0], color[1], color[2], 0.8f, 0, 0.5f, packedLight, packedOverlay);
+        // 渲染菱形面（修復版）
+        addVertex(consumer, matrix, vertices[0][0], vertices[0][1], vertices[0][2],
+                color[0], color[1], color[2], 0.8f, 0.5f, 0, packedLight, packedOverlay);
+        addVertex(consumer, matrix, vertices[1][0], vertices[1][1], vertices[1][2],
+                color[0], color[1], color[2], 0.8f, 1, 0.5f, packedLight, packedOverlay);
+        addVertex(consumer, matrix, vertices[2][0], vertices[2][1], vertices[2][2],
+                color[0], color[1], color[2], 0.8f, 0.5f, 1, packedLight, packedOverlay);
+        addVertex(consumer, matrix, vertices[3][0], vertices[3][1], vertices[3][2],
+                color[0], color[1], color[2], 0.8f, 0, 0.5f, packedLight, packedOverlay);
     }
-
     /**
      * 🎯 移動到指定方向的末端
      */
