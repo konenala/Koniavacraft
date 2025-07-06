@@ -192,9 +192,10 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
     }
 
     // 🔧 更新所有控件
+
     private void updateAllControls() {
         for (Direction dir : Direction.values()) {
-            // 更新 IO 按鈕
+            // 更新 IO 按鈕 - 使用您現有的 TooltipButton
             TooltipButton ioButton = ioButtons.get(dir);
             if (ioButton != null) {
                 IOHandlerUtils.IOType currentType = menu.getIOType(dir);
@@ -202,16 +203,30 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
                 ioButton.setTexture(getIOTypeTexture(currentType), 20, 20);
             }
 
-            // 🆕 更新優先級輸入框
+            // 🔧 修復：更新優先級輸入框時檢查焦點狀態
             EditBox priorityInput = priorityInputs.get(dir);
-            if (priorityInput != null && !priorityInput.isFocused()) {
-                // 只有在不是焦點時才更新（避免打字時被覆蓋）
+            if (priorityInput != null) {
+                int currentPriority = menu.getPriority(dir);
                 String currentValue = priorityInput.getValue();
-                String newValue = String.valueOf(menu.getPriority(dir));
-                if (!currentValue.equals(newValue)) {
+                String newValue = String.valueOf(currentPriority);
+
+                // 🔧 關鍵修復：只有在輸入框沒有焦點且值不同時才更新
+                if (!priorityInput.isFocused() && !currentValue.equals(newValue)) {
                     priorityInput.setValue(newValue);
                 }
             }
+        }
+    }
+
+    // 🔧 新增：檢查輸入框是否有選中的文字
+    private boolean hasSelection(EditBox editBox) {
+        // 使用反射或其他方法檢查是否有文字被選中
+        // 這樣可以避免在用戶選中文字準備覆蓋時被系統更新干擾
+        try {
+            // 檢查光標位置是否不同，表示有選中文字
+            return editBox.getCursorPosition() != editBox.getHighlightPos();
+        } catch (Exception e) {
+            return false;
         }
     }
 

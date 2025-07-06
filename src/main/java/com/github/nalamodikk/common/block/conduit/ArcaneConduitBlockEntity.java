@@ -8,6 +8,7 @@ import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +47,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private static final int TARGET_CACHE_DURATION = 2000; // 2秒 (延長緩存)
     private static final int IDLE_THRESHOLD = 600; // 30秒無活動視為閒置
     private static final int MAX_TRANSFERS_PER_TICK = 2; // 限制每tick傳輸次數
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     // === 性能優化：分批處理 ===
     private static int globalTickOffset = 0; // 錯開不同導管的處理時間
@@ -82,6 +85,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private static final Map<BlockPos, Long> lastScanTime = new ConcurrentHashMap<>();
     private static final Map<BlockPos, Map<Direction, ManaEndpoint>> sharedCache = new ConcurrentHashMap<>();
     private static final Map<BlockPos, Set<BlockPos>> sharedNetworkNodes = new ConcurrentHashMap<>();
+    private static final Map<BlockPos, Map<Direction, CacheableEndpoint>> persistentCache = new ConcurrentHashMap<>();
+    private static final Map<BlockPos, Long> cacheVersions = new ConcurrentHashMap<>();
+    private static final long CACHE_VERSION_CHECK_INTERVAL = 30000; // 30秒驗證一次
 
     // === 內部數據結構 ===
 
@@ -394,6 +400,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
         lastTargetScan = System.currentTimeMillis();
     }
+
     private int calculateMachinePriority(IUnifiedManaHandler handler) {
         int maxMana = handler.getMaxManaStored();
         int currentMana = handler.getManaStored();
@@ -428,7 +435,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         Direction[] dirs = endpoints.keySet().toArray(new Direction[0]);
         // 移除永遠為false的檢查，因為上面已經檢查了 isEmpty()
 
-        Direction dirToCheck = dirs[(int)(tickCounter % dirs.length)];
+        Direction dirToCheck = dirs[(int) (tickCounter % dirs.length)];
         ManaEndpoint endpoint = endpoints.get(dirToCheck);
 
         if (endpoint != null) {
@@ -507,19 +514,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
-    /**
-     * 清理全域緩存，避免記憶體累積
-     */
-    private static void cleanupGlobalCache() {
-        long now = System.currentTimeMillis();
 
-        // 移除超過1分鐘沒更新的緩存
-        lastScanTime.entrySet().removeIf(entry -> now - entry.getValue() > 60000);
-
-        // 清理對應的緩存數據
-        sharedCache.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
-        sharedNetworkNodes.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
-    }
 
     // === 接收魔力（帶方向追蹤）===
 
@@ -547,20 +542,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             }
         });
     }
-
-    public void onNeighborChanged() {
-        // 清除緩存
-        sharedCache.remove(worldPosition);
-        sharedNetworkNodes.remove(worldPosition);
-        lastScanTime.remove(worldPosition);
-        networkDirty = true;
-
-        // ✅ 新增：更新 BlockState
-        if (level != null && !level.isClientSide) {
-            updateBlockStateConnections();
-        }
-    }
-
 
     // === 優先級管理 ===
 
@@ -604,10 +585,21 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             networkDirty = true;
             setChanged();
 
-            // 清除該方向的緩存
+            // 🔧 修復1：清除該方向的所有緩存（不只是 endpoints）
             endpoints.remove(direction);
+            cachedTargets.remove(direction);  // ← 新增這行
 
-            // 觸發連接狀態更新
+            // 🔧 修復2：通知相鄰導管重新掃描（防止網路卡死）
+            if (level != null && !level.isClientSide) {
+                // 通知鄰居導管清理對我的緩存
+                BlockPos neighborPos = worldPosition.relative(direction);
+                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+                if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
+                    neighborConduit.markNetworkDirty();  // ← 新增這段
+                }
+            }
+
+            // 觸發連接狀態更新（原有代碼保持不變）
             if (level != null && !level.isClientSide) {
                 BlockState currentState = level.getBlockState(worldPosition);
                 if (currentState.getBlock() instanceof ArcaneConduitBlock conduitBlock) {
@@ -813,7 +805,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 多容器支援（簡化實現）===
 
     @Override
-    public int getManaContainerCount() { return 1; }
+    public int getManaContainerCount() {
+        return 1;
+    }
 
     @Override
     public int getManaStored(int container) {
@@ -939,16 +933,354 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         tickCounter = tag.getLong("TickCounter");
         networkDirty = true;
     }
+    private static class CacheableEndpoint {
+        final BlockPos position;
+        final boolean isConduit;
+        final int priority;
+        final IOHandlerUtils.IOType expectedIOType;
+        final long cacheTime;
 
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
+        // 運行時引用（不保存）
+        transient IUnifiedManaHandler handler;
+        transient boolean validated;
 
-        // 清理緩存
+        CacheableEndpoint(BlockPos pos, IUnifiedManaHandler handler, boolean isConduit, int priority) {
+            this.position = pos;
+            this.handler = handler;
+            this.isConduit = isConduit;
+            this.priority = priority;
+            this.cacheTime = System.currentTimeMillis();
+            this.expectedIOType = null; // 可以擴展保存IO類型
+            this.validated = true;
+        }
+
+        boolean isExpired(long maxAge) {
+            return System.currentTimeMillis() - cacheTime > maxAge;
+        }
+    }
+
+    // 🔧 改進的緩存系統
+
+    // === 智能緩存保存策略 ===
+
+
+    // 🆕 嘗試緩存恢復
+    private void attemptCacheRestoration() {
+        Map<Direction, CacheableEndpoint> cached = persistentCache.get(worldPosition);
+
+        if (cached != null && !cached.isEmpty()) {
+            // 🔧 逐步驗證緩存數據
+            Map<Direction, ManaEndpoint> restoredEndpoints = new HashMap<>();
+            boolean allValid = true;
+
+            for (var entry : cached.entrySet()) {
+                Direction dir = entry.getKey();
+                CacheableEndpoint cachedEndpoint = entry.getValue();
+
+                // 驗證緩存是否仍然有效
+                if (validateAndRestoreEndpoint(dir, cachedEndpoint)) {
+                    IUnifiedManaHandler handler = cachedEndpoint.handler;
+                    restoredEndpoints.put(dir, new ManaEndpoint(handler, cachedEndpoint.isConduit, cachedEndpoint.priority));
+                } else {
+                    allValid = false;
+                    break; // 有任何無效就放棄整個緩存
+                }
+            }
+
+            if (allValid) {
+                // 🎉 成功恢復緩存！
+                endpoints.clear();
+                endpoints.putAll(restoredEndpoints);
+                networkDirty = false; // 不需要重新掃描
+
+                System.out.println("Successfully restored conduit cache for " + worldPosition);
+                return;
+            }
+        }
+
+        // 恢復失敗，標記需要重新掃描
+        System.out.println("Cache restoration failed for " + worldPosition + ", will rescan");
+        networkDirty = true;
+        cachedTargets.clear();
+    }
+
+    // 🔧 驗證並恢復單個端點
+    private boolean validateAndRestoreEndpoint(Direction dir, CacheableEndpoint cached) {
+        if (cached.isExpired(300000)) { // 5分鐘過期
+            return false;
+        }
+
+        // 檢查方塊是否仍然存在
+        BlockPos neighborPos = worldPosition.relative(dir);
+        if (!neighborPos.equals(cached.position)) {
+            return false; // 位置不匹配
+        }
+
+        // 重新獲取能力引用
+        IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
+        if (handler == null) {
+            return false; // 能力不存在
+        }
+
+        // 驗證類型是否一致
+        BlockEntity neighbor = level.getBlockEntity(neighborPos);
+        boolean isConduit = neighbor instanceof ArcaneConduitBlockEntity;
+        if (isConduit != cached.isConduit) {
+            return false; // 類型改變
+        }
+
+        // 🎉 驗證通過，更新引用
+        cached.handler = handler;
+        cached.validated = true;
+        return true;
+    }
+
+    // === 改進的網路掃描（緩存友好）===
+
+    private void scanNetwork() {
+        if (!(level instanceof ServerLevel)) return;
+
+        long now = System.currentTimeMillis();
+
+        // 🔧 如果緩存有效且已驗證，跳過掃描
+        if (!networkDirty && !endpoints.isEmpty()) {
+            Long lastVersion = cacheVersions.get(worldPosition);
+            if (lastVersion != null && (now - lastVersion) < CACHE_VERSION_CHECK_INTERVAL) {
+                return; // 緩存仍然有效
+            }
+        }
+
+        // 進行掃描
+        performNetworkScanWithCaching(now);
+    }
+
+    private void performNetworkScanWithCaching(long now) {
+        networkNodes.clear();
+        endpoints.clear();
+        Map<Direction, CacheableEndpoint> newCache = new HashMap<>();
+
+        for (Direction dir : Direction.values()) {
+            IOHandlerUtils.IOType ioType = ioConfig.get(dir);
+            if (ioType == IOHandlerUtils.IOType.DISABLED) continue;
+
+            BlockPos neighborPos = worldPosition.relative(dir);
+            IUnifiedManaHandler handler = CapabilityUtils.getNeighborMana(level, neighborPos, dir);
+            if (handler == null) continue;
+
+            boolean isConduit = level.getBlockEntity(neighborPos) instanceof ArcaneConduitBlockEntity;
+            int priority = routePriority.get(dir);
+
+            if (handler.canReceive() && handler.getManaStored() < handler.getMaxManaStored() / 2) {
+                priority += 10;
+            }
+
+            // 創建運行時端點
+            endpoints.put(dir, new ManaEndpoint(handler, isConduit, priority));
+
+            // 🚀 創建可緩存的端點
+            newCache.put(dir, new CacheableEndpoint(neighborPos, handler, isConduit, priority));
+
+            if (!isConduit) {
+                networkNodes.add(neighborPos);
+            }
+        }
+
+        // 🔧 更新持久化緩存
+        persistentCache.put(worldPosition, newCache);
+        cacheVersions.put(worldPosition, now);
+        networkDirty = false;
+
+        System.out.println("Updated conduit cache for " + worldPosition + " with " + newCache.size() + " endpoints");
+    }
+
+    // === 緩存失效管理 ===
+
+    public void onNeighborChanged() {
+        LOGGER.debug("Neighbor changed for conduit at {}", worldPosition);
+
+        // 🔧 完全清除所有緩存（包括靜態緩存）
         sharedCache.remove(worldPosition);
         sharedNetworkNodes.remove(worldPosition);
         lastScanTime.remove(worldPosition);
+
+        // 🔧 新增：清除所有本地緩存
+        endpoints.clear();
+        cachedTargets.clear();
+        networkNodes.clear();
+
+        // 🔧 新增：重置網路狀態
+        networkDirty = true;
+        lastActivity = System.currentTimeMillis();
+        lastReceiveDirection = null;
+        lastTransferDirection = null;
+        busyDirections.clear();
+
+        // ✅ 更新 BlockState
+        if (level != null && !level.isClientSide) {
+            updateBlockStateConnections();
+
+            // 🔧 新增：通知所有相鄰的導管也重新掃描
+            for (Direction dir : Direction.values()) {
+                BlockPos neighborPos = worldPosition.relative(dir);
+                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+                if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
+                    neighborConduit.markNetworkDirty();
+                }
+            }
+        }
+
+        LOGGER.debug("Network state reset for conduit at {}", worldPosition);
     }
 
 
+    @Override
+    public void setRemoved() {
+        LOGGER.debug("Removing conduit at {}", worldPosition);
+
+        // 🔧 清除所有與此導管相關的靜態緩存
+        sharedCache.remove(worldPosition);
+        sharedNetworkNodes.remove(worldPosition);
+        lastScanTime.remove(worldPosition);
+
+        // 🔧 新增：掃描並清除其他導管緩存中對此位置的引用
+        if (level != null) {
+            for (Direction dir : Direction.values()) {
+                BlockPos neighborPos = worldPosition.relative(dir);
+                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+                if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
+                    // 清除鄰居對我的緩存引用
+                    neighborConduit.endpoints.remove(dir.getOpposite());
+                    neighborConduit.cachedTargets.remove(dir.getOpposite());
+                    neighborConduit.markNetworkDirty();
+
+                    LOGGER.debug("Cleared references to {} from neighbor at {}", worldPosition, neighborPos);
+                }
+            }
+
+            // 🔧 新增：清理所有可能包含此位置的全域緩存
+            cleanupGlobalCacheReferences();
+        }
+
+        super.setRemoved();
+    }
+
+
+
+    // 🔧 新增：幫助方法，讓其他導管可以標記網路需要重新掃描
+    public void markNetworkDirty() {
+        networkDirty = true;
+        cachedTargets.clear();
+        setChanged();
+    }
+
+    // === 緩存維護 ===
+
+    // 🔧 新增：清理全域緩存中的交叉引用
+    private void cleanupGlobalCacheReferences() {
+        // 移除所有緩存中對此位置的引用
+        sharedNetworkNodes.values().forEach(nodeSet -> nodeSet.remove(worldPosition));
+
+        // 清理可能過期的緩存條目
+        Iterator<Map.Entry<BlockPos, Map<Direction, ManaEndpoint>>> cacheIterator = sharedCache.entrySet().iterator();
+        while (cacheIterator.hasNext()) {
+            Map.Entry<BlockPos, Map<Direction, ManaEndpoint>> entry = cacheIterator.next();
+            if (level != null && level.getBlockEntity(entry.getKey()) == null) {
+                cacheIterator.remove();
+                lastScanTime.remove(entry.getKey());
+            }
+        }
+    }
+
+    private static void performCacheMaintenance() {
+        long now = System.currentTimeMillis();
+
+        // 🔧 清理過期的緩存（超過10分鐘）
+        persistentCache.entrySet().removeIf(entry -> {
+            Map<Direction, CacheableEndpoint> endpoints = entry.getValue();
+            return endpoints.values().stream().allMatch(endpoint -> endpoint.isExpired(600000));
+        });
+
+        // 清理對應的版本信息
+        cacheVersions.entrySet().removeIf(entry -> now - entry.getValue() > 600000);
+    }
+
+    // 🆕 靜態方法：手動清理所有緩存（當世界確實重新載入時）
+    public static void clearAllCachesOnWorldReload() {
+        persistentCache.clear();
+        cacheVersions.clear();
+        conduitTickOffsets.clear();
+        System.out.println("Cleared all conduit caches due to confirmed world reload");
+    }
+
+    // 🆕 靜態方法：獲取緩存統計
+    public static void printCacheStats() {
+        System.out.println("Conduit Cache Stats:");
+        System.out.println("- Cached conduits: " + persistentCache.size());
+        System.out.println("- Total endpoints: " + persistentCache.values().stream().mapToInt(Map::size).sum());
+        System.out.println("- Memory usage: ~" + (persistentCache.size() * 200) + " bytes");
+    }
+
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+
+        if (level != null) {
+            // 🚀 嘗試恢復緩存而不是清除
+            attemptCacheRestoration();
+        }
+
+//        if (level instanceof ServerLevel serverLevel) {
+//            initializeCapabilityCaches(serverLevel);
+//        }
+
+        // 標記需要驗證（而不是完全重新掃描）
+        networkDirty = true;
+        lastActivity = System.currentTimeMillis();
+    }
+
+
+    /**
+     * 🔧 關鍵：當玩家離開世界時清理所有靜態緩存
+     * 這個方法應該在世界卸載時被調用
+     */
+    public static void clearAllStaticCaches() {
+        LOGGER.info("Clearing all static caches for ArcaneConduit system");
+
+        sharedCache.clear();
+        sharedNetworkNodes.clear();
+        lastScanTime.clear();
+
+        LOGGER.info("Static cache cleanup completed");
+    }
+
+    /**
+     * 🔧 定期維護：清理過期的緩存條目
+     */
+    public static void performMaintenanceCleanup() {
+        long now = System.currentTimeMillis();
+
+        // 清理超過5分鐘沒更新的緩存
+        lastScanTime.entrySet().removeIf(entry -> now - entry.getValue() > 300000);
+
+        // 清理對應的緩存數據
+        sharedCache.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
+        sharedNetworkNodes.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
+
+        LOGGER.debug("Maintenance cleanup completed. Active cache entries: {}", lastScanTime.size());
+    }
+
+    // 🔧 修改現有的 cleanupGlobalCache 方法
+    private static void cleanupGlobalCache() {
+        long now = System.currentTimeMillis();
+
+        // 🔧 縮短清理間隔：從1分鐘改為30秒
+        lastScanTime.entrySet().removeIf(entry -> now - entry.getValue() > 30000);
+
+        // 清理對應的緩存數據
+        sharedCache.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
+        sharedNetworkNodes.entrySet().removeIf(entry -> !lastScanTime.containsKey(entry.getKey()));
+    }
 }
