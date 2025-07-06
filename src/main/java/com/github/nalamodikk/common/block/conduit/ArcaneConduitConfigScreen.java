@@ -292,7 +292,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
         guiGraphics.drawString(font, Component.translatable("gui.koniava.priority"), 140, 14, 0xFFFFFF, false);
 
         // 🆕 添加輸入提示
-        guiGraphics.drawString(font, Component.literal("(1+)"), 185, 14, 0xAAAAAA, false);
+        guiGraphics.drawString(font, Component.literal("(±2B)"), 185, 14, 0xAAAAAA, false);
     }
 
     @Override

@@ -158,7 +158,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         for (Direction dir : Direction.values()) {
             ioConfig.put(dir, IOHandlerUtils.IOType.BOTH);
             transferStats.put(dir, new TransferStats());
-            routePriority.put(dir, 50);
+            routePriority.put(dir, 0);  // ✅ 從50改為0
         }
 
         // === 1000+導管優化：錯開處理時間 ===
