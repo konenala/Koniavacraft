@@ -66,13 +66,13 @@
   "tooltip.koniava.machine.grid_entry": "• [%s] %s",
   "tooltip.koniava.machine.inserted": "Component item inserted into the modular machine.",
 
-  "tooltip.koniava.priority_config": "Right-click to increase priority, Shift+Right-click to decrease priority",
+  "tooltip.koniava.priority_config": "Right-click to increase priority, Shift+Right-click to decrease priority\nNegative priorities supported",
   "tooltip.koniava.open_extra_equipment": "Open Extra Equipment",
   "tooltip.koniava.close": "Close configuration window",
 
-  "tooltip.koniava.priority_input": "Enter priority (1-100)\nHigher values = higher priority",
+  "tooltip.koniava.priority_input": "Enter priority (-2147483648 ~ 2147483647)\nHigher values = higher priority, negative values supported",
   "tooltip.koniava.io_type": "IO Type: %s",
-  "tooltip.koniava.reset_priorities": "Reset all direction priorities to default (50)",
+  "tooltip.koniava.reset_priorities": "Reset all direction priorities to default (0)",
 
   "jei.koniava.fuel.mana": "Mana Output: %s",
   "jei.koniava.fuel.energy": "Energy Output: %s",
@@ -100,6 +100,11 @@
   "message.koniava.nara.stabilized": "▸ Conscious alignment stabilized.",
   "message.koniava.nara.welcome": "▸ Welcome, Operator.",
 
+  "message.koniava.conduit.hold_shift_to_place": "Hold Shift + Right Click to place blocks",
+  "message.koniava.conduit.gentle_hint": "Want to place %s? Click conduit edge or hold Shift!",
+  "message.koniava.conduit.what_would_you_like": "Holding %s - What would you like to do?",
+  "message.koniava.conduit.choice_info": "§7• Right click again: View conduit details",
+  "message.koniava.conduit.choice_place": "§a• Click edge or Shift+Right click: Place block",
 
   "message.koniava.conduit.info_header": "=== Conduit Detailed Information ===",
   "message.koniava.conduit.detailed_config_with_shape": "Direction %s: %s (Priority: %d) %s",

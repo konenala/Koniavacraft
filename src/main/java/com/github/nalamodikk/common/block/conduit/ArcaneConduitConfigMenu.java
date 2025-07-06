@@ -100,10 +100,10 @@ public class ArcaneConduitConfigMenu extends AbstractContainerMenu {
     public int getPriority(Direction dir) {
         if (data != null) {
             int priority = data.get(dir.ordinal() * 2 + 1);
-            // 🔧 確保優先級在有效範圍內
-            return Math.max(1, Math.min(100, priority));
+            // ✅ 移除硬限制，允許完整的Integer範圍
+            return priority;
         }
-        return 50; // 默認優先級
+        return 0; // ✅ 默認優先級改為0
     }
 
     // 獲取導管實例

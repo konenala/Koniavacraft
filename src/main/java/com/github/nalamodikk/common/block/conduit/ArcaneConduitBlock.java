@@ -6,14 +6,16 @@ import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -28,15 +30,25 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ArcaneConduitBlock extends BaseEntityBlock {
-
+    private static final Map<UUID, List<Long>> playerBuildingHistory = new ConcurrentHashMap<>();
+    private static final long HISTORY_CLEANUP_INTERVAL = 300000; // 5分鐘
+    private static long lastCleanup = 0;
+    private static final double EDGE_CLICK_THRESHOLD = 0.35;
+    private static final double CENTER_CLICK_THRESHOLD = 0.25;
+    private static final int BUILDING_MODE_THRESHOLD = 3;
+    private static final long BUILDING_MODE_TIME_WINDOW = 10000; // 1
     // 6個方向的連接屬性
+
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
     public static final BooleanProperty SOUTH = BooleanProperty.create("south");
     public static final BooleanProperty WEST = BooleanProperty.create("west");
@@ -64,6 +76,37 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
                 .setValue(UP, false)
                 .setValue(DOWN, false));
     }
+
+
+    private static void cleanupOldHistory() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastCleanup > HISTORY_CLEANUP_INTERVAL) {
+            lastCleanup = currentTime;
+
+            playerBuildingHistory.entrySet().removeIf(entry -> {
+                List<Long> history = entry.getValue();
+                history.removeIf(time -> currentTime - time > 30000); // 移除30秒前的記錄
+                return history.isEmpty();
+            });
+        }
+    }
+
+    // ✅ 在 recordBlockPlacement 中調用清理
+    public static void recordBlockPlacement(Player player) {
+        cleanupOldHistory(); // 定期清理
+
+        UUID playerId = player.getUUID();
+        long currentTime = System.currentTimeMillis();
+
+        playerBuildingHistory.computeIfAbsent(playerId, k -> new ArrayList<>()).add(currentTime);
+
+        // 保持列表大小合理
+        List<Long> history = playerBuildingHistory.get(playerId);
+        if (history.size() > 10) {
+            history.remove(0);
+        }
+    }
+
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
@@ -156,36 +199,45 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
 
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state,
-                            @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
 
-        if (!level.isClientSide) {
-            // 1. 放置時立即更新自己的連接
-            BlockState newState = updateConnections(level, pos, state);
-            if (newState != state) {
-                level.setBlock(pos, newState, 3);
-            }
+        if (!level.isClientSide && !movedByPiston) {
+            // 延遲1tick更新連接，讓放置音效先播放
+            level.scheduleTick(pos, this, 1);
+        }
+    }
 
-            // 2. ✅ 關鍵修復：通知所有鄰居導管重新檢查連接
-            for (Direction dir : Direction.values()) {
-                BlockPos neighborPos = pos.relative(dir);
-                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+    @Override
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        // 執行延遲的連接更新
+        updateConnectionsAfterPlacement(level, pos, state);
+    }
 
-                // 如果鄰居是導管，強制更新它的連接狀態
-                if (neighborBE instanceof ArcaneConduitBlockEntity) {
-                    BlockState neighborState = level.getBlockState(neighborPos);
-                    if (neighborState.getBlock() instanceof ArcaneConduitBlock) {
-                        BlockState updatedNeighbor = updateConnections(level, neighborPos, neighborState);
-                        if (updatedNeighbor != neighborState) {
-                            level.setBlock(neighborPos, updatedNeighbor, 3);
-                        }
+
+    private void updateConnectionsAfterPlacement(Level level, BlockPos pos, BlockState state) {
+        // 1. 更新自己的連接
+        BlockState newState = updateConnections(level, pos, state);
+        if (newState != state) {
+            level.setBlock(pos, newState, 3);
+        }
+
+        // 2. 通知所有鄰居導管重新檢查連接
+        for (Direction dir : Direction.values()) {
+            BlockPos neighborPos = pos.relative(dir);
+            BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+            if (neighborBE instanceof ArcaneConduitBlockEntity) {
+                BlockState neighborState = level.getBlockState(neighborPos);
+                if (neighborState.getBlock() instanceof ArcaneConduitBlock) {
+                    BlockState updatedNeighbor = updateConnections(level, neighborPos, neighborState);
+                    if (updatedNeighbor != neighborState) {
+                        level.setBlock(neighborPos, updatedNeighbor, 3);
                     }
                 }
             }
         }
     }
-
 
     private boolean canConnectTo(Level level, BlockPos pos, Direction direction) {
         // 🔧 檢查自己的IO配置
@@ -283,6 +335,7 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
      * 加入到你現有的 ArcaneConduitBlock 類中
      */
 
+
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                             Player player, BlockHitResult hit) {
@@ -290,25 +343,163 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit) {
-            ItemStack heldItem = player.getMainHandItem();
-            boolean isCrouching = player.isCrouching();
-
-            // 🎯 情況1：手持科技魔杖 - 使用魔杖的邏輯（最高優先級）
-            if (heldItem.getItem() instanceof com.github.nalamodikk.common.item.tool.BasicTechWandItem) {
-                return conduit.onUse(state, level, pos, player, hit);
-            }
-
-            // 🆕 情況2：手持方塊物品 = 放置方塊（無論是否蹲下）
-            if (!heldItem.isEmpty() && isBlockItem(heldItem)) {
-                return tryPlaceBlock(player, heldItem);
-            }
-
-            // 🎯 情況3：空手或手持其他物品
-            return handleEmptyHandInteraction(conduit, player, heldItem);
+        if (!(level.getBlockEntity(pos) instanceof ArcaneConduitBlockEntity conduit)) {
+            return InteractionResult.PASS;
         }
 
-        return InteractionResult.PASS;
+        ItemStack heldItem = player.getMainHandItem();
+        boolean isCrouching = player.isCrouching();
+
+        // 🎯 科技魔杖 - 永遠優先
+        if (heldItem.getItem() instanceof com.github.nalamodikk.common.item.tool.BasicTechWandItem) {
+            return conduit.onUse(state, level, pos, player, hit);
+        }
+
+        // 🎯 智能方塊處理
+        if (!heldItem.isEmpty() && isBlockItem(heldItem)) {
+            return handleSmartBlockPlacement(level, pos, player, hit, heldItem, isCrouching);
+        }
+
+        // 🎯 空手/其他物品
+        if (isCrouching) {
+            return openConfigurationGUI(conduit, player);
+        } else {
+            showQuickInfo(conduit, player);
+            return InteractionResult.SUCCESS;
+        }
+    }
+
+
+
+    private InteractionResult handleSmartBlockPlacement(Level level, BlockPos pos, Player player,
+                                                        BlockHitResult hit, ItemStack blockItem,
+                                                        boolean isCrouching) {
+        // 🎯 智能檢測 1：點擊位置
+        Vec3 hitLocation = hit.getLocation();
+        Vec3 blockCenter = Vec3.atCenterOf(pos);
+        double distanceFromCenter = hitLocation.subtract(blockCenter).length();
+
+        boolean isEdgeClick = distanceFromCenter > EDGE_CLICK_THRESHOLD;
+        boolean isCenterClick = distanceFromCenter < CENTER_CLICK_THRESHOLD;
+
+        // 🎯 智能檢測 2：玩家建築模式
+        boolean isInBuildingMode = isPlayerInBuildingMode(player);
+
+        // 🎯 智能檢測 3：周圍環境
+        boolean hasValidPlacement = canPlaceBlockNearby(level, pos, hit.getDirection(), blockItem);
+
+        // 🎯 決策邏輯
+        if (isCrouching || isEdgeClick || isInBuildingMode) {
+            recordBlockPlacement(player); // ✅ 記錄放置行為
+            return InteractionResult.PASS;
+        } else if (isCenterClick && !hasValidPlacement) {
+            showConduitInfoWithHint(level.getBlockEntity(pos), player, blockItem);
+            return InteractionResult.SUCCESS;
+        } else {
+            showFriendlyChoice(level.getBlockEntity(pos), player, blockItem);
+            return InteractionResult.SUCCESS;
+        }
+    }
+
+    // 🎯 建築模式檢測
+    private boolean isPlayerInBuildingMode(Player player) {
+        cleanupOldHistory(); // 確保數據新鮮
+
+        UUID playerId = player.getUUID();
+        long currentTime = System.currentTimeMillis();
+
+        List<Long> recentPlacements = playerBuildingHistory.get(playerId);
+        if (recentPlacements == null || recentPlacements.isEmpty()) {
+            return false;
+        }
+
+        // 移除過期記錄
+        recentPlacements.removeIf(time -> currentTime - time > BUILDING_MODE_TIME_WINDOW);
+
+        return recentPlacements.size() >= BUILDING_MODE_THRESHOLD;
+    }
+
+
+    // 🎯 檢查是否可以在附近放置
+    private boolean canPlaceBlockNearby(Level level, BlockPos conduitPos, Direction hitSide, ItemStack blockItem) {
+        if (blockItem.isEmpty() || !(blockItem.getItem() instanceof net.minecraft.world.item.BlockItem blockItemObj)) {
+            return false;
+        }
+
+        BlockPos targetPos = conduitPos.relative(hitSide);
+
+        // 檢查世界邊界
+        if (!level.isInWorldBounds(targetPos)) {
+            return false;
+        }
+
+        BlockState targetState = level.getBlockState(targetPos);
+
+        // 檢查是否可以替換
+        if (!targetState.canBeReplaced()) {
+            return false;
+        }
+
+        // 檢查方塊是否可以放置在這個位置
+        Block blockToPlace = blockItemObj.getBlock();
+        BlockState stateToPlace = blockToPlace.defaultBlockState();
+
+        return stateToPlace.canSurvive(level, targetPos);
+    }
+
+    // 🎯 顯示導管信息和溫和提示
+    private void showConduitInfoWithHint(BlockEntity be, Player player, ItemStack blockItem) {
+        if (!(be instanceof ArcaneConduitBlockEntity conduit)) return;
+
+        try {
+            // 顯示導管信息
+            showQuickInfo(conduit, player);
+
+            // ✅ 安全的名稱獲取
+            String blockName = blockItem.isEmpty() ? "Unknown Block" :
+                    blockItem.getHoverName().getString();
+
+            if (blockName != null && !blockName.isEmpty()) {
+                player.displayClientMessage(
+                        Component.translatable("message.koniava.conduit.gentle_hint", blockName)
+                                .withStyle(ChatFormatting.GRAY),
+                        true
+                );
+            }
+        } catch (Exception e) {
+            // 容錯處理
+            player.displayClientMessage(
+                    Component.translatable("message.koniava.conduit.error_occurred")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+        }
+    }
+
+    // 🎯 友好的選擇提示
+    private void showFriendlyChoice(BlockEntity be, Player player, ItemStack blockItem) {
+        if (!(be instanceof ArcaneConduitBlockEntity conduit)) return;
+
+        String blockName = blockItem.getHoverName().getString();
+
+        // 簡潔的雙選項
+        player.displayClientMessage(
+                Component.translatable("message.koniava.conduit.what_would_you_like", blockName)
+                        .withStyle(ChatFormatting.YELLOW),
+                false
+        );
+
+        player.displayClientMessage(
+                Component.translatable("message.koniava.conduit.choice_info")
+                        .withStyle(ChatFormatting.GRAY),
+                false
+        );
+
+        player.displayClientMessage(
+                Component.translatable("message.koniava.conduit.choice_place")
+                        .withStyle(ChatFormatting.GREEN),
+                false
+        );
     }
 
 

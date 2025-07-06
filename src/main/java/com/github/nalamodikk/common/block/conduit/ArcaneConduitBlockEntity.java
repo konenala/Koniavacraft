@@ -565,7 +565,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 優先級管理 ===
 
     public void setPriority(Direction direction, int priority) {
-        int clampedPriority = Math.max(1, Math.min(100, priority));
+        // ✅ 移除100的硬限制，改為Integer安全範圍
+        int clampedPriority = Math.max(Integer.MIN_VALUE + 1, Math.min(Integer.MAX_VALUE - 1, priority));
+
         if (routePriority.get(direction) != clampedPriority) {
             routePriority.put(direction, clampedPriority);
             networkDirty = true;
@@ -573,13 +575,15 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 
+
     public int getPriority(Direction direction) {
-        return routePriority.getOrDefault(direction, 50);
+        return routePriority.getOrDefault(direction, 0); // ✅ 默認值改為0，更符合AE2習慣
     }
+
 
     public void resetAllPriorities() {
         for (Direction dir : Direction.values()) {
-            routePriority.put(dir, 50);
+            routePriority.put(dir, 0); // ✅ 重置為0而不是50
         }
         networkDirty = true;
         setChanged();

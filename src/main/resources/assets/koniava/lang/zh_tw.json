@@ -65,12 +65,12 @@
   "tooltip.koniava.machine.inserted": "已放入拼裝模組物品。",
   "tooltip.koniava.machine.cleared": "已清空拼裝模組物品。",
 
-  "tooltip.koniava.priority_config": "右鍵提高優先級，Shift+右鍵降低優先級",
+  "tooltip.koniava.priority_config": "右鍵提高優先級，Shift+右鍵降低優先級\n支援負數優先級",
 
   "tooltip.koniava.open_extra_equipment": "打開額外裝備欄位",
-  "tooltip.koniava.priority_input": "輸入優先級 (1-100)\n數值越高優先級越高",
+  "tooltip.koniava.priority_input": "輸入優先級 (-2147483648 ~ 2147483647)\n數值越高優先級越高，支援負數",
   "tooltip.koniava.io_type": "IO類型: %s",
-  "tooltip.koniava.reset_priorities": "重置所有方向的優先級到預設值 (50)",
+  "tooltip.koniava.reset_priorities": "重置所有方向的優先級到預設值 (0)",
 
   "tooltip.koniava.close": "關閉配置視窗",
 
@@ -105,7 +105,11 @@
   "message.koniava.priority_changed": "%s 方向的優先級已設為 %d",
   "message.koniava.tech_wand.mode.priority_config": "優先級配置模式",
   "message.koniava.conduit.detailed_config_with_shape": "方向 %s：%s (優先級: %d) %s",
-
+  "message.koniava.conduit.hold_shift_to_place": "按住 Shift + 右鍵 來放置方塊",
+  "message.koniava.conduit.gentle_hint": "想放置 %s 嗎？點擊導管邊緣或按住Shift！",
+  "message.koniava.conduit.what_would_you_like": "手持 %s - 你想要做什麼？",
+  "message.koniava.conduit.choice_info": "§7• 普通右鍵再次點擊：查看導管詳細信息",
+  "message.koniava.conduit.choice_place": "§a• 點擊邊緣或Shift+右鍵：放置方塊",
   "message.koniava.not_conduit_block": "§c此方塊不是導管！",
   "message.koniava.conduit.detailed_config": "§e%s: §f%s §7(優先級: %d)",
   "message.koniava.conduit.technical_info": "§6技術信息§r\n位置: %s\n魔力: %s\n網路: %s",

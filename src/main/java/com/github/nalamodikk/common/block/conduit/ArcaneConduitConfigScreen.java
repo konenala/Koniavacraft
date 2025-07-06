@@ -62,22 +62,22 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
                 () -> List.of(Component.translatable("tooltip.koniava.io_type", menu.getIOType(dir).name().toLowerCase()))
         );
 
-        // 🆕 優先級文字輸入框
+        // 🆕 優先級文字輸入框 (修改後)
         EditBox priorityInput = new EditBox(
                 this.font,
-                x + 120, y, 60, 18,
+                x + 120, y, 80, 18,  // ✅ 寬度從60增加到80，容納更長的數字
                 Component.translatable("gui.koniava.priority_input")
         );
 
-        // 🔧 設定輸入框屬性
+        // 🔧 設定輸入框屬性 (修改後)
         priorityInput.setValue(String.valueOf(menu.getPriority(dir)));
-        priorityInput.setMaxLength(6); // 最多6位數 (1-999999)
-        priorityInput.setFilter(this::isValidPriorityInput); // 只允許數字
+        priorityInput.setMaxLength(12); // ✅ 從6位增加到12位，支援完整Integer範圍 (-2147483648)
+        priorityInput.setFilter(this::isValidPriorityInput); // ✅ 使用修改後的驗證方法
         priorityInput.setResponder(value -> onPriorityChanged(dir, value)); // 當數值改變時
 
-        // 🆕 添加工具提示
+        // 🆕 添加工具提示 (修改後)
         priorityInput.setTooltip(Tooltip.create(
-                Component.translatable("tooltip.koniava.priority_input")
+                Component.translatable("tooltip.koniava.priority_input") // ✅ 工具提示文字已在語言檔案中更新
         ));
 
         ioButtons.put(dir, ioButton);
@@ -93,9 +93,15 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
             return true; // 允許空白（用於編輯過程中）
         }
 
+        // ✅ 允許負數，支援完整Integer範圍
+        if (input.equals("-")) {
+            return true; // 允許輸入負號
+        }
+
         try {
-            int value = Integer.parseInt(input);
-            return value >= 1 && value <= 999999; // 允許1到999999，基本上無上限
+            long value = Long.parseLong(input);
+            // ✅ 檢查是否在Integer範圍內
+            return value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE;
         } catch (NumberFormatException e) {
             return false; // 不是數字
         }
@@ -108,8 +114,10 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
         }
 
         try {
-            int priority = Integer.parseInt(value);
-            if (priority >= 1 && priority <= 999999) {
+            long longPriority = Long.parseLong(value);
+            // ✅ 確保在Integer範圍內
+            if (longPriority >= Integer.MIN_VALUE && longPriority <= Integer.MAX_VALUE) {
+                int priority = (int) longPriority;
                 // 🔧 發送封包更新優先級
                 PacketDistributor.sendToServer(new PriorityUpdatePacket(menu.getConduitPos(), dir, priority));
             }
@@ -147,7 +155,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
                     for (Direction dir : Direction.values()) {
                         EditBox input = priorityInputs.get(dir);
                         if (input != null && !input.isFocused()) {
-                            input.setValue("50"); // 重置為預設值
+                            input.setValue("0"); // ✅ 重置為0
                         }
                     }
                 },
