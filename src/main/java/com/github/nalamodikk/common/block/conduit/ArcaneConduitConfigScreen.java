@@ -219,16 +219,7 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
     }
 
     // 🔧 新增：檢查輸入框是否有選中的文字
-    private boolean hasSelection(EditBox editBox) {
-        // 使用反射或其他方法檢查是否有文字被選中
-        // 這樣可以避免在用戶選中文字準備覆蓋時被系統更新干擾
-        try {
-            // 檢查光標位置是否不同，表示有選中文字
-            return editBox.getCursorPosition() != editBox.getHighlightPos();
-        } catch (Exception e) {
-            return false;
-        }
-    }
+
 
     // 🔧 處理鍵盤輸入
     @Override
