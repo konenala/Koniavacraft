@@ -133,34 +133,29 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     }
 
     private void updateCurrentConfigFromMenu() {
-        // ❌ 不要直接從BlockEntity讀取
-    /*
-    if (blockEntity instanceof IConfigurableBlock) {
-        for (Direction direction : Direction.values()) {
-            IOHandlerUtils.IOType realTimeConfig = ((IConfigurableBlock) blockEntity).getIOConfig(direction);
-            currentIOMap.put(direction, realTimeConfig);
-        }
-    }
-    */
+        try {
+            boolean hasChanges = false;
 
-        // ✅ 改為從Menu的ContainerData獲取同步數據
-        boolean hasChanges = false;
+            for (Direction direction : Direction.values()) {
+                IOHandlerUtils.IOType syncedType = menu.getIOType(direction);
+                IOHandlerUtils.IOType currentDisplayed = currentIOMap.get(direction);
 
-        for (Direction direction : Direction.values()) {
-            IOHandlerUtils.IOType syncedType = menu.getIOType(direction);
-            IOHandlerUtils.IOType currentDisplayed = currentIOMap.get(direction);
-
-            if (syncedType != currentDisplayed) {
-                currentIOMap.put(direction, syncedType);
-                hasChanges = true;
+                if (syncedType != currentDisplayed) {
+                    currentIOMap.put(direction, syncedType);
+                    hasChanges = true;
+                }
             }
-        }
 
-        // 只在有變化時才更新按鈕顯示
-        if (hasChanges) {
-            updateAllButtonTooltipsAndTextures();
+            // 只在有變化時才更新按鈕顯示
+            if (hasChanges) {
+                updateAllButtonTooltipsAndTextures();
+            }
+        } catch (Exception e) {
+            // 使用 KoniavacraftMod.LOGGER 記錄錯誤
+            KoniavacraftMod.LOGGER.error("Error updating config from menu: {}", e.getMessage(), e);
         }
     }
+
 
 
     private void updateAllButtonTooltipsAndTextures() {
@@ -181,37 +176,46 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
     // 🔧 修復按鈕點擊邏輯
     private void onDirectionConfigButtonClick(Direction direction) {
-        if (blockEntity instanceof IConfigurableBlock configurableBlock) {
-            // 🔧 使用Menu的同步數據而不是直接查詢BlockEntity
-            IOHandlerUtils.IOType current = menu.getIOType(direction);
-            IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
+        try {
+            if (blockEntity instanceof IConfigurableBlock configurableBlock) {
+                // 🔧 使用Menu的同步數據而不是直接查詢BlockEntity
+                IOHandlerUtils.IOType current = menu.getIOType(direction);
+                IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
 
-            // 立即更新本地顯示
-            currentIOMap.put(direction, next);
+                // 立即更新本地顯示
+                currentIOMap.put(direction, next);
 
-            // 更新按鈕顯示
-            TooltipButton button = directionButtonMap.get(direction);
-            if (button != null) {
-                updateButtonTexture(button, direction);
-                updateButtonTooltip(button, direction);
-            }
+                // 更新按鈕顯示
+                TooltipButton button = directionButtonMap.get(direction);
+                if (button != null) {
+                    updateButtonTexture(button, direction);
+                    updateButtonTooltip(button, direction);
+                }
 
-            // 發送封包給伺服器
-            PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(
-                    blockEntity.getBlockPos(), direction, next));
+                // 發送封包給伺服器
+                PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(
+                        blockEntity.getBlockPos(), direction, next));
 
-            // 顯示通知
-            if (Minecraft.getInstance().player != null) {
-                Minecraft.getInstance().player.displayClientMessage(Component.translatable(
-                        "message.koniava.config_button_clicked",
-                        direction.getName(),
-                        Component.translatable("mode.koniava." + next.name().toLowerCase())
-                ), true);
-            }
+                // 顯示通知
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.displayClientMessage(Component.translatable(
+                            "message.koniava.config_button_clicked",
+                            direction.getName(),
+                            Component.translatable("mode.koniava." + next.name().toLowerCase())
+                    ), true);
+                }
+
+                // 🔧 調試日誌（放在 if 區塊內）
+                if (KoniavacraftMod.IS_DEV) {
+                    KoniavacraftMod.LOGGER.debug("Direction config button clicked: {} -> {}",
+                            direction, next);
+                }
+            } // ← 這裡關閉 if (blockEntity instanceof IConfigurableBlock) 區塊
+        } catch (Exception e) {
+            KoniavacraftMod.LOGGER.error("Error handling direction config button click: {}",
+                    e.getMessage(), e);
         }
     }
-
-
     @Override
     public void onClose() {
         super.onClose();

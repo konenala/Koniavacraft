@@ -1,10 +1,12 @@
 package com.github.nalamodikk.common.block.conduit;
 
 
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -34,9 +36,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArcaneConduitBlock extends BaseEntityBlock {
@@ -47,6 +53,8 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
     private static final double CENTER_CLICK_THRESHOLD = 0.25;
     private static final int BUILDING_MODE_THRESHOLD = 3;
     private static final long BUILDING_MODE_TIME_WINDOW = 10000; // 1
+    private static final Logger LOGGER = LogUtils.getLogger(); // ← 新增這行
+
     // 6個方向的連接屬性
 
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -83,12 +91,35 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         if (currentTime - lastCleanup > HISTORY_CLEANUP_INTERVAL) {
             lastCleanup = currentTime;
 
+            int originalSize = playerBuildingHistory.size();
+
             playerBuildingHistory.entrySet().removeIf(entry -> {
                 List<Long> history = entry.getValue();
                 history.removeIf(time -> currentTime - time > 30000); // 移除30秒前的記錄
                 return history.isEmpty();
             });
+
+            int cleanedSize = originalSize - playerBuildingHistory.size();
+            if (cleanedSize > 0) {
+                LOGGER.debug("Cleaned {} old player building history entries", cleanedSize);
+            }
         }
+    }
+
+    public static void clearStaticCaches() {
+        LOGGER.info("Clearing ArcaneConduitBlock static caches");
+
+        // 清理玩家建築歷史緩存
+        if (playerBuildingHistory != null) {
+            int cacheSize = playerBuildingHistory.size();
+            playerBuildingHistory.clear();
+            LOGGER.debug("Cleared {} player building history entries", cacheSize);
+        }
+
+        // 重置清理時間戳
+        lastCleanup = 0;
+
+        LOGGER.info("ArcaneConduitBlock static cache cleanup completed");
     }
 
     // ✅ 在 recordBlockPlacement 中調用清理
@@ -105,7 +136,13 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         if (history.size() > 10) {
             history.remove(0);
         }
+
+        if (KoniavacraftMod.IS_DEV) {
+            LOGGER.debug("Recorded block placement for player {}, history size: {}",
+                    player.getGameProfile().getName(), history.size());
+        }
     }
+
 
 
     @Override
