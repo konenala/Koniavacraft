@@ -56,7 +56,8 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         int baseX = (this.width - this.imageWidth) / 2 + this.imageWidth / 2 - BUTTON_WIDTH / 2;
         int baseY = (this.height - this.imageHeight) / 2 + this.imageHeight / 2 - BUTTON_HEIGHT / 2;
 
-        updateCurrentConfigFromBlockEntity();
+        // ✅ 修復：初始化時直接從BlockEntity獲取最新數據
+        updateCurrentConfigFromMenu();
         initDirectionButtons(baseX, baseY);
         updateAllButtonTooltipsAndTextures();
     }
@@ -123,13 +124,44 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         }
     }
 
-    private void updateCurrentConfigFromBlockEntity() {
-        if (blockEntity instanceof IConfigurableBlock configurableBlock) {
-            for (Direction direction : Direction.values()) {
-                currentIOMap.put(direction, configurableBlock.getIOConfig(direction)); // ✅ 直接用 IOType
-            }
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+
+        // 🔧 關鍵修復：從Menu獲取最新數據，而不是直接從BlockEntity
+        updateCurrentConfigFromMenu();
+    }
+
+    private void updateCurrentConfigFromMenu() {
+        // ❌ 不要直接從BlockEntity讀取
+    /*
+    if (blockEntity instanceof IConfigurableBlock) {
+        for (Direction direction : Direction.values()) {
+            IOHandlerUtils.IOType realTimeConfig = ((IConfigurableBlock) blockEntity).getIOConfig(direction);
+            currentIOMap.put(direction, realTimeConfig);
         }
     }
+    */
+
+        // ✅ 改為從Menu的ContainerData獲取同步數據
+        boolean hasChanges = false;
+
+        for (Direction direction : Direction.values()) {
+            IOHandlerUtils.IOType syncedType = menu.getIOType(direction);
+            IOHandlerUtils.IOType currentDisplayed = currentIOMap.get(direction);
+
+            if (syncedType != currentDisplayed) {
+                currentIOMap.put(direction, syncedType);
+                hasChanges = true;
+            }
+        }
+
+        // 只在有變化時才更新按鈕顯示
+        if (hasChanges) {
+            updateAllButtonTooltipsAndTextures();
+        }
+    }
+
 
     private void updateAllButtonTooltipsAndTextures() {
         for (Direction direction : Direction.values()) {
@@ -141,35 +173,41 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         }
     }
 
+
     private TooltipButton getButtonByDirection(Direction direction) {
         return directionButtonMap.get(direction);
     }
 
 
+    // 🔧 修復按鈕點擊邏輯
     private void onDirectionConfigButtonClick(Direction direction) {
         if (blockEntity instanceof IConfigurableBlock configurableBlock) {
-            // 取得目前 IOType 並循環切換
-            IOHandlerUtils.IOType current = configurableBlock.getIOConfig(direction);
+            // 🔧 使用Menu的同步數據而不是直接查詢BlockEntity
+            IOHandlerUtils.IOType current = menu.getIOType(direction);
             IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
 
-            // 更新本地狀態（按鈕顯示用）
-            currentIOMap.put(direction, next); // ← 你可能要把 currentConfig 改成 currentIOMap<Direction, IOType>
+            // 立即更新本地顯示
+            currentIOMap.put(direction, next);
 
-            // 實際設定
-            configurableBlock.setIOConfig(direction, next);
-            blockEntity.setChanged();
+            // 更新按鈕顯示
+            TooltipButton button = directionButtonMap.get(direction);
+            if (button != null) {
+                updateButtonTexture(button, direction);
+                updateButtonTooltip(button, direction);
+            }
 
-            // 發送封包給伺服器同步 IO 設定
-            PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, next));
+            // 發送封包給伺服器
+            PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(
+                    blockEntity.getBlockPos(), direction, next));
 
-            // 顯示玩家通知（用本地化）
-            Minecraft.getInstance().player.displayClientMessage(Component.translatable(
-                    "message.koniava.config_button_clicked",
-                    direction.getName(),
-                    Component.translatable("mode.koniava." + next.name().toLowerCase()) // 本地化鍵如 mode.koniava.output
-            ), true);
-
-            updateAllButtonTooltipsAndTextures();
+            // 顯示通知
+            if (Minecraft.getInstance().player != null) {
+                Minecraft.getInstance().player.displayClientMessage(Component.translatable(
+                        "message.koniava.config_button_clicked",
+                        direction.getName(),
+                        Component.translatable("mode.koniava." + next.name().toLowerCase())
+                ), true);
+            }
         }
     }
 

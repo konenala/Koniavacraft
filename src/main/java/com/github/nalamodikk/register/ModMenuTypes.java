@@ -23,17 +23,13 @@ import com.github.nalamodikk.common.screen.block.shared.FallbackUpgradeMenu;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;
 import com.github.nalamodikk.common.screen.player.ExtraEquipmentMenu;
-import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.IEventBus;
@@ -54,11 +50,7 @@ public class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<UniversalConfigMenu>> UNIVERSAL_CONFIG_MENU =
             registerMenuType("universal_config", (id, inv, buf) ->
-                    new UniversalConfigMenu(id, inv,
-                            inv.player.level().getBlockEntity(buf.readBlockPos()),
-                            buf.readWithCodec(NbtOps.INSTANCE, ItemStack.CODEC, NbtAccounter.unlimitedHeap()),
-                            buf.readWithCodec(NbtOps.INSTANCE, CodecsLibrary.DIRECTION_IOTYPE_MAP, NbtAccounter.unlimitedHeap()) // ✅ 這裡才是正確的讀取
-                    )
+                    new UniversalConfigMenu(id, inv, buf) // ✅ 使用客戶端構造函數
             );
 
     public static final DeferredHolder<MenuType<?>, MenuType<ManaGeneratorMenu>> MANA_GENERATOR_MENU =

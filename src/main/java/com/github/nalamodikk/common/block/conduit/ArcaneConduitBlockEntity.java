@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.conduit;
 
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
@@ -1166,7 +1167,18 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         super.setRemoved();
     }
 
+    /**
+     * 🚨 強制清理指定位置的所有緩存
+     */
+    public static void forceCleanupPosition(BlockPos pos) {
+        sharedCache.remove(pos);
+        sharedNetworkNodes.remove(pos);
+        lastScanTime.remove(pos);
 
+        if (KoniavacraftMod.IS_DEV) {
+            KoniavacraftMod.LOGGER.debug("[ArcaneConduit] Force cleaned caches for position: {}", pos);
+        }
+    }
 
     // 🔧 新增：幫助方法，讓其他導管可以標記網路需要重新掃描
     public void markNetworkDirty() {

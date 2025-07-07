@@ -288,6 +288,19 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
     }
 
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof ArcaneConduitBlockEntity conduit) {
+                // 🚨 強制清理該位置的所有緩存
+                ArcaneConduitBlockEntity.forceCleanupPosition(pos);
+
+                level.invalidateCapabilities(pos);
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
 
 
 
