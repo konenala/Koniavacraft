@@ -75,6 +75,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private final Map<Direction, ManaEndpoint> endpoints = new EnumMap<>(Direction.class);
     private long tickCounter = 0;
     private boolean networkDirty = true;
+    private static final Set<BlockPos> currentlyRemoving = new HashSet<>(); // 添加這個靜態字段
 
     // === 性能優化狀態 ===
     private boolean isIdle = false; // 閒置狀態
@@ -216,6 +217,78 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // === 大幅減少清理頻率：1小時一次 ===
         if (tickCounter % 72000 == tickOffset) { // 1小時，且錯開時間
             cleanupStaleData();
+        }
+
+        if (tickCounter % 12000 == tickOffset) { // 每10分鐘
+            performPassiveCleanup();
+        }
+    }
+
+    // 🆕 靜態清理方法 - 用於世界卸載時
+    public static void clearAllStaticCachesGracefully() {
+        try {
+            LOGGER.info("Starting graceful static cache cleanup");
+
+            // 清理靜態緩存
+            int cacheSize = sharedCache.size();
+            sharedCache.clear();
+            sharedNetworkNodes.clear();
+            lastScanTime.clear();
+
+            // 清理其他靜態數據
+            currentlyRemoving.clear();
+            conduitTickOffsets.clear();
+
+            LOGGER.info("Graceful cleanup completed. Cleared {} cache entries", cacheSize);
+
+        } catch (Exception e) {
+            LOGGER.error("Error during graceful cleanup: {}", e.getMessage());
+
+            // 即使出錯也要嘗試清理
+            try {
+                sharedCache.clear();
+                sharedNetworkNodes.clear();
+                lastScanTime.clear();
+            } catch (Exception ignored) {
+                // 忽略清理錯誤
+            }
+        }
+    }
+
+    private void performPassiveCleanup() {
+        try {
+            // 只清理明顯無效的緩存條目
+            Set<Direction> invalidDirections = new HashSet<>();
+
+            for (Map.Entry<Direction, ManaEndpoint> entry : endpoints.entrySet()) {
+                Direction dir = entry.getKey();
+                ManaEndpoint endpoint = entry.getValue();
+
+                BlockPos neighborPos = worldPosition.relative(dir);
+
+                // 🔧 安全檢查：只檢查已載入的區塊
+                if (level.isLoaded(neighborPos)) {
+                    BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+                    // 如果鄰居不再是導管或不存在，標記為無效
+                    if (!(neighborBE instanceof ArcaneConduitBlockEntity)) {
+                        invalidDirections.add(dir);
+                    }
+                }
+            }
+
+            // 移除無效的緩存
+            for (Direction dir : invalidDirections) {
+                endpoints.remove(dir);
+                cachedTargets.remove(dir);
+            }
+
+            if (!invalidDirections.isEmpty()) {
+                LOGGER.debug("Passive cleanup removed {} invalid references", invalidDirections.size());
+            }
+
+        } catch (Exception e) {
+            LOGGER.debug("Error during passive cleanup: {}", e.getMessage());
         }
     }
 
@@ -1139,29 +1212,21 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     public void setRemoved() {
         LOGGER.debug("Removing conduit at {}", worldPosition);
 
-        // 🔧 清除所有與此導管相關的靜態緩存
-        sharedCache.remove(worldPosition);
-        sharedNetworkNodes.remove(worldPosition);
-        lastScanTime.remove(worldPosition);
+        // 🚨 最簡化：只清理自己的緩存，完全不處理鄰居
+        try {
+            // 只清理自己的靜態緩存
+            sharedCache.remove(worldPosition);
+            sharedNetworkNodes.remove(worldPosition);
+            lastScanTime.remove(worldPosition);
 
-        // 🔧 新增：掃描並清除其他導管緩存中對此位置的引用
-        if (level != null) {
-            for (Direction dir : Direction.values()) {
-                BlockPos neighborPos = worldPosition.relative(dir);
-                BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+            // 清理本地緩存
+            endpoints.clear();
+            cachedTargets.clear();
+            networkNodes.clear();
 
-                if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
-                    // 清除鄰居對我的緩存引用
-                    neighborConduit.endpoints.remove(dir.getOpposite());
-                    neighborConduit.cachedTargets.remove(dir.getOpposite());
-                    neighborConduit.markNetworkDirty();
-
-                    LOGGER.debug("Cleared references to {} from neighbor at {}", worldPosition, neighborPos);
-                }
-            }
-
-            // 🔧 新增：清理所有可能包含此位置的全域緩存
-            cleanupGlobalCacheReferences();
+            LOGGER.debug("Conduit removed successfully: {}", worldPosition);
+        } catch (Exception e) {
+            LOGGER.error("Error during simple cleanup: {}", e.getMessage());
         }
 
         super.setRemoved();
@@ -1190,20 +1255,30 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 緩存維護 ===
 
     // 🔧 新增：清理全域緩存中的交叉引用
-    private void cleanupGlobalCacheReferences() {
-        // 移除所有緩存中對此位置的引用
-        sharedNetworkNodes.values().forEach(nodeSet -> nodeSet.remove(worldPosition));
 
-        // 清理可能過期的緩存條目
-        Iterator<Map.Entry<BlockPos, Map<Direction, ManaEndpoint>>> cacheIterator = sharedCache.entrySet().iterator();
-        while (cacheIterator.hasNext()) {
-            Map.Entry<BlockPos, Map<Direction, ManaEndpoint>> entry = cacheIterator.next();
-            if (level != null && level.getBlockEntity(entry.getKey()) == null) {
-                cacheIterator.remove();
-                lastScanTime.remove(entry.getKey());
+    // 🔧 簡化的全域緩存清理方法
+    private void cleanupGlobalCacheReferences() {
+        try {
+            // 移除所有緩存中對此位置的引用
+            sharedNetworkNodes.values().forEach(nodeSet -> nodeSet.remove(worldPosition));
+
+            // 🚨 限制清理範圍：只清理明顯無效的條目
+            if (level != null) {
+                sharedCache.entrySet().removeIf(entry -> {
+                    BlockPos pos = entry.getKey();
+                    // 只清理距離很近且確實無效的條目
+                    if (pos.distSqr(worldPosition) < 100) { // 10格範圍內
+                        BlockEntity be = level.getBlockEntity(pos);
+                        return !(be instanceof ArcaneConduitBlockEntity);
+                    }
+                    return false; // 遠距離的不清理，避免過度處理
+                });
             }
+        } catch (Exception e) {
+            LOGGER.warn("Error during global cache cleanup: {}", e.getMessage());
         }
     }
+
 
     private static void performCacheMaintenance() {
         long now = System.currentTimeMillis();
