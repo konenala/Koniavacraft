@@ -34,6 +34,7 @@ public class ConduitNetworkManager {
     private final Map<Direction, ConduitCacheManager.ManaEndpoint> endpoints = new HashMap<>();
     private boolean networkDirty = true;
     private int tickOffset;
+    private boolean isScanning = false;
 
     // === 建構子 ===
     public ConduitNetworkManager(ArcaneConduitBlockEntity conduit,
@@ -77,10 +78,25 @@ public class ConduitNetworkManager {
     /**
      * 獲取所有有效的傳輸目標
      */
+    /**
+     * 🔧 修復：獲取所有有效的傳輸目標 - 防止遞迴
+     */
     public List<Direction> getValidTargets() {
+        // 🚨 遞迴防護：如果正在掃描，返回空列表
+        if (isScanning) {
+            LOGGER.warn("Prevented infinite recursion in getValidTargets() at {}",
+                    conduit.getBlockPos());
+            return new ArrayList<>();
+        }
+
         // 檢查是否需要重新掃描目標
         if (cacheManager.needsTargetRescan()) {
-            rescanTargets();
+            try {
+                isScanning = true; // 🔒 設置掃描標記
+                rescanTargets();
+            } finally {
+                isScanning = false; // 🔓 確保標記被清除
+            }
         }
 
         List<Direction> validTargets = new ArrayList<>();
@@ -103,6 +119,7 @@ public class ConduitNetworkManager {
 
         return validTargets;
     }
+
 
     /**
      * 獲取指定方向的目標信息
@@ -127,12 +144,12 @@ public class ConduitNetworkManager {
         Direction neighborInputSide = dir.getOpposite();
         IOHandlerUtils.IOType neighborIOType = neighborConduit.getIOConfig(neighborInputSide);
 
-        // 鄰居不能是 DISABLED
+        // 🚨 只做基本檢查，避免複雜邏輯
         if (neighborIOType == IOHandlerUtils.IOType.DISABLED) {
             return false;
         }
 
-        // 檢查鄰居是否有接收空間
+        // ⚡ 直接檢查魔力容量，避免調用其他方法
         return neighborConduit.getManaStored() < neighborConduit.getMaxManaStored();
     }
 
@@ -206,6 +223,15 @@ public class ConduitNetworkManager {
     private void rescanTargets() {
         if (conduit.getLevel() == null) return;
 
+        // 🚨 如果已經在掃描，直接返回
+        if (isScanning) {
+            LOGGER.warn("Prevented recursive rescanTargets() call at {}",
+                    conduit.getBlockPos());
+            return;
+        }
+
+        LOGGER.debug("Starting target rescan for {}", conduit.getBlockPos());
+
         for (Direction dir : Direction.values()) {
             // 檢查我是否能輸出到這個方向
             if (!ioManager.canOutput(dir)) {
@@ -219,19 +245,19 @@ public class ConduitNetworkManager {
                 BlockEntity neighborBE = conduit.getLevel().getBlockEntity(neighborPos);
                 boolean isConduit = neighborBE instanceof ArcaneConduitBlockEntity;
 
-                // 對導管做特殊檢查
+                // 🔧 簡化導管檢查：避免複雜邏輯導致遞迴
                 if (isConduit) {
                     ArcaneConduitBlockEntity neighborConduit = (ArcaneConduitBlockEntity) neighborBE;
                     Direction neighborInputSide = dir.getOpposite();
                     IOHandlerUtils.IOType neighborIOType = neighborConduit.getIOConfig(neighborInputSide);
 
-                    // 簡化檢查：只要鄰居不是完全禁用就考慮
+                    // 🚨 移除任何可能調用到 getValidTargets() 的代碼
                     if (neighborIOType == IOHandlerUtils.IOType.DISABLED) {
                         LOGGER.debug("Skipping conduit at {} - disabled on side {}", neighborPos, neighborInputSide);
                         continue;
                     }
 
-                    // 檢查鄰居是否有接收空間
+                    // ⚡ 直接檢查魔力存儲，避免複雜方法調用
                     if (neighborConduit.getManaStored() >= neighborConduit.getMaxManaStored()) {
                         LOGGER.debug("Skipping conduit at {} - full", neighborPos);
                         continue;
@@ -248,10 +274,8 @@ public class ConduitNetworkManager {
         }
 
         cacheManager.updateLastScanTime();
-        LOGGER.debug("Target rescan completed for {} - found {} targets",
-                conduit.getBlockPos(), getValidTargets().size());
+        LOGGER.debug("Target rescan completed for {}", conduit.getBlockPos());
     }
-
     /**
      * 輕量級端點檢查
      */
