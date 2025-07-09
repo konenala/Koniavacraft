@@ -106,21 +106,10 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         }
     }
 
-    public static void clearStaticCaches() {
-        LOGGER.info("Clearing ArcaneConduitBlock static caches");
 
-        // 清理玩家建築歷史緩存
-        if (playerBuildingHistory != null) {
-            int cacheSize = playerBuildingHistory.size();
-            playerBuildingHistory.clear();
-            LOGGER.debug("Cleared {} player building history entries", cacheSize);
-        }
+// === 修改2：清理方法更新 ===
 
-        // 重置清理時間戳
-        lastCleanup = 0;
 
-        LOGGER.info("ArcaneConduitBlock static cache cleanup completed");
-    }
 
     // ✅ 在 recordBlockPlacement 中調用清理
     public static void recordBlockPlacement(Player player) {
@@ -325,13 +314,16 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
         super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
     }
 
+// === 修改1：更新靜態方法調用 ===
+
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof ArcaneConduitBlockEntity conduit) {
-                // 🚨 強制清理該位置的所有緩存
-                ArcaneConduitBlockEntity.forceCleanupPosition(pos);
+                // 🎯 只清理 Block 層級的緩存
+                // BlockEntity 會在 setRemoved() 中清理自己的緩存
+                clearPlayerBuildingHistory(); // 單獨的方法，只清理玩家建築歷史
 
                 level.invalidateCapabilities(pos);
             }
@@ -341,6 +333,11 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
 
 
 
+    // === 2. 清理玩家建築歷史（單個方塊移除時） ===
+    private static void clearPlayerBuildingHistory() {
+        // 可選：清理過期的玩家建築歷史，但不是全部清除
+        cleanupOldHistory();
+    }
 
 
     /**
