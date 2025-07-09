@@ -47,11 +47,27 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private final ConduitCacheManager cacheManager;
     private final ConduitNetworkManager networkManager;
     private final ConduitTransferManager transferManager;
+    private SimpleVirtualNetwork virtualNetwork;
 
     // === 簡化的狀態 ===
     private int tickOffset;
 
 
+    /**
+     * 🔧 獲取緩衝區魔力（不觸發虛擬網路邏輯）
+     * 用於網路掃描時避免遞迴
+     */
+    public int getBufferManaStoredDirect() {
+        return buffer.getManaStored();
+    }
+
+    /**
+     * 🔧 獲取緩衝區最大容量（不觸發虛擬網路邏輯）
+     * 用於網路掃描時避免遞迴
+     */
+    public int getBufferMaxManaStoredDirect() {
+        return buffer.getMaxManaStored();
+    }
 
     // === 🆕 簡化的建構子 ===
     public ArcaneConduitBlockEntity(BlockPos pos, BlockState blockState) {
@@ -228,7 +244,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 更新方塊狀態
         if (level != null && !level.isClientSide) {
             updateBlockStateConnections();
-
+            if (virtualNetwork == null) {
+                tryJoinVirtualNetwork();
+            }
             // 通知所有相鄰的導管也重新掃描
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = worldPosition.relative(dir);
@@ -249,6 +267,8 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         LOGGER.debug("Removing conduit at {}", worldPosition);
 
         try {
+            leaveVirtualNetwork();
+
             // 委派給緩存管理器清理
             cacheManager.invalidateAll();
 
@@ -307,27 +327,63 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             // 標記需要驗證網路狀態
             networkManager.markDirty();
             statsManager.recordActivity();
+            if (!level.isClientSide) {
+                tryJoinVirtualNetwork();
+            }
         }
     }
 
     // === 保留的 IUnifiedManaHandler 實現 ===
     @Override
     public int receiveMana(int maxReceive, ManaAction action) {
+        // 🔄 如果在虛擬網路中，使用網路的魔力池
+        if (virtualNetwork != null) {
+            int received = virtualNetwork.receiveManaToNetwork(maxReceive);
+            if (received > 0) {
+                setChanged();
+            }
+            return received;
+        }
+
+        // 否則使用原來的邏輯
         return buffer.receiveMana(maxReceive, action);
     }
 
     @Override
     public int extractMana(int maxExtract, ManaAction action) {
+        // 🔄 如果在虛擬網路中，從網路提取魔力
+        if (virtualNetwork != null) {
+            int extracted = virtualNetwork.extractManaFromNetwork(maxExtract);
+            if (extracted > 0) {
+                setChanged();
+            }
+            return extracted;
+        }
+
+        // 否則使用原來的邏輯
         return buffer.extractMana(maxExtract, action);
     }
 
+
     @Override
     public int getManaStored() {
+        // 🔄 如果在虛擬網路中，顯示網路總魔力
+        if (virtualNetwork != null) {
+            return virtualNetwork.getTotalManaStored();
+        }
+
+        // 否則使用原來的邏輯
         return buffer.getManaStored();
     }
 
     @Override
     public int getMaxManaStored() {
+        // 🔄 如果在虛擬網路中，顯示網路總容量
+        if (virtualNetwork != null) {
+            return virtualNetwork.getTotalManaCapacity();
+        }
+
+        // 否則使用原來的邏輯
         return buffer.getMaxManaStored();
     }
 
@@ -505,6 +561,94 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
     public static void performMaintenanceCleanup() {
         ConduitCacheManager.performGlobalMaintenance();
+    }
+
+
+    /**
+     * 🆕 獲取緩衝區的魔力（給SimpleVirtualNetwork使用）
+     */
+    public int getBufferManaStored() {
+        return buffer.getManaStored();
+    }
+
+    /**
+     * 🆕 設置緩衝區的魔力（給SimpleVirtualNetwork使用）
+     */
+    public void setBufferMana(int amount) {
+        buffer.setMana(amount);
+        setChanged();
+    }
+
+    /**
+     * 🆕 獲取虛擬網路
+     */
+    public SimpleVirtualNetwork getVirtualNetwork() {
+        return virtualNetwork;
+    }
+
+    /**
+     * 🆕 檢查是否在虛擬網路中
+     */
+    public boolean isInVirtualNetwork() {
+        return virtualNetwork != null;
+    }
+
+    /**
+     * 🆕 嘗試加入虛擬網路
+     */
+    private void tryJoinVirtualNetwork() {
+        if (virtualNetwork != null) return; // 已經在網路中
+
+        // 搜尋鄰近的導管
+        for (Direction dir : Direction.values()) {
+            BlockPos neighborPos = worldPosition.relative(dir);
+            BlockEntity neighborBE = level.getBlockEntity(neighborPos);
+
+            if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
+                SimpleVirtualNetwork neighborNetwork = neighborConduit.getVirtualNetwork();
+
+                if (neighborNetwork != null) {
+                    // 加入鄰居的網路
+                    joinVirtualNetwork(neighborNetwork);
+                    return;
+                }
+            }
+        }
+
+        // 沒有鄰近網路，創建新的
+        createNewVirtualNetwork();
+    }
+
+    /**
+     * 🆕 創建新的虛擬網路
+     */
+    private void createNewVirtualNetwork() {
+        virtualNetwork = new SimpleVirtualNetwork();
+        virtualNetwork.addConduit(this);
+
+        LOGGER.info("Created new virtual network at {}", worldPosition);
+    }
+
+    /**
+     * 🆕 加入現有的虛擬網路
+     */
+    private void joinVirtualNetwork(SimpleVirtualNetwork network) {
+        virtualNetwork = network;
+        network.addConduit(this);
+
+        LOGGER.info("Joined virtual network at {}", worldPosition);
+    }
+
+    /**
+     * 🆕 離開虛擬網路
+     */
+    private void leaveVirtualNetwork() {
+        if (virtualNetwork != null) {
+            virtualNetwork.removeConduit(worldPosition);
+            virtualNetwork = null;
+
+            LOGGER.info("Left virtual network at {}", worldPosition);
+        }
     }
 }
 

@@ -20,6 +20,8 @@ import java.util.*;
 public class ConduitNetworkManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConduitNetworkManager.class);
+    private long lastScanTime = 0; // 🆕 添加時間戳
+    private static final long MIN_SCAN_INTERVAL = 100; // 🆕 最小掃描間隔（毫秒）
 
     // === 常量 ===
     private static final int NETWORK_SCAN_INTERVAL = 600; // 30秒
@@ -82,10 +84,17 @@ public class ConduitNetworkManager {
      * 🔧 修復：獲取所有有效的傳輸目標 - 防止遞迴
      */
     public List<Direction> getValidTargets() {
-        // 🚨 遞迴防護：如果正在掃描，返回空列表
+        long currentTime = System.currentTimeMillis();
+
+        // 🆕 時間間隔檢查：如果剛剛掃描過，直接返回空列表
+        if (currentTime - lastScanTime < MIN_SCAN_INTERVAL) {
+            return new ArrayList<>();
+        }
+
+        // 🚨 遞迴防護：如果正在掃描，靜默返回空列表
         if (isScanning) {
-            LOGGER.warn("Prevented infinite recursion in getValidTargets() at {}",
-                    conduit.getBlockPos());
+            // 🔧 改為 DEBUG 級別，減少日誌噪音
+            LOGGER.debug("Scan already in progress at {}, skipping", conduit.getBlockPos());
             return new ArrayList<>();
         }
 
@@ -93,6 +102,7 @@ public class ConduitNetworkManager {
         if (cacheManager.needsTargetRescan()) {
             try {
                 isScanning = true; // 🔒 設置掃描標記
+                lastScanTime = currentTime; // 🆕 更新掃描時間
                 rescanTargets();
             } finally {
                 isScanning = false; // 🔓 確保標記被清除
@@ -133,6 +143,7 @@ public class ConduitNetworkManager {
     /**
      * 驗證導管間連接是否有效
      */
+
     private boolean validateConduitConnection(Direction dir) {
         BlockPos neighborPos = conduit.getBlockPos().relative(dir);
         BlockEntity neighborBE = conduit.getLevel().getBlockEntity(neighborPos);
@@ -149,8 +160,8 @@ public class ConduitNetworkManager {
             return false;
         }
 
-        // ⚡ 直接檢查魔力容量，避免調用其他方法
-        return neighborConduit.getManaStored() < neighborConduit.getMaxManaStored();
+        // ⚡ 🔧 關鍵修復：使用直接方法，避免虛擬網路邏輯
+        return neighborConduit.getBufferManaStoredDirect() < neighborConduit.getBufferMaxManaStoredDirect();
     }
 
     // === 網路掃描 ===
@@ -220,12 +231,13 @@ public class ConduitNetworkManager {
     /**
      * 重新掃描目標
      */
+
     private void rescanTargets() {
         if (conduit.getLevel() == null) return;
 
         // 🚨 如果已經在掃描，直接返回
         if (isScanning) {
-            LOGGER.warn("Prevented recursive rescanTargets() call at {}",
+            LOGGER.debug("Double-check: recursive rescanTargets() prevented at {}",
                     conduit.getBlockPos());
             return;
         }
@@ -253,23 +265,17 @@ public class ConduitNetworkManager {
 
                     // 🚨 移除任何可能調用到 getValidTargets() 的代碼
                     if (neighborIOType == IOHandlerUtils.IOType.DISABLED) {
-                        LOGGER.debug("Skipping conduit at {} - disabled on side {}", neighborPos, neighborInputSide);
                         continue;
                     }
 
-                    // ⚡ 直接檢查魔力存儲，避免複雜方法調用
-                    if (neighborConduit.getManaStored() >= neighborConduit.getMaxManaStored()) {
-                        LOGGER.debug("Skipping conduit at {} - full", neighborPos);
+                    // ⚡ 🔧 關鍵修復：使用直接方法，避免虛擬網路邏輯
+                    if (neighborConduit.getBufferManaStoredDirect() >= neighborConduit.getBufferMaxManaStoredDirect()) {
                         continue;
                     }
                 }
 
                 // 設定目標緩存
                 cacheManager.setCachedTarget(dir, handler, isConduit);
-
-                LOGGER.debug("Found target at {} (conduit: {}, canReceive: {}, space: {})",
-                        neighborPos, isConduit, handler.canReceive(),
-                        handler.getMaxManaStored() - handler.getManaStored());
             }
         }
 
