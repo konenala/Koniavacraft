@@ -58,23 +58,84 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         poseStack.pushPose();
         poseStack.translate(0.5, 0.5, 0.5);
 
-        // 🔮 核心發光水晶
-        renderCleanCore(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        try {
+            // 🔮 核心發光水晶
+            renderCleanCore(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        } catch (Exception e) {
+            // 如果水晶渲染失敗，顯示後備效果
+            renderBackupCore(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        }
 
-        // 🎯 Mekanism 風格 IO 指示器
-        renderMekStyleIOIndicators(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        try {
+            // 🎯 Mekanism 風格 IO 指示器
+            renderMekStyleIOIndicators(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        } catch (Exception e) {
+            // IO 指示器失敗不影響其他渲染
+        }
 
-        // 🔌 EnderIO 風格連接器
-        renderEnderIOConnectors(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        try {
+            // 🔌 EnderIO 風格連接器
+            renderEnderIOConnectors(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        } catch (Exception e) {
+            // 連接器失敗不影響其他渲染
+        }
 
         // 🚀 增強功能
         if (shouldRenderEnhancements()) {
-            renderManaFlowAnimation(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
-            renderPriorityNumbers(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+            try {
+                renderPriorityNumbers(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+            } catch (Exception e) {
+                // 優先級數字失敗不影響其他渲染
+            }
+
+            try {
+                renderManaFlowAnimation(conduit, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+            } catch (Exception e) {
+                // 動畫失敗不影響其他渲染
+            }
         }
 
         poseStack.popPose();
     }
+
+    // 🔧 添加後備核心渲染方法
+    private void renderBackupCore(ArcaneConduitBlockEntity conduit, float partialTick,
+                                  PoseStack poseStack, MultiBufferSource bufferSource,
+                                  int packedLight, int packedOverlay) {
+
+        long gameTime = conduit.getLevel().getGameTime();
+        float rotation = (gameTime + partialTick) * 0.2f;
+        float scale = 0.15f;
+
+        poseStack.pushPose();
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+        poseStack.scale(scale, scale, scale);
+
+        // 使用簡單的半透明渲染，不依賴材質
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
+
+        // 根據魔力狀態調整顏色
+        float manaRatio = 0.5f;
+        try {
+            int manaStored = conduit.getManaStored();
+            int maxMana = conduit.getMaxManaStored();
+            if (maxMana > 0) {
+                manaRatio = (float) manaStored / maxMana;
+            }
+        } catch (Exception e) {
+            // 如果獲取魔力失敗，使用默認值
+        }
+
+        float r = 0.4f + 0.3f * manaRatio;
+        float g = 0.6f + 0.2f * manaRatio;
+        float b = 1.0f;
+        float a = 0.7f + 0.2f * manaRatio;
+
+        renderSimpleCube(poseStack, consumer, r, g, b, a, packedLight, packedOverlay);
+        poseStack.popPose();
+    }
+
+    // 🔧 修復 renderCleanCore 方法中的潛在問題
 
     /**
      * 🔌 渲染 EnderIO 風格連接器
@@ -464,8 +525,19 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
                                  int packedLight, int packedOverlay) {
         long gameTime = conduit.getLevel().getGameTime();
         float pulse = 0.9f + 0.1f * Mth.sin((gameTime + partialTick) * 0.08f);
-        float manaRatio = conduit.getManaStored() > 0 ?
-                (float) conduit.getManaStored() / Math.max(1, conduit.getMaxManaStored()) : 0.2f;
+
+        // 🔧 修復：安全地獲取魔力比例
+        float manaRatio = 0.2f;
+        try {
+            int manaStored = conduit.getManaStored();
+            int maxMana = conduit.getMaxManaStored();
+            if (maxMana > 0 && manaStored > 0) {
+                manaRatio = (float) manaStored / maxMana;
+            }
+        } catch (Exception e) {
+            // 如果獲取魔力失敗，使用默認值
+        }
+
         float brightness = 0.3f + 0.5f * manaRatio;
 
         poseStack.pushPose();
@@ -474,24 +546,40 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         float scale = 0.15f + (0.05f * manaRatio * pulse);
         poseStack.scale(scale, scale, scale);
 
-        VertexConsumer crystalConsumer = bufferSource.getBuffer(
-                RenderType.entityTranslucentEmissive(CRYSTAL_TEXTURE));
+        // 🔧 修復：使用 try-catch 處理材質載入
+        VertexConsumer crystalConsumer;
+        try {
+            crystalConsumer = bufferSource.getBuffer(
+                    RenderType.entityTranslucentEmissive(CRYSTAL_TEXTURE));
+        } catch (Exception e) {
+            // 如果材質載入失敗，使用半透明渲染
+            crystalConsumer = bufferSource.getBuffer(RenderType.translucent());
+        }
 
         float r, g, b;
-        if (conduit.getManaStored() > 0) {
-            r = 0.4f + 0.2f * manaRatio;
-            g = 0.6f + 0.3f * manaRatio;
+        try {
+            int manaStored = conduit.getManaStored();
+            if (manaStored > 0) {
+                r = 0.4f + 0.2f * manaRatio;
+                g = 0.6f + 0.3f * manaRatio;
+                b = 1.0f;
+            } else {
+                r = 0.3f;
+                g = 0.3f;
+                b = 0.4f;
+                brightness *= 0.3f;
+            }
+        } catch (Exception e) {
+            // 默認顏色
+            r = 0.4f;
+            g = 0.6f;
             b = 1.0f;
-        } else {
-            r = 0.3f;
-            g = 0.3f;
-            b = 0.4f;
-            brightness *= 0.3f;
         }
 
         renderSimpleCube(poseStack, crystalConsumer, r, g, b, brightness, packedLight, packedOverlay);
         poseStack.popPose();
     }
+
 
     private void renderMekStyleIOIndicators(ArcaneConduitBlockEntity conduit, float partialTick,
                                             PoseStack poseStack, MultiBufferSource bufferSource,

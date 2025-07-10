@@ -46,7 +46,10 @@ public class KoniavacraftMod {
         LOGGER.info("這是一條 INFO 測試訊息");
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+        ModParticles.register(modEventBus);
+
         ModItems.register(modEventBus);
+
         ModBlocks.register(modEventBus);
         ModRecipes.register(modEventBus);
         ModDataAttachments.register(modEventBus);

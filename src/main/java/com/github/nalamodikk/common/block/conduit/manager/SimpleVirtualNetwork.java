@@ -29,6 +29,29 @@ public class SimpleVirtualNetwork {
         LOGGER.info("Created simple virtual network");
     }
 
+    public void setTotalManaStored(int amount) {
+        sharedManaPool.setMana(Math.max(0, Math.min(amount, sharedManaPool.getMaxManaStored())));
+        LOGGER.info("Virtual network mana set to: {}", sharedManaPool.getManaStored());
+    }
+
+    // 🆕 添加 getter 方法
+    public int getMaxManaStored() {
+        return sharedManaPool.getMaxManaStored();
+    }
+
+    // 🆕 添加獲取連接導管的方法
+    public Set<BlockPos> getConnectedConduits() {
+        return new HashSet<>(connectedConduits); // 返回副本，避免外部修改
+    }
+
+    // 🆕 添加網路信息日誌
+    public void logNetworkInfo() {
+        LOGGER.info("Virtual Network - Mana: {}/{}, Conduits: {}",
+                sharedManaPool.getManaStored(),
+                sharedManaPool.getMaxManaStored(),
+                connectedConduits.size());
+    }
+
     /**
      * 導管加入網路
      */

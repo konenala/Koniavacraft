@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -25,12 +26,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.slf4j.Logger;
 
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedManaHandler, IConfigurableBlock {
-
+    private CompoundTag tempNetworkData = null;
+    private boolean needsNetworkRestore = false;
     // === 保留的常量和靜態字段 ===
     private static final int BUFFER_SIZE = 100;
     private static final int NETWORK_SCAN_INTERVAL = 600;
@@ -293,6 +297,25 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
         // 保存緩衝區
         tag.put("Buffer", buffer.serializeNBT(registries));
+        if (virtualNetwork != null) {
+            tag.putInt("VirtualNetworkMana", virtualNetwork.getTotalManaStored());
+            tag.putInt("VirtualNetworkMaxMana", virtualNetwork.getMaxManaStored());
+
+            // 🔧 保存網路中的所有導管位置
+            ListTag conduitList = new ListTag();
+            for (BlockPos pos : virtualNetwork.getConnectedConduits()) {
+                CompoundTag posTag = new CompoundTag();
+                posTag.putInt("x", pos.getX());
+                posTag.putInt("y", pos.getY());
+                posTag.putInt("z", pos.getZ());
+                conduitList.add(posTag);
+            }
+            tag.put("VirtualNetworkConduits", conduitList);
+
+            LOGGER.info("💾 保存虛擬網路魔力: {}, 連接數: {}",
+                    virtualNetwork.getTotalManaStored(),
+                    virtualNetwork.getConnectedConduits().size());
+        }
 
         // 委派給各管理器
         ioManager.saveToNBT(tag);
@@ -307,6 +330,21 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 載入緩衝區
         if (tag.contains("Buffer")) {
             buffer.deserializeNBT(registries, tag.getCompound("Buffer"));
+        }
+
+        // 🔧 關鍵修復：載入虛擬網路數據
+        if (tag.contains("VirtualNetworkMana")) {
+            tempNetworkData = new CompoundTag();
+            tempNetworkData.putInt("Mana", tag.getInt("VirtualNetworkMana"));
+            tempNetworkData.putInt("MaxMana", tag.getInt("VirtualNetworkMaxMana"));
+
+            if (tag.contains("VirtualNetworkConduits")) {
+                tempNetworkData.put("Conduits", tag.get("VirtualNetworkConduits"));
+            }
+
+            needsNetworkRestore = true;
+
+            LOGGER.info("📂 準備恢復虛擬網路魔力: {}", tag.getInt("VirtualNetworkMana"));
         }
 
         // 委派給各管理器
@@ -329,8 +367,54 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             statsManager.recordActivity();
             if (!level.isClientSide) {
                 tryJoinVirtualNetwork();
+
+
+                // 🔧 關鍵修復：恢復虛擬網路數據
+                if (needsNetworkRestore && tempNetworkData != null && virtualNetwork != null) {
+                    restoreVirtualNetworkData();
+                }
             }
         }
+    }
+
+    private void restoreVirtualNetworkData() {
+        if (tempNetworkData == null || virtualNetwork == null) return;
+
+        try {
+            int savedMana = tempNetworkData.getInt("Mana");
+
+            // 🔧 關鍵：只有網路中的第一個導管負責恢復魔力
+            // 避免重複恢復
+            if (isNetworkMaster()) {
+                virtualNetwork.setTotalManaStored(savedMana);
+                LOGGER.info("🔄 恢復虛擬網路魔力: {} (網路主導管)", savedMana);
+            } else {
+                LOGGER.info("🔄 跳過魔力恢復，不是網路主導管");
+            }
+
+            needsNetworkRestore = false;
+            tempNetworkData = null;
+
+        } catch (Exception e) {
+            LOGGER.error("❌ 恢復虛擬網路數據失敗: {}", e.getMessage());
+            needsNetworkRestore = false;
+            tempNetworkData = null;
+        }
+    }
+
+    // 🆕 判斷是否為網路主導管（位置最小的導管）
+    private boolean isNetworkMaster() {
+        if (virtualNetwork == null) return false;
+
+        Set<BlockPos> conduits = virtualNetwork.getConnectedConduits();
+        if (conduits.isEmpty()) return true;
+
+        // 找到位置最小的導管作為主導管
+        BlockPos minPos = conduits.stream()
+                .min(Comparator.comparingLong(BlockPos::asLong))
+                .orElse(worldPosition);
+
+        return worldPosition.equals(minPos);
     }
 
     // === 保留的 IUnifiedManaHandler 實現 ===
