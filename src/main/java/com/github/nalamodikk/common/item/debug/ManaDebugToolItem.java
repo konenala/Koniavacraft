@@ -11,14 +11,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public class ManaDebugToolItem extends Item {
@@ -50,39 +48,40 @@ public class ManaDebugToolItem extends Item {
         stack.set(MODE_INDEX, index);
     }
 
-    @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Level level = context.getLevel();
-        if (!level.isClientSide()) {
-            BlockPos pos = context.getClickedPos();
-            IUnifiedManaHandler manaStorage = level.getCapability(ModCapabilities.MANA, pos, null);
+        @Override
+        public InteractionResult useOn(UseOnContext context) {
+            Level level = context.getLevel();
+            if (!level.isClientSide()) {
+                BlockPos pos = context.getClickedPos();
+                IUnifiedManaHandler manaStorage = level.getCapability(ModCapabilities.MANA, pos, null);
 
-            if (manaStorage != null) {
-                ItemStack stack = context.getItemInHand();
-                int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
-                int manaToAdd = MANA_AMOUNTS[modeIndex];
-                manaStorage.addMana(manaToAdd);
+                if (manaStorage != null) {
+                    ItemStack stack = context.getItemInHand();
+                    int modeIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);
+                    int manaToAdd = MANA_AMOUNTS[modeIndex];
+                    manaStorage.addMana(manaToAdd);
 
-                Player player = context.getPlayer();
-                if (player instanceof ServerPlayer serverPlayer) {
-                    serverPlayer.displayClientMessage(
-                            Component.translatable("message.koniava.mana_added", manaToAdd, manaStorage.getManaStored()), true);
+                    Player player = context.getPlayer();
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        serverPlayer.displayClientMessage(
+                                Component.translatable("message.koniava.mana_added", manaToAdd, manaStorage.getManaStored()), true);
+                    }
+
+                    BlockEntity blockEntity = level.getBlockEntity(pos);
+                    if (blockEntity != null) {
+                        // 🔧 治本：使用延遲更新避免立即觸發掃描
+                        level.scheduleTick(pos, blockEntity.getBlockState().getBlock(), 1);
+                    }
+
+                    // ⚠️ 請自行確認 ManaUpdatePacket 是否已改寫為 NeoForge Payload 風格
+                    PacketDistributor.sendToPlayer((ServerPlayer) context.getPlayer(),
+                            new ManaUpdatePacket(pos, manaStorage.getManaStored()));
+
+                    return InteractionResult.SUCCESS;
                 }
-
-                BlockEntity blockEntity = level.getBlockEntity(pos);
-                if (blockEntity != null) blockEntity.setChanged();
-                BlockState state = level.getBlockState(pos);
-                level.sendBlockUpdated(pos, state, state, 3);
-
-                // ⚠️ 請自行確認 ManaUpdatePacket 是否已改寫為 NeoForge Payload 風格
-                PacketDistributor.sendToPlayer((ServerPlayer) context.getPlayer(),
-                        new ManaUpdatePacket(pos, manaStorage.getManaStored()));
-
-                return InteractionResult.SUCCESS;
             }
+            return super.useOn(context);
         }
-        return super.useOn(context);
-    }
 
     public void cycleMode(ItemStack stack, boolean forward, ServerPlayer player) {
         int currentIndex = stack.getOrDefault(ManaDebugToolItem.MODE_INDEX, 0);

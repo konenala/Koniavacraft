@@ -30,6 +30,93 @@ public class ModRecipeProvider extends RecipeProvider {
             ManaFuelRecipeProvider.generate(recipeOutput);
             ManaCraftingRecipeProvider.generate(recipeOutput);
 
+
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.SOLAR_MANA_COLLECTOR.get())
+                    .pattern("GGG")  // 玻璃 玻璃 玻璃
+                    .pattern("GMG")  // 玻璃 魔力粉 玻璃
+                    .pattern("III")  // 鐵錠 鐵錠 鐵錠
+                    .define('G', Items.GLASS)
+                    .define('M', ModItems.MANA_DUST.get())
+                    .define('I', Items.IRON_INGOT)
+                    .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                    .save(recipeOutput, "solar_mana_collector");
+
+            // 🔗 奧術導管 (批量製作)
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ARCANE_CONDUIT.get(), 4)
+                    .pattern("MMM")  // 魔力粉 魔力粉 魔力粉
+                    .pattern("IGI")  // 鐵錠 玻璃 鐵錠
+                    .pattern("MMM")  // 魔力粉 魔力粉 魔力粉
+                    .define('M', ModItems.MANA_DUST.get())
+                    .define('I', Items.IRON_INGOT)
+                    .define('G', Items.GLASS)
+                    .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                    .save(recipeOutput, "arcane_conduit");
+
+
+            // ===== 升級模組配方 =====
+
+            // ⚡ 速度升級模組
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.SPEED_UPGRADE.get())
+                    .pattern("RMR")  // 紅石 魔力粉 紅石
+                    .pattern("MGM")  // 魔力粉 金錠 魔力粉
+                    .pattern("RMR")  // 紅石 魔力粉 紅石
+                    .define('R', Items.REDSTONE)
+                    .define('M', ModItems.MANA_DUST.get())
+                    .define('G', Items.GOLD_INGOT)
+                    .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                    .save(recipeOutput, "speed_upgrade");
+
+            // 🔋 效率升級模組
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.EFFICIENCY_UPGRADE.get())
+                    .pattern("DMD")  // 鑽石 魔力粉 鑽石
+                    .pattern("MIM")  // 魔力粉 魔力錠 魔力粉
+                    .pattern("DMD")  // 鑽石 魔力粉 鑽石
+                    .define('D', Items.DIAMOND)
+                    .define('M', ModItems.MANA_DUST.get())
+                    .define('I', ModItems.MANA_INGOT.get())
+                    .unlockedBy(getHasName(ModItems.MANA_INGOT.get()), has(ModItems.MANA_INGOT.get()))
+                    .save(recipeOutput, "efficiency_upgrade");
+
+            // 🔥 原魔塵 → 魔力粉 (熔爐，基礎方式)
+            SimpleCookingRecipeBuilder.smelting(
+                            Ingredient.of(ModItems.RAW_MANA_DUST.get()),
+                            RecipeCategory.MISC,
+                            ModItems.MANA_DUST.get(),
+                            0.1f,   // 低經驗值
+                            300     // 較慢的熔煉時間 (15秒)
+                    )
+                    .unlockedBy(getHasName(ModItems.RAW_MANA_DUST.get()), has(ModItems.RAW_MANA_DUST.get()))
+                    .save(recipeOutput, "mana_dust_from_raw_smelting");
+
+            // 🌪️ 原魔塵 → 魔力粉 (高爐，效率更高)
+            SimpleCookingRecipeBuilder.blasting(
+                            Ingredient.of(ModItems.RAW_MANA_DUST.get()),
+                            RecipeCategory.MISC,
+                            ModItems.MANA_DUST.get(),
+                            0.2f,   // 稍高經驗值
+                            150     // 更快的熔煉時間 (7.5秒)
+                    )
+                    .unlockedBy(getHasName(ModItems.RAW_MANA_DUST.get()), has(ModItems.RAW_MANA_DUST.get()))
+                    .save(recipeOutput, "mana_dust_from_raw_blasting");
+
+
+            // ===== 汙穢魔力粉獲取方式 =====
+
+            // 🦠 主動製作汙穢魔力粉 (給玩家控制權)
+            ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.CORRUPTED_MANA_DUST.get(), 2)
+                    .requires(ModItems.MANA_DUST.get())     // 魔力粉
+                    .requires(Items.ROTTEN_FLESH)           // 腐肉
+                    .requires(Items.SPIDER_EYE)             // 蜘蛛眼
+                    .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                    .save(recipeOutput, "corrupted_mana_dust_crafting");
+
+            // 🔥 緊急魔力粉合成 (早期臨時解決方案)
+            ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.MANA_DUST.get())
+                    .requires(ModItems.RAW_MANA_DUST.get(), 3) // 3個原魔塵
+                    .requires(Items.COAL)                       // + 煤炭
+                    .unlockedBy(getHasName(ModItems.RAW_MANA_DUST.get()), has(ModItems.RAW_MANA_DUST.get()))
+                    .save(recipeOutput, "emergency_mana_dust_from_raw");
+
             ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_BLOCK.get())
                     .pattern("SSS").pattern("SSS").pattern("SSS")
                     .define('S', ModItems.MANA_INGOT.get())
@@ -51,6 +138,8 @@ public class ModRecipeProvider extends RecipeProvider {
                     .requires(ModItems.MANA_INGOT.get())
                     .unlockedBy(getHasName(ModItems.MANA_INGOT.get()), has(ModItems.MANA_INGOT.get()))
                     .save(recipeOutput, "mana_dust_from_ingot");
+
+
            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.MANA_GENERATOR.get())
                     .pattern("AAA").pattern("RMR").pattern("IFI")
                     .define('I', Items.IRON_INGOT)
@@ -61,26 +150,29 @@ public class ModRecipeProvider extends RecipeProvider {
                     .unlockedBy("has_iron", has(Items.IRON_INGOT))
                     .save(recipeOutput);
 
-
             ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
-                    .pattern("IDI").pattern("IMI").pattern("ICI")
-                    .define('I', Items.IRON_INGOT)
-                    .define('D', Items.DIAMOND)
-                    .define('M', ModItems.BASIC_TECH_WAND.get())
+                    .pattern("GMG")  // 玻璃 魔力粉 玻璃
+                    .pattern("RCR")  // 紅石 合成台 紅石
+                    .pattern("IMI")  // 鐵錠 魔力粉 鐵錠
+                    .define('G', Items.GLASS)
+                    .define('M', ModItems.MANA_DUST.get())
+                    .define('R', Items.REDSTONE)
                     .define('C', Items.CRAFTING_TABLE)
-                    .unlockedBy("has_iron", has(Items.IRON_INGOT))
-                    .save(recipeOutput);
+                    .define('I', Items.IRON_INGOT)
+                    .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                    .save(recipeOutput, "mana_crafting_table_simplified");
 
             ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.BASIC_TECH_WAND.get())
-                    .pattern("RAR").pattern("CIC").pattern(" D ")
-                    .define('I', ModItems.CORRUPTED_MANA_DUST.get())
-                    .define('R', Items.REDSTONE_BLOCK)
-                    .define('D', Blocks.DIAMOND_BLOCK)
+                    .pattern("RMR")  // 紅石 魔力粉 紅石
+                    .pattern("CIC")  // 銅錠 鐵錠 銅錠
+                    .pattern(" S ")  // 空 棍子 空
+                    .define('R', Items.REDSTONE)
+                    .define('M', ModItems.MANA_DUST.get())
                     .define('C', Items.COPPER_INGOT)
-                    .define('A', Items.AMETHYST_SHARD)
-                    .unlockedBy("has_iron", has(Items.IRON_INGOT))
-                    .save(recipeOutput);
-
+                    .define('I', Items.IRON_INGOT)
+                    .define('S', Items.STICK)
+                    .unlockedBy(getHasName(ModItems.MANA_DUST.get()), has(ModItems.MANA_DUST.get()))
+                    .save(recipeOutput, "basic_tech_wand_simplified");
             // 🌟 基礎模板：Transmute
 //            TransmuteRecipeBuilder.transmute(
 //                            RecipeCategory.MISC,
@@ -90,6 +182,9 @@ public class ModRecipeProvider extends RecipeProvider {
 //                    .group("shulker_box_dye")
 //                    .unlockedBy("has_shulker_box", has(Items.SHULKER_BOX))
 //                    .save(recipeOutput, MagicalIndustryMod.MOD_ID + ":blue_shulker_box_transmute");
+
+
+
 
             // 🌟 基礎模板：Stonecutting
             SingleItemRecipeBuilder.stonecutting(

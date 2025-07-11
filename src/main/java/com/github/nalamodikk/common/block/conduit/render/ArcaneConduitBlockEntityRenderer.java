@@ -814,11 +814,266 @@ public class ArcaneConduitBlockEntityRenderer implements BlockEntityRenderer<Arc
         return true;
     }
 
+
     private void renderManaFlowAnimation(ArcaneConduitBlockEntity conduit, float partialTick,
                                          PoseStack poseStack, MultiBufferSource bufferSource,
                                          int packedLight, int packedOverlay) {
-        // 魔力流動動畫實現 - 可以根據你的需求來實現
-        // 這裡留作將來擴展
+
+        Level level = conduit.getLevel();
+        if (level == null) return;
+
+        // 🔍 只在有魔力傳輸時顯示流動效果
+        if (conduit.getManaStored() <= 0) return;
+
+        BlockState state = level.getBlockState(conduit.getBlockPos());
+
+        // 🎯 遍歷所有連接方向
+        for (Direction direction : Direction.values()) {
+            if (isConnected(state, direction)) {
+                IOHandlerUtils.IOType ioType = conduit.getIOConfig(direction);
+
+                // 只在輸出或雙向端口顯示流動效果
+                if (ioType == IOHandlerUtils.IOType.OUTPUT || ioType == IOHandlerUtils.IOType.BOTH) {
+                    renderManaFlow(conduit, direction, poseStack, bufferSource,
+                            partialTick, packedLight, packedOverlay);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 🌊 渲染單個方向的魔力流動
+     */
+    private void renderManaFlow(ArcaneConduitBlockEntity conduit, Direction direction,
+                                PoseStack poseStack, MultiBufferSource bufferSource,
+                                float partialTick, int packedLight, int packedOverlay) {
+
+        poseStack.pushPose();
+
+        // 🎨 設置渲染器
+        VertexConsumer flowConsumer = bufferSource.getBuffer(RenderType.translucentMovingBlock());
+
+        // ⏰ 時間動畫
+        float gameTime = (System.currentTimeMillis() + partialTick * 50) / 1000.0f;
+
+        // 🎯 魔力強度決定流速和亮度
+        float manaRatio = (float) conduit.getManaStored() / Math.max(1, conduit.getMaxManaStored());
+        float flowSpeed = 1.0f + manaRatio * 2.0f; // 1-3x 流速
+        float brightness = 0.4f + manaRatio * 0.6f; // 40%-100% 亮度
+
+        // 🌊 渲染多個流動粒子
+        int particleCount = Math.max(1, (int)(manaRatio * 5)); // 1-5個粒子
+
+        for (int i = 0; i < particleCount; i++) {
+            renderFlowParticle(poseStack, flowConsumer, direction, gameTime, flowSpeed, brightness,
+                    i, particleCount, packedLight, packedOverlay);
+        }
+
+        poseStack.popPose();
+    }
+
+
+    /**
+     * ✨ 渲染單個流動粒子
+     */
+    private void renderFlowParticle(PoseStack poseStack, VertexConsumer consumer, Direction direction,
+                                    float gameTime, float flowSpeed, float brightness,
+                                    int particleIndex, int totalParticles,
+                                    int packedLight, int packedOverlay) {
+
+        poseStack.pushPose();
+
+        // 🎯 計算粒子位置
+        float offset = (particleIndex / (float) totalParticles) * 0.5f; // 錯開起始位置
+        float progress = ((gameTime * flowSpeed + offset) % 1.0f); // 0-1 循環
+
+        // 🌊 流動路徑：從導管中心到邊緣
+        float startDistance = 0.1f; // 從導管中心開始
+        float endDistance = 0.4f;   // 到導管邊緣
+        float currentDistance = startDistance + (endDistance - startDistance) * progress;
+
+        // 📍 設置粒子位置
+        poseStack.translate(
+                direction.getStepX() * currentDistance,
+                direction.getStepY() * currentDistance,
+                direction.getStepZ() * currentDistance
+        );
+
+        // 🎨 粒子顏色和大小
+        float[] color = getManaFlowColor(progress, brightness);
+        float size = 0.03f * (1.0f - progress * 0.5f); // 漸變變小
+        float alpha = brightness * (1.0f - progress * 0.7f); // 漸變透明
+
+        // 🔄 旋轉效果
+        float rotation = gameTime * 100.0f + particleIndex * 60.0f;
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+
+        // 🎯 渲染發光立方體粒子
+        renderGlowCube(poseStack, consumer, size, color[0], color[1], color[2], alpha,
+                Math.max(packedLight, 240), packedOverlay);
+
+        poseStack.popPose();
+    }
+
+    /**
+     * 🎨 獲取魔力流動顏色
+     */
+    private float[] getManaFlowColor(float progress, float brightness) {
+        // 🌈 藍色到青色的漸變
+        float r = 0.2f + progress * 0.3f;
+        float g = 0.6f + progress * 0.4f;
+        float b = 1.0f;
+
+        // 調整亮度
+        r *= brightness;
+        g *= brightness;
+        b *= brightness;
+
+        return new float[]{r, g, b};
+    }
+
+    /**
+     * ✨ 渲染發光立方體
+     */
+    private void renderGlowCube(PoseStack poseStack, VertexConsumer consumer, float size,
+                                float r, float g, float b, float alpha,
+                                int packedLight, int packedOverlay) {
+
+        Matrix4f matrix = poseStack.last().pose();
+        float half = size / 2.0f;
+
+        // 🎯 立方體的6個面
+        // 前面
+        addGlowQuad(consumer, matrix, -half, -half, half, half, -half, half,
+                half, half, half, -half, half, half,
+                r, g, b, alpha, packedLight, packedOverlay);
+
+        // 後面
+        addGlowQuad(consumer, matrix, half, -half, -half, -half, -half, -half,
+                -half, half, -half, half, half, -half,
+                r, g, b, alpha, packedLight, packedOverlay);
+
+        // 左面
+        addGlowQuad(consumer, matrix, -half, -half, -half, -half, -half, half,
+                -half, half, half, -half, half, -half,
+                r, g, b, alpha, packedLight, packedOverlay);
+
+        // 右面
+        addGlowQuad(consumer, matrix, half, -half, half, half, -half, -half,
+                half, half, -half, half, half, half,
+                r, g, b, alpha, packedLight, packedOverlay);
+
+        // 上面
+        addGlowQuad(consumer, matrix, -half, half, half, half, half, half,
+                half, half, -half, -half, half, -half,
+                r, g, b, alpha, packedLight, packedOverlay);
+
+        // 下面
+        addGlowQuad(consumer, matrix, -half, -half, -half, half, -half, -half,
+                half, -half, half, -half, -half, half,
+                r, g, b, alpha, packedLight, packedOverlay);
+    }
+
+    /**
+     * 🎨 添加發光四邊形
+     */
+    private void addGlowQuad(VertexConsumer consumer, Matrix4f matrix,
+                             float x1, float y1, float z1, float x2, float y2, float z2,
+                             float x3, float y3, float z3, float x4, float y4, float z4,
+                             float r, float g, float b, float alpha,
+                             int packedLight, int packedOverlay) {
+
+        addGlowVertex(consumer, matrix, x1, y1, z1, r, g, b, alpha, 0, 0, packedLight, packedOverlay);
+        addGlowVertex(consumer, matrix, x2, y2, z2, r, g, b, alpha, 1, 0, packedLight, packedOverlay);
+        addGlowVertex(consumer, matrix, x3, y3, z3, r, g, b, alpha, 1, 1, packedLight, packedOverlay);
+        addGlowVertex(consumer, matrix, x4, y4, z4, r, g, b, alpha, 0, 1, packedLight, packedOverlay);
+    }
+
+    /**
+     * ✨ 添加發光頂點
+     */
+    private void addGlowVertex(VertexConsumer consumer, Matrix4f matrix,
+                               float x, float y, float z,
+                               float r, float g, float b, float alpha,
+                               float u, float v,
+                               int packedLight, int packedOverlay) {
+
+        consumer.addVertex(matrix, x, y, z)
+                .setColor(r, g, b, alpha)
+                .setUv(u, v)
+                .setOverlay(packedOverlay)
+                .setLight(packedLight)
+                .setNormal(0, 1, 0);
+    }
+
+// === 🎯 額外的視覺增強功能 ===
+
+    /**
+     * 🌟 渲染魔力脈衝效果（可選）
+     * 在魔力傳輸瞬間顯示脈衝波
+     */
+    private void renderManaPulse(ArcaneConduitBlockEntity conduit, Direction direction,
+                                 PoseStack poseStack, MultiBufferSource bufferSource,
+                                 float partialTick, int packedLight, int packedOverlay) {
+
+        // 🔍 檢查是否正在傳輸（您可能需要在導管中添加這個狀態）
+        // if (!conduit.isTransferring(direction)) return;
+
+        poseStack.pushPose();
+
+        // 🎨 脈衝效果
+        float gameTime = (System.currentTimeMillis() + partialTick * 50) / 1000.0f;
+        float pulseSize = Mth.sin(gameTime * 8.0f) * 0.1f + 0.15f;
+        float pulseAlpha = (Mth.sin(gameTime * 8.0f) + 1.0f) * 0.3f;
+
+        // 📍 移動到導管邊緣
+        poseStack.translate(
+                direction.getStepX() * 0.3f,
+                direction.getStepY() * 0.3f,
+                direction.getStepZ() * 0.3f
+        );
+
+        // 🎯 渲染脈衝球
+        VertexConsumer pulseConsumer = bufferSource.getBuffer(RenderType.translucent());
+        renderGlowSphere(poseStack, pulseConsumer, pulseSize,
+                0.3f, 0.8f, 1.0f, pulseAlpha, // 青色脈衝
+                Math.max(packedLight, 200), packedOverlay);
+
+        poseStack.popPose();
+    }
+
+    /**
+     * 🔮 渲染發光球體
+     */
+    private void renderGlowSphere(PoseStack poseStack, VertexConsumer consumer, float radius,
+                                  float r, float g, float b, float alpha,
+                                  int packedLight, int packedOverlay) {
+
+        Matrix4f matrix = poseStack.last().pose();
+        int segments = 8; // 簡化版球體
+
+        for (int i = 0; i < segments; i++) {
+            float angle1 = (float) i / segments * 2.0f * 3.14159f;
+            float angle2 = (float) (i + 1) / segments * 2.0f * 3.14159f;
+
+            float x1 = Mth.cos(angle1) * radius;
+            float z1 = Mth.sin(angle1) * radius;
+            float x2 = Mth.cos(angle2) * radius;
+            float z2 = Mth.sin(angle2) * radius;
+
+            // 上半球
+            addGlowQuad(consumer, matrix,
+                    x1, radius, z1, x2, radius, z2,
+                    x2, 0, z2, x1, 0, z1,
+                    r, g, b, alpha, packedLight, packedOverlay);
+
+            // 下半球
+            addGlowQuad(consumer, matrix,
+                    x1, 0, z1, x2, 0, z2,
+                    x2, -radius, z2, x1, -radius, z1,
+                    r, g, b, alpha, packedLight, packedOverlay);
+        }
     }
 
     @Override
