@@ -24,6 +24,10 @@ public class NetworkManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkManager.class);
     private long lastScanTime = 0; // 🆕 添加時間戳
     private static final long MIN_SCAN_INTERVAL = 100; // 🆕 最小掃描間隔（毫秒）
+    // === 日誌頻率控制 ===
+    private long lastLogTime = 0;
+    private static final long LOG_INTERVAL = 5000; // 5秒內最多輸出一次日誌
+    private int suppressedLogCount = 0; // 記錄被抑制的日誌數量
 
     // === 常量 ===
     private static final int NETWORK_SCAN_INTERVAL = 600; // 30秒
@@ -239,10 +243,26 @@ public class NetworkManager {
 
         // 🚨 如果已經在掃描，直接返回
         if (isScanning) {
-            LOGGER.debug("Double-check: recursive rescanTargets() prevented at {}",
-                    conduit.getBlockPos());
+            long currentTime = System.currentTimeMillis();
+
+            if (currentTime - lastLogTime > LOG_INTERVAL) {
+                // 輸出累積的日誌信息
+                if (suppressedLogCount > 0) {
+                    LOGGER.debug("Recursive rescanTargets() prevented at {} ({} times suppressed in last {}ms)",
+                            conduit.getBlockPos(), suppressedLogCount, LOG_INTERVAL);
+                } else {
+                    LOGGER.debug("Recursive rescanTargets() prevented at {}", conduit.getBlockPos());
+                }
+
+                lastLogTime = currentTime;
+                suppressedLogCount = 0;
+            } else {
+                // 只是計數，不輸出日誌
+                suppressedLogCount++;
+            }
             return;
         }
+
 
         LOGGER.debug("Starting target rescan for {}", conduit.getBlockPos());
 

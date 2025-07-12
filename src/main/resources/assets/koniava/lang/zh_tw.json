@@ -209,7 +209,7 @@
   "mode.koniava.output": "輸出",
   "mode.koniava.input": "輸入",
   "mode.koniava.disabled": "停用",
-  "mode.koniava.both": "輸入與輸出",
+  "mode.koniava.both": "雙向",
   "mode.koniava.direction_config": "方向配置模式",
   "mode.koniava.priority_config": "優先級配置模式",
 

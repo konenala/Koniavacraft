@@ -83,15 +83,15 @@ public class VirtualNetwork {
     /**
      * 從網路提取魔力
      */
-    public int extractManaFromNetwork(int maxExtract) {
-        return sharedManaPool.extractMana(maxExtract, ManaAction.EXECUTE);
+    public int extractManaFromNetwork(int maxExtract, ManaAction action) { // ✅ 添加 action 參數
+        return sharedManaPool.extractMana(maxExtract, action); // ✅ 使用正確的 action
     }
 
     /**
      * 向網路存入魔力
      */
-    public int receiveManaToNetwork(int maxReceive) {
-        return sharedManaPool.receiveMana(maxReceive, ManaAction.EXECUTE);
+    public int receiveManaToNetwork(int maxReceive, ManaAction action) { // ✅ 添加 action 參數
+        return sharedManaPool.receiveMana(maxReceive, action); // ✅ 使用正確的 action
     }
 
     /**

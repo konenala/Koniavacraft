@@ -485,7 +485,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     public int receiveMana(int maxReceive, ManaAction action) {
         // 🔄 如果在虛擬網路中，使用網路的魔力池
         if (virtualNetwork != null) {
-            int received = virtualNetwork.receiveManaToNetwork(maxReceive);
+            int received = virtualNetwork.receiveManaToNetwork(maxReceive,action);
             if (received > 0) {
                 setChanged();
             }
@@ -496,12 +496,13 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         return buffer.receiveMana(maxReceive, action);
     }
 
+
     @Override
     public int extractMana(int maxExtract, ManaAction action) {
         // 🔄 如果在虛擬網路中，從網路提取魔力
         if (virtualNetwork != null) {
-            int extracted = virtualNetwork.extractManaFromNetwork(maxExtract);
-            if (extracted > 0) {
+            int extracted = virtualNetwork.extractManaFromNetwork(maxExtract, action); // ✅ 傳遞 action
+            if (extracted > 0 && action.execute()) { // ✅ 只有 EXECUTE 時才 setChanged
                 setChanged();
             }
             return extracted;
@@ -510,7 +511,6 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 否則使用原來的邏輯
         return buffer.extractMana(maxExtract, action);
     }
-
 
     @Override
     public int getManaStored() {
@@ -559,13 +559,16 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
     @Override
     public boolean canExtract() {
-        return buffer.getManaStored() > 0;
+        // 🔧 修復：使用一致的邏輯，支援虛擬網路
+        return getManaStored() > 0;
     }
 
     @Override
     public boolean canReceive() {
-        return buffer.getManaStored() < buffer.getMaxManaStored();
+        // 🔧 修復：使用一致的邏輯，支援虛擬網路
+        return getManaStored() < getMaxManaStored();
     }
+
 
     // === 多容器支援（簡化實現）===
     @Override
