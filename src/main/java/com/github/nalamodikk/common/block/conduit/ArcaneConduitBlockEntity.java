@@ -366,9 +366,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             }
             tag.put("VirtualNetworkConduits", conduitList);
 
-            LOGGER.info("💾 保存虛擬網路魔力: {}, 連接數: {}",
-                    virtualNetwork.getTotalManaStored(),
-                    virtualNetwork.getConnectedConduits().size());
+//            LOGGER.info("💾 保存虛擬網路魔力: {}, 連接數: {}",
+//                    virtualNetwork.getTotalManaStored(),
+//                    virtualNetwork.getConnectedConduits().size());
         }
         tag.putInt("pullTickCounter", pullTickCounter);
 
