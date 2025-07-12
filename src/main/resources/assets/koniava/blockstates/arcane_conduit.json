@@ -1,0 +1,59 @@
+{
+    "_comment": "在現有基礎上，連接時同時顯示 part + extract",
+    "multipart": [
+        {
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_core" }
+        },
+        {
+            "_comment": "北方管道",
+            "when": { "north": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_part", "uvlock": false }
+        },
+        {
+            "_comment": "北方連接器 - 任何連接都顯示",
+            "when": { "north": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_extract", "uvlock": false }
+        },
+        {
+            "when": { "east": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_part", "y": 90, "uvlock": false }
+        },
+        {
+            "when": { "east": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_extract", "y": 90, "uvlock": false }
+        },
+        {
+            "when": { "south": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_part", "y": 180, "uvlock": false }
+        },
+        {
+            "when": { "south": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_extract", "y": 180, "uvlock": false }
+        },
+        {
+            "when": { "west": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_part", "y": 270, "uvlock": false }
+        },
+        {
+            "when": { "west": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_extract", "y": 270, "uvlock": false }
+        },
+        {
+            "when": { "up": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_part", "x": 270, "uvlock": false }
+        },
+        {
+            "when": { "up": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_extract", "x": 270, "uvlock": false }
+        },
+        {
+            "when": { "down": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_part", "x": 90, "uvlock": false }
+        },
+        {
+            "when": { "down": "true" },
+            "apply": { "model": "koniava:block/conduit/arcane_conduit_extract", "x": 90, "uvlock": false }
+        }
+
+    ]
+}

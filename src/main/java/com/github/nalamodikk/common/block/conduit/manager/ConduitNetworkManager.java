@@ -341,7 +341,6 @@ public class ConduitNetworkManager {
      * 處理鄰居變化事件
      */
     public void onNeighborChanged() {
-        LOGGER.debug("Neighbor changed for conduit at {}", conduit.getBlockPos());
 
         // 清除所有緩存
         cacheManager.invalidateAll();

@@ -15,6 +15,7 @@ public class ModRenderLayers {
     @SubscribeEvent
     public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.MANA_GENERATOR_BE.get(), ManaGeneratorRenderer::new);
+//        event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_CONDUIT_BE.get(), ArcaneConduitBlockEntityRenderer::new);
     }
 
 }
