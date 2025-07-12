@@ -36,9 +36,13 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private CompoundTag tempNetworkData = null;
     private boolean needsNetworkRestore = false;
     // === 保留的常量和靜態字段 ===
+    public static final Logger LOGGER = LogUtils.getLogger();
+
     private static final int BUFFER_SIZE = 100;
     private static final int NETWORK_SCAN_INTERVAL = 600;
-    public static final Logger LOGGER = LogUtils.getLogger();
+    private static final int PULL_INTERVAL_TICKS = 10; // 每10tick拉取一次
+    private static final int MAX_PULL_PER_TICK = 100;  // 每次最多拉取100魔力
+    private int pullTickCounter = 0;
 
     // 保留全域緩存管理的靜態字段（由CacheManager管理）
     private static int globalTickOffset = 0;
@@ -52,6 +56,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private final ConduitNetworkManager networkManager;
     private final ConduitTransferManager transferManager;
     private SimpleVirtualNetwork virtualNetwork;
+    private ConduitActivePullManager activePullManager;
 
     // === 簡化的狀態 ===
     private int tickOffset;
@@ -89,6 +94,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 初始化需要相互引用的管理器
         this.networkManager = new ConduitNetworkManager(this, cacheManager, ioManager, tickOffset);
         this.transferManager = new ConduitTransferManager(this, networkManager, statsManager, ioManager);
+        this.activePullManager = null; // 暫時為null，在onLoad時初始化
 
         // 設定回調監聽器
         setupEventListeners();
@@ -150,6 +156,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 各管理器協調工作
         networkManager.updateIfNeeded(statsManager.getTickCounter());
         transferManager.processManaFlow();
+        performActivePull();
 
         // 定期維護
         if (statsManager.getTickCounter() % 72000 == tickOffset) { // 1小時
@@ -160,6 +167,46 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             networkManager.performPassiveCleanup();
         }
     }
+
+
+    /**
+     * 🔄 執行主動拉取邏輯
+     */
+    private void performActivePull() {
+        if (activePullManager == null) return;
+
+        pullTickCounter++;
+
+        // 🕒 每隔一定 tick 執行一次拉取
+        if (pullTickCounter >= PULL_INTERVAL_TICKS) {
+            pullTickCounter = 0;
+
+            // 🎯 只有在導管有空間時才拉取
+            // 注意：這裡使用你的虛擬網路系統
+            int currentMana = virtualNetwork != null ?
+                    virtualNetwork.getTotalManaStored() : buffer.getManaStored();
+            int maxMana = virtualNetwork != null ?
+                    virtualNetwork.getTotalManaCapacity() : buffer.getMaxManaStored();
+
+            if (currentMana < maxMana) {
+                int pulledAmount = activePullManager.performActivePull(MAX_PULL_PER_TICK);
+
+                if (pulledAmount > 0) {
+                    // 🔄 拉取成功，標記為需要保存和同步
+                    setChanged();
+
+                    // 🌐 通知客戶端更新
+                    if (level != null) {
+                        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                    }
+
+                    // 📊 更新統計（使用你現有的統計系統）
+                    statsManager.recordActivity();
+                }
+            }
+        }
+    }
+
 
     // === 🆕 簡化的維護方法 ===
     private void performMaintenance() {
@@ -296,6 +343,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         super.saveAdditional(tag, registries);
 
         // 保存緩衝區
+
         tag.put("Buffer", buffer.serializeNBT(registries));
         if (virtualNetwork != null) {
             tag.putInt("VirtualNetworkMana", virtualNetwork.getTotalManaStored());
@@ -316,6 +364,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                     virtualNetwork.getTotalManaStored(),
                     virtualNetwork.getConnectedConduits().size());
         }
+        tag.putInt("pullTickCounter", pullTickCounter);
 
         // 委派給各管理器
         ioManager.saveToNBT(tag);
@@ -346,6 +395,8 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
             LOGGER.info("📂 準備恢復虛擬網路魔力: {}", tag.getInt("VirtualNetworkMana"));
         }
+        // 🆕 載入拉取計數器
+        pullTickCounter = tag.getInt("pullTickCounter");
 
         // 委派給各管理器
         ioManager.loadFromNBT(tag);
@@ -365,6 +416,11 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             // 標記需要驗證網路狀態
             networkManager.markDirty();
             statsManager.recordActivity();
+            this.activePullManager = new ConduitActivePullManager(
+                    this.level,
+                    this.worldPosition,
+                    this);  // ← 改成傳入 this
+
             if (!level.isClientSide) {
                 tryJoinVirtualNetwork();
 
@@ -375,6 +431,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 }
             }
         }
+
     }
 
     private void restoreVirtualNetworkData() {
@@ -735,8 +792,3 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         }
     }
 }
-
-// === 🎉 重構完成！ ===
-// 主類從 1400+ 行縮減到約 400 行
-// 所有複雜邏輯都分離到專門的管理器中
-// 代碼結構清晰，易於維護和擴展

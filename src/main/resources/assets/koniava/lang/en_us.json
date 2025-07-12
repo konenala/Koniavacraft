@@ -14,6 +14,8 @@
   "item.koniava.raw_mana_dust": "Raw Mana Dust",
   "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
   "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
+  "item.koniava.refined_mana_dust": "Refined Mana Dust",
+  "tooltip.koniava.refined_mana_dust": "§7High-temperature refined mana dust with §bgreater purity§7, suitable for advanced materials.",
 
   "equipment.koniava.helmet": "Tactical Helmet",
   "equipment.koniava.chestplate": "Power Chestplate",

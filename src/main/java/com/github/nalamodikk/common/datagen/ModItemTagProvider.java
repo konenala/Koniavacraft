@@ -31,6 +31,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                         ModBlocks.MANA_BLOCK.get().asItem(),
                         ModItems.MANA_INGOT.get(),
                         ModItems.MANA_CRYSTAL_FRAGMENT.get(),
+                        ModItems.REFINED_MANA_DUST.get(),
                         ModItems.RAW_MANA_DUST.get()
                 );
 

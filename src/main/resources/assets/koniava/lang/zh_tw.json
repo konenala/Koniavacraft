@@ -14,6 +14,8 @@
   "item.koniava.raw_mana_dust": "原魔塵",
   "item.koniava.condensed_mana_dust": "濃縮魔塵",
   "item.koniava.mana_crystal_fragment": "魔力晶核碎片",
+  "item.koniava.refined_mana_dust": "精煉魔力粉",
+  "tooltip.koniava.refined_mana_dust": "§7經過高溫精煉的魔力粉，§b純度更高§7，適合製作進階材料。",
 
   "equipment.koniava.helmet": "戰術頭盔",
   "equipment.koniava.chestplate": "動力胸甲",

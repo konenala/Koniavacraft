@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.datagen.recipe;
+package com.github.nalamodikk.common.datagen.recipe.material;
 
 import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.mana_crafting.recipe.ManaCraftingRecipeBuilder;
