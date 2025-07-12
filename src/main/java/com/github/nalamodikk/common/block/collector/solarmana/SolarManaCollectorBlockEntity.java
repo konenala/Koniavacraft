@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.collector.solarmana;
 
+import com.github.nalamodikk.common.block.collector.solarmana.manager.SolarUpgradeManager;
 import com.github.nalamodikk.common.block.collector.solarmana.sync.SolarCollectorSyncHelper;
 import com.github.nalamodikk.common.block.mana_generator.logic.OutputHandler;
 import com.github.nalamodikk.common.block.manabase.AbstractManaCollectorBlock;
@@ -10,7 +11,6 @@ import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.nbt.NbtUtils;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
-import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.github.nalamodikk.register.ModCapabilities;
@@ -42,17 +42,16 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     private static final int MAX_MANA = 80000;
     private final SolarCollectorSyncHelper syncHelper = new SolarCollectorSyncHelper();
     private boolean generating = false;
-    public static final int UPGRADE_SLOT_COUNT = 4;
-
-    private final UpgradeInventory upgrades = new UpgradeInventory(UPGRADE_SLOT_COUNT);
+    private final SolarUpgradeManager upgradeManager;
     private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
-    private static final int BASE_OUTPUT = 5;
     private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
     private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
 
 
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, 800, 40, 5);
+        this.upgradeManager = new SolarUpgradeManager(this);
+
     }
 
 
@@ -65,17 +64,13 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         this.generating = canGenerate();
         syncHelper.syncFrom(this);
 
-        int speedLevel = upgrades.getUpgradeCount(UpgradeType.SPEED);
-        int efficiencyLevel = upgrades.getUpgradeCount(UpgradeType.EFFICIENCY);
-
-        // ⏱ 根據速度升級計算觸發頻率（最低 10 tick）
-        int interval = Math.max(10, 200 - speedLevel * 20);
+        // 🚀 直接使用升級管理器，不需要再計算 speedLevel 和 efficiencyLevel
+        int interval = upgradeManager.getUpgradedInterval();
         if (level.getGameTime() % interval != 0) return;
 
         if (!canGenerate()) return;
 
-        // 📈 根據效率升級計算產出量（每級 +10%，可改為 log、平方等曲線）
-        int amount = (int)(BASE_OUTPUT * (1 + efficiencyLevel * 0.1));
+        int amount = upgradeManager.getUpgradedOutput();
 
         int inserted = manaStorage.insertMana(amount, ManaAction.EXECUTE);
         if (inserted > 0 && level instanceof ServerLevel server) {
@@ -91,7 +86,6 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
                     2, 0.2, 0.1, 0.2, 0.0
             );
         }
-
     }
 
     protected boolean canGenerate() {
@@ -101,15 +95,16 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         NbtUtils.write(tag, "Mana", manaStorage, registries);
-        NbtUtils.write(tag, "Upgrades", upgrades, registries);
-        NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);    }
+        upgradeManager.saveToNBT(tag); // 委派給管理器
+        NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);
+    }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-
         NbtUtils.read(tag, "Mana", manaStorage, registries);
-        NbtUtils.read(tag, "Upgrades", upgrades, registries);
-        NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);    }
+        upgradeManager.loadFromNBT(tag); // 委派給管理器
+        NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);
+    }
 
 
 
@@ -159,10 +154,10 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         }
     }
 
+    @Override
     public UpgradeInventory getUpgradeInventory() {
-        return upgrades;
+        return upgradeManager.getUpgradeInventory();
     }
-
     @Override
     public BlockEntity getBlockEntity() {
         return this;
