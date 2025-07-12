@@ -2,7 +2,13 @@ package com.github.nalamodikk.common.block.conduit;// 🏗️ 簡化後的 Arcan
 
 // === 1. 在頂部添加所有 Manager imports ===
 
-import com.github.nalamodikk.common.block.conduit.manager.*;
+import com.github.nalamodikk.common.block.conduit.manager.core.CacheManager;
+import com.github.nalamodikk.common.block.conduit.manager.core.IOManager;
+import com.github.nalamodikk.common.block.conduit.manager.core.StatsManager;
+import com.github.nalamodikk.common.block.conduit.manager.network.NetworkManager;
+import com.github.nalamodikk.common.block.conduit.manager.network.VirtualNetwork;
+import com.github.nalamodikk.common.block.conduit.manager.transfer.PullManager;
+import com.github.nalamodikk.common.block.conduit.manager.transfer.TransferManager;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
@@ -50,13 +56,13 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
     // === 🆕 組件化核心 ===
     private final ManaStorage buffer = new ManaStorage(BUFFER_SIZE);
-    private final ConduitIOManager ioManager;
-    private final ConduitStatsManager statsManager;
-    private final ConduitCacheManager cacheManager;
-    private final ConduitNetworkManager networkManager;
-    private final ConduitTransferManager transferManager;
-    private SimpleVirtualNetwork virtualNetwork;
-    private ConduitActivePullManager activePullManager;
+    private final IOManager ioManager;
+    private final StatsManager statsManager;
+    private final CacheManager cacheManager;
+    private final NetworkManager networkManager;
+    private final TransferManager transferManager;
+    private VirtualNetwork virtualNetwork;
+    private PullManager activePullManager;
 
     // === 簡化的狀態 ===
     private int tickOffset;
@@ -83,17 +89,17 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         super(ModBlockEntities.ARCANE_CONDUIT_BE.get(), pos, blockState);
 
         // 初始化所有管理器
-        this.ioManager = new ConduitIOManager();
-        this.statsManager = new ConduitStatsManager();
-        this.cacheManager = new ConduitCacheManager(pos);
+        this.ioManager = new IOManager();
+        this.statsManager = new StatsManager();
+        this.cacheManager = new CacheManager(pos);
 
         // 設定tick偏移
         this.tickOffset = conduitTickOffsets.computeIfAbsent(pos,
                 k -> (globalTickOffset++) % NETWORK_SCAN_INTERVAL);
 
         // 初始化需要相互引用的管理器
-        this.networkManager = new ConduitNetworkManager(this, cacheManager, ioManager, tickOffset);
-        this.transferManager = new ConduitTransferManager(this, networkManager, statsManager, ioManager);
+        this.networkManager = new NetworkManager(this, cacheManager, ioManager, tickOffset);
+        this.transferManager = new TransferManager(this, networkManager, statsManager, ioManager);
         this.activePullManager = null; // 暫時為null，在onLoad時初始化
 
         // 設定回調監聽器
@@ -102,7 +108,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
     // === 🆕 設定事件監聽器 ===
     private void setupEventListeners() {
-        ioManager.setChangeListener(new ConduitIOManager.IOConfigChangeListener() {
+        ioManager.setChangeListener(new IOManager.IOConfigChangeListener() {
             @Override
             public void onIOConfigChanged(Direction direction, IOHandlerUtils.IOType newType) {
                 handleIOConfigChange(direction, newType);
@@ -255,7 +261,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         return networkManager.getActiveConnectionCount();
     }
 
-    public Map<Direction, ConduitStatsManager.TransferStats> getTransferStats() {
+    public Map<Direction, StatsManager.TransferStats> getTransferStats() {
         return statsManager.getAllTransferStats();
     }
 
@@ -264,7 +270,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     }
 
     public boolean isTransferringMana(Direction direction) {
-        ConduitStatsManager.TransferStats stats = statsManager.getTransferStats(direction);
+        StatsManager.TransferStats stats = statsManager.getTransferStats(direction);
         if (stats == null) return false;
 
         long currentTime = System.currentTimeMillis();
@@ -416,7 +422,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             // 標記需要驗證網路狀態
             networkManager.markDirty();
             statsManager.recordActivity();
-            this.activePullManager = new ConduitActivePullManager(
+            this.activePullManager = new PullManager(
                     this.level,
                     this.worldPosition,
                     this);  // ← 改成傳入 this
@@ -688,7 +694,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             LOGGER.info("Starting graceful static cache cleanup");
 
             // 委派給緩存管理器
-            ConduitCacheManager.clearAllStaticCaches();
+            CacheManager.clearAllStaticCaches();
 
             // 清理其他靜態數據
             conduitTickOffsets.clear();
@@ -701,7 +707,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     }
 
     public static void performMaintenanceCleanup() {
-        ConduitCacheManager.performGlobalMaintenance();
+        CacheManager.performGlobalMaintenance();
     }
 
 
@@ -723,7 +729,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     /**
      * 🆕 獲取虛擬網路
      */
-    public SimpleVirtualNetwork getVirtualNetwork() {
+    public VirtualNetwork getVirtualNetwork() {
         return virtualNetwork;
     }
 
@@ -746,7 +752,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             BlockEntity neighborBE = level.getBlockEntity(neighborPos);
 
             if (neighborBE instanceof ArcaneConduitBlockEntity neighborConduit) {
-                SimpleVirtualNetwork neighborNetwork = neighborConduit.getVirtualNetwork();
+                VirtualNetwork neighborNetwork = neighborConduit.getVirtualNetwork();
 
                 if (neighborNetwork != null) {
                     // 加入鄰居的網路
@@ -764,7 +770,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
      * 🆕 創建新的虛擬網路
      */
     private void createNewVirtualNetwork() {
-        virtualNetwork = new SimpleVirtualNetwork();
+        virtualNetwork = new VirtualNetwork();
         virtualNetwork.addConduit(this);
 
         LOGGER.info("Created new virtual network at {}", worldPosition);
@@ -773,7 +779,7 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     /**
      * 🆕 加入現有的虛擬網路
      */
-    private void joinVirtualNetwork(SimpleVirtualNetwork network) {
+    private void joinVirtualNetwork(VirtualNetwork network) {
         virtualNetwork = network;
         network.addConduit(this);
 

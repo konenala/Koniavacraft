@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.transfer;
 
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
@@ -20,13 +20,13 @@ import java.util.List;
  * - 尊重機器的 IO 配置
  * - 處理不同的拉取策略
  */
-public class ConduitActivePullManager {
+public class PullManager {
 
     private final Level level;
     private final BlockPos conduitPos;
     private final ArcaneConduitBlockEntity conduit; // 🆕 直接引用導管實體
 
-    public ConduitActivePullManager(Level level, BlockPos conduitPos, ArcaneConduitBlockEntity conduit) {
+    public PullManager(Level level, BlockPos conduitPos, ArcaneConduitBlockEntity conduit) {
         this.level = level;
         this.conduitPos = conduitPos;
         this.conduit = conduit;

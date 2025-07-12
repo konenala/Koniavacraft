@@ -1,7 +1,7 @@
 // 🎯 第一步：創建這個新文件
 // 文件位置：src/main/java/com/github/nalamodikk/common/block/conduit/SimpleVirtualNetwork.java
 
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.network;
 
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
 import com.github.nalamodikk.common.capability.ManaStorage;
@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SimpleVirtualNetwork {
+public class VirtualNetwork {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     // 共享的魔力池
@@ -25,7 +25,7 @@ public class SimpleVirtualNetwork {
     private final Set<BlockPos> connectedConduits = new HashSet<>();
     private final Map<BlockPos, ArcaneConduitBlockEntity> conduitMap = new HashMap<>();
 
-    public SimpleVirtualNetwork() {
+    public VirtualNetwork() {
         LOGGER.info("Created simple virtual network");
     }
 

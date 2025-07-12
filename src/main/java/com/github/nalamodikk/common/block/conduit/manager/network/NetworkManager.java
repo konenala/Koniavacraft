@@ -1,6 +1,8 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.network;
 
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
+import com.github.nalamodikk.common.block.conduit.manager.core.CacheManager;
+import com.github.nalamodikk.common.block.conduit.manager.core.IOManager;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
@@ -17,9 +19,9 @@ import java.util.*;
  * 導管網路管理器
  * 負責掃描網路拓撲、管理連接和維護網路狀態
  */
-public class ConduitNetworkManager {
+public class NetworkManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConduitNetworkManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkManager.class);
     private long lastScanTime = 0; // 🆕 添加時間戳
     private static final long MIN_SCAN_INTERVAL = 100; // 🆕 最小掃描間隔（毫秒）
 
@@ -28,21 +30,21 @@ public class ConduitNetworkManager {
 
     // === 組件引用 ===
     private final ArcaneConduitBlockEntity conduit;
-    private final ConduitCacheManager cacheManager;
-    private final ConduitIOManager ioManager;
+    private final CacheManager cacheManager;
+    private final IOManager ioManager;
 
     // === 網路狀態 ===
     private final Set<BlockPos> networkNodes = new HashSet<>();
-    private final Map<Direction, ConduitCacheManager.ManaEndpoint> endpoints = new HashMap<>();
+    private final Map<Direction, CacheManager.ManaEndpoint> endpoints = new HashMap<>();
     private boolean networkDirty = true;
     private int tickOffset;
     private boolean isScanning = false;
 
     // === 建構子 ===
-    public ConduitNetworkManager(ArcaneConduitBlockEntity conduit,
-                                 ConduitCacheManager cacheManager,
-                                 ConduitIOManager ioManager,
-                                 int tickOffset) {
+    public NetworkManager(ArcaneConduitBlockEntity conduit,
+                          CacheManager cacheManager,
+                          IOManager ioManager,
+                          int tickOffset) {
         this.conduit = conduit;
         this.cacheManager = cacheManager;
         this.ioManager = ioManager;
@@ -117,7 +119,7 @@ public class ConduitNetworkManager {
                 continue;
             }
 
-            ConduitCacheManager.TargetInfo target = cacheManager.getCachedTarget(dir);
+            CacheManager.TargetInfo target = cacheManager.getCachedTarget(dir);
             if (target != null && target.canReceive) {
                 // 對導管做額外檢查
                 if (target.isConduit && !validateConduitConnection(dir)) {
@@ -134,7 +136,7 @@ public class ConduitNetworkManager {
     /**
      * 獲取指定方向的目標信息
      */
-    public ConduitCacheManager.TargetInfo getTargetInfo(Direction direction) {
+    public CacheManager.TargetInfo getTargetInfo(Direction direction) {
         return cacheManager.getCachedTarget(direction);
     }
 
@@ -214,7 +216,7 @@ public class ConduitNetworkManager {
                 priority += 10; // 空容器優先級加成
             }
 
-            endpoints.put(dir, new ConduitCacheManager.ManaEndpoint(handler, isConduit, priority));
+            endpoints.put(dir, new CacheManager.ManaEndpoint(handler, isConduit, priority));
             if (!isConduit) {
                 networkNodes.add(neighborPos); // 只記錄非導管節點
             }
@@ -293,7 +295,7 @@ public class ConduitNetworkManager {
         long tickCounter = conduit.getLevel().getGameTime();
         Direction dirToCheck = dirs[(int) (tickCounter % dirs.length)];
 
-        ConduitCacheManager.ManaEndpoint endpoint = endpoints.get(dirToCheck);
+        CacheManager.ManaEndpoint endpoint = endpoints.get(dirToCheck);
         if (endpoint != null) {
             BlockPos neighborPos = conduit.getBlockPos().relative(dirToCheck);
             IUnifiedManaHandler current = CapabilityUtils.getNeighborMana(conduit.getLevel(), neighborPos, dirToCheck);
@@ -322,7 +324,7 @@ public class ConduitNetworkManager {
      * 檢查指定方向是否連接到另一個導管
      */
     public boolean isConnectedToConduit(Direction direction) {
-        ConduitCacheManager.ManaEndpoint endpoint = endpoints.get(direction);
+        CacheManager.ManaEndpoint endpoint = endpoints.get(direction);
         return endpoint != null && endpoint.isConduit;
     }
 
@@ -377,7 +379,7 @@ public class ConduitNetworkManager {
             // 只清理明顯無效的緩存條目
             Set<Direction> invalidDirections = new HashSet<>();
 
-            for (Map.Entry<Direction, ConduitCacheManager.ManaEndpoint> entry : endpoints.entrySet()) {
+            for (Map.Entry<Direction, CacheManager.ManaEndpoint> entry : endpoints.entrySet()) {
                 Direction dir = entry.getKey();
                 BlockPos neighborPos = conduit.getBlockPos().relative(dir);
 
@@ -412,7 +414,7 @@ public class ConduitNetworkManager {
     /**
      * 獲取所有端點的副本
      */
-    public Map<Direction, ConduitCacheManager.ManaEndpoint> getEndpoints() {
+    public Map<Direction, CacheManager.ManaEndpoint> getEndpoints() {
         return new HashMap<>(endpoints);
     }
 

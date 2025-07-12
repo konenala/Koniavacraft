@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.core;
 
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.core.Direction;
@@ -10,7 +10,7 @@ import java.util.EnumMap;
  * 導管IO配置管理器
  * 負責管理導管各個方向的輸入/輸出配置和優先級
  */
-public class ConduitIOManager {
+public class IOManager {
 
     // === 配置資料 ===
     private final EnumMap<Direction, IOHandlerUtils.IOType> ioConfig = new EnumMap<>(Direction.class);
@@ -25,7 +25,7 @@ public class ConduitIOManager {
     }
 
     // === 建構子 ===
-    public ConduitIOManager() {
+    public IOManager() {
         // 初始化默認配置
         for (Direction dir : Direction.values()) {
             ioConfig.put(dir, IOHandlerUtils.IOType.BOTH);

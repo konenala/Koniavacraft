@@ -1,6 +1,11 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.transfer;
 
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
+import com.github.nalamodikk.common.block.conduit.manager.core.CacheManager;
+import com.github.nalamodikk.common.block.conduit.manager.core.IOManager;
+import com.github.nalamodikk.common.block.conduit.manager.core.StatsManager;
+import com.github.nalamodikk.common.block.conduit.manager.network.BalancingStrategy;
+import com.github.nalamodikk.common.block.conduit.manager.network.NetworkManager;
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.utils.capability.CapabilityUtils;
@@ -18,9 +23,9 @@ import java.util.*;
  * 導管傳輸管理器
  * 負責處理魔力傳輸邏輯、負載平衡和防循環
  */
-public class ConduitTransferManager {
+public class TransferManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConduitTransferManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransferManager.class);
 
     // === 常量 ===
     private static final int TRANSFER_RATE = 200;
@@ -28,9 +33,9 @@ public class ConduitTransferManager {
 
     // === 組件引用 ===
     private final ArcaneConduitBlockEntity conduit;
-    private final ConduitNetworkManager networkManager;
-    private final ConduitStatsManager statsManager;
-    private final ConduitIOManager ioManager;
+    private final NetworkManager networkManager;
+    private final StatsManager statsManager;
+    private final IOManager ioManager;
 
     // === 傳輸狀態 ===
     private Direction lastReceiveDirection = null;
@@ -40,10 +45,10 @@ public class ConduitTransferManager {
     private int transfersThisTick = 0;
 
     // === 建構子 ===
-    public ConduitTransferManager(ArcaneConduitBlockEntity conduit,
-                                  ConduitNetworkManager networkManager,
-                                  ConduitStatsManager statsManager,
-                                  ConduitIOManager ioManager) {
+    public TransferManager(ArcaneConduitBlockEntity conduit,
+                           NetworkManager networkManager,
+                           StatsManager statsManager,
+                           IOManager ioManager) {
         this.conduit = conduit;
         this.networkManager = networkManager;
         this.statsManager = statsManager;
@@ -107,7 +112,7 @@ public class ConduitTransferManager {
         }
 
         // 使用負載平衡策略選擇目標
-        return LoadBalancingStrategy.selectBestTarget(
+        return BalancingStrategy.selectBestTarget(
                 networkManager.getValidTargets(),
                 conduit,
                 ioManager,
@@ -136,7 +141,7 @@ public class ConduitTransferManager {
      * 執行實際傳輸
      */
     private void executeTransfer(Direction targetDir, long currentTick) {
-        ConduitCacheManager.TargetInfo target = networkManager.getTargetInfo(targetDir);
+        CacheManager.TargetInfo target = networkManager.getTargetInfo(targetDir);
         if (target == null || !target.canReceive) return;
 
         // 對導管連接做額外檢查

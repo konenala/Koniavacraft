@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.core;
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 導管緩存管理器
  * 負責管理網路拓撲緩存、目標緩存和性能優化
  */
-public class ConduitCacheManager {
+public class CacheManager {
 
     // === 常量 ===
     private static final long CACHE_VERSION_CHECK_INTERVAL = 30000; // 30秒驗證一次
@@ -34,7 +34,7 @@ public class ConduitCacheManager {
     private static final Map<BlockPos, Long> cacheVersions = new ConcurrentHashMap<>();
 
     // === 建構子 ===
-    public ConduitCacheManager(BlockPos position) {
+    public CacheManager(BlockPos position) {
         this.position = position;
     }
 

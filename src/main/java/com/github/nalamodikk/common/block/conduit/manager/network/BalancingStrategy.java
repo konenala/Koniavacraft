@@ -1,20 +1,22 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.network;
 
 import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
+import com.github.nalamodikk.common.block.conduit.manager.core.CacheManager;
+import com.github.nalamodikk.common.block.conduit.manager.core.IOManager;
 import net.minecraft.core.Direction;
 
 import java.util.List;
 // === 負載平衡策略類 ===
 
-public class LoadBalancingStrategy {
+public class BalancingStrategy {
 
     /**
      * 選擇最佳目標方向
      */
     public static Direction selectBestTarget(List<Direction> validTargets,
                                              ArcaneConduitBlockEntity conduit,
-                                             ConduitIOManager ioManager,
-                                             ConduitNetworkManager networkManager,
+                                             IOManager ioManager,
+                                             NetworkManager networkManager,
                                              long tickCounter) {
         if (validTargets.isEmpty()) return null;
 
@@ -35,13 +37,13 @@ public class LoadBalancingStrategy {
      * 找到優先級最高的目標
      */
     private static Direction findHighestPriorityTarget(List<Direction> validTargets,
-                                                       ConduitIOManager ioManager,
-                                                       ConduitNetworkManager networkManager) {
+                                                       IOManager ioManager,
+                                                       NetworkManager networkManager) {
         Direction bestDir = null;
         int maxPriority = Integer.MIN_VALUE;
 
         for (Direction dir : validTargets) {
-            ConduitCacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
+            CacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
             if (target != null) {
                 int priority = target.getPriority() + ioManager.getPriority(dir);
 
@@ -59,12 +61,12 @@ public class LoadBalancingStrategy {
      * 找到負載最輕的目標
      */
     private static Direction findLightestLoadTarget(List<Direction> validTargets,
-                                                    ConduitNetworkManager networkManager) {
+                                                    NetworkManager networkManager) {
         Direction lightestDir = null;
         int minLoad = Integer.MAX_VALUE;
 
         for (Direction dir : validTargets) {
-            ConduitCacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
+            CacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
             if (target != null) {
                 // 如果是導管，考慮其當前魔力量
                 int currentLoad;
@@ -102,8 +104,8 @@ public class LoadBalancingStrategy {
     private static Direction chooseBestStrategy(Direction priorityTarget,
                                                 Direction balancedTarget,
                                                 Direction roundRobinTarget,
-                                                ConduitIOManager ioManager,
-                                                ConduitNetworkManager networkManager) {
+                                                IOManager ioManager,
+                                                NetworkManager networkManager) {
         // 如果有明確的高優先級目標，使用它
         if (priorityTarget != null) {
             int highestPriority = ioManager.getPriority(priorityTarget);
@@ -129,9 +131,9 @@ public class LoadBalancingStrategy {
      */
     private static Direction chooseBalancedTarget(Direction priorityTarget,
                                                   Direction balancedTarget,
-                                                  ConduitNetworkManager networkManager) {
-        ConduitCacheManager.TargetInfo priorityInfo = networkManager.getTargetInfo(priorityTarget);
-        ConduitCacheManager.TargetInfo balancedInfo = networkManager.getTargetInfo(balancedTarget);
+                                                  NetworkManager networkManager) {
+        CacheManager.TargetInfo priorityInfo = networkManager.getTargetInfo(priorityTarget);
+        CacheManager.TargetInfo balancedInfo = networkManager.getTargetInfo(balancedTarget);
 
         // 如果優先級目標已經負載很重，選擇平衡目標
         if (priorityInfo != null && balancedInfo != null &&

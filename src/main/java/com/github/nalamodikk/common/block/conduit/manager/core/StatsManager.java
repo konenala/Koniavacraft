@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.conduit.manager;
+package com.github.nalamodikk.common.block.conduit.manager.core;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -9,7 +9,7 @@ import java.util.EnumMap;
  * 導管統計管理器
  * 負責追蹤傳輸統計、活動狀態和性能監控
  */
-public class ConduitStatsManager {
+public class StatsManager {
 
     // === 常量 ===
     private static final int IDLE_THRESHOLD = 600; // 30秒無活動視為閒置
@@ -21,7 +21,7 @@ public class ConduitStatsManager {
     private long tickCounter = 0;
 
     // === 建構子 ===
-    public ConduitStatsManager() {
+    public StatsManager() {
         for (Direction dir : Direction.values()) {
             transferStats.put(dir, new TransferStats());
         }
