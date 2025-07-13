@@ -99,11 +99,17 @@ public class NetworkManager {
 
         // 🚨 遞迴防護：如果正在掃描，靜默返回空列表
         if (isScanning) {
-            // 🔧 改為 DEBUG 級別，減少日誌噪音
-            LOGGER.debug("Scan already in progress at {}, skipping", conduit.getBlockPos());
+            suppressedCount++;
+            // 🔧 用你之前的頻率控制邏輯
+            if (currentTime - lastLogTime > LOG_INTERVAL) {
+                LOGGER.debug("⚠️ Concurrent scan attempts: {} times in last 30s at {}",
+                        suppressedCount, conduit.getBlockPos());
+                lastLogTime = currentTime;
+                suppressedCount = 0;
+            }
+
             return new ArrayList<>();
         }
-
         // 檢查是否需要重新掃描目標
         if (cacheManager.needsTargetRescan()) {
             try {
@@ -242,19 +248,7 @@ public class NetworkManager {
         if (conduit.getLevel() == null) return;
 
         // 🚨 如果已經在掃描，直接返回
-        if (isScanning) {
-            long currentTime = System.currentTimeMillis();
-            suppressedCount++;
 
-            // 🔧 每30秒輸出一次統計
-            if (currentTime - lastLogTime > LOG_INTERVAL) {
-                LOGGER.debug("⚠️ Network scanning conflicts: {} times in last 30s at {}",
-                        suppressedCount, conduit.getBlockPos());
-                lastLogTime = currentTime;
-                suppressedCount = 0;
-            }
-            return;
-        }
 
         LOGGER.debug("Starting target rescan for {}", conduit.getBlockPos());
 
