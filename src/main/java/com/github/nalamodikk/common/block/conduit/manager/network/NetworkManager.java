@@ -250,7 +250,7 @@ public class NetworkManager {
         // 🚨 如果已經在掃描，直接返回
 
 
-        LOGGER.debug("Starting target rescan for {}", conduit.getBlockPos());
+//        LOGGER.debug("Starting target rescan for {}", conduit.getBlockPos());
 
         for (Direction dir : Direction.values()) {
             // 檢查我是否能輸出到這個方向
@@ -288,7 +288,7 @@ public class NetworkManager {
         }
 
         cacheManager.updateLastScanTime();
-        LOGGER.debug("Target rescan completed for {}", conduit.getBlockPos());
+//        LOGGER.debug("Target rescan completed for {}", conduit.getBlockPos());
     }
     /**
      * 輕量級端點檢查

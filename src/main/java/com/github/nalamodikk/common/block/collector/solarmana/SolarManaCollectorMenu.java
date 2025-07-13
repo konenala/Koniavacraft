@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,7 +23,7 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
         super(ModMenuTypes.SOLAR_MANA_COLLECTOR_MENU.get(), id);
         this.blockEntity = blockEntity;
         this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
-        this.syncHelper = new SolarCollectorSyncHelper();
+        this.syncHelper = blockEntity.getSyncHelper();
 
         this.syncHelper.syncFrom(blockEntity);
         this.addDataSlots(syncHelper.getContainerData()); // ✅ 現在就找得到方法了
@@ -51,7 +52,21 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
     }
 
     public SolarManaCollectorMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, (SolarManaCollectorBlockEntity) inv.player.level().getBlockEntity(buf.readBlockPos()));
+        super(ModMenuTypes.SOLAR_MANA_COLLECTOR_MENU.get(), id);
+
+        // 📍 獲取 BlockEntity
+        this.blockEntity = (SolarManaCollectorBlockEntity) inv.player.level()
+                .getBlockEntity(buf.readBlockPos());
+        this.access = ContainerLevelAccess.create(inv.player.level(), blockEntity.getBlockPos());
+
+        // 🎯 客戶端：創建假同步器，網路數據會覆蓋
+        this.syncHelper = new SolarCollectorSyncHelper();
+
+        // 📊 客戶端使用 SimpleContainerData，會被伺服器數據覆蓋
+        this.addDataSlots(new SimpleContainerData(SolarCollectorSyncHelper.SyncIndex.count()));
+
+        addPlayerInventorySlots(inv, 8, 84);
+        addPlayerHotbarSlots(inv, 8, 142);
     }
 
     @Override

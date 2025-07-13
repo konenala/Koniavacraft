@@ -198,6 +198,9 @@
   "screen.koniava.nara.warning": "This operation is irreversible. Please proceed with caution.",
   "screen.koniava.nara.screen_title": "Nara System Initialization",
 
+  "screen.koniava.upgrade.machine_info": "%s (%d upgrade slots)",
+  "screen.koniava.upgrade.extended_hint": "Use more upgrades to improve machine performance!",
+  "screen.koniava.upgrade.unknown_machine": "Unknown Machine",
 
   "mode.koniava.mana": "Mana",
   "mode.koniava.energy": "Energy",

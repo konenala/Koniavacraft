@@ -163,11 +163,12 @@ public class PullManager {
                 // 單次拉取，使用原來的格式
                 LOGGER.debug("Successfully pulled {} mana from {} to conduit at {}",
                         amount, fromPos, toPos);
-            } else {
-                // 多次拉取，使用統計格式
-                LOGGER.debug("Successfully pulled {} mana in {} operations from {} to conduit at {} (last {}ms)",
-                        totalManaSinceLastLog, totalPullsSinceLastLog, fromPos, toPos, PULL_LOG_INTERVAL);
             }
+//            else {
+//                // 多次拉取，使用統計格式
+//                LOGGER.debug("Successfully pulled {} mana in {} operations from {} to conduit at {} (last {}ms)",
+//                        totalManaSinceLastLog, totalPullsSinceLastLog, fromPos, toPos, PULL_LOG_INTERVAL);
+//            }
 
             // 重置統計
             lastPullLogTime = currentTime;

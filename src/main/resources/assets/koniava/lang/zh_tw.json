@@ -199,7 +199,9 @@
   "screen.koniava.hold_shift": "按住 Shift 顯示進階資訊",
   "screen.koniava.debug_world_direction": "世界方向代碼：%s",
 
-
+  "screen.koniava.upgrade.machine_info": "%s (%d 個升級槽位)",
+  "screen.koniava.upgrade.extended_hint": "使用更多升級來提升機器性能！",
+  "screen.koniava.upgrade.unknown_machine": "未知機器",
 
   "mode.koniava.mana": "魔力",
   "mode.koniava.energy": "能量",

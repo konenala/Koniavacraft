@@ -164,8 +164,8 @@ public class SolarUpgradeManager {
 
         effectsDirty = false;
 
-        LOGGER.debug("🌞 升級效果重新計算：{}效率+{}速度 → 產量={}, 間隔={}tick",
-                efficiencyCount, speedCount, cachedOutput, cachedInterval);
+//        LOGGER.debug("🌞 升級效果重新計算：{}效率+{}速度 → 產量={}, 間隔={}tick",
+//                efficiencyCount, speedCount, cachedOutput, cachedInterval);
     }
 
     /**

@@ -169,8 +169,8 @@ public class TransferManager {
                 int actualReceived = handler.receiveMana(simulated, ManaAction.EXECUTE);
                 conduit.extractMana(actualReceived, ManaAction.EXECUTE);
 
-                LOGGER.debug("Transfer executed: {} mana from {} to {} (direction: {})",
-                        actualReceived, conduit.getBlockPos(), neighborPos, targetDir);
+//                LOGGER.debug("Transfer executed: {} mana from {} to {} (direction: {})",
+//                        actualReceived, conduit.getBlockPos(), neighborPos, targetDir);
 
                 // 更新狀態
                 updateTransferState(targetDir, actualReceived, currentTick, true);
