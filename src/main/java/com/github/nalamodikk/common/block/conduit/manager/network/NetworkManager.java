@@ -28,7 +28,6 @@ public class NetworkManager {
     private long lastLogTime = 0;
     private static final long LOG_INTERVAL = 30000; // 🔧 改為30秒間隔（原來可能是5秒）
     private int suppressedCount = 0;
-    private static final int MIN_SUPPRESSED_COUNT = 100; // 🔧 累積100次才輸出一次
 
     // === 常量 ===
     private static final int NETWORK_SCAN_INTERVAL = 600; // 30秒
@@ -247,11 +246,10 @@ public class NetworkManager {
             long currentTime = System.currentTimeMillis();
             suppressedCount++;
 
-            // 🔧 更嚴格的條件：30秒間隔 AND 累積100次
-            if ((currentTime - lastLogTime > LOG_INTERVAL) && (suppressedCount >= MIN_SUPPRESSED_COUNT)) {
-                LOGGER.debug("️ Recursive rescanTargets() prevented {} times at {} (last {}ms)",
-                        suppressedCount, conduit.getBlockPos(), LOG_INTERVAL);
-
+            // 🔧 每30秒輸出一次統計
+            if (currentTime - lastLogTime > LOG_INTERVAL) {
+                LOGGER.debug("⚠️ Network scanning conflicts: {} times in last 30s at {}",
+                        suppressedCount, conduit.getBlockPos());
                 lastLogTime = currentTime;
                 suppressedCount = 0;
             }
