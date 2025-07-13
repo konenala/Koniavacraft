@@ -129,18 +129,28 @@ public class BasicTechWandItem extends Item {
 
                     IOHandlerUtils.IOType current = configBlock.getIOConfig(face);
                     IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
-                    configBlock.setIOConfig(face, next);
 
-                    BlockEntity blockEntity = level.getBlockEntity(pos);
-                    if (blockEntity != null) {
+                    if (level.isClientSide) {
+                        // ✅ 客戶端：只發送 Packet，不直接修改配置
                         PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(pos, face, next));
-                    }
 
-                    player.displayClientMessage(Component.translatable(
-                            "message.koniava.config_changed",
-                            face.getName(),
-                            Component.translatable("mode.koniava." + next.name().toLowerCase()) // ✅ 改為使用 next.name()
-                    ), true);
+                        // 客戶端顯示臨時消息
+                        player.displayClientMessage(Component.translatable(
+                                "message.koniava.config_changed",
+                                face.getName(),
+                                Component.translatable("mode.koniava." + next.name().toLowerCase())
+                        ), true);
+                    } else {
+                        // ✅ 服務器端：只修改配置，不發送 Packet
+                        configBlock.setIOConfig(face, next);
+
+                        // 服務器端的消息（可選）
+                        player.displayClientMessage(Component.translatable(
+                                "message.koniava.config_changed",
+                                face.getName(),
+                                Component.translatable("mode.koniava." + next.name().toLowerCase())
+                        ), true);
+                    }
 
                     return InteractionResult.SUCCESS;
                 }
