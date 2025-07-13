@@ -49,6 +49,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private static final int PULL_INTERVAL_TICKS = 10; // 每10tick拉取一次
     private static final int MAX_PULL_PER_TICK = 100;  // 每次最多拉取100魔力
     private int pullTickCounter = 0;
+    // === 日誌控制 ===
+    private int lastLoggedMana = -1;
+    private int lastLoggedConduitCount = -1;
 
     // 保留全域緩存管理的靜態字段（由CacheManager管理）
     private static int globalTickOffset = 0;
@@ -354,6 +357,8 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         if (virtualNetwork != null) {
             tag.putInt("VirtualNetworkMana", virtualNetwork.getTotalManaStored());
             tag.putInt("VirtualNetworkMaxMana", virtualNetwork.getMaxManaStored());
+            int currentMana = virtualNetwork.getTotalManaStored();
+            int conduitCount = virtualNetwork.getConnectedConduits().size();
 
             // 🔧 保存網路中的所有導管位置
             ListTag conduitList = new ListTag();
@@ -366,9 +371,8 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
             }
             tag.put("VirtualNetworkConduits", conduitList);
 
-//            LOGGER.info("💾 保存虛擬網路魔力: {}, 連接數: {}",
-//                    virtualNetwork.getTotalManaStored(),
-//                    virtualNetwork.getConnectedConduits().size());
+            // 🔧 使用頻率控制的日誌
+            logVirtualNetworkSave(currentMana, conduitCount);
         }
         tag.putInt("pullTickCounter", pullTickCounter);
 
@@ -412,6 +416,39 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 標記網路需要重新掃描
         networkManager.markDirty();
     }
+
+    /**
+     * 🔧 頻率控制的虛擬網路保存日誌
+     */
+    private void logVirtualNetworkSave(int currentMana, int conduitCount) {
+        // 1. 網路剛建立（第一次保存）
+        if (lastLoggedMana == -1) {
+            LOGGER.info("💾 虛擬網路已建立，魔力: {}, 連接數: {}", currentMana, conduitCount);
+            lastLoggedMana = currentMana;
+            lastLoggedConduitCount = conduitCount;
+            return;
+        }
+
+        // 2. 連接數變化（網路拓撲改變）
+        if (conduitCount != lastLoggedConduitCount) {
+            LOGGER.info("💾 虛擬網路連接變化: {} → {} 導管, 當前魔力: {}",
+                    lastLoggedConduitCount, conduitCount, currentMana);
+            lastLoggedConduitCount = conduitCount;
+            lastLoggedMana = currentMana;
+            return;
+        }
+
+        // 3. 魔力值有重大變化（變化超過2000）
+        if (Math.abs(currentMana - lastLoggedMana) > 2000) {
+            LOGGER.info("💾 虛擬網路魔力重大變化: {} → {}, 連接數: {}",
+                    lastLoggedMana, currentMana, conduitCount);
+            lastLoggedMana = currentMana;
+            return;
+        }
+
+        // 其他情況：靜默保存（不輸出任何日誌）
+    }
+
 
     // === 🆕 簡化的載入處理 ===
     @Override
