@@ -60,7 +60,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
     // === 📊 狀態數據 ===
     private boolean generating = false;
-    private final EnumMap<Direction, Boolean> directionConfig = new EnumMap<>(Direction.class);
+    private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
 
     // === ⚡ 性能緩存 ===
     private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
@@ -69,7 +69,13 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
     public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, 800, 40, 5);
         this.upgradeManager = new SolarUpgradeManager(this);
-
+        ioMap.put(Direction.DOWN, IOHandlerUtils.IOType.OUTPUT);
+        // 其他方向預設為 DISABLED
+        for (Direction dir : Direction.values()) {
+            if (!ioMap.containsKey(dir)) {
+                ioMap.put(dir, IOHandlerUtils.IOType.DISABLED);
+            }
+        }
         LOGGER.debug("🌞 太陽能收集器初始化：位置 {}", pos);
     }
 
@@ -130,7 +136,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         // 🔧 委派給組件保存
         NbtUtils.write(tag, "Mana", manaStorage, registries);
         upgradeManager.saveToNBT(tag);
-        NbtUtils.writeEnumBooleanMap(tag, "DirectionConfig", directionConfig);
+        NbtUtils.writeEnumIOTypeMap(tag, "IOMap", ioMap);
 
         // 📊 保存狀態
         tag.putBoolean("Generating", generating);
@@ -144,8 +150,7 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         // 🔧 委派給組件加載
         NbtUtils.read(tag, "Mana", manaStorage, registries);
         upgradeManager.loadFromNBT(tag);
-        NbtUtils.readEnumBooleanMap(tag, "DirectionConfig", directionConfig);
-
+        setIOMap(NbtUtils.readEnumIOTypeMap(tag, "IOMap"));
         // 📊 加載狀態
         generating = tag.getBoolean("Generating");
 
@@ -237,7 +242,6 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
 
     // === 🔧 配置接口 ===
 
-    private final EnumMap<Direction, IOHandlerUtils.IOType> ioMap = new EnumMap<>(Direction.class);
 
     @Override
     public void setIOConfig(Direction direction, IOHandlerUtils.IOType type) {
@@ -262,8 +266,5 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         setChanged(); // 🔄 配置變更時保存
     }
 
-    @Override
-    public boolean isOutput(Direction direction) {
-        return directionConfig.getOrDefault(direction, false);
-    }
+
 }
