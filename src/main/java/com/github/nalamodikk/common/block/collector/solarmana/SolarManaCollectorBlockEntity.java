@@ -135,8 +135,6 @@ public class SolarManaCollectorBlockEntity extends AbstractManaCollectorBlock im
         // 📊 保存狀態
         tag.putBoolean("Generating", generating);
 
-        LOGGER.debug("🌞 保存太陽能收集器數據：位置 {}, 升級槽位 {}",
-                worldPosition, upgradeManager.getUpgradeInventory().getContainerSize());
     }
 
     @Override

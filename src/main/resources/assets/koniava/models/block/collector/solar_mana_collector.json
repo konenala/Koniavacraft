@@ -1,5 +1,7 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
+	"render_type": "translucent",
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "koniava:block/solar_mana_collector",
@@ -49,9 +51,9 @@
 		},
 		{
 			"name": "bone",
-			"from": [6.9495, 30.68403, 10.21015],
-			"to": [8.6105, 31.84673, 11.37285],
-			"rotation": {"angle": -45, "axis": "x", "origin": [7.78, 29.64749, 9.18246]},
+			"from": [6.9495, 29.9373, 5.11015],
+			"to": [8.6105, 31.1, 6.27285],
+			"rotation": {"angle": -45, "axis": "x", "origin": [7.78, 35.46538, 5.6915]},
 			"faces": {
 				"north": {"uv": [2.5, 6, 2.875, 7.25], "texture": "#1"},
 				"east": {"uv": [2.5, 6, 2.875, 7.25], "texture": "#1"},
@@ -129,7 +131,7 @@
 			"scale": [0.4, 0.4, 0.4]
 		},
 		"firstperson_lefthand": {
-			"rotation": [0, 225, 0],
+			"rotation": [0, -135, 0],
 			"scale": [0.4, 0.4, 0.4]
 		},
 		"ground": {
@@ -137,7 +139,7 @@
 			"scale": [0.5, 0.5, 0.5]
 		},
 		"gui": {
-			"rotation": [30, 225, 0],
+			"rotation": [30, -135, 0],
 			"scale": [0.625, 0.625, 0.625]
 		},
 		"fixed": {
@@ -160,7 +162,5 @@
 			"color": 0,
 			"children": [5, 6, 7]
 		}
-	],
-	"render_type": "translucent"
-
+	]
 }

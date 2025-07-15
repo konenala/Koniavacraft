@@ -32,7 +32,7 @@ public class ModBlocks {
             registerBlock("mana_crafting_table", () -> new ManaCraftingTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BIRCH_WOOD)));
 
     public static final DeferredBlock<Block> MANA_GENERATOR =
-            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+            registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
 
     public static final DeferredBlock<Block> ARCANE_CONDUIT =
             registerBlock("arcane_conduit", () -> new ArcaneConduitBlock(

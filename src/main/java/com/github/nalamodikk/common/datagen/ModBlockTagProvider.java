@@ -23,10 +23,21 @@ public class ModBlockTagProvider extends BlockTagsProvider {
 //                .add(ModBlocks.BISMUTH_ORE.get())
 //                .add(ModBlocks.BISMUTH_LAMP.get())
                 .add(ModBlocks.MAGIC_ORE.get())
-                .add(ModBlocks.DEEPSLATE_MAGIC_ORE.get());
+                .add(ModBlocks.DEEPSLATE_MAGIC_ORE.get())
+                .add(ModBlocks.MANA_BLOCK.get())
+                .add(ModBlocks.ARCANE_CONDUIT.get())
+                .add(ModBlocks.MANA_GENERATOR.get())
+                .add(ModBlocks.SOLAR_MANA_COLLECTOR.get())
+        ;
+
+
+        tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .add(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
 
         tag(BlockTags.NEEDS_IRON_TOOL)
                 .add(ModBlocks.DEEPSLATE_MAGIC_ORE.get());
+
+
 
 //        tag(BlockTags.NEEDS_DIAMOND_TOOL)
 //                .add(ModBlocks.BISMUTH_LAMP.get());

@@ -46,7 +46,8 @@ public class SolarManaCollectorBlock extends BaseMachineBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL; // 使用 blockstate 模型顯示
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+        // 這樣 Minecraft 就會用 BlockEntityRenderer 而不是 JSON 模型
     }
 
     @Nullable

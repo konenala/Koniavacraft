@@ -58,9 +58,20 @@ public class ManaGeneratorTicker {
         } else {
             fuelHandler.resumeBurn();
             fuelHandler.tickBurn(true);
-            if (machine.getStateManager().setWorking(true)) {
-                machine.updateBlockActiveState(true);
-                changed = true;
+
+            // 🎯 在 tickBurn 後面加這個檢查
+            if (!fuelHandler.isBurning()) {
+                // 燃料燒完了！立即停止工作
+                if (machine.getStateManager().setWorking(false)) {
+                    machine.updateBlockActiveState(false);
+                    changed = true;
+                }
+            } else {
+                // 還在燃燒中，保持工作狀態
+                if (machine.getStateManager().setWorking(true)) {
+                    machine.updateBlockActiveState(true);
+                    changed = true;
+                }
             }
 
             if (machine.getLevel() instanceof ServerLevel serverLevel) {
@@ -72,7 +83,7 @@ public class ManaGeneratorTicker {
                             machine.getEnergyStorage(),
                             machine.getIOMap(),
                             machine.getManaOutputCaches(),
-                            machine.getEnergyOutputCaches()    // 👈 加上這個
+                            machine.getEnergyOutputCaches()
                     );
                     machine.getOutputThrottle().recordOutputResult(outputSuccess);
                 }

@@ -26,6 +26,7 @@ import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import com.github.nalamodikk.common.utils.data.TechDataComponents;
 import com.github.nalamodikk.register.ModDataComponents;
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -51,11 +52,13 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BasicTechWandItem extends Item {
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public BasicTechWandItem(Properties properties) {
         super(properties.component(ModDataComponents.TECH_WAND_MODE, TechWandMode.CONFIGURE_IO));
@@ -83,6 +86,7 @@ public class BasicTechWandItem extends Item {
         }
     }
 
+
     public void onLeftClickBlock(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
         if (!player.isCrouching()) return;
@@ -101,9 +105,28 @@ public class BasicTechWandItem extends Item {
 
         BlockEntity be = level.getBlockEntity(target);
         if (be instanceof IConfigurableBlock configBlock) {
-            TechDataComponents.saveConfigDirections(stack, target, configBlock);
-            player.displayClientMessage(Component.translatable("message.koniava.block_selected", target), true);
-            event.setCanceled(true);
+            try {
+                TechDataComponents.saveConfigDirections(stack, target, configBlock);
+
+                // 🎯 關鍵修復：安全的 Component 創建
+                Component positionText = Component.literal(String.format("(%d, %d, %d)",
+                        target.getX(), target.getY(), target.getZ()));
+
+                player.displayClientMessage(
+                        Component.translatable("message.koniava.block_selected", positionText),
+                        true
+                );
+
+                event.setCanceled(true);
+
+            } catch (Exception e) {
+                // 🛡️ 錯誤處理：避免崩潰
+                LOGGER.error("保存方塊配置時發生錯誤：{}", e.getMessage());
+                player.displayClientMessage(
+                        Component.translatable("message.koniava.config_save_failed"),
+                        true
+                );
+            }
         } else {
             player.displayClientMessage(Component.translatable("message.koniava.block_not_configurable"), true);
         }
