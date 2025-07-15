@@ -26,9 +26,9 @@ public class ManaGeneratorStateManager {
     }
 
     public boolean setWorking(boolean working) {
+        boolean changed = this.isWorking != working;
         this.isWorking = working;
-
-        return working;
+        return changed;  // ✅ 返回是否有變化
     }
 
     public int getCurrentModeIndex() {
