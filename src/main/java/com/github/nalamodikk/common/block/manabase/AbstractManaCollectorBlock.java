@@ -47,33 +47,8 @@ public abstract class AbstractManaCollectorBlock extends AbstractManaMachineEnti
     }
 
     @Override
-    public void tickMachine() {
-        if (level == null || level.isClientSide || manaStorage == null) return;
+    public abstract void tickMachine();
 
-        if (manaStorage.getManaStored() >= manaStorage.getMaxManaStored()) {
-            isWorking = false;
-            return;
-        }
-
-        tickCounter++;
-
-        if (tickCounter >= intervalTick) {
-            tickCounter = 0;
-
-            if (canGenerate()) {
-                int amount = computeManaAmount();
-                manaStorage.addMana(amount);
-
-                isWorking = true;
-                setChanged();
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-                onGenerate(amount);
-
-            } else {
-                isWorking = false;
-            }
-        }
-    }
 
     protected boolean canGenerate() {
         return true; // 預設可產生，子類可覆寫

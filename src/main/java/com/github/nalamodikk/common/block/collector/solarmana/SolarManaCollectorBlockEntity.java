@@ -67,7 +67,7 @@
         private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
 
         public SolarManaCollectorBlockEntity(BlockPos pos, BlockState state) {
-            super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, 800, 40, 5);
+            super(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), pos, state, 800, 0, 0);
             this.upgradeManager = new SolarUpgradeManager(this);
             ioMap.put(Direction.DOWN, IOHandlerUtils.IOType.OUTPUT);
             // 其他方向預設為 DISABLED
