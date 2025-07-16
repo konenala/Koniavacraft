@@ -90,10 +90,17 @@
         @Override
         public void tickMachine() {
             // 🔄 狀態更新
+            boolean oldGenerating = this.generating;
             this.generating = canGenerate();
 
             // 📊 同步數據（每 tick 更新，確保客戶端數據實時）
             syncHelper.syncFrom(this);
+
+            // 🔧 修復：狀態改變時立即同步到客戶端
+            if (oldGenerating != this.generating && level instanceof ServerLevel) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                setChanged();
+            }
 
             // ⚡ 能量生成邏輯
             int interval = upgradeManager.getUpgradedInterval();
@@ -108,7 +115,7 @@
                 // 🔌 輸出處理
                 OutputHandler.tryOutput(server, worldPosition, manaStorage, null, ioMap, manaCaches, energyCaches);
 
-                // 📡 通知更新
+                // 📡 通知更新（這裡保留原有的同步，因為魔力值可能改變）
                 level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
                 setChanged();
 
