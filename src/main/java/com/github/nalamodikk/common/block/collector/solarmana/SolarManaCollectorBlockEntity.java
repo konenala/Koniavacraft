@@ -130,6 +130,7 @@
             }
         }
 
+        @Override
         protected boolean canGenerate() {
             return level.isDay() && !level.isRaining() && level.canSeeSky(worldPosition.above());
         }
