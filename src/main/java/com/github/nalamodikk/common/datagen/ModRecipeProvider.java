@@ -36,11 +36,22 @@ public class ModRecipeProvider extends RecipeProvider {
         generateToolRecipes(recipeOutput);
         generateStorageRecipes(recipeOutput);
         generateExperimentalRecipes(recipeOutput);
+        normalBlock(recipeOutput);
     }
 
 
-    // === 🧪 材料加工配方 ===
-
+    // === 🧪 材料配方 ===
+    private void normalBlock(RecipeOutput output) {
+        // 🔆 太陽能魔力收集器
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.MANA_SOIL.get(), 4)
+                .define('D', Blocks.DIRT)
+                .define('M', ModItems.MANA_DUST.get())
+                .pattern("DD ")
+                .pattern("DM ")
+                .pattern("   ")
+                .unlockedBy("has_mana_dust", has(ModItems.MANA_DUST.get()))
+                .save(output);
+    }
 
     // === 🏭 機器配方 ===
     private void generateMachineRecipes(RecipeOutput output) {

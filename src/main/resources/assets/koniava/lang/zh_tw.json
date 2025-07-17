@@ -15,7 +15,22 @@
   "item.koniava.condensed_mana_dust": "濃縮魔塵",
   "item.koniava.mana_crystal_fragment": "魔力晶核碎片",
   "item.koniava.refined_mana_dust": "精煉魔力粉",
-  "tooltip.koniava.refined_mana_dust": "§7經過高溫精煉的魔力粉，§b純度更高§7，適合製作進階材料。",
+
+
+  "block.koniava.mana_block": "魔法錠磚",
+  "block.koniava.magic_ore": "魔法礦",
+  "block.koniava.deepslate_magic_ore": "深板岩魔法礦",
+  "block.koniava.mana_generator": "魔力發電機",
+  "block.koniava.mana_crafting_table": "魔力合成台",
+  "block.koniava.advanced_mana_crafting_table": "高級魔力合成台",
+  "block.koniava.mana_conduit": "魔力導管",
+  "block.koniava.solar_mana_collector": "太陽魔法能收集器",
+  "block.koniava.modular_machine": "模塊化機器",
+  "block.koniava.arcane_conduit": "奧術導管",
+  "block.koniava.mana_soil": "魔力土壤",
+  "block.koniava.deep_mana_soil": "深層魔力土壤",
+  "block.koniava.mana_grass_block": "魔力草方塊",
+
 
   "equipment.koniava.helmet": "戰術頭盔",
   "equipment.koniava.chestplate": "動力胸甲",
@@ -44,6 +59,7 @@
   "tooltip.koniava.module.item_input": "提供機器輸入槽位",
   "tooltip.koniava.module.item_output": "提供機器輸出槽位",
   "tooltip.koniava.module.mana_storage": "儲存與供應魔力",
+  "tooltip.koniava.refined_mana_dust": "§7經過高溫精煉的魔力粉，§b純度更高§7，適合製作進階材料。",
 
   "tooltip.koniava.saved_direction_config": "%s: %s",
   "tooltip.koniava.saved_block_position": "已保存方塊位置: (%s, %s, %s)",
@@ -222,17 +238,6 @@
   "button.koniava.auto_crafting_enabled": "自動合成：已啟用",
   "button.koniava.auto_crafting_disabled": "自動合成：已停用",
 
-
-  "block.koniava.mana_block": "魔法錠磚",
-  "block.koniava.magic_ore": "魔法礦",
-  "block.koniava.deepslate_magic_ore": "深板岩魔法礦",
-  "block.koniava.mana_generator": "魔力發電機",
-  "block.koniava.mana_crafting_table": "魔力合成台",
-  "block.koniava.advanced_mana_crafting_table": "高級魔力合成台",
-  "block.koniava.mana_conduit": "魔力導管",
-  "block.koniava.solar_mana_collector": "太陽魔法能收集器",
-  "block.koniava.modular_machine": "模塊化機器",
-  "block.koniava.arcane_conduit": "奧術導管",
 
   "button.mode.auto": "自動模式",
   "button.mode.manual": "手動模式",

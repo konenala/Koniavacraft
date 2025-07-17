@@ -15,6 +15,21 @@
   "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
   "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
   "item.koniava.refined_mana_dust": "Refined Mana Dust",
+
+  "block.koniava.mana_block": "Mana Block",
+  "block.koniava.magic_ore": "Magic Ore",
+  "block.koniava.deepslate_magic_ore": "Deepslate Magic Ore",
+  "block.koniava.mana_generator": "Mana Generator",
+  "block.koniava.mana_crafting_table": "Mana Crafting Table",
+  "block.koniava.advanced_mana_crafting_table": "Advanced Mana Crafting Table",
+  "block.koniava.mana_conduit": "Mana Conduit",
+  "block.koniava.solar_mana_collector": "Solar Mana Collector",
+  "block.koniava.modular_machine": "Modular Machine",
+  "block.koniava.arcane_conduit": "Arcane Conduit",
+  "block.koniava.mana_soil": "Mana Soil",
+  "block.koniava.deep_mana_soil": "Deep Mana Soil",
+  "block.koniava.mana_grass_block": "Mana Grass Block",
+
   "tooltip.koniava.refined_mana_dust": "§7High-temperature refined mana dust with §bgreater purity§7, suitable for advanced materials.",
 
   "equipment.koniava.helmet": "Tactical Helmet",
@@ -225,17 +240,6 @@
 
   "button.koniava.close": "Close",
 
-
-  "block.koniava.mana_block": "Mana Block",
-  "block.koniava.magic_ore": "Magic Ore",
-  "block.koniava.deepslate_magic_ore": "Deepslate Magic Ore",
-  "block.koniava.mana_generator": "Mana Generator",
-  "block.koniava.mana_crafting_table": "Mana Crafting Table",
-  "block.koniava.advanced_mana_crafting_table": "Advanced Mana Crafting Table",
-  "block.koniava.mana_conduit": "Mana Conduit",
-  "block.koniava.solar_mana_collector": "Solar Mana Collector",
-  "block.koniava.modular_machine": "Modular Machine",
-  "block.koniava.arcane_conduit": "Arcane Conduit",
 
 
   "button.mode.auto": "auto mode",

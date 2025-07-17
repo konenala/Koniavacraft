@@ -89,6 +89,11 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.MANA_GENERATOR.get());       // 魔力發電機
         dropSelf(ModBlocks.SOLAR_MANA_COLLECTOR.get()); // 太陽能魔力收集器
         dropSelf(ModBlocks.ARCANE_CONDUIT.get());       // 奧術導管
+        dropSelf(ModBlocks.MANA_SOIL.get());
+        dropSelf(ModBlocks.MANA_GRASS_BLOCK.get());
+
+        dropSelf(ModBlocks.DEEP_MANA_SOIL.get());
+
 
         // ⛏️ 魔法礦 - 複雜掉落邏輯
         this.add(ModBlocks.MAGIC_ORE.get(), block ->

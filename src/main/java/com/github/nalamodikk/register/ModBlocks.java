@@ -6,6 +6,9 @@ import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarM
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlock;
+import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
+import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
+import com.github.nalamodikk.common.block.normal.ManaSoilBlock;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -70,6 +73,12 @@ public class ModBlocks {
                     .lightLevel((state) -> 1)  // 更微弱的發光
             ));
 
+    public static final DeferredBlock<Block> MANA_GRASS_BLOCK =
+            registerBlock("mana_grass_block", () -> new ManaGrassBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.GRASS_BLOCK)
+                    .strength(0.6F)
+                    .sound(SoundType.GRASS)
+                    .lightLevel((state) -> 3)  // 比純土壤亮一點
+            ));
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
         DeferredBlock<T> toReturn = BLOCKS.register(name, block);
