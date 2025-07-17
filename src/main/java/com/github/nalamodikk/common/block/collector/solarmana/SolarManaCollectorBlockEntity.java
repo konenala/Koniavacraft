@@ -130,11 +130,15 @@
             }
         }
 
+        //是否可以發電方法
         @Override
         protected boolean canGenerate() {
-            return level.isDay() && !level.isRaining() && level.canSeeSky(worldPosition.above());
-        }
+            long dayTime = level.getDayTime() % 24000;
+            // 只有深夜不發電（18000-23999）
+            boolean isNotNight = dayTime < 18000;
 
+            return isNotNight && !level.isRaining() && level.canSeeSky(worldPosition.above());
+        }
         // === 💾 數據持久化 ===
 
         @Override
