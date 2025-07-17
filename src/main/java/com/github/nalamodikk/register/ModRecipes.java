@@ -1,8 +1,8 @@
 package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
-import com.github.nalamodikk.common.block.mana_generator.recipe.ManaGenFuelRecipe;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.ManaGenFuelRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;

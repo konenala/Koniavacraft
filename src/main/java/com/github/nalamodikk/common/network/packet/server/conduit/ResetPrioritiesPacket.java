@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.network.packet.server.conduit;
 
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlockEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;

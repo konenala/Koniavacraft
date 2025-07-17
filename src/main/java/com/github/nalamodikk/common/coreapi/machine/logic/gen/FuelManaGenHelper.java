@@ -2,7 +2,7 @@ package com.github.nalamodikk.common.coreapi.machine.logic.gen;
 
 
 import com.github.nalamodikk.common.capability.IUnifiedManaHandler;
-import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 
 import java.util.Optional;

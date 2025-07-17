@@ -2,16 +2,17 @@ package com.github.nalamodikk.register;
 
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlock;
-import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock;
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlock;
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlock;
+import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlock;
+import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlock;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlock;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -53,6 +54,22 @@ public class ModBlocks {
     public static final DeferredBlock<Block> DEEPSLATE_MAGIC_ORE =
             registerBlock("deepslate_magic_ore", () -> new DropExperienceBlock(UniformInt.of(3, 8), BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE)
                                 .strength(4f).requiresCorrectToolForDrops()));
+
+    // 🌍 魔力生態系統 - 土壤層
+    public static final DeferredBlock<Block> MANA_SOIL =
+            registerBlock("mana_soil", () -> new ManaSoilBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DIRT)
+                    .strength(0.5F)
+                    .sound(SoundType.GRAVEL)  // 略微不同的音效
+                    .lightLevel((state) -> 2)  // 微弱發光 (2/15)
+            ));
+
+    public static final DeferredBlock<Block> DEEP_MANA_SOIL =
+            registerBlock("deep_mana_soil", () -> new DeepManaSoilBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.GRAVEL)
+                    .lightLevel((state) -> 1)  // 更微弱的發光
+            ));
+
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
         DeferredBlock<T> toReturn = BLOCKS.register(name, block);

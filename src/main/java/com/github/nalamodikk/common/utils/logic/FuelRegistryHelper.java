@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.utils.logic;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.mana_generator.recipe.loader.ManaGenFuelRateLoader;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.utils.nbt.TagUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;

@@ -166,17 +166,17 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
         // ✅ 修復：引用 ArcaneConduitBlock 中定義的屬性
         builder.part().modelFile(north).addModel()
-                .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.NORTH, true);
+                .condition(com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock.NORTH, true);
         builder.part().modelFile(south).addModel()
-                .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.SOUTH, true);
+                .condition(com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock.SOUTH, true);
         builder.part().modelFile(west).addModel()
-                .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.WEST, true);
+                .condition(com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock.WEST, true);
         builder.part().modelFile(east).addModel()
-                .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.EAST, true);
+                .condition(com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock.EAST, true);
         builder.part().modelFile(up).addModel()
-                .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.UP, true);
+                .condition(com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock.UP, true);
         builder.part().modelFile(down).addModel()
-                .condition(com.github.nalamodikk.common.block.conduit.ArcaneConduitBlock.DOWN, true);
+                .condition(com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock.DOWN, true);
     }
 
 

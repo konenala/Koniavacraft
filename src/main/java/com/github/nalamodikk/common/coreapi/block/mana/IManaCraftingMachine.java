@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.coreapi.block.mana;
 
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
 
 import java.util.Optional;
 

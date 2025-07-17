@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.network.packet.server.manatool;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.utils.data.CodecsLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;

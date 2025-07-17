@@ -13,12 +13,12 @@ package com.github.nalamodikk.register;
  */
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
-import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorMenu;
-import com.github.nalamodikk.common.block.conduit.ArcaneConduitConfigMenu;
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingMenu;
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorMenu;
+import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorMenu;
+import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitConfigMenu;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingMenu;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.screen.block.shared.FallbackUpgradeMenu;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;

@@ -1,8 +1,8 @@
 package com.github.nalamodikk.register.event;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.collector.solarmana.SolarCollectorRenderer;
-import com.github.nalamodikk.common.block.mana_generator.geckolib.ManaGeneratorRenderer;
+import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarCollectorRenderer;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.geckolib.ManaGeneratorRenderer;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;

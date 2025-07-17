@@ -1,10 +1,10 @@
 package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorScreen;
-import com.github.nalamodikk.common.block.conduit.ArcaneConduitConfigScreen;
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingScreen;
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorScreen;
+import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorScreen;
+import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitConfigScreen;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingScreen;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorScreen;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigScreen;
 import com.github.nalamodikk.common.screen.block.shared.UpgradeScreen;
 import com.github.nalamodikk.common.screen.player.ExtraEquipmentScreen;

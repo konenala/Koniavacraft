@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen.recipe.material;
 
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableRecipe;
-import com.github.nalamodikk.common.block.mana_crafting.recipe.ManaCraftingRecipeBuilder;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.recipe.ManaCraftingRecipeBuilder;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;

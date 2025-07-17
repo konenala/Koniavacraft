@@ -1,10 +1,10 @@
 package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.collector.solarmana.SolarManaCollectorBlockEntity;
-import com.github.nalamodikk.common.block.conduit.ArcaneConduitBlockEntity;
-import com.github.nalamodikk.common.block.mana_crafting.ManaCraftingTableBlockEntity;
-import com.github.nalamodikk.common.block.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
