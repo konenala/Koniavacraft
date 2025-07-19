@@ -117,11 +117,10 @@ public class ManaGeneratorBlock extends BaseMachineBlock {
         return createTickerHelper(type, ModBlockEntities.MANA_GENERATOR_BE.get(), ManaGeneratorBlockEntity::tick);
     }
 
-
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.ENTITYBLOCK_ANIMATED;
-
+        // 這樣 Minecraft 就會用 BlockEntityRenderer 而不是 JSON 模型
     }
 
 

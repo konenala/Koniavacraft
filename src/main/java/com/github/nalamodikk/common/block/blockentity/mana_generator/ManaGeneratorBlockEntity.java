@@ -46,16 +46,11 @@
     import org.jetbrains.annotations.Nullable;
     import org.slf4j.Logger;
     import org.slf4j.LoggerFactory;
-    import software.bernie.geckolib.animatable.GeoAnimatable;
-    import software.bernie.geckolib.animatable.GeoBlockEntity;
-    import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-    import software.bernie.geckolib.animation.*;
-    import software.bernie.geckolib.util.GeckoLibUtil;
 
     import java.util.EnumMap;
     import java.util.Optional;
 
-    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements GeoBlockEntity , Container , WorldlyContainer {
+    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements  Container , WorldlyContainer {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
  private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
@@ -82,8 +77,6 @@
         private final OutputHandler.OutputThrottleController outputThrottle = new OutputHandler.OutputThrottleController();
 
         private final ManaGeneratorStateManager stateManager = new ManaGeneratorStateManager();
-        private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
-        private static final RawAnimation WORKING_ANIM = RawAnimation.begin().thenLoop("working");
 
 
         private final ItemStackHandler fuelHandler = new ItemStackHandler(FUEL_SLOT_COUNT);
@@ -152,7 +145,6 @@
         public void setCurrentBurnTimeFromNbt(int value) {this.currentBurnTime = value;}
         public void forceRefreshAnimationFromNbt() {this.forceRefreshAnimation = true;}
 
-        private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
         public EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler,  Direction>> getManaOutputCaches() {
             return manaCaches;
@@ -162,36 +154,7 @@
             return energyCaches;
         }
 
-        @Override
-        public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-            AnimationController<ManaGeneratorBlockEntity> controller =
-                    new AnimationController<>(this, "mana_generator_controller", 0, this::predicate);
 
-            controllers.add(controller);
-
-            // ✅ 初始設 idle 動畫，避免一開始或 ESC 回來變空白
-            controller.setAnimation(RawAnimation.begin().thenLoop("idle"));
-        }
-
-        @Override
-        public AnimatableInstanceCache getAnimatableInstanceCache() {
-            return cache;
-        }
-
-        private <T extends GeoAnimatable> PlayState predicate(AnimationState<T> state) {
-            String targetAnimation = stateManager.isWorking() ? "working" : "idle";
-
-            if (!targetAnimation.equals(currentAnimation) || forceRefreshAnimation) {
-                String oldAnimation = currentAnimation;
-                state.getController().setAnimation(RawAnimation.begin().thenLoop(targetAnimation));
-                currentAnimation = targetAnimation;
-                forceRefreshAnimation = false;
-
-//                MagicalIndustryMod.LOGGER.debug("[Anim] Switching animation: {} → {}", oldAnimation, targetAnimation);
-            }
-
-            return PlayState.CONTINUE;
-        }
         @Override
         protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
             super.saveAdditional(tag, provider);
