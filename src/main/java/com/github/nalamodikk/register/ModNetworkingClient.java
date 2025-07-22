@@ -11,7 +11,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, value = Dist.CLIENT)
 public class ModNetworkingClient {
     @SubscribeEvent
     public static void register(final RegisterPayloadHandlersEvent event) {

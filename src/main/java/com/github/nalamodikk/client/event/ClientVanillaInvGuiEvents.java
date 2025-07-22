@@ -17,7 +17,7 @@ import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID,  value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
 public class ClientVanillaInvGuiEvents {
 

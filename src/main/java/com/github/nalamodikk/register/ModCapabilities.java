@@ -17,7 +17,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID)
 public class ModCapabilities {
     public static final BlockCapability<IUnifiedManaHandler, Direction> MANA =
             BlockCapability.create(

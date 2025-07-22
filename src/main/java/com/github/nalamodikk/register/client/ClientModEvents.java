@@ -13,7 +13,7 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.slf4j.Logger;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, value = Dist.CLIENT)
 public class ClientModEvents {
     public static final Logger LOGGER = LogUtils.getLogger();
 

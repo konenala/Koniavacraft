@@ -16,7 +16,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID)
 public class DataGenerators {
 
     @SubscribeEvent
@@ -36,7 +36,6 @@ public class DataGenerators {
         BlockTagsProvider blockTagsProvider = new ModBlockTagProvider(packOutput, lookupProvider, existingFileHelper);
         generator.addProvider(event.includeServer(), blockTagsProvider);
         generator.addProvider(event.includeServer(), new ModItemTagProvider(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), existingFileHelper));
-
 //     TODO   generator.addProvider(event.includeServer(), new ModDataMapProvider(packOutput, lookupProvider));
 //        generator.addProvider(event.includeServer(), new ModDatapackProvider(packOutput, lookupProvider));
 //        generator.addProvider(event.includeServer(), new ModGlobalLootModifierProvider(packOutput, lookupProvider));
@@ -46,4 +45,5 @@ public class DataGenerators {
 
 
     }
+
 }

@@ -1,5 +1,6 @@
 package com.github.nalamodikk;
 
+import com.github.nalamodikk.biome.UniversalBiomeRegistration;
 import com.github.nalamodikk.common.config.ModCommonConfig;
 import com.github.nalamodikk.register.*;
 import com.mojang.logging.LogUtils;
@@ -42,7 +43,12 @@ public class KoniavacraftMod {
         LOGGER.debug("這是一條 DEBUG 測試訊息");
         LOGGER.info("這是一條 INFO 測試訊息");
         // Register the commonSetup method for modloading
+
         modEventBus.addListener(this::commonSetup);
+        // 🌟 註冊生物群落
+//        ModBiomes.BIOMES.register(modEventBus);
+        // 🌟 初始化生物群落世界生成
+
 
         ModItems.register(modEventBus);
 
@@ -67,8 +73,12 @@ public class KoniavacraftMod {
     {
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
+            UniversalBiomeRegistration.init();
+            LOGGER.info("✅ 正常遊戲模式：啟用生物群系 Mixin 初始化");
 
+        KoniavacraftMod.LOGGER.info("✅ Koniavacraft 世界生成系統初始化完成！");
     }
+
 
 
 

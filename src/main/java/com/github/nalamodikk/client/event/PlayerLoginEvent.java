@@ -16,7 +16,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID)
 public class PlayerLoginEvent {
     public static final Logger LOGGER = LogUtils.getLogger();
 

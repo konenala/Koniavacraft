@@ -22,7 +22,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import java.util.EnumMap;
 import java.util.Map;
 
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID)
 public class ModDataComponents {
 
 
