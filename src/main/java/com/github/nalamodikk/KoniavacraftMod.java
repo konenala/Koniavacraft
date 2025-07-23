@@ -44,7 +44,6 @@ public class KoniavacraftMod {
         LOGGER.info("這是一條 INFO 測試訊息");
         // Register the commonSetup method for modloading
 
-        modEventBus.addListener(this::commonSetup);
         // 🌟 註冊生物群落
 //        ModBiomes.BIOMES.register(modEventBus);
         // 🌟 初始化生物群落世界生成
@@ -61,6 +60,8 @@ public class KoniavacraftMod {
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
+        modEventBus.addListener(this::commonSetup);
+
         NeoForge.EVENT_BUS.register(this);
 
         // Register the item to a creative tab
