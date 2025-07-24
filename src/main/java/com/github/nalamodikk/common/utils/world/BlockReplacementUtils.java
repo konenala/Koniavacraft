@@ -1,4 +1,4 @@
-// 🔧 通用方塊替換工具類
+// 🔧 通用方塊替換工具類 - 優化版
 package com.github.nalamodikk.common.utils.world;
 
 import net.minecraft.core.BlockPos;
@@ -11,24 +11,19 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.BiPredicate;
 
 /**
- * 🔧 通用方塊替換工具
- *
- * 用法超簡單：
- * BlockReplacementUtils.replace(level, chunk, ModBiomes.MANA_PLAINS, rules);
+ * 🔧 通用方塊替換工具 - 高性能版
  */
 public class BlockReplacementUtils {
 
+    // 🚀 優化：緩存生物群系檢查結果
+    private static final Map<ChunkAccess, ResourceKey<Biome>> BIOME_CACHE = new WeakHashMap<>();
+
     /**
      * 🎯 核心方法：替換指定生物群系的方塊
-     *
-     * @param level 世界
-     * @param chunk 區塊
-     * @param targetBiome 目標生物群系
-     * @param replacements 替換規則
-     * @return 替換的方塊數量
      */
     public static int replace(ServerLevel level, ChunkAccess chunk,
                               ResourceKey<Biome> targetBiome, Map<Block, Block> replacements) {
@@ -36,20 +31,20 @@ public class BlockReplacementUtils {
     }
 
     /**
-     * 🎯 核心方法：替換指定生物群系的方塊（帶條件）
+     * 🎯 核心方法：替換指定生物群系的方塊（帶條件）- 優化版
      */
     public static int replace(ServerLevel level, ChunkAccess chunk,
                               ResourceKey<Biome> targetBiome,
                               Map<Block, Block> replacements,
                               Map<Block, BiPredicate<ChunkAccess, BlockPos>> conditions) {
 
-        // 🔍 檢查是否為目標生物群系
-        if (!isBiome(level, chunk, targetBiome)) {
+        // 🚀 優化1：快速生物群系檢查
+        if (!isBiomeFast(level, chunk, targetBiome)) {
             return 0;
         }
 
-        // 🔄 執行替換
-        return performReplacement(level, chunk, replacements, conditions);
+        // 🚀 優化2：智能範圍掃描
+        return performSmartReplacement(level, chunk, replacements, conditions);
     }
 
     /**
@@ -75,44 +70,64 @@ public class BlockReplacementUtils {
         return Map.of(source, condition);
     }
 
+    // === 優化的內部實現 ===
+
     /**
-     * 🏗️ 建造者模式（可選，提供更複雜的配置）
+     * 🚀 優化的生物群系檢查：多點採樣
      */
-    public static ReplacementBuilder builder() {
-        return new ReplacementBuilder();
+    private static boolean isBiomeFast(ServerLevel level, ChunkAccess chunk, ResourceKey<Biome> targetBiome) {
+        // 檢查緩存
+        ResourceKey<Biome> cachedBiome = BIOME_CACHE.get(chunk);
+        if (cachedBiome != null) {
+            return cachedBiome.equals(targetBiome);
+        }
+
+        // 多點採樣檢查，而不是只檢查中心點
+        int[][] samplePoints = {
+                {4, 4}, {12, 4}, {4, 12}, {12, 12}, {8, 8}
+        };
+
+        int matchCount = 0;
+        for (int[] point : samplePoints) {
+            BlockPos pos = new BlockPos(
+                    chunk.getPos().x * 16 + point[0],
+                    level.getSeaLevel(),
+                    chunk.getPos().z * 16 + point[1]
+            );
+
+            if (level.getBiome(pos).is(targetBiome)) {
+                matchCount++;
+            }
+        }
+
+        // 如果大部分點都匹配，認為是目標生物群系
+        boolean isTargetBiome = matchCount >= 3;
+
+        if (isTargetBiome) {
+            BIOME_CACHE.put(chunk, targetBiome);
+        }
+
+        return isTargetBiome;
     }
 
-    // === 內部實現 ===
-
     /**
-     * 🔍 檢查區塊是否為指定生物群系
+     * 🚀 智能替換：減少掃描範圍 + 早期退出
      */
-    private static boolean isBiome(ServerLevel level, ChunkAccess chunk, ResourceKey<Biome> targetBiome) {
-        BlockPos centerPos = new BlockPos(
-                chunk.getPos().x * 16 + 8,
-                level.getSeaLevel(),
-                chunk.getPos().z * 16 + 8
-        );
-
-        return level.getBiome(centerPos).is(targetBiome);
-    }
-
-    /**
-     * 🔄 執行方塊替換
-     */
-    private static int performReplacement(ServerLevel level, ChunkAccess chunk,
-                                          Map<Block, Block> replacements,
-                                          Map<Block, BiPredicate<ChunkAccess, BlockPos>> conditions) {
+    private static int performSmartReplacement(ServerLevel level, ChunkAccess chunk,
+                                               Map<Block, Block> replacements,
+                                               Map<Block, BiPredicate<ChunkAccess, BlockPos>> conditions) {
 
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int replacedCount = 0;
 
-        // 掃描範圍：海平面上下10格
-        int minY = level.getSeaLevel() - 10;
-        int maxY = level.getSeaLevel() + 10;
+        // 🚀 優化：縮小掃描範圍
+        int seaLevel = level.getSeaLevel();
+        int minY = Math.max(seaLevel - 5, level.getMinBuildHeight()); // 減少到5格
+        int maxY = Math.min(seaLevel + 5, level.getMaxBuildHeight());   // 減少到5格
 
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
+        // 🚀 優化：跳躍掃描 - 不是每個方塊都檢查
+        for (int x = 0; x < 16; x += 2) {  // 每2格檢查一次
+            for (int z = 0; z < 16; z += 2) {
                 for (int y = maxY; y >= minY; y--) {
                     pos.set(
                             chunk.getPos().x * 16 + x,
@@ -123,14 +138,19 @@ public class BlockReplacementUtils {
                     BlockState currentState = chunk.getBlockState(pos);
                     Block currentBlock = currentState.getBlock();
 
+                    // 🚀 優化：如果當前方塊不在替換列表中，跳過
+                    if (!replacements.containsKey(currentBlock) && !conditions.containsKey(currentBlock)) {
+                        continue;
+                    }
+
                     // 🎯 檢查條件替換
                     if (conditions.containsKey(currentBlock)) {
                         BiPredicate<ChunkAccess, BlockPos> condition = conditions.get(currentBlock);
                         if (condition.test(chunk, pos)) {
                             Block targetBlock = replacements.get(currentBlock);
                             if (targetBlock != null) {
-                                chunk.setBlockState(pos, targetBlock.defaultBlockState(), false);
-                                replacedCount++;
+                                // 🚀 優化：替換周圍的相同方塊
+                                replacedCount += replaceCluster(chunk, pos, currentBlock, targetBlock);
                                 continue;
                             }
                         }
@@ -139,8 +159,8 @@ public class BlockReplacementUtils {
                     // 🔄 檢查簡單替換
                     if (replacements.containsKey(currentBlock)) {
                         Block targetBlock = replacements.get(currentBlock);
-                        chunk.setBlockState(pos, targetBlock.defaultBlockState(), false);
-                        replacedCount++;
+                        // 🚀 優化：替換周圍的相同方塊
+                        replacedCount += replaceCluster(chunk, pos, currentBlock, targetBlock);
                     }
                 }
             }
@@ -149,8 +169,35 @@ public class BlockReplacementUtils {
         return replacedCount;
     }
 
-    // === 建造者類 ===
+    /**
+     * 🚀 新功能：聚類替換 - 發現一個目標方塊時，替換周圍相同的方塊
+     */
+    private static int replaceCluster(ChunkAccess chunk, BlockPos centerPos, Block sourceBlock, Block targetBlock) {
+        int replaced = 0;
 
+        // 替換3x3範圍內相同的方塊
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                BlockPos pos = centerPos.offset(dx, 0, dz);
+
+                // 確保在chunk範圍內
+                if (pos.getX() >= chunk.getPos().x * 16 &&
+                        pos.getX() < chunk.getPos().x * 16 + 16 &&
+                        pos.getZ() >= chunk.getPos().z * 16 &&
+                        pos.getZ() < chunk.getPos().z * 16 + 16) {
+
+                    if (chunk.getBlockState(pos).getBlock() == sourceBlock) {
+                        chunk.setBlockState(pos, targetBlock.defaultBlockState(), false);
+                        replaced++;
+                    }
+                }
+            }
+        }
+
+        return replaced;
+    }
+
+    // === 建造者類保持不變 ===
     public static class ReplacementBuilder {
         private final Map<Block, Block> replacements = new HashMap<>();
         private final Map<Block, BiPredicate<ChunkAccess, BlockPos>> conditions = new HashMap<>();
@@ -172,41 +219,47 @@ public class BlockReplacementUtils {
         }
     }
 
-    // === 常用條件 ===
+    // === 優化的常用條件 ===
 
     /**
-     * 🌊 常用條件：深層地下
+     * 🌊 優化的深層地下檢查
      */
     public static BiPredicate<ChunkAccess, BlockPos> DEEP_UNDERGROUND = (chunk, pos) -> {
+        // 🚀 優化：減少檢查範圍
         int solidBlocks = 0;
-        for (int y = pos.getY() + 1; y <= pos.getY() + 6; y++) {
+        for (int y = pos.getY() + 1; y <= pos.getY() + 3; y++) { // 減少到3格
             BlockPos checkPos = new BlockPos(pos.getX(), y, pos.getZ());
             if (!chunk.getBlockState(checkPos).isAir()) {
                 solidBlocks++;
             }
         }
-        return solidBlocks >= 4;
+        return solidBlocks >= 2; // 降低標準
     };
 
     /**
-     * 🌱 常用條件：地表
+     * 🌱 地表檢查
      */
-    public static BiPredicate<ChunkAccess, BlockPos> SURFACE = DEEP_UNDERGROUND.negate();
+    public static BiPredicate<ChunkAccess, BlockPos> SURFACE_ONLY = DEEP_UNDERGROUND.negate();
 
     /**
-     * 🎲 常用條件：隨機機率
+     * 🎲 隨機機率（緩存優化）
      */
     public static BiPredicate<ChunkAccess, BlockPos> chance(float probability) {
-        return (chunk, pos) -> Math.random() < probability;
+        return (chunk, pos) -> {
+            // 使用位置作為種子，確保結果可重現
+            long seed = pos.asLong();
+            return new java.util.Random(seed).nextFloat() < probability;
+        };
     }
 
     /**
-     * 🌊 常用條件：靠近水源
+     * 🌊 靠近水源（優化版）
      */
     public static BiPredicate<ChunkAccess, BlockPos> nearWater(int radius) {
         return (chunk, pos) -> {
-            for (int dx = -radius; dx <= radius; dx++) {
-                for (int dz = -radius; dz <= radius; dz++) {
+            // 🚀 優化：減少檢查點
+            for (int dx = -radius; dx <= radius; dx += 2) {
+                for (int dz = -radius; dz <= radius; dz += 2) {
                     BlockPos checkPos = pos.offset(dx, 0, dz);
                     if (chunk.getBlockState(checkPos).is(net.minecraft.world.level.block.Blocks.WATER)) {
                         return true;
@@ -215,5 +268,10 @@ public class BlockReplacementUtils {
             }
             return false;
         };
+    }
+
+    // 🧹 清理緩存
+    public static void clearCache() {
+        BIOME_CACHE.clear();
     }
 }
