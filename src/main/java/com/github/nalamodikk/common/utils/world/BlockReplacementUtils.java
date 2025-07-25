@@ -11,7 +11,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.WeakHashMap; // 🚀 新增這個import
 import java.util.function.BiPredicate;
 
 /**
@@ -47,35 +47,8 @@ public class BlockReplacementUtils {
         return performSmartReplacement(level, chunk, replacements, conditions);
     }
 
-    /**
-     * 🌟 便捷方法：快速創建替換規則
-     */
-    public static Map<Block, Block> rules(Block source, Block target) {
-        return Map.of(source, target);
-    }
-
-    public static Map<Block, Block> rules(Block s1, Block t1, Block s2, Block t2) {
-        return Map.of(s1, t1, s2, t2);
-    }
-
-    public static Map<Block, Block> rules(Block s1, Block t1, Block s2, Block t2, Block s3, Block t3) {
-        return Map.of(s1, t1, s2, t2, s3, t3);
-    }
-
-    /**
-     * 🌟 便捷方法：創建條件規則
-     */
-    public static Map<Block, BiPredicate<ChunkAccess, BlockPos>> conditions(
-            Block source, BiPredicate<ChunkAccess, BlockPos> condition) {
-        return Map.of(source, condition);
-    }
-
-    // === 優化的內部實現 ===
-
-    /**
-     * 🚀 優化的生物群系檢查：多點採樣
-     */
-    private static boolean isBiomeFast(ServerLevel level, ChunkAccess chunk, ResourceKey<Biome> targetBiome) {
+    // 🚀 新增：公開的快速生物群系檢查方法
+    public static boolean isBiomeFast(ServerLevel level, ChunkAccess chunk, ResourceKey<Biome> targetBiome) {
         // 檢查緩存
         ResourceKey<Biome> cachedBiome = BIOME_CACHE.get(chunk);
         if (cachedBiome != null) {
@@ -108,6 +81,29 @@ public class BlockReplacementUtils {
         }
 
         return isTargetBiome;
+    }
+
+    /**
+     * 🌟 便捷方法：快速創建替換規則
+     */
+    public static Map<Block, Block> rules(Block source, Block target) {
+        return Map.of(source, target);
+    }
+
+    public static Map<Block, Block> rules(Block s1, Block t1, Block s2, Block t2) {
+        return Map.of(s1, t1, s2, t2);
+    }
+
+    public static Map<Block, Block> rules(Block s1, Block t1, Block s2, Block t2, Block s3, Block t3) {
+        return Map.of(s1, t1, s2, t2, s3, t3);
+    }
+
+    /**
+     * 🌟 便捷方法：創建條件規則
+     */
+    public static Map<Block, BiPredicate<ChunkAccess, BlockPos>> conditions(
+            Block source, BiPredicate<ChunkAccess, BlockPos> condition) {
+        return Map.of(source, condition);
     }
 
     /**
