@@ -157,3 +157,5 @@ repo
 /src/generated/resources/data/minecraft/advancement/recipes/misc/refined_mana_dust_from_smelting.json
 /src/generated/resources/data/minecraft/recipe/refined_mana_dust_from_smelting.json
 /src/generated/resources/data/koniava/recipe/mana_recipes/mana_fuel/refined_mana_dust_fuel.json
+/src/generated/resources/data/minecraft/advancement/recipes/misc/corrupted_mana_dust.json
+/src/generated/resources/data/minecraft/recipe/corrupted_mana_dust.json

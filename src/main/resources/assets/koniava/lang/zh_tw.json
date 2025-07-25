@@ -303,5 +303,16 @@
   "koniava.configuration.adaptive.button": "智能功能",
 
   "koniava.config.manaRecipeRefreshInterval.tooltip": "魔力合成配方刷新頻率（tick）",
-  "koniava.config.showIntroAnimation.tooltip": "玩家加入時顯示介紹動畫"
+  "koniava.config.showIntroAnimation.tooltip": "玩家加入時顯示介紹動畫",
+
+  "//23": "=== 配置工具提示 ===",
+  "koniava.config.biome.multithreading.tooltip": "啟用多線程加速生物群系處理。建議4核心以上CPU的伺服器使用。",
+  "koniava.config.biome.threadCount.tooltip": "生物群系處理使用的線程數量。建議值：CPU核心數 - 2（最少1個，最多8個）。",
+  "koniava.config.biome.maxProcessingTime.tooltip": "每tick生物群系處理的最大毫秒數。較高值 = 更快處理但可能影響 TPS。",
+  "koniava.config.biome.maxChunksPerTick.tooltip": "每tick最多處理的區塊數。較高值在高負載時處理更快。",
+  "koniava.config.biome.queueLimit.tooltip": "處理隊列的最大大小。超過此值將跳過新區塊以防止記憶體溢出。",
+  "koniava.config.biome.maxMemory.tooltip": "生物群系處理的最大記憶體使用量（MB）。會根據伺服器記憶體自動調整。",
+  "koniava.config.biome.snapshotDepth.tooltip": "地表快照深度（方塊層數）。較低值使用較少記憶體但可能遺漏深層替換。",
+  "koniava.config.biome.adaptivePerformance.tooltip": "啟用自適應性能調整。系統會根據負載自動調整處理參數。",
+  "koniava.config.biome.autoSkipMinor.tooltip": "高負載時自動跳過次要生物群系。緊急模式下會跳過優先級較低的生物群系處理。"
 }

@@ -42,7 +42,7 @@ public class ModRecipeProvider extends RecipeProvider {
 
     // === 🧪 材料配方 ===
     private void normalBlock(RecipeOutput output) {
-        // 🔆 太陽能魔力收集器
+        // 🔆 魔力土壤
         ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.MANA_SOIL.get(), 4)
                 .define('D', Blocks.DIRT)
                 .define('M', ModItems.MANA_DUST.get())

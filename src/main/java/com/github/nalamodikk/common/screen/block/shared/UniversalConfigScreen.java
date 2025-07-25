@@ -7,6 +7,7 @@ import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirecti
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -262,28 +263,22 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
         MutableComponent tooltip = Component.translatable("screen.koniava.configure_side.full", localizedDirection, modeText);
 
-        // Shift 顯示進階資訊
-        // 🔧 更安全：檢查是否在客戶端環境
+        // 🔧 正確的 Shift 鍵檢查方式
         try {
-            // 只在客戶端才檢查 Shift 鍵
-            if (Minecraft.getInstance() != null && Minecraft.getInstance().options != null) {
-                if (Minecraft.getInstance().options.keyShift.isDown()) {
-                    tooltip.append("\n")
-                            .append(Component.translatable("screen.koniava.debug_world_direction", direction.getName()));
-                } else {
-                    tooltip.append("\n")
-                            .append(Component.translatable("screen.koniava.hold_shift"));
-                }
-            } else {
-                // 服務器端或其他情況，只顯示基本信息
+            // 使用 Screen.hasShiftDown() 檢查實際的 Shift 鍵狀態
+            if (Screen.hasShiftDown()) {
                 tooltip.append("\n")
-                        .append(Component.translatable("screen.koniava.basic_info"));
+                        .append(Component.translatable("screen.koniava.debug_world_direction", direction.getName()));
+            } else {
+                tooltip.append("\n")
+                        .append(Component.translatable("screen.koniava.hold_shift"));
             }
         } catch (Exception e) {
             // 如果出現任何錯誤，只顯示基本信息
+            tooltip.append("\n")
+                    .append(Component.translatable("screen.koniava.hold_shift"));
             KoniavacraftMod.LOGGER.debug("Could not check shift key state: {}", e.getMessage());
         }
-
 
         return tooltip;
     }

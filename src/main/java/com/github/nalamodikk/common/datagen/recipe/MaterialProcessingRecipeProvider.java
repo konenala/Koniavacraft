@@ -3,10 +3,7 @@ package com.github.nalamodikk.common.datagen.recipe;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
+import net.minecraft.data.recipes.*;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -86,13 +83,17 @@ public class MaterialProcessingRecipeProvider {
      * 🦠 汙穢魔力粉處理配方
      */
     private static void generateCorruptedManaProcessing(RecipeOutput output) {
-        // 🦠 主動製作汙穢魔力粉
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.CORRUPTED_MANA_DUST.get(), 2)
-                .requires(ModItems.MANA_DUST.get())
-                .requires(Items.ROTTEN_FLESH)
-                .requires(Items.SPIDER_EYE)
+        // 🦠 主動製作汙穢魔力粉 - 原版有序合成
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.CORRUPTED_MANA_DUST.get(), 2)
+                .pattern(" D ")
+                .pattern("DFD")
+                .pattern("RGR")
+                .define('D', ModItems.MANA_DUST.get())
+                .define('R', Items.ROTTEN_FLESH)
+                .define('F', Items.FERMENTED_SPIDER_EYE)
+                .define('G', Items.GREEN_DYE)
                 .unlockedBy("has_mana_dust", hasItem(ModItems.MANA_DUST.get()))
-                .save(output, "corrupted_mana_dust_crafting");
+                .save(output, "corrupted_mana_dust");
     }
 
     /**

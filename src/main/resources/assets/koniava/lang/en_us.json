@@ -303,5 +303,16 @@
   "koniava.configuration.adaptive.button": "Smart Features",
 
   "koniava.config.manaRecipeRefreshInterval.tooltip": "How often to refresh mana crafting recipes (in ticks)",
-  "koniava.config.showIntroAnimation.tooltip": "Show introduction animation when player joins"
+  "koniava.config.showIntroAnimation.tooltip": "Show introduction animation when player joins",
+
+  "//23": "=== CONFIG TOOLTIPS ===",
+  "koniava.config.biome.multithreading.tooltip": "Enable multithreading for faster biome processing. Recommended for servers with 4+ CPU cores.",
+  "koniava.config.biome.threadCount.tooltip": "Number of threads to use for biome processing. Recommended: CPU cores - 2 (minimum 1, maximum 8).",
+  "koniava.config.biome.maxProcessingTime.tooltip": "Maximum milliseconds per tick for biome processing. Higher values = faster processing but may affect TPS.",
+  "koniava.config.biome.maxChunksPerTick.tooltip": "Maximum chunks to process per tick. Higher values process faster under high load.",
+  "koniava.config.biome.queueLimit.tooltip": "Maximum size of the processing queue. Exceeding this will skip new chunks to prevent memory overflow.",
+  "koniava.config.biome.maxMemory.tooltip": "Maximum memory usage for biome processing (MB). Auto-adjusted based on server memory.",
+  "koniava.config.biome.snapshotDepth.tooltip": "Surface snapshot depth in block layers. Lower values use less memory but may miss deep replacements.",
+  "koniava.config.biome.adaptivePerformance.tooltip": "Enable adaptive performance adjustment. System will automatically adjust processing parameters based on load.",
+  "koniava.config.biome.autoSkipMinor.tooltip": "Automatically skip minor biomes under high load. Skip lower priority biomes during emergency mode."
 }
