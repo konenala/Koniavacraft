@@ -84,7 +84,7 @@ public class MaterialProcessingRecipeProvider {
      */
     private static void generateCorruptedManaProcessing(RecipeOutput output) {
         // 🦠 主動製作汙穢魔力粉 - 原版有序合成
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.CORRUPTED_MANA_DUST.get(), 2)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.CORRUPTED_MANA_DUST.get(), 3)
                 .pattern(" D ")
                 .pattern("DFD")
                 .pattern("RGR")
