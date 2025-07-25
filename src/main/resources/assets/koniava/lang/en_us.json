@@ -275,5 +275,33 @@
   "message.koniava.biome.emergency_mode": "§c[Biome] Entered emergency mode: Queue overload",
   "message.koniava.biome.emergency_exit": "§a[Biome] Exited emergency mode",
   "message.koniava.biome.memory_warning": "§6[Biome] Memory usage high: %.1fMB / %dMB",
-  "message.koniava.biome.thread_init": "§e[Biome] Initialized %s with %d threads"
+  "message.koniava.biome.thread_init": "§e[Biome] Initialized %s with %d threads",
+
+  "//22": "=== CONFIG GUI TRANSLATIONS ===",
+  "koniava.configuration.title": "Koniavacraft Configuration",
+  "koniava.configuration.section.koniava.common.toml.title": "Common Settings",
+  "koniava.configuration.section.koniava.common.toml": "Common configuration options for Koniavacraft",
+
+  "koniava.configuration.biome_processing": "Biome Processing",
+  "koniava.configuration.biome_processing.tooltip": "Settings for biome processing system",
+  "koniava.configuration.biome_processing.button": "Biome Processing",
+
+  "koniava.configuration.multithreading": "Multithreading",
+  "koniava.configuration.multithreading.tooltip": "Multithreading configuration options",
+  "koniava.configuration.multithreading.button": "Multithreading",
+
+  "koniava.configuration.performance": "Performance",
+  "koniava.configuration.performance.tooltip": "Performance control settings",
+  "koniava.configuration.performance.button": "Performance",
+
+  "koniava.configuration.memory": "Memory Management",
+  "koniava.configuration.memory.tooltip": "Memory usage and optimization settings",
+  "koniava.configuration.memory.button": "Memory",
+
+  "koniava.configuration.adaptive": "Smart Features",
+  "koniava.configuration.adaptive.tooltip": "Adaptive and intelligent features",
+  "koniava.configuration.adaptive.button": "Smart Features",
+
+  "koniava.config.manaRecipeRefreshInterval.tooltip": "How often to refresh mana crafting recipes (in ticks)",
+  "koniava.config.showIntroAnimation.tooltip": "Show introduction animation when player joins"
 }

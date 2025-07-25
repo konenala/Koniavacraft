@@ -275,5 +275,33 @@
   "message.koniava.biome.emergency_mode": "§c[生態系] 進入緊急模式：隊列過載",
   "message.koniava.biome.emergency_exit": "§a[生態系] 退出緊急模式",
   "message.koniava.biome.memory_warning": "§6[生態系] 記憶體使用量偏高：%.1fMB / %dMB",
-  "message.koniava.biome.thread_init": "§e[生態系] 已初始化 %s，使用 %d 個線程"
+  "message.koniava.biome.thread_init": "§e[生態系] 已初始化 %s，使用 %d 個線程",
+
+  "//22": "=== 配置GUI翻譯 ===",
+  "koniava.configuration.title": "魔法工業配置",
+  "koniava.configuration.section.koniava.common.toml.title": "通用設定",
+  "koniava.configuration.section.koniava.common.toml": "魔法工業的通用配置選項",
+
+  "koniava.configuration.biome_processing": "生物群系處理",
+  "koniava.configuration.biome_processing.tooltip": "生物群系處理系統設定",
+  "koniava.configuration.biome_processing.button": "生物群系處理",
+
+  "koniava.configuration.multithreading": "多線程",
+  "koniava.configuration.multithreading.tooltip": "多線程配置選項",
+  "koniava.configuration.multithreading.button": "多線程",
+
+  "koniava.configuration.performance": "性能控制",
+  "koniava.configuration.performance.tooltip": "性能控制設定",
+  "koniava.configuration.performance.button": "性能",
+
+  "koniava.configuration.memory": "記憶體管理",
+  "koniava.configuration.memory.tooltip": "記憶體使用和優化設定",
+  "koniava.configuration.memory.button": "記憶體",
+
+  "koniava.configuration.adaptive": "智能功能",
+  "koniava.configuration.adaptive.tooltip": "自適應和智能功能",
+  "koniava.configuration.adaptive.button": "智能功能",
+
+  "koniava.config.manaRecipeRefreshInterval.tooltip": "魔力合成配方刷新頻率（tick）",
+  "koniava.config.showIntroAnimation.tooltip": "玩家加入時顯示介紹動畫"
 }

@@ -47,32 +47,38 @@ public class CompleteBiomeSurface {
         // 🌱 註冊生物群系處理器
         registerBiomeProcessor(ModBiomes.MANA_PLAINS, new ManaPlainsBiomeProcessor(), 10);
 
-        // 🧵 初始化線程池
-        initializeThreadPool();
     }
 
     /**
      * 🧵 初始化線程池（基於配置）
      */
-    private static void initializeThreadPool() {
-        boolean enableMultithreading = ModCommonConfig.INSTANCE.biomeMultithreading.get();
-        int threadCount = ModCommonConfig.INSTANCE.biomeThreadCount.get();
+    private static synchronized void initializeThreadPool() {
+        if (isMultithreadingActive || COMPUTATION_EXECUTOR != null) {
+            return; // 已經初始化過了
+        }
 
-        if (enableMultithreading && COMPUTATION_EXECUTOR == null) {
-            COMPUTATION_EXECUTOR = Executors.newFixedThreadPool(threadCount, r -> {
-                Thread t = new Thread(r, "BiomeComputation-" + System.currentTimeMillis());
-                t.setDaemon(true);
-                t.setPriority(Thread.NORM_PRIORITY - 1);
-                return t;
-            });
-            isMultithreadingActive = true;
-            KoniavacraftMod.LOGGER.info("🧵 啟用多線程生物群系處理 - {}個線程", threadCount);
-        } else {
+        try {
+            boolean enableMultithreading = ModCommonConfig.INSTANCE.biomeMultithreading.get();
+            int threadCount = ModCommonConfig.INSTANCE.biomeThreadCount.get();
+
+            if (enableMultithreading) {
+                COMPUTATION_EXECUTOR = Executors.newFixedThreadPool(threadCount, r -> {
+                    Thread t = new Thread(r, "BiomeComputation-" + System.currentTimeMillis());
+                    t.setDaemon(true);
+                    t.setPriority(Thread.NORM_PRIORITY - 1);
+                    return t;
+                });
+                isMultithreadingActive = true;
+                KoniavacraftMod.LOGGER.info("🧵 啟用多線程生物群系處理 - {}個線程", threadCount);
+            } else {
+                isMultithreadingActive = false;
+                KoniavacraftMod.LOGGER.info("🔄 使用單線程生物群系處理");
+            }
+        } catch (Exception e) {
+            KoniavacraftMod.LOGGER.error("❌ 初始化線程池失敗: {}", e.getMessage());
             isMultithreadingActive = false;
-            KoniavacraftMod.LOGGER.info("🔄 使用單線程生物群系處理");
         }
     }
-
     /**
      * 🎯 生物群系處理任務
      */
@@ -99,7 +105,18 @@ public class CompleteBiomeSurface {
         private Map<BlockPos, BlockState> createChunkSnapshot(ChunkAccess chunk) {
             Map<BlockPos, BlockState> snapshot = new HashMap<>();
             ChunkPos pos = chunk.getPos();
-            int depthLimit = emergencyMode ? 5 : ModCommonConfig.INSTANCE.biomeSnapshotDepth.get();
+            // 安全讀取配置，提供預設值
+
+            int depthLimit;
+            if (emergencyMode) {
+                depthLimit = 5;
+            } else {
+                try {
+                    depthLimit = ModCommonConfig.INSTANCE.biomeSnapshotDepth.get();
+                } catch (Exception e) {
+                    depthLimit = 10; // 使用預設值
+                }
+            }
 
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
@@ -236,7 +253,9 @@ public class CompleteBiomeSurface {
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
-
+        if (!isMultithreadingActive && COMPUTATION_EXECUTOR == null) {
+            initializeThreadPool();
+        }
         ChunkAccess chunk = event.getChunk();
         ChunkPos chunkPos = chunk.getPos();
 
@@ -289,7 +308,10 @@ public class CompleteBiomeSurface {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         long tickStartTime = System.currentTimeMillis();
-
+        // 延遲初始化
+        if (!isMultithreadingActive && COMPUTATION_EXECUTOR == null) {
+            initializeThreadPool();
+        }
         // 自適應性能調整
         if (ModCommonConfig.INSTANCE.biomeAdaptivePerformance.get()) {
             adaptivePerformanceAdjustment();
