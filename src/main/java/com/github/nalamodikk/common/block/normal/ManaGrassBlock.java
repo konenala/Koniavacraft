@@ -26,19 +26,19 @@ public class ManaGrassBlock extends GrassBlock {
         super.stepOn(level, pos, state, entity);
 
         if (!level.isClientSide && entity instanceof Player) {
-            // 15% 機率產生粒子效果（比純土壤更高）
-            if (level.random.nextFloat() < 0.15f) {
+            // 5% 機率產生粒子效果（降低觸發率）
+            if (level.random.nextFloat() < 0.05f) {
                 ((ServerLevel) level).sendParticles(
                         ParticleTypes.HAPPY_VILLAGER,  // 綠色粒子，更適合草地
                         pos.getX() + 0.5,
                         pos.getY() + 1.0,
                         pos.getZ() + 0.5,
-                        5, 0.4, 0.1, 0.4, 0.02
+                        2, 0.2, 0.1, 0.2, 0.01  // 減少粒子數量和擴散範圍
                 );
 
                 // 輕微的魔力音效
                 level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME,
-                        SoundSource.BLOCKS, 0.15f, 1.8f);
+                        SoundSource.BLOCKS, 0.08f, 1.8f);  // 降低音量
             }
         }
     }

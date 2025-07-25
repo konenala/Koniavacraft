@@ -42,20 +42,7 @@ public class ManaSoilBlock extends Block {
         }
     }
 
-    // ✨ 隨機粒子效果（環境）
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        super.animateTick(state, level, pos, random);
 
-        // 非常稀少的環境粒子 (0.5% 機率)
-        if (random.nextFloat() < 0.005f) {
-            double x = pos.getX() + random.nextDouble();
-            double y = pos.getY() + 1.0;
-            double z = pos.getZ() + random.nextDouble();
-
-            level.addParticle(ParticleTypes.END_ROD, x, y, z, 0.0, 0.02, 0.0);
-        }
-    }
 
     // 🌱 加速植物生長（可選功能）
     @Override

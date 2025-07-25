@@ -1,21 +1,25 @@
 {
+  "//1": "=== ITEMS ===",
   "item.koniava.mana_dust": "Mana Dust",
   "item.koniava.mana_ingot": "Mana Ingot",
   "item.koniava.mana_debug_tool": "Mana Debug Tool",
   "item.koniava.corrupted_mana_dust": "Corrupted Mana Dust",
   "item.koniava.basic_tech_wand": "Basic Tech Wand",
   "item.koniava.basic_tech_wand.tooltip.mode": "Mode: %s",
+  "item.koniava.raw_mana_dust": "Raw Mana Dust",
+  "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
+  "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
+  "item.koniava.refined_mana_dust": "Refined Mana Dust",
+
+  "//2": "=== MODULES ===",
   "item.koniava.module.koniava.mana_storage": "Mana Storage Module",
   "item.koniava.module.koniava.mana_producer": "Mana Producer Module",
   "item.koniava.module.koniava.item_input": "Item Input Module",
   "item.koniava.module.koniava.item_output": "Item Output Module",
   "item.koniava.speed_upgrade": "Speed Upgrade Module",
   "item.koniava.efficiency_upgrade": "Efficiency Upgrade Module",
-  "item.koniava.raw_mana_dust": "Raw Mana Dust",
-  "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
-  "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
-  "item.koniava.refined_mana_dust": "Refined Mana Dust",
 
+  "//3": "=== BLOCKS ===",
   "block.koniava.mana_block": "Mana Block",
   "block.koniava.magic_ore": "Magic Ore",
   "block.koniava.deepslate_magic_ore": "Deepslate Magic Ore",
@@ -30,13 +34,11 @@
   "block.koniava.deep_mana_soil": "Deep Mana Soil",
   "block.koniava.mana_grass_block": "Mana Grass Block",
 
-  "tooltip.koniava.refined_mana_dust": "§7High-temperature refined mana dust with §bgreater purity§7, suitable for advanced materials.",
-
+  "//4": "=== EQUIPMENT ===",
   "equipment.koniava.helmet": "Tactical Helmet",
   "equipment.koniava.chestplate": "Power Chestplate",
   "equipment.koniava.leggings": "Armored Leggings",
   "equipment.koniava.boots": "Propulsion Boots",
-
   "equipment.koniava.shoulder_pad": "Shoulder Armor",
   "equipment.koniava.arm_armor": "Arm Guards",
   "equipment.koniava.belt": "Tactical Belt",
@@ -46,10 +48,12 @@
   "equipment.koniava.reactor": "Energy Reactor",
   "equipment.koniava.exoskeleton": "Exoskeleton System",
 
+  "//5": "=== KEYBINDINGS ===",
   "key.koniava.open_floating_gui": "[Experimental] Open Floating Panel",
   "key.categories.koniava": "Koniavacraft",
 
-
+  "//6": "=== TOOLTIPS ===",
+  "tooltip.koniava.refined_mana_dust": "§7High-temperature refined mana dust with §bgreater purity§7, suitable for advanced materials.",
   "tooltip.koniava.saved_direction_config": "%s: %s",
   "tooltip.koniava.saved_block_position": "Saved Block Position: (%s, %s, %s)",
   "tooltip.koniava.no_saved_block": "No block saved",
@@ -68,37 +72,33 @@
   "tooltip.koniava.not_enough_mana": "Not enough mana!",
   "tooltip.koniava.module.mana": "Mana Cost: %s/tick",
   "tooltip.koniava.machine.cleared": "Cleared inserted component item.",
-
   "tooltip.koniava.upgrade.hold_shift": "§7Hold §eShift §7for more info",
   "tooltip.koniava.upgrade.speed": "§aIncreases machine speed and reduces cooldown interval.",
   "tooltip.koniava.upgrade.efficiency": "§aImproves output efficiency and increases mana production per cycle.",
-
   "tooltip.koniava.nara.bind": "Bind your consciousness to the Nara system",
   "tooltip.koniava.nara.cancel": "Reject connection and exit",
-
   "tooltip.koniava.module.item_input": "Provides input slots for assembling machines.",
   "tooltip.koniava.module.item_output": "Provides output slots for assembling machines.",
   "tooltip.koniava.module.mana_storage": "Stores and supplies mana energy to adjacent components.",
   "tooltip.koniava.machine.grid_size": "Grid contains %s components.",
   "tooltip.koniava.machine.grid_entry": "• [%s] %s",
   "tooltip.koniava.machine.inserted": "Component item inserted into the modular machine.",
-
   "tooltip.koniava.priority_config": "Right-click to increase priority, Shift+Right-click to decrease priority\nNegative priorities supported",
   "tooltip.koniava.open_extra_equipment": "Open Extra Equipment",
   "tooltip.koniava.close": "Close configuration window",
-
   "tooltip.koniava.priority_input": "Enter priority (-2147483648 ~ 2147483647)\nHigher values = higher priority, negative values supported",
   "tooltip.koniava.io_type": "IO Type: %s",
   "tooltip.koniava.reset_priorities": "Reset all direction priorities to default (0)",
 
+  "//7": "=== JEI INTEGRATION ===",
   "jei.koniava.fuel.mana": "Mana Output: %s",
   "jei.koniava.fuel.energy": "Energy Output: %s",
   "jei.koniava.fuel.burn_time": "Burn Time: %s",
   "jei.koniava.fuel": "Mana Fuel",
   "jei.koniava.burn_time": "Burn Time: %s ticks",
 
+  "//8": "=== MESSAGES ===",
   "message.koniava.nara.sync_error": "An error occurred while syncing Nara state: %s",
-
   "message.koniava.mana_added": "Added %s Mana. Current Mana: %s",
   "message.koniava.mana_mode_changed": "Switched to mode: %s",
   "message.koniava.mana_mode_add_10": "Add 10 Mana",
@@ -112,17 +112,25 @@
   "message.koniava.block_selected": "Selected block at position: {0}",
   "message.koniava.block_not_configurable": "The selected block is not configurable.",
   "message.koniava.cannot_toggle_while_working": "You cannot toggle modes while the generator is working!",
+  "message.koniava.add_mana_success": "Added 10 mana!",
+  "message.koniava.block_rotated_facing": "Block rotated! ",
+  "message.koniava.block_rotated_horizontal": "Block rotated! ",
+  "message.koniava.block_cannot_rotate": "Block cannot be rotated!",
+  "message.koniava.config_button_clicked": "Configuration button clicked!",
+  "message.koniava.config_changed": "Configuration for side %s has been changed to %s.",
+
+  "//9": "=== NARA SYSTEM MESSAGES ===",
   "message.koniava.nara.disconnect_message": "You have chosen to sever your connection with the Nara System.",
   "message.koniava.nara.system_online": "▸ NARA SYSTEM ONLINE",
   "message.koniava.nara.stabilized": "▸ Conscious alignment stabilized.",
   "message.koniava.nara.welcome": "▸ Welcome, Operator.",
 
+  "//10": "=== CONDUIT MESSAGES ===",
   "message.koniava.conduit.hold_shift_to_place": "Hold Shift + Right Click to place blocks",
   "message.koniava.conduit.gentle_hint": "Want to place %s? Click conduit edge or hold Shift!",
   "message.koniava.conduit.what_would_you_like": "Holding %s - What would you like to do?",
   "message.koniava.conduit.choice_info": "§7• Right click again: View conduit details",
   "message.koniava.conduit.choice_place": "§a• Click edge or Shift+Right click: Place block",
-
   "message.koniava.conduit.info_header": "=== Conduit Detailed Information ===",
   "message.koniava.conduit.detailed_config_with_shape": "Direction %s: %s (Priority: %d) %s",
   "message.koniava.conduit.mana_status": "§bMana: §f%s/%s",
@@ -131,37 +139,30 @@
   "message.koniava.conduit.quick_info": "§bMana: §f%s/%s §aConnections: §f%s",
   "message.koniava.conduit.config_gui_placeholder": "§eConfiguration GUI not yet implemented, stay tuned!",
   "message.koniava.priority_changed": "Priority for %s direction set to %d",
-  "message.koniava.tech_wand.mode.priority_config": "Priority Configuration Mode",
-
   "message.koniava.not_conduit_block": "§cThis block is not a conduit!",
   "message.koniava.debug_tool_interaction": "§bDebug Tool§r - Mana: %s/%s",
   "message.koniava.conduit.transfer_stats": "§7Connections: %s | Transfer Rate: %s",
-
-
-  "message.koniava.screen.generator_working": "Generator is working. Mode switching is disabled.",
-
-  "message.koniava.machine.restored_count": "Restored previous setup. Returned %s module(s) to you.",
-  "message.koniava.machine.no_history": "No previous setup to restore.",
-
   "message.koniava.conduit.detailed_config": "§e%s: §f%s §7(Priority: %d)",
   "message.koniava.conduit.technical_info": "§6Technical Info§r\nPosition: %s\nMana: %s\nNetwork: %s",
   "message.koniava.manual_mana_transfer_todo": "§eManual mana transfer feature in development...",
 
-  "message.koniava.add_mana_success": "Added 10 mana!",
-  "message.koniava.block_rotated_facing": "Block rotated! ",
-  "message.koniava.block_rotated_horizontal": "Block rotated! ",
-  "message.koniava.block_cannot_rotate": "Block cannot be rotated!",
-  "message.koniava.tech_wand.mode.configure_input": "Configure Input Mode",
-  "message.koniava.tech_wand.mode.configure_output": "Configure Output Mode",
-  "message.koniava.tech_wand.mode.add_mana": "Add Mana Mode",
-  "message.koniava.tech_wand.mode.rotate": "Rotate Block Mode",
-  "message.koniava.config_button_clicked": "Configuration button clicked!",
-  "message.koniava.config_changed": "Configuration for side %s has been changed to %s.",
+  "//11": "=== MACHINE MESSAGES ===",
+  "message.koniava.screen.generator_working": "Generator is working. Mode switching is disabled.",
+  "message.koniava.machine.restored_count": "Restored previous setup. Returned %s module(s) to you.",
+  "message.koniava.machine.no_history": "No previous setup to restore.",
   "message.koniava.wrench.conduit_mode": "Set %s to %s",
   "message.koniava.machine.cleared_count": "Returned %s module item(s).",
   "message.koniava.machine.nothing_to_clear": "No module items to return.",
   "message.koniava.machine.no_space": "No available module slot.",
 
+  "//12": "=== TECH WAND MODES ===",
+  "message.koniava.tech_wand.mode.configure_input": "Configure Input Mode",
+  "message.koniava.tech_wand.mode.configure_output": "Configure Output Mode",
+  "message.koniava.tech_wand.mode.add_mana": "Add Mana Mode",
+  "message.koniava.tech_wand.mode.rotate": "Rotate Block Mode",
+  "message.koniava.tech_wand.mode.priority_config": "Priority Configuration Mode",
+
+  "//13": "=== DIRECTIONS ===",
   "direction.koniava.up": "Up",
   "direction.koniava.down": "Down",
   "direction.koniava.north": "North",
@@ -169,10 +170,9 @@
   "direction.koniava.west": "West",
   "direction.koniava.east": "East",
 
+  "//14": "=== SCREENS ===",
   "screen.koniava.upgrade.speed": "Speed : %s",
   "screen.koniava.upgrade.efficiency": "Efficiency : %s",
-
-
   "screen.koniava.configure_io": "Configure Input and Output",
   "screen.koniava.toggle_mode": "Toggle Mode",
   "screen.koniava.current_mode": "Current Mode: %s",
@@ -186,22 +186,16 @@
   "screen.koniava.disabled": "Disabled",
   "screen.koniava.both": "Input & Output",
   "screen.koniava.inventory.extra_equipment": "Extra Equipment Slots",
-
-  "gui.koniava.conduit_config": "Conduit Configuration",
-  "gui.koniava.io_type": "IO Type",
-  "gui.koniava.priority": "Priority",
-  "button.koniava.reset_priorities": "Reset",
-  "gui.koniava.priority_input": "Priority Input",
-
-
   "screen.koniava.configure_side.full": "Configured side: %s %s",
   "screen.koniava.hold_shift": "Hold Shift for more information",
   "screen.koniava.debug_world_direction": "World direction key: %s",
+  "screen.koniava.upgrade.machine_info": "%s (%d upgrade slots)",
+  "screen.koniava.upgrade.extended_hint": "Use more upgrades to improve machine performance!",
+  "screen.koniava.upgrade.unknown_machine": "Unknown Machine",
 
-
+  "//15": "=== NARA SYSTEM SCREENS ===",
   "screen.koniava.nara.bind": "Bind to Nara System",
   "screen.koniava.nara.cancel": "Cancel",
-
   "screen.koniava.nara.title": "Ding───!",
   "screen.koniava.nara.line1": "▸ Detected new consciousness fluctuation…",
   "screen.koniava.nara.line2": "▸ Verifying soul identification code…",
@@ -213,10 +207,18 @@
   "screen.koniava.nara.warning": "This operation is irreversible. Please proceed with caution.",
   "screen.koniava.nara.screen_title": "Nara System Initialization",
 
-  "screen.koniava.upgrade.machine_info": "%s (%d upgrade slots)",
-  "screen.koniava.upgrade.extended_hint": "Use more upgrades to improve machine performance!",
-  "screen.koniava.upgrade.unknown_machine": "Unknown Machine",
+  "//16": "=== GUI COMPONENTS ===",
+  "gui.koniava.conduit_config": "Conduit Configuration",
+  "gui.koniava.io_type": "IO Type",
+  "gui.koniava.priority": "Priority",
+  "gui.koniava.priority_input": "Priority Input",
+  "gui.koniava.config.biome.title": "Biome Processing Configuration",
+  "gui.koniava.config.biome.category.multithreading": "Multithreading Settings",
+  "gui.koniava.config.biome.category.performance": "Performance Control",
+  "gui.koniava.config.biome.category.memory": "Memory Management",
+  "gui.koniava.config.biome.category.adaptive": "Smart Features",
 
+  "//17": "=== MODES ===",
   "mode.koniava.mana": "Mana",
   "mode.koniava.energy": "Energy",
   "mode.koniava.configure_io": "Configure Input/Output",
@@ -229,31 +231,49 @@
   "mode.koniava.both": "Input & Output",
   "mode.koniava.priority_config": "Priority Config",
 
-
-
+  "//18": "=== BUTTONS ===",
+  "button.koniava.reset_priorities": "Reset",
   "button.koniava.toggle_mode.tooltip_auto": "Automatic Mode",
   "button.koniava.toggle_mode.tooltip_manual": "Manual Mode",
   "button.koniava.configure_io": "Configure Input/Output",
   "button.koniava.toggle_auto_crafting": "Toggle",
   "button.koniava.auto_crafting_enabled": "AutoCrafting: Enabled",
   "button.koniava.auto_crafting_disabled": "AutoCrafting: Disabled",
-
   "button.koniava.close": "Close",
-
-
-
+  "button.koniava.config.preset.low": "Low-end Server",
+  "button.koniava.config.preset.balanced": "Balanced",
+  "button.koniava.config.preset.high": "High-end Server",
+  "button.koniava.config.reset": "Reset to Default",
   "button.mode.auto": "auto mode",
   "button.mode.manual": "manual mode",
 
-
-
-
+  "//19": "=== CREATIVE TABS ===",
   "creativetab.koniava_items": "Koniavacraft - Items",
   "creativetab.koniava_blocks": "Koniavacraft - Blocks",
   "creativetab.koniava_modules": "Koniavacraft - Modules",
 
+  "//20": "=== CONFIG OPTIONS ===",
   "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)",
-  "koniava.config.showIntroAnimation": "Enable Login Animation"
+  "koniava.config.showIntroAnimation": "Enable Login Animation",
+  "koniava.config.biome.multithreading": "Enable Biome Multithreading",
+  "koniava.config.biome.threadCount": "Thread Count",
+  "koniava.config.biome.maxProcessingTime": "Max Processing Time (ms/tick)",
+  "koniava.config.biome.maxChunksPerTick": "Max Chunks Per Tick",
+  "koniava.config.biome.queueLimit": "Queue Size Limit",
+  "koniava.config.biome.maxMemory": "Max Memory Usage (MB)",
+  "koniava.config.biome.snapshotDepth": "Snapshot Depth (layers)",
+  "koniava.config.biome.adaptivePerformance": "Enable Adaptive Performance",
+  "koniava.config.biome.autoSkipMinor": "Auto Skip Minor Biomes",
 
-
+  "//21": "=== CONFIG STATUS MESSAGES ===",
+  "message.koniava.config.biome.performance_low": "§e[Biome] Performance mode: Low-end server optimized",
+  "message.koniava.config.biome.performance_high": "§a[Biome] Performance mode: High-end server optimized",
+  "message.koniava.config.biome.performance_balanced": "§b[Biome] Performance mode: Balanced settings",
+  "message.koniava.config.biome.reload_success": "§a[Biome] Configuration reloaded successfully",
+  "message.koniava.config.biome.reload_failed": "§c[Biome] Configuration reload failed: %s",
+  "message.koniava.biome.status": "§b[Biome Status] %s",
+  "message.koniava.biome.emergency_mode": "§c[Biome] Entered emergency mode: Queue overload",
+  "message.koniava.biome.emergency_exit": "§a[Biome] Exited emergency mode",
+  "message.koniava.biome.memory_warning": "§6[Biome] Memory usage high: %.1fMB / %dMB",
+  "message.koniava.biome.thread_init": "§e[Biome] Initialized %s with %d threads"
 }
