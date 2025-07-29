@@ -21,8 +21,8 @@ public class ManaInfuserScreen extends AbstractContainerScreen<ManaInfuserMenu> 
     private static final int GUI_HEIGHT = 166;
 
     // 進度條位置和尺寸
-    private static final int PROGRESS_BAR_X = 78;
-    private static final int PROGRESS_BAR_Y = 35;
+    private static final int PROGRESS_BAR_X = 72;
+    private static final int PROGRESS_BAR_Y = 38;
     private static final int PROGRESS_BAR_WIDTH = 34;
     private static final int PROGRESS_BAR_HEIGHT = 11;
 

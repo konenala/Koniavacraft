@@ -131,7 +131,6 @@ public class ManaInfuserCategory implements IRecipeCategory<ManaInfuserRecipe> {
         drawAnimatedArrow(graphics);
 
         // 📝 繪製配方信息文字
-        drawRecipeInfo(graphics, font, manaCost, infusionTime, inputCount);
 
         // 🔹 處理 tooltip
         handleTooltips(graphics, font, mouseX, mouseY, manaCost, infusionTime, inputCount);
@@ -172,24 +171,7 @@ public class ManaInfuserCategory implements IRecipeCategory<ManaInfuserRecipe> {
         arrow.draw(graphics, arrowX, arrowY);
     }
 
-    /**
-     * 📝 繪製配方信息文字
-     */
-    private void drawRecipeInfo(GuiGraphics graphics, Font font, int manaCost, int infusionTime, int inputCount) {
-        // 魔力消耗 (上方)
-        Component manaText = Component.translatable("jei.koniava.mana_cost", manaCost);
-        graphics.drawString(font, manaText, 20, 5, 0x404040, false);
 
-        // 注入時間 (下方)
-        Component timeText = Component.translatable("jei.koniava.infusion_time", infusionTime / 20.0f);
-        graphics.drawString(font, timeText, 20, RECIPE_HEIGHT - 15, 0x404040, false);
-
-        // 如果需要多個物品，顯示數量
-        if (inputCount > 1) {
-            Component countText = Component.translatable("jei.koniava.input_count", inputCount);
-            graphics.drawString(font, countText, 20, 50, 0x666666, false);
-        }
-    }
 
     /**
      * 🔹 處理工具提示 (參考魔力發電機的做法)
@@ -217,12 +199,6 @@ public class ManaInfuserCategory implements IRecipeCategory<ManaInfuserRecipe> {
                     (int) mouseX, (int) mouseY);
         }
 
-        // 📦 輸入槽 tooltip (如果需要多個物品)
-        if (inputCount > 1 && mouseX >= 56 && mouseX <= 74 && mouseY >= 35 && mouseY <= 53) {
-            graphics.renderTooltip(font,
-                    List.of(Component.translatable("jei.koniava.input_count", inputCount)),
-                    Optional.empty(),
-                    (int) mouseX, (int) mouseY);
-        }
+
     }
 }

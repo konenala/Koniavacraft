@@ -164,7 +164,10 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         if (level == null || level.isClientSide()) return;
 
         // 檢查是否有 Menu 數據變化
-        int currentMana = manaStorage.getManaStored();
+        int currentMana = 0;
+        if (manaStorage != null) {
+            currentMana = manaStorage.getManaStored();
+        }
         int currentProgress = progress;
         boolean currentWorking = isWorking();
         int currentMaxProgress = maxProgress;
@@ -196,7 +199,10 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         if (needsSync) return true;
 
         // 檢查各項數據是否變化
-        int currentMana = manaStorage.getManaStored();
+        int currentMana = 0;
+        if (manaStorage != null) {
+            currentMana = manaStorage.getManaStored();
+        }
         int currentProgress = progress;
         boolean currentWorking = isWorking();
         int currentMaxProgress = maxProgress;
@@ -209,7 +215,9 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
 
     // 🆕 更新上次同步的數值
     private void updateLastSyncedValues() {
-        lastSyncedMana = manaStorage.getManaStored();
+        if (manaStorage != null) {
+            lastSyncedMana = manaStorage.getManaStored();
+        }
         lastSyncedProgress = progress;
         lastSyncedWorking = isWorking();
         lastSyncedMaxProgress = maxProgress;
@@ -224,10 +232,13 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         if (currentRecipe == null) return false;
 
         // 檢查魔力
-        if (manaStorage.getManaStored() < currentRecipe.getManaCost()) return false;
+        if (manaStorage != null && manaStorage.getManaStored() < currentRecipe.getManaCost()) return false;
 
         // 檢查輸入物品
-        ItemStack input = itemHandler.getStackInSlot(INPUT_SLOT);
+        ItemStack input = null;
+        if (itemHandler != null) {
+            input = itemHandler.getStackInSlot(INPUT_SLOT);
+        }
         if (input.getCount() < currentRecipe.getInputCount()) return false;
 
         // 檢查輸出槽
@@ -480,8 +491,10 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
     }
 
     public boolean isWorking() {
-        return progress > 0 && currentRecipe != null;
+        // ✅ 修正：只要有進度就表示在工作，不管配方狀態
+        return progress > 0;
     }
+
 
 
     public int getInfusionProgress() {
