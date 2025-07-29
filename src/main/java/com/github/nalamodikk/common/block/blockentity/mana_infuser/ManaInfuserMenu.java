@@ -28,8 +28,8 @@ public class ManaInfuserMenu extends AbstractContainerMenu {
     // 槽位佈局常量
     private static final int INPUT_SLOT_X = 48;
     private static final int INPUT_SLOT_Y = 35;
-    private static final int OUTPUT_SLOT_X = 120;
-    private static final int OUTPUT_SLOT_Y = 32;
+    private static final int OUTPUT_SLOT_X = 122;
+    private static final int OUTPUT_SLOT_Y = 34;
 
     // 玩家背包槽位起始位置
     private static final int INVENTORY_START_X = 8;

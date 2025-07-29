@@ -35,7 +35,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
         createArcaneConduitModel();
 
         // 🧪 特殊方塊 (自定義模型)
-        createManaCraftingTableModel();
+        createManaModel(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
+        createManaModel(ModBlocks.MANA_INFUSER);
     }
 
     // ===========================================
@@ -71,10 +72,12 @@ public class ModBlockStateProvider extends BlockStateProvider {
     // 🧪 特殊方塊模型
     // ===========================================
 
-    private void createManaCraftingTableModel() {
-        getVariantBuilder(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
+    private void createManaModel(DeferredBlock<?> blockHolder) {
+        Block block = blockHolder.get();
+        String blockName = blockHolder.getId().getPath();
+        getVariantBuilder(block)
                 .partialState().modelForState()
-                .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/mana_crafting_table")))
+                .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + blockName)))
                 .addModel();
     }
 

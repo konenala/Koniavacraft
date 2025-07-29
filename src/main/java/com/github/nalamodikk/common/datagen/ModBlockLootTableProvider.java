@@ -91,6 +91,7 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.ARCANE_CONDUIT.get());       // 奧術導管
         dropSelf(ModBlocks.MANA_SOIL.get());
         dropSelf(ModBlocks.MANA_GRASS_BLOCK.get());
+        dropSelf(ModBlocks.MANA_INFUSER.get());
 
         dropSelf(ModBlocks.DEEP_MANA_SOIL.get());
 

@@ -28,7 +28,8 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 .add(ModBlocks.ARCANE_CONDUIT.get())
                 .add(ModBlocks.MANA_GENERATOR.get())
                 .add(ModBlocks.SOLAR_MANA_COLLECTOR.get())
-                .add(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
+                .add(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
+                .add(ModBlocks.MANA_INFUSER.get());
 
 
 

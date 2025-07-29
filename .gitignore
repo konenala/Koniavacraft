@@ -159,3 +159,17 @@ repo
 /src/generated/resources/data/koniava/recipe/mana_recipes/mana_fuel/refined_mana_dust_fuel.json
 /src/generated/resources/data/minecraft/advancement/recipes/misc/corrupted_mana_dust.json
 /src/generated/resources/data/minecraft/recipe/corrupted_mana_dust.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/apple_to_golden_apple.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/book_to_enchanted_book.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/bread_enhancement.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/carrot_to_golden_carrot.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/cobblestone_to_stone.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/condensed_to_refined_mana_dust.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/experience_bottle_multiplication.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/glass_multiplication.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/iron_to_mana_ingot.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/mana_dust_to_condensed.json
+/src/generated/resources/assets/koniava/blockstates/mana_infuser.json
+/src/generated/resources/data/koniava/loot_table/blocks/mana_infuser.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/sand_to_glass.json
+/src/generated/resources/data/koniava/recipe/mana_infuser/stone_to_stone_bricks.json

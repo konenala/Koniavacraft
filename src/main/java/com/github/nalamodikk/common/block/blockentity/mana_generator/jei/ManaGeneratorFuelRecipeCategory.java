@@ -28,7 +28,7 @@ import java.util.Optional;
 
 public class ManaGeneratorFuelRecipeCategory implements IRecipeCategory<ManaGenFuelRecipe> {
     public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_fuel");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/jei_fuel.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/jei_mana_gen_fuel.png");
     private static final ResourceLocation MANA_BAR = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
     private static final ResourceLocation ENERGY_BAR =  ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/energy_bar_full.png");
     public static  RecipeType<ManaGenFuelRecipe> manaGenFuelRecipeType =

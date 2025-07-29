@@ -4,6 +4,7 @@ import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.datagen.recipe.MaterialProcessingRecipeProvider;
 import com.github.nalamodikk.common.datagen.recipe.material.ManaCraftingRecipeProvider;
 import com.github.nalamodikk.common.datagen.recipe.material.ManaFuelRecipeProvider;
+import com.github.nalamodikk.common.datagen.recipe.material.ManaInfuserRecipeProvider;
 import com.github.nalamodikk.register.ModBlocks;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.core.HolderLookup;
@@ -29,6 +30,7 @@ public class ModRecipeProvider extends RecipeProvider {
         MaterialProcessingRecipeProvider.generate(recipeOutput);  // 處理所有材料加工
         ManaFuelRecipeProvider.generate(recipeOutput);
         ManaCraftingRecipeProvider.generate(recipeOutput);
+        ManaInfuserRecipeProvider.generate(recipeOutput);
 
         // === 📋 剩餘的主要配方類別 ===
         generateMachineRecipes(recipeOutput);
