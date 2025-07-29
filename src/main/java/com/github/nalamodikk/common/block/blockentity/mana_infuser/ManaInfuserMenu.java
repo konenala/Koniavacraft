@@ -5,9 +5,7 @@ import com.github.nalamodikk.register.ModMenuTypes;
 import com.github.nalamodikk.register.ModRecipes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -30,6 +28,7 @@ public class ManaInfuserMenu extends AbstractContainerMenu {
     private static final int INPUT_SLOT_Y = 35;
     private static final int OUTPUT_SLOT_X = 122;
     private static final int OUTPUT_SLOT_Y = 34;
+    // private final ContainerLevelAccess access;
 
     // 玩家背包槽位起始位置
     private static final int INVENTORY_START_X = 8;
@@ -37,21 +36,40 @@ public class ManaInfuserMenu extends AbstractContainerMenu {
     private static final int HOTBAR_START_Y = 142;
 
     private final ManaInfuserBlockEntity blockEntity;
+
+    // 🆕 數據同步容器
+    private final ContainerData data;
     private final ContainerLevelAccess access;
 
-    // 客戶端構造函數
+    // 🆕 數據索引常量
+    private static final int DATA_CURRENT_MANA = 0;
+    private static final int DATA_MAX_MANA = 1;
+    private static final int DATA_PROGRESS = 2;
+    private static final int DATA_MAX_PROGRESS = 3;
+    private static final int DATA_IS_WORKING = 4;
+    private static final int DATA_SIZE = 5;
+
     public ManaInfuserMenu(int id, Inventory playerInventory) {
-        this(id, playerInventory, null);
+        this(id, playerInventory, null, new SimpleContainerData(DATA_SIZE));
     }
 
-    // 伺服器端構造函數
+    // 🔧 修正伺服器端構造函數
     public ManaInfuserMenu(int id, Inventory playerInventory, ManaInfuserBlockEntity blockEntity) {
+        this(id, playerInventory, blockEntity, createDataContainer(blockEntity));
+    }
+
+    // 🆕 統一的私有構造函數
+    private ManaInfuserMenu(int id, Inventory playerInventory, ManaInfuserBlockEntity blockEntity, ContainerData data) {
         super(ModMenuTypes.MANA_INFUSER.get(), id);
 
         this.blockEntity = blockEntity;
+        this.data = data;
         this.access = blockEntity != null ?
                 ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos()) :
                 ContainerLevelAccess.NULL;
+
+        // 🆕 添加數據槽位追蹤
+        this.addDataSlots(this.data);
 
         // 添加機器槽位
         if (blockEntity != null) {
@@ -86,6 +104,101 @@ public class ManaInfuserMenu extends AbstractContainerMenu {
             }
         });
     }
+
+    private static ContainerData createDataContainer(ManaInfuserBlockEntity blockEntity) {
+        if (blockEntity == null) {
+            return new SimpleContainerData(DATA_SIZE);
+        }
+
+        return new ContainerData() {
+            @Override
+            public int get(int index) {
+                return switch (index) {
+                    case DATA_CURRENT_MANA -> blockEntity.getCurrentMana();
+                    case DATA_MAX_MANA -> blockEntity.getMaxMana();
+                    case DATA_PROGRESS -> blockEntity.getInfusionProgress();
+                    case DATA_MAX_PROGRESS -> blockEntity.getMaxInfusionTime();
+                    case DATA_IS_WORKING -> blockEntity.isWorking() ? 1 : 0;
+                    default -> 0;
+                };
+            }
+
+            @Override
+            public void set(int index, int value) {
+                // 客戶端不需要設置數據，只讀取
+                // 數據變更由伺服器端的 BlockEntity 負責
+            }
+
+            @Override
+            public int getCount() {
+                return DATA_SIZE;
+            }
+        };
+    }
+
+    // 🔧 修正數據查詢方法，使用同步的數據
+
+    /**
+     * 🔮 獲取魔力儲存狀態（用於GUI顯示）
+     */
+    public int getCurrentMana() {
+        // ✅ 使用 ContainerData 的同步數據，不直接訪問 BlockEntity
+        return data.get(DATA_CURRENT_MANA);
+    }
+
+    public int getMaxMana() {
+        // ✅ 使用 ContainerData 的同步數據
+        return data.get(DATA_MAX_MANA);
+    }
+    /**
+     * ⚡ 獲取注入進度（用於進度條顯示）
+     */
+   
+    public int getInfusionProgress() {
+        // ✅ 使用 ContainerData 的同步數據
+        return data.get(DATA_PROGRESS);
+    }
+
+    public int getMaxInfusionTime() {
+        // ✅ 使用 ContainerData 的同步數據
+        return data.get(DATA_MAX_PROGRESS);
+    }
+
+    /**
+     * 🔧 獲取工作狀態
+     */
+    public boolean isWorking() {
+        // ✅ 使用 ContainerData 的同步數據
+        return data.get(DATA_IS_WORKING) == 1;
+    }
+
+    /**
+     * 📦 獲取當前配方信息（只在伺服器端可用）
+     */
+    public ManaInfuserRecipe getCurrentRecipe() {
+        // 配方信息太複雜，不通過 ContainerData 同步
+        // 只在伺服器端使用
+        return blockEntity != null ? blockEntity.getCurrentRecipe() : null;
+    }
+
+    /**
+     * 📊 獲取魔力百分比（0-100）
+     */
+    public int getManaPercentage() {
+        int maxMana = getMaxMana();
+        if (maxMana <= 0) return 0;
+        return Math.min(100, (getCurrentMana() * 100) / maxMana);
+    }
+
+    /**
+     * ⚡ 獲取進度百分比（0-100）
+     */
+    public int getProgressPercentage() {
+        int maxProgress = getMaxInfusionTime();
+        if (maxProgress <= 0) return 0;
+        return Math.min(100, (getInfusionProgress() * 100) / maxProgress);
+    }
+
 
     /**
      * 🎒 添加玩家背包槽位
@@ -173,57 +286,5 @@ public class ManaInfuserMenu extends AbstractContainerMenu {
 
     // === 📊 數據同步 ===
 
-    /**
-     * 🔮 獲取魔力儲存狀態（用於GUI顯示）
-     */
-    public int getCurrentMana() {
-        return blockEntity != null ? blockEntity.getCurrentMana() : 0;
-    }
 
-    public int getMaxMana() {
-        return blockEntity != null ? blockEntity.getMaxMana() : 0;
-    }
-
-    /**
-     * ⚡ 獲取注入進度（用於進度條顯示）
-     */
-    public int getInfusionProgress() {
-        return blockEntity != null ? blockEntity.getInfusionProgress() : 0;
-    }
-
-    public int getMaxInfusionTime() {
-        return blockEntity != null ? blockEntity.getMaxInfusionTime() : 0;
-    }
-
-    /**
-     * 🔧 獲取工作狀態
-     */
-    public boolean isWorking() {
-        return blockEntity != null && blockEntity.isWorking();
-    }
-
-    /**
-     * 📦 獲取當前配方信息（用於GUI顯示配方詳情）
-     */
-    public ManaInfuserRecipe getCurrentRecipe() {
-        return blockEntity != null ? blockEntity.getCurrentRecipe() : null;
-    }
-
-    /**
-     * 📊 獲取魔力百分比（0-100）
-     */
-    public int getManaPercentage() {
-        int maxMana = getMaxMana();
-        if (maxMana <= 0) return 0;
-        return (getCurrentMana() * 100) / maxMana;
-    }
-
-    /**
-     * ⚡ 獲取進度百分比（0-100）
-     */
-    public int getProgressPercentage() {
-        int maxProgress = getMaxInfusionTime();
-        if (maxProgress <= 0) return 0;
-        return (getInfusionProgress() * 100) / maxProgress;
-    }
 }

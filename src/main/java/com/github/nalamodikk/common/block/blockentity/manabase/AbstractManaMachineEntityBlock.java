@@ -1,9 +1,12 @@
 package com.github.nalamodikk.common.block.blockentity.manabase;
 
-import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
+import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,9 +18,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.math.BigInteger;
 
@@ -27,6 +31,7 @@ import java.math.BigInteger;
  * 並可透過覆寫對應方法客製化運作邏輯。
  */
 public abstract class AbstractManaMachineEntityBlock extends BlockEntity implements MenuProvider , IConfigurableBlock {
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     /** 魔力儲存（可選） */
     private static final int MAX_MANA = 200000;
@@ -201,6 +206,98 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
     public void onRemovedFromWorld(Level level, BlockPos pos) {
         this.drops(level, pos);
         level.invalidateCapabilities(pos);
+    }
+// 在 AbstractManaMachineEntityBlock 類中添加這些方法
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+
+        // 🔮 保存魔力儲存（使用 ManaStorage 的序列化）
+        if (manaStorage != null) {
+            CompoundTag manaTag = manaStorage.serializeNBT(registries);
+            tag.put("ManaStorage", manaTag);
+        }
+
+        // ⚡ 保存能量儲存（使用你的 ModNeoNalaEnergyStorage 序列化）
+        if (energyStorage != null) {
+            CompoundTag energyTag = energyStorage.serializeNBT(registries);
+            tag.put("EnergyStorage", energyTag);
+        }
+
+        // 📦 保存物品槽位
+        if (itemHandler != null) {
+            CompoundTag itemsTag = itemHandler.serializeNBT(registries);
+            tag.put("Items", itemsTag);
+        }
+
+        // 🌊 保存流體槽
+        if (fluidTank != null) {
+            CompoundTag fluidTag = new CompoundTag();
+            fluidTank.writeToNBT(registries, fluidTag);
+            tag.put("FluidTank", fluidTag);
+        }
+
+        // 📊 保存進度和基本狀態
+        tag.putInt("Progress", progress);
+        tag.putInt("MaxProgress", maxProgress);
+        tag.putInt("TickCounter", tickCounter);
+        tag.putInt("ManaPerCycle", manaPerCycle);
+        tag.putInt("EnergyPerTick", energyPerTick);
+        tag.putInt("IntervalTick", intervalTick);
+
+        // 🔍 調試日誌
+        LOGGER.debug("保存機器數據: 魔力={}, 進度={}/{}, 物品槽位={}",
+                manaStorage != null ? manaStorage.getManaStored() : 0,
+                progress, maxProgress,
+                itemHandler != null ? "已保存" : "null");
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+
+        // 🔮 載入魔力儲存（使用 ManaStorage 的反序列化）
+        if (tag.contains("ManaStorage") && manaStorage != null) {
+            CompoundTag manaTag = tag.getCompound("ManaStorage");
+            manaStorage.deserializeNBT(registries, manaTag);
+        }
+
+        // ⚡ 載入能量儲存（使用你的 ModNeoNalaEnergyStorage 反序列化）
+        if (tag.contains("EnergyStorage") && energyStorage != null) {
+            CompoundTag energyTag = tag.getCompound("EnergyStorage");
+            energyStorage.deserializeNBT(registries, energyTag);
+        }
+
+        // 📦 載入物品槽位
+        if (tag.contains("Items") && itemHandler != null) {
+            CompoundTag itemsTag = tag.getCompound("Items");
+            itemHandler.deserializeNBT(registries, itemsTag);
+        }
+
+        // 🌊 載入流體槽
+        if (tag.contains("FluidTank") && fluidTank != null) {
+            CompoundTag fluidTag = tag.getCompound("FluidTank");
+            fluidTank.readFromNBT(registries, fluidTag);
+        }
+
+        // 📊 載入進度和基本狀態
+        progress = tag.getInt("Progress");
+        maxProgress = tag.getInt("MaxProgress");
+        tickCounter = tag.getInt("TickCounter");
+        manaPerCycle = tag.getInt("ManaPerCycle");
+        energyPerTick = tag.getInt("EnergyPerTick");
+        intervalTick = tag.getInt("IntervalTick");
+
+        // 確保值的有效性
+        if (maxProgress <= 0) maxProgress = 100;
+        if (intervalTick <= 0) intervalTick = 1;
+
+        // 🔍 調試日誌
+        LOGGER.debug("載入機器數據: 魔力={}, 進度={}/{}, 物品槽位={}",
+                manaStorage != null ? manaStorage.getManaStored() : 0,
+                progress, maxProgress,
+                itemHandler != null ? "已載入" : "null");
     }
 
 }

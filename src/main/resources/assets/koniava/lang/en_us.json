@@ -99,6 +99,8 @@
   "jei.koniava.fuel.burn_time": "Burn Time: %s",
   "jei.koniava.fuel": "Mana Fuel",
   "jei.koniava.burn_time": "Burn Time: %s ticks",
+  "jei.koniava.mana_cost": "Mana Cost: %s",
+  "jei.koniava.infusion_time": "Infusion Time: %s sec",
 
   "//8": "=== MESSAGES ===",
   "message.koniava.nara.sync_error": "An error occurred while syncing Nara state: %s",

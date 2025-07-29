@@ -27,8 +27,8 @@ public class ManaInfuserScreen extends AbstractContainerScreen<ManaInfuserMenu> 
     private static final int PROGRESS_BAR_HEIGHT = 11;
 
     // 魔力條位置和尺寸
-    private static final int MANA_BAR_X = 8;
-    private static final int MANA_BAR_Y = 18;
+    private static final int MANA_BAR_X = 9;
+    private static final int MANA_BAR_Y = 17;
     private static final int MANA_BAR_WIDTH = 10;
     private static final int MANA_BAR_HEIGHT = 48;
 
@@ -70,7 +70,7 @@ public class ManaInfuserScreen extends AbstractContainerScreen<ManaInfuserMenu> 
             guiGraphics.blit(TEXTURE,
                     this.leftPos + PROGRESS_BAR_X,
                     this.topPos + PROGRESS_BAR_Y,
-                    176, 52, // UV座標 (材質右側的進度條圖案)
+                    176, 54, // UV座標 (材質右側的進度條圖案)
                     progressPixels,
                     PROGRESS_BAR_HEIGHT);
         }

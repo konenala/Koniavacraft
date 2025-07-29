@@ -2,13 +2,12 @@ package com.github.nalamodikk.common.compat.energy;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 public class ModNeoNalaEnergyStorage implements IEnergyStorage, INBTSerializable<CompoundTag> {
     private static final int DECIMAL_DIGITS = 4;
@@ -56,6 +55,14 @@ public class ModNeoNalaEnergyStorage implements IEnergyStorage, INBTSerializable
         return tag;
     }
 
+    // 🆕 添加能量設定方法（用於 NBT 載入）
+    public void setEnergyStored(BigInteger energyAmount) {
+        this.energy = new BigDecimal(energyAmount).setScale(DECIMAL_DIGITS, RoundingMode.DOWN);
+        // 確保不超過容量
+        if (this.energy.compareTo(capacity) > 0) {
+            this.energy = capacity;
+        }
+    }
 
     public void deserializeNBT(CompoundTag tag) {
         this.energy = new BigDecimal(tag.getString("Energy")).setScale(DECIMAL_DIGITS, RoundingMode.DOWN);

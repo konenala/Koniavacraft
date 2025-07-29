@@ -86,7 +86,7 @@ public class ManaInfuserJEIPlugin implements IModPlugin {
         // 註冊 GUI 的點擊區域，讓玩家能在 JEI 中點擊進度條查看配方
         registration.addRecipeClickArea(
                 ManaInfuserScreen.class,
-                149, 4, 161, 17, // 進度條位置 (x, y, width, height)
+                149, 4, 21, 15, // 進度條位置 (x, y, width, height)
                 ManaInfuserCategory.MANA_INFUSER_TYPE
         );
 
