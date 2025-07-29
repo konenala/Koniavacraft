@@ -530,8 +530,7 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         tag.put("MenuSyncState", menuSyncTag);
 
         // 🔍 調試日誌
-        LOGGER.debug("保存 ManaInfuser: 魔力={}, 進度={}/{}, 配方={}",
-                getCurrentMana(), progress, maxProgress, currentRecipe != null ? "有" : "無");
+
     }
 
     @Override

@@ -247,10 +247,7 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
         tag.putInt("IntervalTick", intervalTick);
 
         // 🔍 調試日誌
-        LOGGER.debug("保存機器數據: 魔力={}, 進度={}/{}, 物品槽位={}",
-                manaStorage != null ? manaStorage.getManaStored() : 0,
-                progress, maxProgress,
-                itemHandler != null ? "已保存" : "null");
+
     }
 
     @Override
@@ -294,10 +291,6 @@ public abstract class AbstractManaMachineEntityBlock extends BlockEntity impleme
         if (intervalTick <= 0) intervalTick = 1;
 
         // 🔍 調試日誌
-        LOGGER.debug("載入機器數據: 魔力={}, 進度={}/{}, 物品槽位={}",
-                manaStorage != null ? manaStorage.getManaStored() : 0,
-                progress, maxProgress,
-                itemHandler != null ? "已載入" : "null");
     }
 
 }
