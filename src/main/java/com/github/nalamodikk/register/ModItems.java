@@ -5,7 +5,7 @@ import com.github.nalamodikk.common.item.UpgradeItem;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
-import com.github.nalamodikk.experimental.particle.item.DebugParticleItem;
+import com.github.nalamodikk.particle.item.DebugParticleItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;

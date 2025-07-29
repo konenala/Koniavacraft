@@ -5,6 +5,7 @@ import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarM
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -36,6 +37,11 @@ public class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("arcane_conduit", () ->
                     BlockEntityType.Builder.of(ArcaneConduitBlockEntity::new,
                             ModBlocks.ARCANE_CONDUIT.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ManaInfuserBlockEntity>> MANA_INFUSER =
+            BLOCK_ENTITY_TYPES.register("mana_infuser", () ->
+                    BlockEntityType.Builder.of(ManaInfuserBlockEntity::new,
+                            ModBlocks.MANA_INFUSER.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->

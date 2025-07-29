@@ -33,6 +33,7 @@
   "block.koniava.mana_soil": "Mana Soil",
   "block.koniava.deep_mana_soil": "Deep Mana Soil",
   "block.koniava.mana_grass_block": "Mana Grass Block",
+  "block.koniava.mana_infuser": "Mana Infuser",
 
   "//4": "=== EQUIPMENT ===",
   "equipment.koniava.helmet": "Tactical Helmet",
@@ -89,6 +90,8 @@
   "tooltip.koniava.priority_input": "Enter priority (-2147483648 ~ 2147483647)\nHigher values = higher priority, negative values supported",
   "tooltip.koniava.io_type": "IO Type: %s",
   "tooltip.koniava.reset_priorities": "Reset all direction priorities to default (0)",
+  "tooltip.koniava.mana_infuser.mana_cost": "Mana Cost: %d",
+  "tooltip.koniava.mana_infuser.infusion_time": "Infusion Time: %d ticks",
 
   "//7": "=== JEI INTEGRATION ===",
   "jei.koniava.fuel.mana": "Mana Output: %s",
@@ -118,6 +121,7 @@
   "message.koniava.block_cannot_rotate": "Block cannot be rotated!",
   "message.koniava.config_button_clicked": "Configuration button clicked!",
   "message.koniava.config_changed": "Configuration for side %s has been changed to %s.",
+  "message.koniava.io_mode_changed": "I/O Mode Changed",
 
   "//9": "=== NARA SYSTEM MESSAGES ===",
   "message.koniava.nara.disconnect_message": "You have chosen to sever your connection with the Nara System.",
@@ -217,6 +221,12 @@
   "gui.koniava.config.biome.category.performance": "Performance Control",
   "gui.koniava.config.biome.category.memory": "Memory Management",
   "gui.koniava.config.biome.category.adaptive": "Smart Features",
+  "gui.koniava.mana_infuser.mana": "Mana: %d/%d",
+  "gui.koniava.mana_infuser.progress": "Progress: %d%%",
+  "gui.koniava.mana_infuser.status.idle": "Idle",
+  "gui.koniava.mana_infuser.status.working": "Infusing",
+  "gui.koniava.mana_infuser.status.no_mana": "Insufficient Mana",
+  "gui.koniava.mana_infuser.status.no_recipe": "No Recipe",
 
   "//17": "=== MODES ===",
   "mode.koniava.mana": "Mana",

@@ -19,6 +19,8 @@ import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitConfi
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingMenu;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorMenu;
+import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserMenu;
 import com.github.nalamodikk.common.screen.block.shared.FallbackUpgradeMenu;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;
@@ -71,6 +73,20 @@ public class ModMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<ArcaneConduitConfigMenu>> CONDUIT_CONFIG_MENU =
             registerMenuType("conduit_config_menu", ArcaneConduitConfigMenu::new);
 
+
+    // === 🔮 新增：魔力注入機菜單 ===
+    public static final DeferredHolder<MenuType<?>, MenuType<ManaInfuserMenu>> MANA_INFUSER =
+            registerMenuType("mana_infuser",
+                    (id, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        Level level = inv.player.level();
+                        BlockEntity be = level.getBlockEntity(pos);
+                        if (!(be instanceof ManaInfuserBlockEntity infuser)) {
+                            throw new IllegalStateException("Expected ManaInfuserBlockEntity at " + pos + " but found " +
+                                    (be != null ? be.getClass().getSimpleName() : "null"));
+                        }
+                        return new ManaInfuserMenu(id, inv, infuser);
+                    });
 
     /**
      *

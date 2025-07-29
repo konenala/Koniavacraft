@@ -98,6 +98,34 @@ public class ModCapabilities {
                 });
         // 實體能力
 //        event.registerEntity(ModCapability.NARA,EntityType.PLAYER, (player, ctx) -> new NaraData());
+        // 🆕 魔力注入機能力註冊
+        // 魔力能力 - 根據 IO 配置決定功能
+        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_INFUSER.get(),
+                (blockEntity, side) -> {
+                    if (side != null && blockEntity instanceof IConfigurableBlock configurable) {
+                        IOHandlerUtils.IOType ioType = configurable.getIOConfig(side);
+
+                        return switch (ioType) {
+                            case DISABLED -> null; // 禁用面不提供能力
+                            case INPUT -> new RestrictedManaHandler(blockEntity.getManaStorage(), true, false); // 只能接收
+                            case OUTPUT -> new RestrictedManaHandler(blockEntity.getManaStorage(), false, true); // 只能被抽取
+                            case BOTH -> blockEntity.getManaStorage(); // 完整功能
+                        };
+                    }
+                    return blockEntity.getManaStorage(); // 默認完整功能
+                });
+
+        // 🆕 物品處理能力 - 根據 IO 配置決定功能
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.MANA_INFUSER.get(),
+                (blockEntity, side) -> {
+                    if (side != null && blockEntity instanceof IConfigurableBlock configurable) {
+                        IOHandlerUtils.IOType ioType = configurable.getIOConfig(side);
+                        if (ioType == IOHandlerUtils.IOType.DISABLED) {
+                            return null; // 該面禁用，不提供能力
+                        }
+                    }
+                    return blockEntity.getItemHandler();
+                });
 
     }
 

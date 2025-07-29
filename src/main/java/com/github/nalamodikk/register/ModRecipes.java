@@ -3,12 +3,16 @@ package com.github.nalamodikk.register;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.ManaGenFuelRecipe;
+import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserRecipe;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 public class ModRecipes {
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
@@ -31,6 +35,14 @@ public class ModRecipes {
     // 註冊 recipe type（簡潔乾淨）
     public static final DeferredHolder<RecipeType<?>, RecipeType<ManaCraftingTableRecipe>> MANA_CRAFTING_TYPE =
             TYPES.register("mana_crafting", () -> MANA_CRAFTING_TYPE_INSTANCE);
+
+    // === 🔮 魔力注入機（新增的）===
+    public static final Supplier<RecipeType<ManaInfuserRecipe>> MANA_INFUSER_TYPE =
+            TYPES.register("mana_infuser", () -> RecipeType.simple(
+                    ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_infuser")));
+
+    public static final Supplier<RecipeSerializer<ManaInfuserRecipe>> MANA_INFUSER_SERIALIZER =
+            SERIALIZERS.register("mana_infuser", ManaInfuserRecipe.Serializer::new);
 
 
     // 魔力發電機 -manaGen

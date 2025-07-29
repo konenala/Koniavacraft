@@ -33,6 +33,7 @@
   "block.koniava.mana_soil": "魔力土壤",
   "block.koniava.deep_mana_soil": "深層魔力土壤",
   "block.koniava.mana_grass_block": "魔力草方塊",
+  "block.koniava.mana_infuser": "魔力注入機",
 
   "//4": "=== 裝備 ===",
   "equipment.koniava.helmet": "戰術頭盔",
@@ -90,6 +91,9 @@
   "tooltip.koniava.io_type": "IO類型: %s",
   "tooltip.koniava.reset_priorities": "重置所有方向的優先級到預設值 (0)",
 
+  "tooltip.koniava.mana_infuser.mana_cost": "魔力消耗: %d",
+  "tooltip.koniava.mana_infuser.infusion_time": "注入時間: %d tick",
+
   "//7": "=== JEI 整合 ===",
   "jei.koniava.fuel.mana": "魔力產出: %s",
   "jei.koniava.fuel.energy": "能量產出: %s",
@@ -118,6 +122,7 @@
   "message.koniava.block_cannot_rotate": "方塊無法旋轉！",
   "message.koniava.config_button_clicked": "配置按鈕已點擊！",
   "message.koniava.config_changed": "側面 %s 的配置已更改為 %s。",
+  "message.koniava.io_mode_changed": "I/O 模式已變更",
 
   "//9": "=== 娜拉系統訊息 ===",
   "message.koniava.nara.disconnect_message": "你已選擇中斷與娜拉系統的連結。",
@@ -217,6 +222,13 @@
   "gui.koniava.config.biome.category.performance": "性能控制",
   "gui.koniava.config.biome.category.memory": "記憶體管理",
   "gui.koniava.config.biome.category.adaptive": "智能功能",
+
+  "gui.koniava.mana_infuser.mana": "魔力: %d/%d",
+  "gui.koniava.mana_infuser.progress": "進度: %d%%",
+  "gui.koniava.mana_infuser.status.idle": "待機",
+  "gui.koniava.mana_infuser.status.working": "注入中",
+  "gui.koniava.mana_infuser.status.no_mana": "魔力不足",
+  "gui.koniava.mana_infuser.status.no_recipe": "無配方",
 
   "//17": "=== 模式 ===",
   "mode.koniava.mana": "魔力",
