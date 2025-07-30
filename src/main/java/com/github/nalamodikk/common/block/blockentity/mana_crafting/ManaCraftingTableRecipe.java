@@ -294,14 +294,17 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
                     resolvedIngredients.set(row * 3 + col, ing);
                 }
             }
+
+            // ✅ 修復：有序配方使用 pattern + key 構造函數
+            ManaCraftingTableRecipe recipe = new ManaCraftingTableRecipe(null, pattern, key, result.copy(), manaCost);
+            return recipe;
         } else {
             resolvedIngredients = NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
+
+            // ✅ 無序配方使用 ingredients 構造函數
+            return new ManaCraftingTableRecipe(null, resolvedIngredients, result.copy(), manaCost, false);
         }
-
-        // ❌ 注意：這裡仍然無法知道 id
-        return new ManaCraftingTableRecipe(null, resolvedIngredients, result.copy(), manaCost, shaped);
     }
-
 
     public ItemStack getResult() {
         return result;
