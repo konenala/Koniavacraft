@@ -454,13 +454,14 @@ public class ManaCraftingTableRecipe implements Recipe<ManaCraftingTableRecipe.M
 
                         // ✅ 這裡直接 new，因為你 constructor 已經做了所有初始化
                         (id, ingredients, result, mana, shaped, patternKey) -> {
-                            var resolved = NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
-                            var recipe = new ManaCraftingTableRecipe(id, resolved, result.copy(), mana, shaped);
-                            recipe.pattern.addAll(patternKey.pattern());
-                            for (var entry : patternKey.key().entrySet()) {
-                                recipe.key.put(entry.getKey(), entry.getValue());
+                            if (shaped) {
+                                // ✅ 有序配方：使用 pattern + key 構造函數
+                                return new ManaCraftingTableRecipe(id, patternKey.pattern(), patternKey.key(), result.copy(), mana);
+                            } else {
+                                // ✅ 無序配方：使用 ingredients 構造函數
+                                var resolved = NonNullList.of(Ingredient.EMPTY, ingredients.toArray(new Ingredient[0]));
+                                return new ManaCraftingTableRecipe(id, resolved, result.copy(), mana, false);
                             }
-                            return recipe;
                         }
                 );
 
