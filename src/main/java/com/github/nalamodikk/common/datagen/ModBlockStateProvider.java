@@ -7,9 +7,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
-import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.neoforged.neoforge.client.model.generators.*;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
@@ -36,7 +38,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
         // 🧪 特殊方塊 (自定義模型)
         createManaModel(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
-        createManaModel(ModBlocks.MANA_INFUSER);
+        createManaModelWithFacing(ModBlocks.MANA_INFUSER);
     }
 
     // ===========================================
@@ -72,6 +74,9 @@ public class ModBlockStateProvider extends BlockStateProvider {
     // 🧪 特殊方塊模型
     // ===========================================
 
+    /**
+     * 🔧 創建基礎魔力方塊模型（無朝向屬性）
+     */
     private void createManaModel(DeferredBlock<?> blockHolder) {
         Block block = blockHolder.get();
         String blockName = blockHolder.getId().getPath();
@@ -79,6 +84,80 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .partialState().modelForState()
                 .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + blockName)))
                 .addModel();
+    }
+
+    /**
+     * 🧭 創建有朝向屬性的魔力方塊模型
+     */
+    private void createManaModelWithFacing(DeferredBlock<?> blockHolder) {
+        Block block = blockHolder.get();
+        String blockName = blockHolder.getId().getPath();
+
+        getVariantBuilder(block)
+                // 北面 (默認方向)
+                .partialState().with(HorizontalDirectionalBlock.FACING, Direction.NORTH)
+                .modelForState().modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + blockName))).addModel()
+
+                // 南面 (旋轉180度)
+                .partialState().with(HorizontalDirectionalBlock.FACING, Direction.SOUTH)
+                .modelForState().modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + blockName)))
+                .rotationY(180).addModel()
+
+                // 西面 (旋轉270度)
+                .partialState().with(HorizontalDirectionalBlock.FACING, Direction.WEST)
+                .modelForState().modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + blockName)))
+                .rotationY(270).addModel()
+
+                // 東面 (旋轉90度)
+                .partialState().with(HorizontalDirectionalBlock.FACING, Direction.EAST)
+                .modelForState().modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + blockName)))
+                .rotationY(90).addModel();
+    }
+
+    /**
+     * 🔮 創建有朝向和工作狀態的魔力方塊模型 (適用於魔力注入機)
+     */
+    private void createManaModelWithFacingAndWorking(DeferredBlock<?> blockHolder) {
+        Block block = blockHolder.get();
+        String blockName = blockHolder.getId().getPath();
+
+        // 獲取方塊的屬性
+        BooleanProperty workingProperty = BooleanProperty.create("working");
+        DirectionProperty facingProperty = BlockStateProperties.HORIZONTAL_FACING;
+
+        VariantBlockStateBuilder builder = getVariantBuilder(block);
+
+        // 為每個朝向和工作狀態組合創建變體
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            for (boolean working : new boolean[]{false, true}) {
+
+                // 決定使用哪個模型文件
+                String modelName = working ? blockName + "_working" : blockName;
+
+                // 計算旋轉角度
+                int rotationY = switch (direction) {
+                    case NORTH -> 0;
+                    case SOUTH -> 180;
+                    case WEST -> 270;
+                    case EAST -> 90;
+                    default -> 0;
+                };
+
+                // 添加變體
+                ConfiguredModel.Builder<?> modelBuilder = builder
+                        .partialState()
+                        .with(facingProperty, direction)
+                        .with(workingProperty, working)
+                        .modelForState()
+                        .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/" + modelName)));
+
+                if (rotationY != 0) {
+                    modelBuilder.rotationY(rotationY);
+                }
+
+                modelBuilder.addModel();
+            }
+        }
     }
 
     // ===========================================

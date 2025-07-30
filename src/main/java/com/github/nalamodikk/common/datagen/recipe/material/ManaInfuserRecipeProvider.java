@@ -48,7 +48,7 @@ public class ManaInfuserRecipeProvider {
                 "iron_to_mana_ingot",
                 Ingredient.of(Items.IRON_INGOT),
                 new ItemStack(ModItems.MANA_INGOT.get()),
-                50,  // 魔力消耗
+                5000,  // 魔力消耗
                 40,  // 注入時間 (2秒)
                 1    // 輸入數量
         );
@@ -58,7 +58,7 @@ public class ManaInfuserRecipeProvider {
                 "mana_dust_to_condensed",
                 Ingredient.of(ModItems.MANA_DUST.get()),
                 new ItemStack(ModItems.CONDENSED_MANA_DUST.get()),
-                25,  // 魔力消耗
+                2500,  // 魔力消耗
                 30,  // 注入時間
                 2    // 需要2個魔力粉
         );
@@ -68,7 +68,7 @@ public class ManaInfuserRecipeProvider {
                 "condensed_to_refined_mana_dust",
                 Ingredient.of(ModItems.CONDENSED_MANA_DUST.get()),
                 new ItemStack(ModItems.REFINED_MANA_DUST.get()),
-                75,  // 魔力消耗
+                7500,  // 魔力消耗
                 60,  // 注入時間 (3秒)
                 1
         );
@@ -86,21 +86,14 @@ public class ManaInfuserRecipeProvider {
      */
     private static void generateFoodEnhancementRecipes(RecipeOutput output) {
         // 麵包 → 魔力麵包 (更高飽食度)
-        createManaInfuserRecipe(output,
-                "bread_enhancement",
-                Ingredient.of(Items.BREAD),
-                new ItemStack(Items.BREAD, 2), // 產出2個
-                30,  // 魔力消耗
-                40,  // 注入時間
-                1
-        );
+
 
         // 蘋果 → 金蘋果
         createManaInfuserRecipe(output,
                 "apple_to_golden_apple",
                 Ingredient.of(Items.APPLE),
                 new ItemStack(Items.GOLDEN_APPLE),
-                80,  // 魔力消耗
+                8000,  // 魔力消耗
                 60,  // 注入時間
                 1
         );
@@ -110,7 +103,7 @@ public class ManaInfuserRecipeProvider {
                 "carrot_to_golden_carrot",
                 Ingredient.of(Items.CARROT),
                 new ItemStack(Items.GOLDEN_CARROT),
-                60,  // 魔力消耗
+                6000,  // 魔力消耗
                 50,  // 注入時間
                 1
         );
@@ -121,21 +114,13 @@ public class ManaInfuserRecipeProvider {
      */
     private static void generateSpecialItemRecipes(RecipeOutput output) {
         // 玻璃 → 強化玻璃 (更多數量)
-        createManaInfuserRecipe(output,
-                "glass_multiplication",
-                Ingredient.of(Items.GLASS),
-                new ItemStack(Items.GLASS, 3), // 1個變3個
-                40,  // 魔力消耗
-                35,  // 注入時間
-                1
-        );
 
         // 石頭 → 石磚
         createManaInfuserRecipe(output,
                 "stone_to_stone_bricks",
                 Ingredient.of(Items.STONE),
                 new ItemStack(Items.STONE_BRICKS),
-                20,  // 魔力消耗
+                2000,  // 魔力消耗
                 25,  // 注入時間
                 1
         );
@@ -145,7 +130,7 @@ public class ManaInfuserRecipeProvider {
                 "sand_to_glass",
                 Ingredient.of(Items.SAND),
                 new ItemStack(Items.GLASS),
-                15,  // 魔力消耗
+                1500,  // 魔力消耗
                 30,  // 注入時間
                 1
         );
@@ -155,7 +140,7 @@ public class ManaInfuserRecipeProvider {
                 "cobblestone_to_stone",
                 Ingredient.of(Items.COBBLESTONE),
                 new ItemStack(Items.STONE),
-                10,  // 魔力消耗
+                1000,  // 魔力消耗
                 20,  // 注入時間
                 1
         );
@@ -173,7 +158,7 @@ public class ManaInfuserRecipeProvider {
                 "book_to_enchanted_book",
                 Ingredient.of(Items.BOOK),
                 enchantedBook,
-                120, // 魔力消耗
+                120000, // 魔力消耗
                 80,  // 注入時間
                 1
         );
@@ -183,7 +168,7 @@ public class ManaInfuserRecipeProvider {
                 "experience_bottle_multiplication",
                 Ingredient.of(Items.EXPERIENCE_BOTTLE),
                 new ItemStack(Items.EXPERIENCE_BOTTLE, 2),
-                60,  // 魔力消耗
+                6000,  // 魔力消耗
                 45,  // 注入時間
                 1
         );

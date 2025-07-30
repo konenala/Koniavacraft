@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarM
 import com.github.nalamodikk.common.item.UpgradeItem;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +51,20 @@ public class SolarUpgradeManager {
             public void setChanged() {
                 super.setChanged();
                 markEffectsDirty();
-                collector.setChanged(); // 通知主類
+                collector.setChanged();
+
+                // 🆕 升級變化時立即同步
+                if (collector.getLevel() != null && !collector.getLevel().isClientSide()) {
+                    collector.getSyncHelper().syncFrom(collector);
+                    collector.getLevel().sendBlockUpdated(
+                            collector.getBlockPos(),
+                            collector.getBlockState(),
+                            collector.getBlockState(),
+                            3
+                    );
+
+                    LOGGER.debug("🔄 升級物品變化，立即同步: 位置={}", collector.getBlockPos());
+                }
             }
         };
 
@@ -248,18 +262,43 @@ public class SolarUpgradeManager {
     }
 
     // === 💾 數據持久化（使用正確的方法名）===
-
-    public void saveToNBT(CompoundTag tag) {
-        if (collector.getLevel() != null) {
-            CompoundTag upgradeTag = upgrades.serializeNBT(collector.getLevel().registryAccess());
+    /**
+     * 💾 修復版 NBT 保存 - 傳入正確的 HolderLookup
+     */
+    public void saveToNBT(CompoundTag tag, HolderLookup.Provider registries) {
+        try {
+            CompoundTag upgradeTag = upgrades.serializeNBT(registries);
             tag.put("SolarUpgradeManager", upgradeTag);
+
+//            // 🔍 調試日誌
+//            LOGGER.debug("🌞 保存升級管理器: 槽位數 {}, 升級物品數 {}",
+//                    UPGRADE_SLOT_COUNT,
+//                    upgrades.getAll().stream().mapToInt(stack -> stack.isEmpty() ? 0 : 1).sum());
+        } catch (Exception e) {
+            LOGGER.error("💥 保存升級管理器失敗", e);
         }
     }
 
-    public void loadFromNBT(CompoundTag tag) {
-        if (tag.contains("SolarUpgradeManager") && collector.getLevel() != null) {
-            upgrades.deserializeNBT(collector.getLevel().registryAccess(), tag.getCompound("SolarUpgradeManager"));
-            markEffectsDirty(); // 重新計算效果
+
+    /**
+     * 🔄 修復版 NBT 載入 - 傳入正確的 HolderLookup
+     */
+    public void loadFromNBT(CompoundTag tag, HolderLookup.Provider registries) {
+        try {
+            if (tag.contains("SolarUpgradeManager")) {
+                CompoundTag upgradeTag = tag.getCompound("SolarUpgradeManager");
+                upgrades.deserializeNBT(registries, upgradeTag);
+                markEffectsDirty(); // 重新計算效果
+
+                // 🔍 調試日誌
+                LOGGER.debug("🌞 載入升級管理器: 槽位數 {}, 升級物品數 {}",
+                        UPGRADE_SLOT_COUNT,
+                        upgrades.getAll().stream().mapToInt(stack -> stack.isEmpty() ? 0 : 1).sum());
+            }
+        } catch (Exception e) {
+            LOGGER.error("💥 載入升級管理器失敗", e);
         }
     }
+
+
 }

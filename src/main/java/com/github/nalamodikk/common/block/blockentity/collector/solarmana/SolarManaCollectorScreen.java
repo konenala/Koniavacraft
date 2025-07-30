@@ -1,3 +1,5 @@
+// 🔧 完整修復的 SolarManaCollectorScreen.java
+
 package com.github.nalamodikk.common.block.blockentity.collector.solarmana;
 
 import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
@@ -23,9 +25,14 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
     private static final int MANA_BAR_WIDTH = 7;
     private final int imageWidth = 176;
     private final int imageHeight = 166;
+
     public SolarManaCollectorScreen(SolarManaCollectorMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
     }
+
+    // 🔧 修復版：統一使用同步數據
+
+    // 🔧 最簡單粗暴的解決方案 - 只改這一個方法
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
@@ -40,30 +47,52 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         final int targetX = this.leftPos + 69;
         final int targetY = this.topPos + 24;
 
-        // 是否正在發電（同步值）
-        boolean generating = menu.isGenerating();
+        // 🎯 最簡單的判斷：只看發電狀態
+        boolean isGenerating = menu.isGenerating();
 
-        // 如果沒在發電 → 降低亮度（變灰）
-        if (!generating) {
+        // 🎨 簡單的顏色邏輯
+        if (!isGenerating) {
             guiGraphics.setColor(0.5f, 0.5f, 0.5f, 1.0f);
         }
 
         // 繪製太陽圖示
         guiGraphics.blit(TEXTURE, targetX, targetY, sunSrcX, sunSrcY, sunW, sunH);
 
-        // 恢復顏色避免影響其他元素
+        // 恢復顏色
         guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         // 魔力條繪製
-        drawManaBar(guiGraphics, 11, 19); // 偏移位置可自行調整
+        drawManaBar(guiGraphics, 11, 19);
     }
 
+    // 🔧 客戶端時間判斷（與 BlockEntity 邏輯一致）
+    private boolean isDaytimeClientSide() {
+        // 🛡️ 更安全的檢查
+        if (minecraft == null || minecraft.level == null) {
+            // 🔧 如果客戶端出問題，使用伺服器的發電狀態作為備用判斷
+            return menu.isGenerating(); // 如果在發電，說明可能是白天
+        }
 
+        long dayTime = minecraft.level.getDayTime() % 24000;
+        return dayTime < 18000;
+    }
+
+    // 🆕 添加缺失的太陽圖示懸停檢測方法
+    private boolean isHoveringSun(int mouseX, int mouseY) {
+        final int targetX = this.leftPos + 69;
+        final int targetY = this.topPos + 24;
+        final int sunW = 39;
+        final int sunH = 38;
+
+        return mouseX >= targetX && mouseX <= targetX + sunW &&
+                mouseY >= targetY && mouseY <= targetY + sunH;
+    }
 
     private boolean isHoveringManaBar(int mouseX, int mouseY) {
         int manaBarX = this.leftPos + 11;
         int manaBarY = this.topPos + 19;
-        return mouseX >= manaBarX && mouseX <= manaBarX + MANA_BAR_WIDTH && mouseY >= manaBarY && mouseY <= manaBarY + MANA_BAR_HEIGHT;
+        return mouseX >= manaBarX && mouseX <= manaBarX + MANA_BAR_WIDTH &&
+                mouseY >= manaBarY && mouseY <= manaBarY + MANA_BAR_HEIGHT;
     }
 
     private void drawManaBar(GuiGraphics pGuiGraphics, int xOffset, int yOffset) {
@@ -100,28 +129,31 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
                     // 傳送封包：打開 Upgrade GUI
                     BlockPos pos = this.menu.getBlockEntity().getBlockPos();
                     OpenUpgradeGuiPacket.sendToServer(pos);
-
                 },
                 tooltip
         ));
     }
 
-
-
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 背景畫面
-        this.renderBackground(guiGraphics,mouseX ,mouseY ,partialTick);              // 灰暗背景
-        this.renderBg(guiGraphics, partialTick, mouseX, mouseY); // 你定義的 GUI 背景（紋理）
+        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBg(guiGraphics, partialTick, mouseX, mouseY);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);  // 基礎 Slot + 按鈕處理
+        // 🎯 獲取升級等級
+        int speedLevel = menu.getSpeedLevel();
+        int efficiencyLevel = menu.getEfficiencyLevel();
 
+        // 🎨 根據升級數量決定顏色
+        int speedColor = speedLevel > 0 ? 0xFFFFFF : 0x666666;
+        int effColor = efficiencyLevel > 0 ? 0xFFFFFF : 0x666666;
 
-        Component speedLabel = Component.translatable("screen.koniava.upgrade.speed", menu.getSpeedLevel());
-        Component efficiencyLabel = Component.translatable("screen.koniava.upgrade.efficiency", menu.getEfficiencyLevel());
+        Component speedLabel = Component.translatable("screen.koniava.upgrade.speed", speedLevel);
+        Component efficiencyLabel = Component.translatable("screen.koniava.upgrade.efficiency", efficiencyLevel);
 
         float scale = 0.8f;
-        int drawX = leftPos + 22; // ❗你可以調整這個 X（越大越靠右）
+        int drawX = leftPos + 22;
         int drawY1 = topPos + 20;
         int drawY2 = topPos + 30;
 
@@ -129,25 +161,39 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         guiGraphics.pose().scale(scale, scale, 1.0f);
 
         guiGraphics.drawString(font, speedLabel,
-                (int)(drawX / scale),
-                (int)(drawY1 / scale),
-                0xFFFFFF, false);
-
+                (int)(drawX / scale), (int)(drawY1 / scale), speedColor, false);
         guiGraphics.drawString(font, efficiencyLabel,
-                (int)(drawX / scale),
-                (int)(drawY2 / scale),
-                0xFFFFFF, false);
+                (int)(drawX / scale), (int)(drawY2 / scale), effColor, false);
 
         guiGraphics.pose().popPose();
 
+        // 工具提示
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
 
-        this.renderTooltip(guiGraphics, mouseX, mouseY); // 工具提示（例如滑鼠移到物品上）
+        // 🔧 魔力條提示
         if (isHoveringManaBar(mouseX, mouseY)) {
-            guiGraphics.renderTooltip(this.font, Component.translatable("tooltip.mana", this.menu.getManaStored(), this.menu.getMaxMana()), mouseX, mouseY);
+            guiGraphics.renderTooltip(this.font,
+                    Component.translatable("tooltip.mana", this.menu.getManaStored(), this.menu.getMaxMana()),
+                    mouseX, mouseY);
+        }
+
+        // 🆕 太陽圖示提示
+        if (isHoveringSun(mouseX, mouseY)) {
+            boolean isDaytime = isDaytimeClientSide();
+            boolean isGenerating = menu.isGenerating();
+
+            Component tooltip;
+            if (!isDaytime) {
+                tooltip = Component.translatable("tooltip.koniava.solar.nighttime");
+            } else if (!isGenerating) {
+                tooltip = Component.translatable("tooltip.koniava.solar.blocked");
+            } else {
+                tooltip = Component.translatable("tooltip.koniava.solar.generating");
+            }
+
+            guiGraphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
         }
     }
-
-
 
     @Override
     public @Nullable Slot getSlotUnderMouse() {

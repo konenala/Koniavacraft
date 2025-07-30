@@ -208,4 +208,6 @@ idea {
 }
 jar {
     exclude('log4j2.xml')
+    exclude('.cache')
+
 }

@@ -92,6 +92,9 @@
   "tooltip.koniava.reset_priorities": "Reset all direction priorities to default (0)",
   "tooltip.koniava.mana_infuser.mana_cost": "Mana Cost: %d",
   "tooltip.koniava.mana_infuser.infusion_time": "Infusion Time: %d ticks",
+  "tooltip.koniava.solar.nighttime": "It's nighttime. The collector is inactive.",
+  "tooltip.koniava.solar.blocked": "Sunlight is blocked. Unable to generate mana.",
+  "tooltip.koniava.solar.generating": "Generating mana from sunlight.",
 
   "//7": "=== JEI INTEGRATION ===",
   "jei.koniava.fuel.mana": "Mana Output: %s",

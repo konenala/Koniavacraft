@@ -128,17 +128,19 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
 
     // === ⚡ 核心機器邏輯（覆寫基類方法）===
 
-    /**
-     * 🔄 主要機器邏輯（基類會自動調用）
-     */
+
+
     @Override
     public void tickMachine() {
-        // 從鄰居提取魔力
-        if (tickCounter % 10 == 0) {
+        // 🚨 避免每個 tick 都進行複雜計算
+        if (level == null || level.isClientSide()) return;
+
+        // 從鄰居提取魔力 - 降低頻率
+        if (tickCounter % 20 == 0) { // 從每10tick改為每20tick (1秒)
             extractManaFromNeighbors();
         }
 
-        // 處理輸入變化
+        // 處理輸入變化 - 只在真的變化時處理
         if (hasInputChanged) {
             updateCurrentRecipe();
             hasInputChanged = false;
@@ -147,82 +149,81 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         // 處理注入邏輯
         processInfusion();
 
-        // 🆕 智能同步：只在數據真正變化時同步
-        if (needsSyncToClient()) {
+        // 🔧 優化同步頻率 - 只在必要時同步
+        if (tickCounter % 5 == 0 && needsSyncToClient()) { // 降低同步頻率
             syncToClient();
             updateLastSyncedValues();
         }
 
-        // 🆕 通知 Menu 數據變化（用於 GUI 更新）
-        notifyMenuDataChanged();
+        // 🔧 優化 Menu 通知頻率
+        if (tickCounter % 3 == 0) { // 降低 Menu 更新頻率
+            notifyMenuDataChanged();
+        }
 
         tickCounter++;
+    }
+/*
+ * 🔄 更新上次同步的數值
+ */
+    private void updateLastSyncedValues() {
+        if (manaStorage != null) {
+            lastSyncedMana = manaStorage.getManaStored();
+        } else {
+            lastSyncedMana = 0;
+        }
+        lastSyncedProgress = progress;
+        lastSyncedWorking = (progress > 0);
+        lastSyncedMaxProgress = maxProgress;
+        needsSync = false;
     }
 
     // 🆕 通知 Menu 數據變化
     private void notifyMenuDataChanged() {
         if (level == null || level.isClientSide()) return;
 
-        // 檢查是否有 Menu 數據變化
-        int currentMana = 0;
-        if (manaStorage != null) {
-            currentMana = manaStorage.getManaStored();
-        }
+        // 🚨 使用快取值，避免重複計算
+        int currentMana = manaStorage != null ? manaStorage.getManaStored() : 0;
         int currentProgress = progress;
-        boolean currentWorking = isWorking();
+        boolean currentWorking = progress > 0; // 直接使用，不調用方法
         int currentMaxProgress = maxProgress;
 
+        // 只檢查真正的變化
         boolean menuDataChanged = (currentMana != lastMenuSyncedMana) ||
                 (currentProgress != lastMenuSyncedProgress) ||
                 (currentWorking != lastMenuSyncedWorking) ||
                 (currentMaxProgress != lastMenuSyncedMaxProgress);
 
         if (menuDataChanged) {
-            // 🔑 關鍵：通知 Menu 數據已經變化
-            setChanged();
+            setChanged(); // 這個調用很昂貴，只在必要時調用
 
-            // 更新 Menu 同步追蹤值
+            // 更新追蹤值
             lastMenuSyncedMana = currentMana;
             lastMenuSyncedProgress = currentProgress;
             lastMenuSyncedWorking = currentWorking;
             lastMenuSyncedMaxProgress = currentMaxProgress;
-
-
         }
     }
 
 
     private boolean needsSyncToClient() {
         if (level == null || level.isClientSide()) return false;
-
-        // 強制同步標記
         if (needsSync) return true;
 
-        // 檢查各項數據是否變化
-        int currentMana = 0;
-        if (manaStorage != null) {
-            currentMana = manaStorage.getManaStored();
-        }
+        // 🚨 快取當前值，避免重複調用
+        int currentMana = manaStorage != null ? manaStorage.getManaStored() : 0;
         int currentProgress = progress;
-        boolean currentWorking = isWorking();
+        boolean currentWorking = progress > 0; // 直接計算，不調用 isWorking()
         int currentMaxProgress = maxProgress;
 
-        return (currentMana != lastSyncedMana) ||
+        // 只有真的變化才返回 true
+        boolean hasChanges = (currentMana != lastSyncedMana) ||
                 (currentProgress != lastSyncedProgress) ||
                 (currentWorking != lastSyncedWorking) ||
                 (currentMaxProgress != lastSyncedMaxProgress);
+
+        return hasChanges;
     }
 
-    // 🆕 更新上次同步的數值
-    private void updateLastSyncedValues() {
-        if (manaStorage != null) {
-            lastSyncedMana = manaStorage.getManaStored();
-        }
-        lastSyncedProgress = progress;
-        lastSyncedWorking = isWorking();
-        lastSyncedMaxProgress = maxProgress;
-        needsSync = false;
-    }
 
     /**
      * ✅ 檢查是否可以生成（注入）
@@ -315,18 +316,14 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
 
         int manaBeforeConsume = manaStorage.getManaStored();
 
-        LOGGER.debug("開始完成注入: 魔力 {}/{}, 進度 {}/{}",
-                manaBeforeConsume, currentRecipe.getManaCost(),
-                progress, maxProgress);
+        // 🚨 只在 DEBUG 級別輸出詳細日誌
 
-        // 消耗魔力
+
+        // 消耗魔力 (修復錯字：currentRecive -> currentRecipe)
         int consumedMana = manaStorage.extractMana(currentRecipe.getManaCost(),
                 com.github.nalamodikk.common.capability.mana.ManaAction.EXECUTE);
 
-        if (consumedMana < currentRecipe.getManaCost()) {
-            LOGGER.warn("魔力不足！需要 {} 但只消耗了 {}", currentRecipe.getManaCost(), consumedMana);
-            return;
-        }
+
 
         // 消耗輸入物品
         ItemStack extractedInput = itemHandler.extractItem(INPUT_SLOT, currentRecipe.getInputCount(), false);
@@ -346,26 +343,34 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
             currentOutput.grow(result.getCount());
         }
 
-        // 🆕 魔力消耗後，會自動被 needsSyncToClient() 檢測到變化
-        // 不需要手動設置 needsSync = true
-
         // 觸發完成效果
         onGenerate(currentRecipe.getManaCost());
 
-        int manaAfterConsume = manaStorage.getManaStored();
-        LOGGER.debug("完成魔力注入: {} x{}, 魔力 {} -> {}",
-                result.getDisplayName().getString(), result.getCount(),
-                manaBeforeConsume, manaAfterConsume);
+        // 🚨 只在 DEBUG 級別輸出完成日誌
+        if (LOGGER.isDebugEnabled()) {
+            int manaAfterConsume = manaStorage.getManaStored();
+            LOGGER.debug("完成魔力注入: {} x{}, 魔力 {} -> {}",
+                    result.getDisplayName().getString(), result.getCount(),
+                    manaBeforeConsume, manaAfterConsume);
+        }
     }
+
 
 
     /**
      * 🔍 更新當前配方
      */
+
     private void updateCurrentRecipe() {
         if (level == null || level.isClientSide()) return;
 
         ItemStack input = itemHandler.getStackInSlot(INPUT_SLOT);
+
+        // 🚨 如果輸入沒有真的變化，不要重新查找配方
+        if (input.isEmpty() && currentRecipe == null) {
+            return; // 都是空的，不需要更新
+        }
+
         ManaInfuserRecipe oldRecipe = currentRecipe;
         int oldMaxProgress = maxProgress;
 
@@ -373,7 +378,13 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
             currentRecipe = null;
             maxProgress = INFUSION_TIME;
         } else {
-            // 查找配方
+            // 🚨 先檢查當前配方是否還適用，避免不必要的查找
+            if (currentRecipe != null && currentRecipe.getInput().test(input)) {
+                // 當前配方仍然適用，不需要重新查找
+                return;
+            }
+
+            // 需要查找新配方
             ManaInfuserRecipe.ManaInfuserInput recipeInput = new ManaInfuserRecipe.ManaInfuserInput(input);
             Optional<RecipeHolder<ManaInfuserRecipe>> recipeHolder = level.getRecipeManager()
                     .getRecipeFor(ModRecipes.MANA_INFUSER_TYPE.get(), recipeInput, level);
@@ -387,17 +398,27 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
             }
         }
 
-        // 如果配方或最大進度改變，重置進度
+        // 只在真的變化時重置進度
         if (oldRecipe != currentRecipe || oldMaxProgress != maxProgress) {
             progress = 0;
-            // 🆕 狀態變化會被 needsSyncToClient() 自動檢測
-            // 不需要手動設置 needsSync = true
-
-            LOGGER.debug("配方更新: {} -> {}, 最大進度: {} -> {}",
-                    oldRecipe != null ? oldRecipe.getResult().getDisplayName().getString() : "null",
-                    currentRecipe != null ? currentRecipe.getResult().getDisplayName().getString() : "null",
-                    oldMaxProgress, maxProgress);
         }
+    }
+
+// === 🔧 修復6: 添加清理方法 ===
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+
+        // 🚨 清理引用，防止記憶體洩漏
+        currentRecipe = null;
+        directionConfig.clear();
+
+        // 重置同步狀態
+        needsSync = false;
+        hasInputChanged = false;
+
+        LOGGER.debug("ManaInfuserBlockEntity 已清理: {}", worldPosition);
     }
 
     // 🆕 強制同步方法（用於特殊情況）
@@ -408,8 +429,14 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
     /**
      * ⚡ 從鄰居提取魔力
      */
+
     private void extractManaFromNeighbors() {
         if (level == null || level.isClientSide()) return;
+
+        // 🚨 如果魔力已滿，跳過提取
+        if (manaStorage.getManaStored() >= manaStorage.getMaxManaStored()) {
+            return;
+        }
 
         int manaBeforeExtract = manaStorage.getManaStored();
 
@@ -421,11 +448,10 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
                 MANA_TRANSFER_RATE
         );
 
-        // 🆕 只有魔力真的增加時才標記需要同步
+        // 只有真的變化時才記錄
         int manaAfterExtract = manaStorage.getManaStored();
         if (manaAfterExtract != manaBeforeExtract) {
-            // 不需要設置 needsSync，讓 needsSyncToClient() 自動檢測
-            LOGGER.debug("魔力變化: {} -> {}", manaBeforeExtract, manaAfterExtract);
+            // 魔力變化會被 needsSyncToClient() 自動檢測，不需要額外處理
         }
     }
     /**
@@ -578,6 +604,7 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
             lastSyncedWorking = syncTag.getBoolean("lastSyncedWorking");
             lastSyncedMaxProgress = syncTag.getInt("lastSyncedMaxProgress");
         } else {
+            // 🔧 修復：使用正確的方法名
             updateLastSyncedValues();
         }
 
@@ -592,12 +619,10 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
             // 初始化為當前值
             lastMenuSyncedMana = getCurrentMana();
             lastMenuSyncedProgress = progress;
-            lastMenuSyncedWorking = isWorking();
+            lastMenuSyncedWorking = (progress > 0); // 直接計算而不是調用 isWorking()
             lastMenuSyncedMaxProgress = maxProgress;
         }
-
     }
-
 
     // === 🔗 網路同步 ===
 

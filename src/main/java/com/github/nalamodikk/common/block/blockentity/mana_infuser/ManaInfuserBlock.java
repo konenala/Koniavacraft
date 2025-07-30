@@ -15,6 +15,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -71,7 +72,18 @@ public class ManaInfuserBlock extends BaseMachineBlock {
     }
 
     // === 🏗️ 方塊屬性（擴展基類）===
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        // 🎯 重要：使用 getOpposite() 讓方塊面向玩家
+        // context.getHorizontalDirection() 返回玩家面向的方向
+        // 我們通常希望方塊的"正面"面向玩家，所以使用相反方向
+        Direction facing = context.getHorizontalDirection().getOpposite();
 
+
+        return this.defaultBlockState()
+                .setValue(FACING, facing)
+                .setValue(WORKING, false);
+    }
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder); // 添加 FACING
