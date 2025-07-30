@@ -173,3 +173,4 @@ repo
 /src/generated/resources/data/koniava/loot_table/blocks/mana_infuser.json
 /src/generated/resources/data/koniava/recipe/mana_infuser/sand_to_glass.json
 /src/generated/resources/data/koniava/recipe/mana_infuser/stone_to_stone_bricks.json
+/src/generated/resources/data/koniava/recipe/mana_recipes/mana_crafting/mana_infuser_machine.json

@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.datagen.recipe.material;
 
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.recipe.ManaCraftingRecipeBuilder;
+import com.github.nalamodikk.register.ModBlocks;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -35,6 +36,22 @@ public class ManaCraftingRecipeProvider {
                 .addIngredient(Ingredient.of(Items.DIAMOND))
                 .manaCost(5000)
                 .save(output);
+
+
+            ManaCraftingRecipeBuilder.create(ModBlocks.MANA_INFUSER.get(), 1)
+                    .shaped(true)  // 明確設置為有序
+                    .pattern("RGR")
+                    .pattern("MIM")
+                    .pattern("CDC")
+                    .define('R', Items.REDSTONE_BLOCK)
+                    .define('G', Items.GLASS)
+                    .define('M', ModItems.MANA_DUST.get())
+                    .define('I', Items.IRON_BLOCK)
+                    .define('C', ModItems.REFINED_MANA_DUST.get())
+                    .define('D', Items.DIAMOND)
+                    .manaCost(50000)
+                    .save(output, "mana_infuser_machine");
+
 
         // ✅ 有序合成配方
 //        ManaCraftingRecipeBuilder.create(ModItems.MANA_STAFF.get(), 1)

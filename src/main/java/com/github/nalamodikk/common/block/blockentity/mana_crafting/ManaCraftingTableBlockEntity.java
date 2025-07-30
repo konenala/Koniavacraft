@@ -37,7 +37,7 @@ import java.util.EnumMap;
 import java.util.Optional;
 
 public class ManaCraftingTableBlockEntity extends BlockEntity implements MenuProvider, IManaCraftingMachine , IConfigurableBlock {
-    public static final int MAX_MANA = 10000;
+    public static final int MAX_MANA = 1000000;
     public static final int INPUT_SLOT_COUNT = 9;
     public static final int OUTPUT_SLOT = 9;
     public static final int TOTAL_SLOTS = 10;

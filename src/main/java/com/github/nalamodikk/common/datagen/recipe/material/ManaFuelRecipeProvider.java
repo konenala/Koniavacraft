@@ -16,6 +16,6 @@ public class ManaFuelRecipeProvider {
         // 🧪 你模組內的物品
         ManaGenFuelRecipeBuilder.create(ModItems.CORRUPTED_MANA_DUST.get(), 20, 15, 400).save(output);
         ManaGenFuelRecipeBuilder.create(ModItems.MANA_DUST.get(), 50, 25, 800).save(output);
-        ManaGenFuelRecipeBuilder.create(ModItems.MANA_INGOT.get(), 450, 25, 4000).save(output);
+        ManaGenFuelRecipeBuilder.create(ModItems.MANA_INGOT.get(), 55, 25, 1000).save(output);
     }
 }
