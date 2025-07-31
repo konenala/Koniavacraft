@@ -1,7 +1,7 @@
 // ==================== 📁 修復的 DebugParticleItem.java ====================
 // 位置：src/main/java/com/github/nalamodikk/experimental/particle/item/DebugParticleItem.java
 
-package com.github.nalamodikk.particle.item;
+package com.github.nalamodikk.experimental.particle.item;
 
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
