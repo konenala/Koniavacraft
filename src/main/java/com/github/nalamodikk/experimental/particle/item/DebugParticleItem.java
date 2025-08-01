@@ -122,7 +122,7 @@ public class DebugParticleItem extends Item {
             }
         }
         
-        private static class EffectData {
+        public static class EffectData {
             public final Vec3 position;
             public final float startTime;
             public final float duration;

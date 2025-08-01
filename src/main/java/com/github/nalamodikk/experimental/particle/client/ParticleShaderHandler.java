@@ -15,7 +15,7 @@ import java.io.IOException;
  * 粒子著色器註冊處理器
  * 負責註冊能量爆發粒子系統所需的著色器
  */
-@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = KoniavacraftMod.MOD_ID, value = Dist.CLIENT)
 public class ParticleShaderHandler {
 
     // 著色器實例
@@ -39,7 +39,7 @@ public class ParticleShaderHandler {
                 new ShaderInstance(
                         event.getResourceProvider(),
                         ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "particle_cloud"),
-                        DefaultVertexFormat.POSITION_COLOR_TEX
+                        DefaultVertexFormat.POSITION_TEX_COLOR
                 ),
                 shader -> particleCloudShader = shader
         );

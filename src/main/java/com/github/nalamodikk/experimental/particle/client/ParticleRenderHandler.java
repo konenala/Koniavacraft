@@ -22,7 +22,11 @@ public class ParticleRenderHandler {
     public static void onRenderLevel(RenderLevelStageEvent event) {
         // 在透明物體渲染階段處理粒子效果
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
-            renderParticleEffects(event.getPoseStack(), event.getLevelRenderer().renderBuffers.bufferSource());
+            // 使用 Minecraft 的 renderBuffers 來獲取 MultiBufferSource
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.levelRenderer != null) {
+                renderParticleEffects(event.getPoseStack(), mc.renderBuffers().bufferSource());
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 package com.github.nalamodikk.experimental.particle;
 
-import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.experimental.particle.client.ParticleShaderHandler;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -8,16 +8,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import com.github.nalamodikk.experimental.particle.client.ParticleShaderHandler;
 import org.joml.Matrix4f;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 import static net.minecraft.client.renderer.RenderStateShard.*;
 
@@ -51,7 +43,7 @@ public class EnergyBurstParticleSystem {
      */
     private static final RenderType PARTICLE_CLOUD = RenderType.create(
             "koniava_particle_cloud",
-            DefaultVertexFormat.POSITION_COLOR_TEX,
+            DefaultVertexFormat.POSITION_TEX_COLOR,
             VertexFormat.Mode.QUADS,
             65536, false, true,
             RenderType.CompositeState.builder()
