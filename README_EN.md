@@ -34,8 +34,6 @@
 Welcome developers interested in participating in Koniavacraft development!
 
 ### 📚 **Developer Must-Read**
-- **Please be sure to read [`CLAUDE.md`](./CLAUDE.md)** - Detailed development guide and collaboration guidelines
-- Contains project architecture, development style, Claude Code usage guidance and other important information
 - Bilingual version (Chinese/English) to help understand the project's technical standards and world view design
 
 ### 🛠️ **Technical Requirements**

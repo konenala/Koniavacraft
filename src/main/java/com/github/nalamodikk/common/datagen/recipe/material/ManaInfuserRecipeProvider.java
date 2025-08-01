@@ -67,7 +67,7 @@ public class ManaInfuserRecipeProvider {
         createManaInfuserRecipe(output,
                 "condensed_to_refined_mana_dust",
                 Ingredient.of(ModItems.CONDENSED_MANA_DUST.get()),
-                new ItemStack(ModItems.REFINED_MANA_DUST.get()),
+                new ItemStack(ModItems.REFINED_MANA_DUST.get(),2),
                 7500,  // 魔力消耗
                 60,  // 注入時間 (3秒)
                 1
