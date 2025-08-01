@@ -88,6 +88,44 @@
 - Mixins 在 `koniava.mixins.json` 中配置（目前僅有 `OverworldBiomeBuilderMixin`）
 - 所有 Java 編譯強制使用 UTF-8 編碼
 
+### 資源鍵命名規範
+
+所有資源鍵（ResourceLocation、ResourceKey）必須統一使用 `KoniavacraftMod.MOD_ID` 常數，確保一致性和可維護性：
+
+#### ✅ **正確用法**
+```java
+// 使用 MOD_ID 常數
+ResourceLocation id = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_dust");
+ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, 
+    ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "mana_generator"));
+
+// 註冊系統中
+public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(KoniavacraftMod.MOD_ID);
+public static final DeferredItem<Item> MANA_DUST = ITEMS.register("mana_dust", () -> new Item(new Item.Properties()));
+
+// 本地化鍵
+Component.translatable("item." + KoniavacraftMod.MOD_ID + ".mana_dust");
+
+// 著色器資源位置
+ResourceLocation shaderLocation = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "core/energy_core");
+```
+
+#### ❌ **避免寫死字串**
+```java
+// 不要使用硬編碼字串
+ResourceLocation id = ResourceLocation.fromNamespaceAndPath("koniava", "mana_dust"); // ❌
+Component.translatable("item.koniava.mana_dust"); // ❌
+```
+
+#### 📋 **適用範圍**
+- **註冊系統**: `DeferredRegister` 建構子
+- **資源位置**: 材質、模型、著色器、音效檔案路徑
+- **本地化鍵**: 物品、方塊、GUI 文字
+- **配方和戰利品表**: JSON 檔案中的模組 ID 參考
+- **網路封包**: 頻道 ID 和訊息識別碼
+- **儲存和載入**: NBT 和 DataComponent 鍵名
+- **事件和功能**: 自訂註冊項目的命名空間
+
 ### 常用工具
 
 位於 `src/main/java/com/github/nalamodikk/common/utils/` 的關鍵工具類別：

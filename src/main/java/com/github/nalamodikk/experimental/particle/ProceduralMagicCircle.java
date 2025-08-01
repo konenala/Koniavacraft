@@ -1,5 +1,6 @@
 package com.github.nalamodikk.experimental.particle;
 
+import com.github.nalamodikk.KoniavacraftMod;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -34,7 +35,7 @@ public class ProceduralMagicCircle {
         event.registerShader(
                 new ShaderInstance(
                         event.getResourceProvider(),
-                        ResourceLocation.fromNamespaceAndPath("koniava", "magic_circle"),
+                        ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "magic_circle"),
                         DefaultVertexFormat.POSITION_COLOR
                 ),
                 shader -> magicCircleShader = shader

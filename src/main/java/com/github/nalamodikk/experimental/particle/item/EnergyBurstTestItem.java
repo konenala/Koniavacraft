@@ -20,9 +20,9 @@ import java.util.List;
  * 能量爆發測試工具
  * 右鍵使用生成能量爆發粒子效果
  */
-public class DebugParticleItem extends Item {
+public class EnergyBurstTestItem extends Item {
 
-    public DebugParticleItem(Properties properties) {
+    public EnergyBurstTestItem(Properties properties) {
         super(properties);
     }
 
@@ -86,13 +86,6 @@ public class DebugParticleItem extends Item {
         public static void tick() {
             float currentTime = (float) (System.currentTimeMillis() % 100000) / 1000.0f;
             activeEffects.removeIf(effect -> currentTime - effect.startTime > effect.duration);
-        }
-        
-        /**
-         * 獲取所有活躍效果（供渲染處理器使用）
-         */
-        public static List<EffectData> getActiveEffects() {
-            return new java.util.ArrayList<>(activeEffects);  // 返回副本保證線程安全
         }
         
         public static void renderEffects() {
