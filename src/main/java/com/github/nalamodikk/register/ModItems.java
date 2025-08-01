@@ -26,7 +26,7 @@ public class ModItems {
     /***
      * 工具
      */
-    public static final DeferredItem<Item> ENERGY_BURST_TEST = ITEMS.register("energy_burst_test", () -> new DebugParticleItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> DEBUG_PARTICLE_ITEM = ITEMS.register("debug_particle_item", () -> new DebugParticleItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<Item>  MANA_DEBUG_TOOL = ITEMS.register("mana_debug_tool",() ->  new ManaDebugToolItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item>  BASIC_TECH_WAND = ITEMS.register("basic_tech_wand",() ->  new BasicTechWandItem(new Item.Properties().stacksTo(1)));
