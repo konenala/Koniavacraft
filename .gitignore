@@ -25,7 +25,7 @@ run-data
 
 repo
 /.gitattributes
-/.github/workflows/build.yml
+/.github/workflows/Konenala21.yml
 /TEMPLATE_LICENSE.txt
 /src/generated/resources/.cache/9fb1092f32d4fcbf9e061ffd718d4ec689c6c95e
 /src/generated/resources/.cache/59eb3dbb5f86130e09b3c62d89b9525ee01cf52d
