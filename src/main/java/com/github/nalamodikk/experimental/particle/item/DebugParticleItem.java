@@ -1,6 +1,6 @@
 package com.github.nalamodikk.experimental.particle.item;
 
-import com.github.nalamodikk.api.effects.MagicEffectAPI;
+import com.github.nalamodikk.experimental.effects.MagicEffectAPI;
 import com.github.nalamodikk.common.utils.effects.MagicEffectHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
