@@ -39,15 +39,10 @@ Welcome developers interested in participating in Koniavacraft development!
 ### 🛠️ **Technical Requirements**
 - NeoForge 1.21.1 development environment
 - Java 21
-- Familiar with Claude Code assisted development process (refer to CLAUDE.md)
-- Of course, if your personal technical skills are sufficient, you can ignore the third Claude Code assistance requirement
 - However, for safety's sake, it's recommended that you (in front of the screen) read it to understand what this mod is doing
 
 ### 🎯 **Contribution Methods**
 - Fork the project and create a feature branch
-- Follow the development guidelines in CLAUDE.md (Note: when contributors have sufficient capability and don't need AI assistance, this can be ignored, but
-- for safety's sake, it's still recommended to read and understand what this mod's code is doing!)
-- Ensure code passes compilation and game testing before submitting Pull Requests
 - Welcome feature suggestions and bug reports
 
 ---
