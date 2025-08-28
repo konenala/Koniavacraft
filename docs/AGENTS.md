@@ -1,0 +1,322 @@
+# Koniavacraft 開發與協作統一指南
+
+> **核心原則**: 不要做我沒要求的事情！不要做我沒要求的事情！不要做我沒要求的事情！
+
+---
+
+## 🚀 專案技術信息
+
+### 📋 基本信息
+
+- **專案名稱**: Koniavacraft (娜拉工藝) - Minecraft NeoForge 1.21.1 魔力工業模組
+- **模組 ID**: `koniava` (使用 `KoniavacraftMod.MOD_ID` 常量)
+- **開發語言**: Java 21
+- **世界觀**: 科幻魔法融合風格 - "魔力 × 科技"
+- **教學要求**: 不要直接給代碼，請用教學方式讓我理解代碼，並確認我理解了才能進行下一步
+
+### 🔧 建構與開發指令
+
+```bash
+# 建構模組
+./gradlew build
+
+# 執行開發客戶端
+./gradlew runClient
+
+# 執行開發伺服器
+./gradlew runServer
+
+# 生成資料（配方、戰利品表、模型）
+./gradlew runData
+
+# 執行遊戲測試伺服器
+./gradlew runGameTestServer
+
+# 清理建構產物
+./gradlew clean
+```
+
+### 🏗️ 核心架構模式
+
+**註冊系統** - 集中化註冊位於 `src/main/java/com/github/nalamodikk/register/`：
+- `ModBlocks.java` - 方塊註冊
+- `ModItems.java` - 物品註冊
+- `ModBlockEntities.java` - 方塊實體註冊
+- `ModMenuTypes.java` - 容器選單註冊
+- `ModRecipes.java` - 配方類型註冊
+
+**機器系統** - 方塊實體按功能組織於 `src/main/java/com/github/nalamodikk/common/block/blockentity/`：
+- `mana_generator/` - 燃料驅動的魔力/RF 生成
+- `mana_infuser/` - 使用魔力強化物品
+- `mana_crafting/` - 消耗魔力的自訂合成
+- `collector/` - 可再生魔力生成（太陽能收集器）
+- `conduit/` - 智慧魔力分配網路
+
+**能力系統** - 統一魔力/能量處理：
+- `IUnifiedManaHandler` - 主要魔力能力介面
+- `ManaStorage` - 單一容器魔力儲存實作
+- `ModNeoNalaEnergyStorage` - RF 能量相容性層
+- 雙重能量系統，同時支援自訂魔力和 RF 能量
+
+**工具類別** - 位於 `src/main/java/com/github/nalamodikk/common/utils/`：
+- `CapabilityUtils` - 能力查找輔助器
+- `GuiRenderUtils` - GUI 渲染工具
+- `ItemStackUtils` - ItemStack 操作
+- `BlockSelectorUtils` - 方塊選擇和放置
+- `NBTJsonConverter` - NBT/JSON 序列化
+
+**螢幕 API** - 位於 `src/main/java/com/github/nalamodikk/client/screenapi/` 的自訂 GUI 框架，具備可拖曳視窗、組件系統和動態工具提示。
+
+**資料生成** - 位於 `src/main/java/com/github/nalamodikk/common/datagen/` 的綜合資料生成系統，執行 `./gradlew runData` 重新生成所有資料檔案到 `src/generated/resources/`。
+
+**JEI 整合** - 每種配方類型都有專用的 JEI 外掛，在 JEI 中具有自訂渲染的配方類別。
+
+---
+
+## 🤝 協作風格與偏好
+
+### 🎯 核心協作原則
+
+**不要做我沒要求的事情** - 這是最重要的原則：
+- 只實現我明確要求的功能
+- 不要自作主張添加"可能有用"的特性
+- 不要創建我沒有要求的抽象層
+- 專注於解決當前的具體問題
+
+### 🎨 我的開發風格
+
+**漸進式開發**：
+- 一步步整合，先看結果再微調
+- 不要一次寫完全部功能
+- 先做最小可行版本，能動了再優化
+
+**視覺化導向**：
+- 我需要看到成果才有動力
+- 粒子、動畫、GUI 越明確越好
+- 優先實現能看到效果的部分
+
+**如果可以的話希望先討論，確認後實作**：
+- 分析需求和複雜度
+- 討論實現方案
+- 確認方向後再開始編碼
+
+### 🔧 彈性架構選擇
+
+根據功能複雜度選擇合適的架構：
+
+```java
+// 簡單功能 - 直接實現
+public void doSimpleTask() {
+    // 直接在適當的類中實現
+}
+
+// 中等複雜 - 輔助類
+public class MediumBlockEntity extends BlockEntity {
+    private final FeatureHelper helper = new FeatureHelper();
+    
+    public void tick() {
+        helper.processFeatures(this);
+    }
+}
+
+// 複雜功能 - 管理器模式
+public class ComplexBlockEntity extends BlockEntity {
+    private final CoreManager coreManager;
+    private final NetworkManager networkManager;
+    
+    public void tick() {
+        coreManager.process();
+        networkManager.sync();
+    }
+}
+```
+
+**決策原則**：
+- 職責清晰 > 嚴格行數限制
+- 適合的設計 > 固定的模式
+- 可讀性優先 > 遵循所有規則
+- 功能導向 > 教條式分層
+
+---
+
+## 🛡️ 開發規範
+
+### 🔐 安全性和穩定性（必須遵守）
+
+- **安全性優先**: 永遠檢查 null、level.isClientSide、BlockEntity 類型等
+- **性能意識**: 避免每 tick 昂貴操作，使用 lazy loading，快取重複計算
+- **狀態管理**: 明確的狀態變更，避免狀態不一致，調用 setChanged()
+- **網路友善**: 客戶端伺服器分離，同步數據變更，使用 @Environment 註解
+- **正確的日誌系統**: 使用 `LOGGER` 而不是 `System.out.println()`
+
+### 🎯 可擴展性和維護性
+
+- **本地化統一**: 所有文字都用 `translatable` 鍵，絕不寫死英文或中文字串
+- **模組化命名**: 使用 `ModItems`、`ModBlocks`、`ModMenus` 等統一管理
+- **DataComponent 優先**: 使用 NeoForge 的 `DataComponent` 取代傳統 NBT
+- **一致性**: 相似功能用相似交互，統一視覺風格，命名規則一致
+
+### 🎨 視覺效果規範
+
+- **效果原則**: 每個功能要有合適的視覺反饋
+    - 環境效果：持續的氛圍效果（每40-80 tick，適量粒子）
+    - 互動效果：基於操作的響應效果
+    - 狀態效果：表達當前狀態的視覺提示
+- **性能友善**: 粒子有冷卻時間，避免過度產生
+- **主題一致**: 所有視覺效果保持風格統一
+
+---
+
+## 🎮 設計理念
+
+### 🎯 主軸思維
+
+- **不要做配件，要做主軸**: 不假設玩家裝其他模組
+- **創造需求而非滿足需求**: 讓玩家想要新的玩法體驗
+- **完整的遊戲體驗**: 假設玩家只裝了 Koniavacraft + JEI
+
+---
+
+## 🤝 代碼建議指南
+
+### ✅ Claude 應該這樣回答
+
+1. **分析需求和複雜度**: "這個功能的複雜度如何？需要什麼樣的架構？"
+2. **提供適合的方案**: 根據實際需求選擇簡單實現、輔助類或管理器模式
+3. **解釋設計理念**: "為什麼選擇這種方案？優缺點是什麼？"
+4. **一步步實現**: 分步驟提供代碼，便於逐步整合測試
+5. **📋 使用 Artifacts**: 所有代碼都必須使用 Artifacts 提供
+6. **提供視覺化建議**: 主動建議粒子效果、動畫、GUI 等視覺元素
+7. **考慮世界觀融合**: 功能設計要考慮 Koniavacraft 的科幻魔法世界觀
+8. **建議測試方案**: 提供驗證功能的測試步驟
+
+### ❌ Claude 請避免這樣回答
+
+- 不分析需求複雜度就強制建議管理器模式
+- 為了拆分而拆分，創造不必要的複雜性
+- 整包貼上複雜代碼而不分步驟
+- 使用 `System.out.println()` 而不是 `LOGGER`
+- 寫死文字字串而不使用 `translatable` 鍵
+- 建議每 tick 執行昂貴操作
+- 📝 在對話中直接貼代碼而不使用 Artifacts
+- 提供沒有視覺反饋的純邏輯功能
+- **創建我沒有要求的額外功能或抽象層**
+
+---
+
+## 📚 教學要求
+
+### 🎯 教學式回答方式
+
+我希望在學習中成長，因此請：
+
+**解釋設計理念**：
+- **為什麼**要這樣設計？
+- **好處**是什麼？
+- **替代方案**有哪些，為什麼不採用？
+
+**循序漸進的教學**：
+- 先解釋**概念和原理**
+- 再展示**具體實現**
+- 最後討論**優化和擴展**
+
+**學習導向的互動**：
+- 提出**引導性問題**幫助我思考
+- 鼓勵我**分析和比較**不同方案
+- 分享**業界最佳實踐**和常見陷阱
+
+### 📖 教學範例格式
+
+```
+🤔 需求分析: 這個功能的複雜度和需求是什麼？
+💡 方案選擇: 為什麼選擇這種架構方式？
+🔍 實現細節: 具體如何實現？
+⚡ 優化技巧: 如何讓它更好？
+🚀 擴展思考: 將來如何擴展這個設計？
+```
+
+---
+
+## 📋 快速參考
+
+### 🎯 核心原則速查
+
+- **不要做我沒要求的事情** ← 最重要！
+- 適合的架構 > 固定的模式
+- 漸進式開發 > 一次性完成
+- 視覺效果 > 純邏輯功能
+- 先討論確認 > 直接動手
+
+### 🔧 架構決策速查
+
+- **簡單功能** → 直接實現
+- **中等複雜** → 輔助類或簡單分離
+- **高度複雜** → 管理器和組件化
+- **重複邏輯** → 提取共用方法
+- **複雜狀態** → 狀態管理器
+
+### 📱 開發前檢查
+
+- [ ] 我是否清楚這個功能的目的？
+- [ ] 我是否考慮了架構設計？
+- [ ] 我是否準備好理解技術細節？
+- [ ] 我是否保持了創作熱情？
+
+### 📊 開發後檢查
+
+- [ ] 我是否理解了所有的代碼？
+- [ ] 我是否保持了自己的判斷？
+- [ ] 我是否考慮了視覺效果？
+- [ ] 我是否符合世界觀設定？
+
+---
+
+## 🎯 典型開發流程
+
+### 🚀 理想的功能開發流程
+
+```
+1. 💭 需求討論: "我想要實現XX功能"
+2. 🤔 複雜度分析: "這個功能需要什麼架構？"
+3. 💡 方案確認: "我們用這種方式實現，你覺得如何？"
+4. 🔧 分步實現: "先實現核心功能，再添加視覺效果"
+5. 🎨 視覺設計: "添加粒子效果和動畫"
+6. 🧪 測試驗證: "測試功能是否正常工作"
+7. ⚡ 優化調整: "根據實際使用情況調整"
+```
+
+---
+
+## 🔧 NeoForge 1.21.1 技術規格
+
+### 📋 開發環境
+
+- **Java 21 JDK** (推薦 Microsoft OpenJDK)
+- **IDE 支援**: IntelliJ IDEA 或 Eclipse (官方支援)
+- **Gradle 包裝器**: 使用 `./gradlew` 命令
+- **Parchment 映射**: 更好的參數名稱 (gradle.properties 配置)
+
+### 🏗️ 專案架構細節
+
+**主要模組類別**: `KoniavacraftMod.java` (MOD_ID = "koniava")
+
+**關鍵系統**:
+- **延遲註冊**: 使用 `DeferredRegister` 管理所有模組內容
+- **能力系統**: 實現 NeoForge 的 `BlockCapability`、`EntityCapability`、`ItemCapability`
+- **資料生成**: 自動生成配方、戰利品表、模型和標籤
+- **測試框架**: 配置了遊戲測試，但可能需要實作測試
+- **Mixins 配置**: `koniava.mixins.json` (目前僅有 `OverworldBiomeBuilderMixin`)
+
+**構建配置**:
+- UTF-8 編碼強制用於所有 Java 編譯
+- 開發模式除錯日誌 (`IS_DEV` 標誌)
+- 排除 `log4j2.xml` 和 `.cache` 從最終 JAR
+
+**網路系統**:
+- 奧術導管形成虛擬網路
+- 專業管理器：`NetworkManager`、`TransferManager`、`CacheManager`、`IOManager`
+- IO 配置使用 `IOType` 列舉 (INPUT、OUTPUT、BOTH、DISABLED)
+
+---
+
+**感謝你作為我的技術夥伴！讓我們一起創造出優秀的 Koniavacraft 模組！** 🚀✨
