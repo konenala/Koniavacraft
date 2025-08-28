@@ -80,10 +80,10 @@ public class ManaGenFuelRateLoader extends SimpleJsonResourceReloadListener {
             }
         }
 
-        LOGGER.info("Loaded {} mana fuel entries from data pack:", FUEL_RATES.size());
+        LOGGER.debug("Loaded {} mana fuel entries from data pack:", FUEL_RATES.size());
         for (ResourceLocation id : objects.keySet()) {
-            LOGGER.info(" ├─ ID: {}", id);
-            LOGGER.info(" │   ↳ Path: data/{}/{}.json", id.getNamespace(), id.getPath());
+            LOGGER.debug(" ├─ ID: {}", id);
+            LOGGER.debug(" │   ↳ Path: data/{}/{}.json", id.getNamespace(), id.getPath());
         }
 
     }

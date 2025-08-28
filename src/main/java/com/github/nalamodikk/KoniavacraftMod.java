@@ -1,5 +1,6 @@
 package com.github.nalamodikk;
 
+import com.github.nalamodikk.biome.BiomeTerrainRegistration;
 import com.github.nalamodikk.biome.UniversalBiomeRegistration;
 import com.github.nalamodikk.common.config.ModCommonConfig;
 import com.github.nalamodikk.register.*;
@@ -45,7 +46,7 @@ public class KoniavacraftMod {
         // Register the commonSetup method for modloading
 
         // 🌟 註冊生物群落
-//        ModBiomes.BIOMES.register(modEventBus);
+        BiomeTerrainRegistration.registerAll();
         // 🌟 初始化生物群落世界生成
 
 

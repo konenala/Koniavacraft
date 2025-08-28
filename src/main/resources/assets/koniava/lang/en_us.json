@@ -320,6 +320,9 @@
   "koniava.config.manaRecipeRefreshInterval.tooltip": "How often to refresh mana crafting recipes (in ticks)",
   "koniava.config.showIntroAnimation.tooltip": "Show introduction animation when player joins",
 
+    "koniava.config.biome.processingEnabled": "Enable Biome Surface Processing",
+  "koniava.config.biome.processingEnabled.tooltip": "When enabled, the server will replace surface blocks for selected biomes.",
+
   "//23": "=== CONFIG TOOLTIPS ===",
   "koniava.config.biome.multithreading.tooltip": "Enable multithreading for faster biome processing. Recommended for servers with 4+ CPU cores.",
   "koniava.config.biome.threadCount.tooltip": "Number of threads to use for biome processing. Recommended: CPU cores - 2 (minimum 1, maximum 8).",
