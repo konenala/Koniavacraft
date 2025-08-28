@@ -26,7 +26,7 @@
 
 ## 專案結構與架構
 
-這是 **Koniavacraft**，一個 NeoForge 1.21.1 模組（模組 ID：`koniava`），實作了以魔力為基礎的機器和能量管理系統為中心的魔法工業系統。
+這是 **Koniavacraft**，一個 NeoForge 1.21.1 模組（模組 ID：`koniava`當需要資源路徑的時候請使用KoniavacraftMod.MOD_ID），實作了以魔力為基礎的機器和能量管理系統為中心的魔法工業系統。
 
 ### 核心架構模式
 
