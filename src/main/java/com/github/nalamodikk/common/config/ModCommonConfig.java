@@ -49,8 +49,7 @@ public class ModCommonConfig {
         // 🌍 生物群系處理配置區段
         // ===============================
 
-        builder.pop(); // adaptive
-        builder.pop(); // biome_processing
+
     }
 
 
