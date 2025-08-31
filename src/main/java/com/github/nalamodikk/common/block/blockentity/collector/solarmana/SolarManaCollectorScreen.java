@@ -65,16 +65,20 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
         drawManaBar(guiGraphics, 11, 19);
     }
 
-    // 🔧 客戶端時間判斷（與 BlockEntity 邏輯一致）
-    private boolean isDaytimeClientSide() {
-        // 🛡️ 更安全的檢查
-        if (minecraft == null || minecraft.level == null) {
-            // 🔧 如果客戶端出問題，使用伺服器的發電狀態作為備用判斷
-            return menu.isGenerating(); // 如果在發電，說明可能是白天
-        }
+    // 🔧 統一的太陽能狀態提示邏輯
+    private Component getSolarTooltip() {
+        boolean isDaytime = menu.isDaytime();
+        boolean isGenerating = menu.isGenerating();
 
-        long dayTime = minecraft.level.getDayTime() % 24000;
-        return dayTime < 18000;
+        // 🎯 統一的邏輯判斷
+        if (isGenerating) {
+            return Component.translatable("tooltip.koniava.solar.generating");
+        } else if (!isDaytime) {
+            return Component.translatable("tooltip.koniava.solar.nighttime");
+        } else {
+            // 是白天但不發電 = 被遮擋或下雨
+            return Component.translatable("tooltip.koniava.solar.blocked");
+        }
     }
 
     // 🆕 添加缺失的太陽圖示懸停檢測方法
@@ -177,20 +181,9 @@ public class SolarManaCollectorScreen extends AbstractContainerScreen<SolarManaC
                     mouseX, mouseY);
         }
 
-        // 🆕 太陽圖示提示
+        // 🆕 太陽圖示提示 - 完全基於服務器同步狀態
         if (isHoveringSun(mouseX, mouseY)) {
-            boolean isDaytime = isDaytimeClientSide();
-            boolean isGenerating = menu.isGenerating();
-
-            Component tooltip;
-            if (!isDaytime) {
-                tooltip = Component.translatable("tooltip.koniava.solar.nighttime");
-            } else if (!isGenerating) {
-                tooltip = Component.translatable("tooltip.koniava.solar.blocked");
-            } else {
-                tooltip = Component.translatable("tooltip.koniava.solar.generating");
-            }
-
+            Component tooltip = getSolarTooltip();
             guiGraphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
         }
     }

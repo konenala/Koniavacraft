@@ -95,8 +95,8 @@
 
         public boolean isDaytime() {
             if (level == null) return true; // 只有這裡可以有預設值
-            long dayTime = level.getDayTime() % 24000;
-            return dayTime < 18000; // 與 canGenerate() 保持一致
+            // 🔧 統一使用與 canGenerate() 相同的判定邏輯
+            return level.isDay();
         }
 
         // 🏗️ 分離關注點版本 - 符合你的架構偏好

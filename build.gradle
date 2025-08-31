@@ -100,6 +100,9 @@ neoForge {
             // You can set various levels here.
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             logLevel = org.slf4j.event.Level.DEBUG
+
+            // Set the file encoding for the JVM to UTF-8
+            systemProperty 'file.encoding', 'UTF-8'
         }
     }
 
