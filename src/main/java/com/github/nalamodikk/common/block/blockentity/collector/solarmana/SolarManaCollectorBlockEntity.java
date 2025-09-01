@@ -8,6 +8,7 @@
     import com.github.nalamodikk.common.capability.ManaStorage;
     import com.github.nalamodikk.common.capability.mana.ManaAction;
     import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
+    import com.github.nalamodikk.common.utils.SkyUtils;
     import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
     import com.github.nalamodikk.common.utils.nbt.NbtUtils;
     import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
@@ -134,8 +135,10 @@
 
         // 📊 數據同步邏輯
         private void handleDataSync() {
-            // 每 tick 同步，確保客戶端數據準確
-            syncHelper.syncFrom(this);
+            // 🔧 修復：只在伺服器端且有打開的 Menu 時才同步
+            if (level instanceof ServerLevel && syncHelper.getContainerData() != null) {
+                syncHelper.syncFrom(this);
+            }
         }
 
         // ⚡ 魔力生成邏輯
@@ -201,15 +204,23 @@
         private boolean hasLoggedOutputFailure = false;
 
 
-        //是否可以發電方法
+        //是否可以發電方法 - 使用高度圖的極速穩定方案
         @Override
         protected boolean canGenerate() {
             if (!(level instanceof ServerLevel server)) return false;
-            // 只有真正的「白天」才發電
-            if (!server.isDay()) return false;
-            return !server.isRaining()
-                    && server.canSeeSky(worldPosition.above());
+
+            final BlockPos skyPos = worldPosition;
+            return server.isDay()
+                && server.dimensionType().hasSkyLight()
+                && SkyUtils.isOpenToSkyByHeightmap(server, skyPos) // 🚀 使用高度圖，極速穩定
+                && !server.isRainingAt(skyPos.above())
+                && !server.isThundering();
         }
+
+
+
+
+
 
         // === 💾 數據持久化 ===
 
@@ -311,6 +322,7 @@
             super.onLoad();
             if (level instanceof ServerLevel serverLevel) {
                 initializeCapabilityCaches(serverLevel);
+
 
                 // 🆕 伺服器端載入後立即同步一次數據
                 syncHelper.syncFrom(this);

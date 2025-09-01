@@ -29,6 +29,8 @@ public class ManaGeneratorNbtManager {
         NbtUtils.write(tag, "Mana", entity.getManaStorage(), provider);
         NbtUtils.write(tag, "Energy", entity.getEnergyStorage(), provider);
         NbtUtils.write(tag, "FuelItems", entity.getFuelHandler(), provider);
+        // 儲存升級inventory
+        tag.put("UpgradeInventory", entity.getUpgradeInventory().serializeNBT(provider));
         // 儲存
         NbtUtils.writeEnumIOTypeMap(tag, "IOMap", entity.getIOMap());
 
@@ -53,6 +55,10 @@ public class ManaGeneratorNbtManager {
         NbtUtils.read(tag, "Mana", entity.getManaStorage(), provider);
         NbtUtils.read(tag, "Energy", entity.getEnergyStorage(), provider);
         NbtUtils.read(tag, "FuelItems", entity.getFuelHandler(), provider);
+        // 載入升級inventory
+        if (tag.contains("UpgradeInventory")) {
+            entity.getUpgradeInventory().deserializeNBT(provider, tag.getCompound("UpgradeInventory"));
+        }
         // 載入
         entity.setIOMap(NbtUtils.readEnumIOTypeMap(tag, "IOMap"));
         entity.forceRefreshAnimationFromNbt();

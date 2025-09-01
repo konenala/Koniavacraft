@@ -13,6 +13,8 @@
     import com.github.nalamodikk.common.coreapi.machine.logic.gen.EnergyGenerationHandler;
     import com.github.nalamodikk.common.coreapi.machine.logic.gen.FuelManaGenHelper;
     import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
+    import com.github.nalamodikk.common.utils.upgrade.UpgradeInventory;
+    import com.github.nalamodikk.common.utils.upgrade.api.IUpgradeableMachine;
     import com.github.nalamodikk.register.ModBlockEntities;
     import com.github.nalamodikk.register.ModCapabilities;
     import net.minecraft.core.BlockPos;
@@ -50,10 +52,10 @@
     import java.util.EnumMap;
     import java.util.Optional;
 
-    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements  Container , WorldlyContainer {
+    public class ManaGeneratorBlockEntity extends AbstractManaMachineEntityBlock implements Container, WorldlyContainer, IUpgradeableMachine {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
- private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
+        private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
         private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
         private boolean isSyncing = false;
 
@@ -62,6 +64,7 @@
         private static final int TICK_INTERVAL = 1;
         private static final int MANA_PER_CYCLE = 10;
         private static final int FUEL_SLOT_COUNT = 1;
+        private static final int UPGRADE_SLOT_COUNT = 4;
         private static final int MANA_STORED_INDEX = 0;
         private static final int ENERGY_STORED_INDEX = 1;
         private static final int MODE_INDEX = 2;
@@ -80,6 +83,7 @@
 
 
         private final ItemStackHandler fuelHandler = new ItemStackHandler(FUEL_SLOT_COUNT);
+        private final UpgradeInventory upgradeInventory = new UpgradeInventory(UPGRADE_SLOT_COUNT);
         private ContainerLevelAccess access;
         private int burnTime = 0;
         private int currentBurnTime = 0;
@@ -88,6 +92,7 @@
         private boolean forceRefreshAnimation = false;
 
         private final ManaFuelHandler fuelLogic = new ManaFuelHandler(fuelHandler,stateManager);
+        private final ManaGeneratorUpgradeHandler upgradeHandler = new ManaGeneratorUpgradeHandler(upgradeInventory);
         public OutputHandler.OutputThrottleController getOutputThrottle() {return outputThrottle;}
 
         public ManaGeneratorBlockEntity(BlockPos pos, BlockState state) {
@@ -104,6 +109,9 @@
             for (Direction dir : Direction.values()) {
                 ioMap.put(dir, IOHandlerUtils.IOType.DISABLED); // 或從 NBT、DataComponent 還原
             }
+
+            // 🔧 設置升級處理器到燃料邏輯
+            fuelLogic.setUpgradeHandler(upgradeHandler);
 
         }
 
@@ -213,6 +221,10 @@
 
         public ManaFuelHandler getFuelLogic() {
             return fuelLogic;
+        }
+
+        public ManaGeneratorUpgradeHandler getUpgradeHandler() {
+            return upgradeHandler;
         }
 
         @Override
@@ -415,6 +427,16 @@
 
         public ItemStackHandler getFuelHandler() {
             return fuelHandler;
+        }
+
+        @Override
+        public UpgradeInventory getUpgradeInventory() {
+            return upgradeInventory;
+        }
+
+        @Override
+        public BlockEntity getBlockEntity() {
+            return this;
         }
 
         public int getBurnTime() {

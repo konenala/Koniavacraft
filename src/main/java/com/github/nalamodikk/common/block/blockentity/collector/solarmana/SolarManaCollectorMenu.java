@@ -26,12 +26,14 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
         this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
         this.syncHelper = blockEntity.getSyncHelper();
 
-        // 🔧 伺服器端：確保數據已同步
+        // 🔧 關鍵修復：強制立即同步最新狀態
         this.syncHelper.syncFrom(blockEntity);
         this.addDataSlots(syncHelper.getContainerData());
 
         addPlayerInventorySlots(inv, 8, 84);
         addPlayerHotbarSlots(inv, 8, 142);
+
+//        LOGGER.debug("🎮 伺服器端 Menu 創建完成，同步狀態: generating={}", blockEntity.isCurrentlyGenerating());
     }
 
     // 🔧 客戶端構造函數
@@ -57,7 +59,7 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
         addPlayerHotbarSlots(inv, 8, 142);
 
         // 🔍 調試
-        LOGGER.debug("🎮 客戶端 Menu 創建完成");
+//        LOGGER.debug("🎮 客戶端 Menu 創建完成");
     }
 
     public void addPlayerInventorySlots(Inventory inv, int startX, int startY) {

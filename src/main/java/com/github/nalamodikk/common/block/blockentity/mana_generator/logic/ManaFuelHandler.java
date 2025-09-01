@@ -14,6 +14,7 @@ import java.util.Optional;
 
 public class ManaFuelHandler {
     private final ManaGeneratorStateManager  stateManager;
+    private ManaGeneratorUpgradeHandler upgradeHandler; // 可選的升級處理器
     private static final Logger LOGGER = LoggerFactory.getLogger(ManaFuelHandler.class);
 
     private final ItemStackHandler fuelHandler;
@@ -32,7 +33,13 @@ public class ManaFuelHandler {
     public ManaFuelHandler( ItemStackHandler fuelHandler,ManaGeneratorStateManager stateManager) {
         this.fuelHandler = fuelHandler;
         this.stateManager = stateManager;
-
+    }
+    
+    /**
+     * 設置升級處理器（在 BlockEntity 初始化後調用）
+     */
+    public void setUpgradeHandler(ManaGeneratorUpgradeHandler upgradeHandler) {
+        this.upgradeHandler = upgradeHandler;
     }
 
 
@@ -93,7 +100,9 @@ public class ManaFuelHandler {
         }
 
         currentFuelId = id;
-        currentBurnTime = rate.getBurnTime();
+        // 🔧 應用升級效果到燃燒時間
+        int baseBurnTime = rate.getBurnTime();
+        currentBurnTime = upgradeHandler != null ? upgradeHandler.getModifiedBurnTime(baseBurnTime) : baseBurnTime;
         burnTime = currentBurnTime;
         fuelHandler.extractItem(0, 1, false);
         needsFuel = false; // 燃料已成功啟動，不需再嘗試
@@ -195,20 +204,34 @@ public class ManaFuelHandler {
     public Optional<ManaGenFuelRateLoader.FuelRate> getCurrentFuelRate() {
         if (currentFuelId == null) return Optional.empty();
 
-        ManaGenFuelRateLoader.FuelRate rate = ManaGenFuelRateLoader.getFuelRateForItem(currentFuelId);
-        if (rate == null) return Optional.empty();
+        ManaGenFuelRateLoader.FuelRate baseRate = ManaGenFuelRateLoader.getFuelRateForItem(currentFuelId);
+        if (baseRate == null) return Optional.empty();
 
         // ✅ 根據模式篩選產能是否合法
         switch (stateManager.getCurrentMode()) {
             case MANA -> {
-                if (rate.getManaRate() <= 0) return Optional.empty();
+                if (baseRate.getManaRate() <= 0) return Optional.empty();
             }
             case ENERGY -> {
-                if (rate.getEnergyRate() <= 0) return Optional.empty();
+                if (baseRate.getEnergyRate() <= 0) return Optional.empty();
             }
         }
 
-        return Optional.of(rate);
+        // 🔧 應用升級效果到產出
+        if (upgradeHandler != null) {
+            int modifiedMana = upgradeHandler.getModifiedOutput(baseRate.getManaRate());
+            int modifiedEnergy = upgradeHandler.getModifiedOutput(baseRate.getEnergyRate());
+            
+            // 創建修改後的燃料速率
+            return Optional.of(new ManaGenFuelRateLoader.FuelRate(
+                modifiedMana,
+                baseRate.getBurnTime(), // 使用基礎燃燒時間（升級效果在 tryConsumeFuel 中已應用）
+                modifiedEnergy,
+                baseRate.getIntervalTick()
+            ));
+        }
+
+        return Optional.of(baseRate);
     }
 
     public boolean isValidFuel(ItemStack stack) {

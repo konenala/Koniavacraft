@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.block.blockentity.conduit;// 🏗️ 簡化
 
 // === 1. 在頂部添加所有 Manager imports ===
 
+import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.CacheManager;
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.IOManager;
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.StatsManager;
@@ -423,7 +424,10 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private void logVirtualNetworkSave(int currentMana, int conduitCount) {
         // 1. 網路剛建立（第一次保存）
         if (lastLoggedMana == -1) {
-            LOGGER.info("💾 虛擬網路已建立，魔力: {}, 連接數: {}", currentMana, conduitCount);
+            if (KoniavacraftMod.IS_DEV) {
+                LOGGER.debug("💾 虛擬網路已建立，魔力: {}, 連接數: {}", currentMana, conduitCount);
+            }
+
             lastLoggedMana = currentMana;
             lastLoggedConduitCount = conduitCount;
             return;
@@ -431,8 +435,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
         // 2. 連接數變化（網路拓撲改變）
         if (conduitCount != lastLoggedConduitCount) {
-            LOGGER.info("💾 虛擬網路連接變化: {} → {} 導管, 當前魔力: {}",
-                    lastLoggedConduitCount, conduitCount, currentMana);
+            if (KoniavacraftMod.IS_DEV) {
+                LOGGER.info("💾 虛擬網路連接變化: {} → {} 導管, 當前魔力: {}", lastLoggedConduitCount, conduitCount, currentMana);
+            }
             lastLoggedConduitCount = conduitCount;
             lastLoggedMana = currentMana;
             return;
@@ -440,8 +445,11 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
         // 3. 魔力值有重大變化（變化超過2000）
         if (Math.abs(currentMana - lastLoggedMana) > 2000) {
-            LOGGER.info("💾 虛擬網路魔力重大變化: {} → {}, 連接數: {}",
+            if (KoniavacraftMod.IS_DEV) {
+
+                LOGGER.info("💾 虛擬網路魔力重大變化: {} → {}, 連接數: {}",
                     lastLoggedMana, currentMana, conduitCount);
+        }
             lastLoggedMana = currentMana;
             return;
         }

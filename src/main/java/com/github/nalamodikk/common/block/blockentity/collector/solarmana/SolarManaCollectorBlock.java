@@ -113,6 +113,7 @@ public class SolarManaCollectorBlock extends BaseMachineBlock {
     }
 
 
+
     @Override
     protected @NotNull ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 

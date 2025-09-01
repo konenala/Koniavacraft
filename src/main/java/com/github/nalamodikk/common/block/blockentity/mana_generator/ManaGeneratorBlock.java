@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -93,11 +94,14 @@ public class ManaGeneratorBlock extends BaseMachineBlock {
         if (state.getBlock() != newState.getBlock()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
 
-            // 如果是 ManaCraftingTableBlockEntity，掉落物品
-            if (blockEntity instanceof ManaGeneratorBlockEntity) {
+            // 如果是 ManaGeneratorBlockEntity，掉落物品
+            if (blockEntity instanceof ManaGeneratorBlockEntity generator) {
+                // 掉落升級物品
+                Containers.dropContents(level, pos, generator.getUpgradeInventory());
+                
                 level.invalidateCapabilities(pos); // ❗❗通知 NeoForge: 這個位置的能力不可靠了，清除快取！
             }
-            
+
         }
         super.onRemove(state, level, pos, newState, isMoving);
     }

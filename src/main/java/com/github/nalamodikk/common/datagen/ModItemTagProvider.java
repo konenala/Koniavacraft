@@ -41,5 +41,16 @@ public class ModItemTagProvider extends ItemTagsProvider {
                         ModItems.RAW_MANA_DUST.get()
                 );
 
+        // 升級物品標籤
+        tag(ItemTags.create(ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "upgrades")))
+                .add(
+                        ModItems.SPEED_UPGRADE.get(),
+                        ModItems.EFFICIENCY_UPGRADE.get(),
+                        ModItems.ACCELERATED_PROCESSING_UPGRADE.get(),
+                        ModItems.EXPANDED_FUEL_CHAMBER_UPGRADE.get(),
+                        ModItems.CATALYTIC_CONVERTER_UPGRADE.get(),
+                        ModItems.DIAGNOSTIC_DISPLAY_UPGRADE.get()
+                );
+
     }
 }

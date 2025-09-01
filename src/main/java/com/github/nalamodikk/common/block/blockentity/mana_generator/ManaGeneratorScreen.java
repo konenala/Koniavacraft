@@ -2,7 +2,9 @@ package com.github.nalamodikk.common.block.blockentity.mana_generator;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.client.screenAPI.component.button.TexturedButton;
-
+import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
+import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
+import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ToggleModePacket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -15,6 +17,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+
+import java.util.List;
 
 public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_generator_gui.png");
@@ -65,6 +69,25 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
 
         this.addRenderableWidget(toggleModeButton);
         toggleModeButton.setTooltip(Tooltip.create(Component.translatable("screen.koniava.toggle_mode")));
+        
+        // 添加升級按鈕
+        TooltipSupplier.Positioned upgradeTooltip = (mouseX, mouseY) -> List.of(
+                Component.translatable("screen.koniava.upgrade_button.tooltip")
+        );
+        
+        this.addRenderableWidget(new TooltipButton(
+                x + 150, y + 5, // 位置
+                18, 18, // 尺寸
+                Component.empty(),
+                ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/upgrade_button.png"),
+                18, 18, // 紋理尺寸
+                button -> {
+                    // 發送封包：打開升級GUI
+                    BlockPos pos = this.menu.getBlockEntityPos();
+                    OpenUpgradeGuiPacket.sendToServer(pos);
+                },
+                upgradeTooltip
+        ));
     }
 
 
