@@ -23,6 +23,9 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
+        // === 魔法儀式系統 - 物品 ===
+        basicItem(ModItems.RESONANT_CRYSTAL.get());
+
         ModItems.ITEMS.getEntries().forEach(item -> {
             Item instance = item.get();
             String name = item.getId().getPath();

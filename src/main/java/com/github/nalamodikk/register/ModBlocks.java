@@ -2,6 +2,8 @@ package com.github.nalamodikk.register;
 
 
 import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.common.block.ArcanePedestalBlock;
+import com.github.nalamodikk.common.block.RitualCoreBlock;
 import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlock;
@@ -87,6 +89,15 @@ public class ModBlocks {
             () -> new ManaInfuserBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
                     .strength(3.5f).sound(SoundType.METAL).lightLevel(state ->
                             state.getValue(ManaInfuserBlock.WORKING) ? 7 : 0))); // 工作時發光
+
+    // === 魔法儀式系統 ===
+    public static final DeferredBlock<Block> RITUAL_CORE = registerBlock("ritual_core",
+            () -> new RitualCoreBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(4.0f).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final DeferredBlock<Block> ARCANE_PEDESTAL = registerBlock("arcane_pedestal",
+            () -> new ArcanePedestalBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(2.5f).requiresCorrectToolForDrops().noOcclusion()));
 
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {

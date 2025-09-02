@@ -39,6 +39,11 @@
   "block.koniava.mana_grass_block": "Mana Grass Block",
   "block.koniava.mana_infuser": "Mana Infuser",
 
+  "block.koniava.ritual_core": "Ritual Core",
+  "block.koniava.arcane_pedestal": "Arcane Pedestal",
+
+  "item.koniava.resonant_crystal": "Resonant Crystal",
+
   "//4": "=== EQUIPMENT ===",
   "equipment.koniava.helmet": "Tactical Helmet",
   "equipment.koniava.chestplate": "Power Chestplate",

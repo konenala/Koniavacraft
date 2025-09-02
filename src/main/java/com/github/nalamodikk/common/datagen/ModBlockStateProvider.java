@@ -39,6 +39,17 @@ public class ModBlockStateProvider extends BlockStateProvider {
         // 🧪 特殊方塊 (自定義模型)
         createManaModel(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
         createManaModelWithFacing(ModBlocks.MANA_INFUSER);
+
+        // === 魔法儀式系統 ===
+        // 儀式核心 (Ritual Core) - 簡單方塊模型
+        blockWithItem(ModBlocks.RITUAL_CORE);
+
+        // 奧術基座 (Arcane Pedestal) - 自定義模型
+        // 注意：這裡假設您會提供 'arcane_pedestal.json' 模型文件，
+        // 並且該文件定義了基座的複雜形狀和紋理。
+        // simpleBlockWithItem 會自動生成方塊狀態和物品模型。
+        simpleBlockWithItem(ModBlocks.ARCANE_PEDESTAL.get(),
+                models().getExistingFile(modLoc("block/arcane_pedestal")));
     }
 
     // ===========================================
