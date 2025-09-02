@@ -160,6 +160,10 @@ public class ManaFuelHandler {
 
         if (burnTime > 0) {
             burnTime--;
+            // 🔧 燃料燒完時重置 currentBurnTime
+            if (burnTime == 0) {
+                currentBurnTime = 0;
+            }
         }
     }
 
@@ -219,10 +223,10 @@ public class ManaFuelHandler {
             int modifiedMana = upgradeHandler.getModifiedOutput(baseRate.getManaRate());
             int modifiedEnergy = upgradeHandler.getModifiedOutput(baseRate.getEnergyRate());
             
-            // 創建修改後的燃料速率
+            // 創建修改後的燃料速率 - 使用當前實際的燃燒時間（已經過升級修改）
             return Optional.of(new ManaGenFuelRateLoader.FuelRate(
                 modifiedMana,
-                baseRate.getBurnTime(), // 使用基礎燃燒時間（升級效果在 tryConsumeFuel 中已應用）
+                currentBurnTime > 0 ? currentBurnTime : baseRate.getBurnTime(), // 使用實際的燃燒時間
                 modifiedEnergy,
                 baseRate.getIntervalTick()
             ));
