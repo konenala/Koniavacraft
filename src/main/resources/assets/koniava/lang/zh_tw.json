@@ -241,6 +241,9 @@
   "gui.koniava.mana_infuser.status.no_mana": "魔力不足",
   "gui.koniava.mana_infuser.status.no_recipe": "無配方",
 
+  "gui.koniava.rate": "產率: %s",
+  "gui.koniava.total_yield": "總產出: %s",
+
   "//17": "=== 模式 ===",
   "mode.koniava.mana": "魔力",
   "mode.koniava.energy": "能量",

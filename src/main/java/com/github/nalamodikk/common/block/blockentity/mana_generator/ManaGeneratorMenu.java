@@ -137,4 +137,17 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
         return getContainerData().get(5) != 0;
     }
 
+    // 💡 新增 Getter 方法
+    public boolean hasDiagnosticDisplay() {
+        return syncHelper.getContainerData().get(ManaGeneratorSyncHelper.SyncIndex.HAS_DIAGNOSTIC_DISPLAY.ordinal()) != 0;
+    }
+
+    public int getManaRate() {
+        return syncHelper.getContainerData().get(ManaGeneratorSyncHelper.SyncIndex.MANA_RATE.ordinal());
+    }
+
+    public int getEnergyRate() {
+        return syncHelper.getContainerData().get(ManaGeneratorSyncHelper.SyncIndex.ENERGY_RATE.ordinal());
+    }
+
 }

@@ -264,6 +264,11 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
             pGuiGraphics.renderTooltip(this.font, Component.translatable("tooltip.energy", this.menu.getEnergyStored(), this.menu.getMaxEnergy()), pMouseX, pMouseY);
         }
 
+        // 💡 新增：診斷顯示儀邏輯
+        if (this.menu.hasDiagnosticDisplay()) {
+            renderDiagnosticInfo(pGuiGraphics);
+        }
+
         this.renderTooltip(pGuiGraphics, pMouseX, pMouseY);
     }
 
@@ -277,6 +282,53 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
         int energyBarX = this.leftPos + 157;
         int energyBarY = this.topPos + 19;
         return mouseX >= energyBarX && mouseX <= energyBarX + ENERGY_BAR_WIDTH && mouseY >= energyBarY && mouseY <= energyBarY + ENERGY_BAR_HEIGHT;
+    }
+
+    private void renderDiagnosticInfo(GuiGraphics guiGraphics) {
+        // 從 Menu 獲取數據
+        boolean isManaMode = this.menu.getCurrentMode() == 0;
+        int rate = isManaMode ? this.menu.getManaRate() : this.menu.getEnergyRate();
+        int burnTime = this.menu.getBurnTime();
+        long totalOutput = (long) rate * burnTime;
+
+        // 準備要顯示的文字
+        Component rateText;
+        Component yieldText;
+
+        if (this.menu.isWorking()) {
+            String unit = isManaMode ? "Mana/t" : "RF/t";
+            rateText = Component.translatable("gui.koniava.rate", String.format("%d %s", rate, unit));
+            
+            String totalUnit = isManaMode ? "Mana" : "RF";
+            yieldText = Component.translatable("gui.koniava.total_yield", String.format("%,d %s", totalOutput, totalUnit));
+        } else {
+            rateText = Component.translatable("gui.koniava.rate", "N/A");
+            yieldText = Component.translatable("gui.koniava.total_yield", "N/A");
+        }
+
+        // 設定繪製參數
+        PoseStack poseStack = guiGraphics.pose();
+        float scale = 0.8f;
+        int color = 0x404040; // Dark Gray
+        
+        // 繪製第一行：產率
+        poseStack.pushPose();
+        poseStack.scale(scale, scale, scale);
+        
+        float textX = (this.leftPos + (this.imageWidth / 2f)) / scale;
+        float textY1 = (this.topPos + 62) / scale;
+        guiGraphics.drawCenteredString(this.font, rateText, (int) textX, (int) textY1, color);
+        
+        poseStack.popPose();
+
+        // 繪製第二行：總產出
+        poseStack.pushPose();
+        poseStack.scale(scale, scale, scale);
+        
+        float textY2 = (this.topPos + 72) / scale;
+        guiGraphics.drawCenteredString(this.font, yieldText, (int) textX, (int) textY2, color);
+
+        poseStack.popPose();
     }
 
 }

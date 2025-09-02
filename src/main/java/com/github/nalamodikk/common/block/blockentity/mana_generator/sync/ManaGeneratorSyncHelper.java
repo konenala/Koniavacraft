@@ -1,10 +1,13 @@
 package com.github.nalamodikk.common.block.blockentity.mana_generator.sync;
 
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.loader.ManaGenFuelRateLoader;
 import com.github.nalamodikk.common.sync.ISyncHelper;
 import com.github.nalamodikk.common.sync.MachineSyncManager;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.block.entity.BlockEntity;
+
+import java.util.Optional;
 
 /**
  * 管理 ManaGeneratorBlockEntity 的同步欄位。
@@ -21,7 +24,11 @@ public class ManaGeneratorSyncHelper implements ISyncHelper {
         BURN_TIME,
         CURRENT_BURN_TIME,
         IS_WORKING,
-        IS_PAUSED;
+        IS_PAUSED,
+        // 💡 新增欄位
+        HAS_DIAGNOSTIC_DISPLAY,
+        MANA_RATE,
+        ENERGY_RATE;
 
         public static int count() {
             return values().length;
@@ -52,6 +59,12 @@ public class ManaGeneratorSyncHelper implements ISyncHelper {
         syncManager.set(SyncIndex.IS_WORKING.ordinal(), be.isWorking() ? 1 : 0);
         syncManager.set(SyncIndex.IS_PAUSED.ordinal(), be.getFuelLogic().isPaused() ? 1 : 0);
 
+        // 💡 新增欄位
+        syncManager.set(SyncIndex.HAS_DIAGNOSTIC_DISPLAY.ordinal(), be.getUpgradeHandler().hasDiagnosticDisplay() ? 1 : 0);
+        Optional<ManaGenFuelRateLoader.FuelRate> currentRate = be.getCurrentFuelRate();
+        syncManager.set(SyncIndex.MANA_RATE.ordinal(), currentRate.map(ManaGenFuelRateLoader.FuelRate::getManaRate).orElse(0));
+        syncManager.set(SyncIndex.ENERGY_RATE.ordinal(), currentRate.map(ManaGenFuelRateLoader.FuelRate::getEnergyRate).orElse(0));
+
         // 清除所有dirty flags，因為我們已經強制更新了
         clearDirty();
     }
@@ -64,6 +77,13 @@ public class ManaGeneratorSyncHelper implements ISyncHelper {
         setIfChanged(SyncIndex.CURRENT_BURN_TIME, be.getCurrentBurnTime());
         setIfChanged(SyncIndex.IS_WORKING, be.isWorking() ? 1 : 0);
         setIfChanged(SyncIndex.IS_PAUSED, be.getFuelLogic().isPaused() ? 1 : 0);
+
+        // 💡 新增欄位
+        setIfChanged(SyncIndex.HAS_DIAGNOSTIC_DISPLAY, be.getUpgradeHandler().hasDiagnosticDisplay() ? 1 : 0);
+        Optional<ManaGenFuelRateLoader.FuelRate> currentRate = be.getCurrentFuelRate();
+        setIfChanged(SyncIndex.MANA_RATE, currentRate.map(ManaGenFuelRateLoader.FuelRate::getManaRate).orElse(0));
+        setIfChanged(SyncIndex.ENERGY_RATE, currentRate.map(ManaGenFuelRateLoader.FuelRate::getEnergyRate).orElse(0));
+
         syncCounter++;
         if (syncCounter >= FORCE_SYNC_INTERVAL) {
             syncCounter = 0;

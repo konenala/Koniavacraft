@@ -241,6 +241,9 @@
   "gui.koniava.mana_infuser.status.no_mana": "Insufficient Mana",
   "gui.koniava.mana_infuser.status.no_recipe": "No Recipe",
 
+  "gui.koniava.rate": "Rate: %s",
+  "gui.koniava.total_yield": "Total Yield: %s",
+
   "//17": "=== MODES ===",
   "mode.koniava.mana": "Mana",
   "mode.koniava.energy": "Energy",
