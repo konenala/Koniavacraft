@@ -160,9 +160,6 @@ public class ManaFuelHandler {
 
         if (burnTime > 0) {
             burnTime--;
-            if (burnTime == 0) {
-                currentBurnTime  = 0;
-            }
         }
     }
 
@@ -276,5 +273,14 @@ public class ManaFuelHandler {
 
         // 檢查是否為有效燃料
         return isValidFuel(stack);
+    }
+
+    // Setters for NBT loading
+    public void setBurnTime(int burnTime) {
+        this.burnTime = burnTime;
+    }
+
+    public void setCurrentBurnTime(int currentBurnTime) {
+        this.currentBurnTime = currentBurnTime;
     }
 }

@@ -85,8 +85,6 @@
         private final ItemStackHandler fuelHandler = new ItemStackHandler(FUEL_SLOT_COUNT);
         private final UpgradeInventory upgradeInventory = new UpgradeInventory(UPGRADE_SLOT_COUNT);
         private ContainerLevelAccess access;
-        private int burnTime = 0;
-        private int currentBurnTime = 0;
         // ✅ 用來避免每幀都重播動畫，造成動畫 reset、跳針或閃爍
         private String currentAnimation = "";
         private boolean forceRefreshAnimation = false;
@@ -149,8 +147,8 @@
         private int clientSyncTimer = 0;
         private static final int CLIENT_SYNC_INTERVAL = 10; // 每10 tick同步一次到客戶端
         // set
-        public void setBurnTimeFromNbt(int value) {this.burnTime = value;}
-        public void setCurrentBurnTimeFromNbt(int value) {this.currentBurnTime = value;}
+        public void setBurnTimeFromNbt(int value) {fuelLogic.setBurnTime(value);}
+        public void setCurrentBurnTimeFromNbt(int value) {fuelLogic.setCurrentBurnTime(value);}
         public void forceRefreshAnimationFromNbt() {this.forceRefreshAnimation = true;}
 
 
@@ -440,11 +438,11 @@
         }
 
         public int getBurnTime() {
-            return burnTime;
+            return fuelLogic.getBurnTime();
         }
 
         public int getCurrentBurnTime() {
-            return currentBurnTime;
+            return fuelLogic.getCurrentBurnTime();
         }
 
         public boolean isWorking() {
@@ -564,6 +562,4 @@
                 syncHelper.syncFrom(this);
             }
         }
-
-
     }

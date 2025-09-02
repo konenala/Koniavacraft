@@ -288,7 +288,7 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
         // 從 Menu 獲取數據
         boolean isManaMode = this.menu.getCurrentMode() == 0;
         int rate = isManaMode ? this.menu.getManaRate() : this.menu.getEnergyRate();
-        int burnTime = this.menu.getBurnTime();
+        int burnTime = this.menu.getCurrentBurnTime();
         long totalOutput = (long) rate * burnTime;
 
         // 準備要顯示的文字
