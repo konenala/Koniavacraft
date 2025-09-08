@@ -7,6 +7,7 @@ import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCrafting
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlockEntity;
 import net.minecraft.core.registries.Registries;
+import com.github.nalamodikk.common.block.blockentity.arcanematrix.arcanepedestal.ArcanePedestalBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -42,6 +43,11 @@ public class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("mana_infuser", () ->
                     BlockEntityType.Builder.of(ManaInfuserBlockEntity::new,
                             ModBlocks.MANA_INFUSER.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ArcanePedestalBlockEntity>> ARCANE_PEDESTAL_BE =
+            BLOCK_ENTITY_TYPES.register("arcane_pedestal", () ->
+                    BlockEntityType.Builder.of(ArcanePedestalBlockEntity::new,
+                            ModBlocks.ARCANE_PEDESTAL.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->
