@@ -92,6 +92,8 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.MANA_SOIL.get());
         dropSelf(ModBlocks.MANA_GRASS_BLOCK.get());
         dropSelf(ModBlocks.MANA_INFUSER.get());
+        dropSelf(ModBlocks.ARCANE_PEDESTAL.get());
+        dropSelf(ModBlocks.RITUAL_CORE.get());
 
         dropSelf(ModBlocks.DEEP_MANA_SOIL.get());
 
