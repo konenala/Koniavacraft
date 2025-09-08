@@ -49,6 +49,11 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(ArcanePedestalBlockEntity::new,
                             ModBlocks.ARCANE_PEDESTAL.get()).build(null));
 
+    public static final Supplier<BlockEntityType<RitualCoreBlockEntity>> RITUAL_CORE_BE =
+            BLOCK_ENTITY_TYPES.register("ritual_core", () ->
+                    BlockEntityType.Builder.of(RitualCoreBlockEntity::new,
+                            ModBlocks.RITUAL_CORE.get()).build(null));
+
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->
 //                    BlockEntityType.Builder.of(ModularMachineBlockEntity::new,

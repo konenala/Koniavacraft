@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
@@ -85,8 +86,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
        Tick：伺服器/客戶端
        ------------------------------ */
 
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.RandomSource;
+
 
     /** 伺服器端每 tick 呼叫（由 Block#getTicker 返回）。 */
     public static void serverTick(Level level, BlockPos pos, BlockState state, ArcanePedestalBlockEntity be) {
@@ -97,7 +97,16 @@ import net.minecraft.util.RandomSource;
             double x = pos.getX() + 0.5 + (level.getRandom().nextDouble() - 0.5) * 0.4;
             double y = pos.getY() + 1.1;
             double z = pos.getZ() + 0.5 + (level.getRandom().nextDouble() - 0.5) * 0.4;
-            level.sendParticles(ParticleTypes.ENCHANT, x, y, z, 1, 0.0, 0.0, 0.0, 0.0);
+            if (!(level instanceof ServerLevel server)) return;     // 確保在伺服器端
+            if (level.getGameTime() % 100 == 0) {                    // 每 10 tick 播一次，避免太密
+                server.sendParticles(
+                    ParticleTypes.ENCHANT,
+                    x, y, z,
+                    8,          // count：一次噴幾顆
+                    0.25, 0.25, 0.25, // dx, dy, dz：隨機擴散半徑
+                    0.0         // speed/初速（多數粒子可當作速度參數）
+                );
+            }
         }
 
         // 你可以在這裡放伺服器邏輯：例如與 Ritual Core 心跳同步、範圍找核心、生成粒子條件判斷等。
