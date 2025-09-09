@@ -94,6 +94,14 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
 
         dropSelf(ModBlocks.DEEP_MANA_SOIL.get());
 
+        dropSelf(ModBlocks.ARCANE_PEDESTAL.get());
+        dropSelf(ModBlocks.MANA_PYLON.get());
+        dropSelf(ModBlocks.RITUAL_CORE.get());
+        dropSelf(ModBlocks.RUNE_STONE_AUGMENTATION.get());
+        dropSelf(ModBlocks.RUNE_STONE_CELERITY.get());
+        dropSelf(ModBlocks.RUNE_STONE_EFFICIENCY.get());
+        dropSelf(ModBlocks.RUNE_STONE_STABILITY.get());
+
 
         // ⛏️ 魔法礦 - 複雜掉落邏輯
         this.add(ModBlocks.MAGIC_ORE.get(), block ->

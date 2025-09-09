@@ -15,6 +15,9 @@
   "item.koniava.condensed_mana_dust": "濃縮魔塵",
   "item.koniava.mana_crystal_fragment": "魔力晶核碎片",
   "item.koniava.refined_mana_dust": "精煉魔力粉",
+  "item.koniava.ritualist_chalk": "儀式師的粉筆",
+  "item.koniava.resonant_crystal": "共鳴水晶",
+  "item.koniava.void_pearl": "虛空珍珠",
 
 
   "block.koniava.mana_block": "魔法錠磚",
@@ -30,6 +33,13 @@
   "block.koniava.mana_soil": "魔力土壤",
   "block.koniava.deep_mana_soil": "深層魔力土壤",
   "block.koniava.mana_grass_block": "魔力草方塊",
+  "block.koniava.ritual_core": "儀式核心",
+  "block.koniava.arcane_pedestal": "奧術基座",
+  "block.koniava.mana_pylon": "魔力塔",
+  "block.koniava.rune_stone_efficiency": "效率符文石",
+  "block.koniava.rune_stone_celerity": "迅捷符文石",
+  "block.koniava.rune_stone_stability": "穩定符文石",
+  "block.koniava.rune_stone_augmentation": "增幅符文石",
 
 
   "equipment.koniava.helmet": "戰術頭盔",

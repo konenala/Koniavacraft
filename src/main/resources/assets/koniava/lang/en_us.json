@@ -15,6 +15,9 @@
   "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
   "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
   "item.koniava.refined_mana_dust": "Refined Mana Dust",
+  "item.koniava.ritualist_chalk": "Ritualist's Chalk",
+  "item.koniava.resonant_crystal": "Resonant Crystal",
+  "item.koniava.void_pearl": "Void Pearl",
 
   "block.koniava.mana_block": "Mana Block",
   "block.koniava.magic_ore": "Magic Ore",
@@ -29,6 +32,13 @@
   "block.koniava.mana_soil": "Mana Soil",
   "block.koniava.deep_mana_soil": "Deep Mana Soil",
   "block.koniava.mana_grass_block": "Mana Grass Block",
+  "block.koniava.ritual_core": "Ritual Core",
+  "block.koniava.arcane_pedestal": "Arcane Pedestal",
+  "block.koniava.mana_pylon": "Mana Pylon",
+  "block.koniava.rune_stone_efficiency": "Rune Stone of Efficiency",
+  "block.koniava.rune_stone_celerity": "Rune Stone of Celerity",
+  "block.koniava.rune_stone_stability": "Rune Stone of Stability",
+  "block.koniava.rune_stone_augmentation": "Rune Stone of Augmentation",
 
   "tooltip.koniava.refined_mana_dust": "§7High-temperature refined mana dust with §bgreater purity§7, suitable for advanced materials.",
 

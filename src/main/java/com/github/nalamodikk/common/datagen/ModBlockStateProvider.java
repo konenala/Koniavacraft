@@ -35,7 +35,10 @@ public class ModBlockStateProvider extends BlockStateProvider {
         createArcaneConduitModel();
 
         // 🧪 特殊方塊 (自定義模型)
-        createManaCraftingTableModel();
+        createCustomBlockModel(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
+
+        // 🔮 儀式系統方塊
+        createRitualSystemBlocks();
     }
 
     // ===========================================
@@ -68,14 +71,29 @@ public class ModBlockStateProvider extends BlockStateProvider {
     }
 
     // ===========================================
-    // 🧪 特殊方塊模型
+    // 🧪 特殊方塊模型 (通用)
     // ===========================================
 
-    private void createManaCraftingTableModel() {
-        getVariantBuilder(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
+    /**
+     * 為具有預製自定義模型的方塊生成方塊狀態和物品模型。
+     * <p>
+     * 此方法假設在 {@code assets/<modid>/models/block/} 路徑下已存在一個與方塊註冊名同名的 JSON 模型文件。
+     * 例如，對於 "koniava:mana_crafting_table"，它會尋找 "koniava/models/block/mana_crafting_table.json"。
+     *
+     * @param blockDeferred 要處理的方塊的 DeferredBlock。
+     */
+    private void createCustomBlockModel(DeferredBlock<Block> blockDeferred) {
+        String blockName = blockDeferred.getId().getPath();
+        ModelFile modelFile = new ModelFile.UncheckedModelFile(modLoc("block/" + blockName));
+
+        // 設置方塊狀態，使其始終使用這個自定義模型
+        getVariantBuilder(blockDeferred.get())
                 .partialState().modelForState()
-                .modelFile(new ModelFile.UncheckedModelFile(modLoc("block/mana_crafting_table")))
+                .modelFile(modelFile)
                 .addModel();
+
+        // 創建一個指向該方塊模型的物品模型
+        simpleBlockItem(blockDeferred.get(), modelFile);
     }
 
     // ===========================================
@@ -251,6 +269,30 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .end()
 
                 .end();
+    }
+
+    // ===========================================
+    // 🔮 儀式系統方塊
+    // ===========================================
+
+    /**
+     * 創建儀式系統相關的方塊模型
+     */
+    private void createRitualSystemBlocks() {
+        // 儀式核心 - 自定義模型
+        createCustomBlockModel(ModBlocks.RITUAL_CORE);
+        
+        // 奧術基座 - 自定義模型
+        createCustomBlockModel(ModBlocks.ARCANE_PEDESTAL);
+        
+        // 魔力塔 - 自定義模型
+        createCustomBlockModel(ModBlocks.MANA_PYLON);
+        
+        // 符文石系列 - 使用簡單方塊
+        blockWithItem(ModBlocks.RUNE_STONE_EFFICIENCY);
+        blockWithItem(ModBlocks.RUNE_STONE_CELERITY);
+        blockWithItem(ModBlocks.RUNE_STONE_STABILITY);
+        blockWithItem(ModBlocks.RUNE_STONE_AUGMENTATION);
     }
 
     // ===========================================

@@ -5,6 +5,8 @@ import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarM
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.*;
+import com.github.nalamodikk.common.block.ritual.RuneStoneBlock;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -36,6 +38,36 @@ public class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("arcane_conduit", () ->
                     BlockEntityType.Builder.of(ArcaneConduitBlockEntity::new,
                             ModBlocks.ARCANE_CONDUIT.get()).build(null));
+
+    // === 🔮 儀式系統方塊實體 (Ritual System Block Entities) ===
+    public static final Supplier<BlockEntityType<RitualCoreBlockEntity>> RITUAL_CORE =
+            BLOCK_ENTITY_TYPES.register("ritual_core", () ->
+                    BlockEntityType.Builder.of(RitualCoreBlockEntity::new,
+                            ModBlocks.RITUAL_CORE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ArcanePedestalBlockEntity>> ARCANE_PEDESTAL =
+            BLOCK_ENTITY_TYPES.register("arcane_pedestal", () ->
+                    BlockEntityType.Builder.of(ArcanePedestalBlockEntity::new,
+                            ModBlocks.ARCANE_PEDESTAL.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ManaPylonBlockEntity>> MANA_PYLON =
+            BLOCK_ENTITY_TYPES.register("mana_pylon", () ->
+                    BlockEntityType.Builder.of(ManaPylonBlockEntity::new,
+                            ModBlocks.MANA_PYLON.get()).build(null));
+
+    public static final Supplier<BlockEntityType<RuneStoneBlockEntity>> RUNE_STONE =
+            BLOCK_ENTITY_TYPES.register("rune_stone", () ->
+                    BlockEntityType.Builder.of((pos, state) -> {
+                        // 從方塊狀態中提取符文類型
+                        if (state.getBlock() instanceof RuneStoneBlock runeBlock) {
+                            return new RuneStoneBlockEntity(pos, state, runeBlock.getRuneType());
+                        }
+                        return new RuneStoneBlockEntity(pos, state, RuneStoneBlock.RuneType.EFFICIENCY);
+                    },
+                            ModBlocks.RUNE_STONE_EFFICIENCY.get(),
+                            ModBlocks.RUNE_STONE_CELERITY.get(),
+                            ModBlocks.RUNE_STONE_STABILITY.get(),
+                            ModBlocks.RUNE_STONE_AUGMENTATION.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->

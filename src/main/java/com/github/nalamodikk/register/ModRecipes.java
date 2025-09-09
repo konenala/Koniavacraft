@@ -3,6 +3,8 @@ package com.github.nalamodikk.register;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.ManaGenFuelRecipe;
+import com.github.nalamodikk.common.block.blockentity.ritual.RitualRecipe;
+import com.github.nalamodikk.common.block.blockentity.ritual.RitualRecipeSerializer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -54,6 +56,20 @@ public class ModRecipes {
     // ✅ 給 Minecraft 用的 RecipeSerializer（讀 json 用這個）
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ManaGenFuelRecipe>> MANA_FUEL_SERIALIZER =
             SERIALIZERS.register("mana_fuel", () -> ManaGenFuelRecipe.FuelRecipeSerializer.INSTANCE);
+
+    // === 🔮 儀式配方系統 (Ritual Recipe System) ===
+    private static final RecipeType<RitualRecipe> RITUAL_TYPE_INSTANCE = new RecipeType<>() {
+        @Override
+        public String toString() {
+            return KoniavacraftMod.MOD_ID + ":ritual";
+        }
+    };
+
+    public static final DeferredHolder<RecipeType<?>, RecipeType<RitualRecipe>> RITUAL_TYPE =
+            TYPES.register("ritual", () -> RITUAL_TYPE_INSTANCE);
+
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<RitualRecipe>> RITUAL_SERIALIZER =
+            SERIALIZERS.register("ritual", RitualRecipeSerializer::new);
 
 
 
