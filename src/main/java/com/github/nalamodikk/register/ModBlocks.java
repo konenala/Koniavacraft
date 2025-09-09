@@ -9,6 +9,7 @@ import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGenerat
 import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
 import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
 import com.github.nalamodikk.common.block.normal.ManaSoilBlock;
+import com.github.nalamodikk.common.block.ritual.*;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -79,6 +80,60 @@ public class ModBlocks {
                     .sound(SoundType.GRASS)
                     .lightLevel((state) -> 3)  // 比純土壤亮一點
             ));
+
+    // === 🔮 儀式系統方塊 (Ritual System Blocks) ===
+    public static final DeferredBlock<Block> RITUAL_CORE =
+            registerBlock("ritual_core", () -> new RitualCoreBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BLACKSTONE)
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+                    .lightLevel(state -> 5)
+            ));
+
+    public static final DeferredBlock<Block> ARCANE_PEDESTAL =
+            registerBlock("arcane_pedestal", () -> new ArcanePedestalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.POLISHED_BLACKSTONE)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+                    .lightLevel(state -> 3)
+            ));
+
+    public static final DeferredBlock<Block> MANA_PYLON =
+            registerBlock("mana_pylon", () -> new ManaPylonBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)
+                    .strength(2.5F)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+                    .lightLevel(state -> 8)
+            ));
+
+    // 符文石系列
+    public static final DeferredBlock<Block> RUNE_STONE_EFFICIENCY =
+            registerBlock("rune_stone_efficiency", () -> new RuneStoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_TILES)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 2)
+            , RuneStoneBlock.RuneType.EFFICIENCY));
+
+    public static final DeferredBlock<Block> RUNE_STONE_CELERITY =
+            registerBlock("rune_stone_celerity", () -> new RuneStoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_TILES)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 2)
+            , RuneStoneBlock.RuneType.CELERITY));
+
+    public static final DeferredBlock<Block> RUNE_STONE_STABILITY =
+            registerBlock("rune_stone_stability", () -> new RuneStoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_TILES)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 2)
+            , RuneStoneBlock.RuneType.STABILITY));
+
+    public static final DeferredBlock<Block> RUNE_STONE_AUGMENTATION =
+            registerBlock("rune_stone_augmentation", () -> new RuneStoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_TILES)
+                    .strength(2.0F)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 2)
+            , RuneStoneBlock.RuneType.AUGMENTATION));
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
         DeferredBlock<T> toReturn = BLOCKS.register(name, block);

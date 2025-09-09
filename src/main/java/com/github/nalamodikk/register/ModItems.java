@@ -4,6 +4,7 @@ import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.item.UpgradeItem;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
+import com.github.nalamodikk.common.item.ritual.*;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import com.github.nalamodikk.experimental.particle.item.DebugParticleItem;
 import net.minecraft.world.item.Item;
@@ -36,6 +37,16 @@ public class ModItems {
      */
     public static final DeferredItem<Item> SPEED_UPGRADE = ITEMS.register("speed_upgrade", () -> new UpgradeItem(UpgradeType.SPEED, new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> EFFICIENCY_UPGRADE = ITEMS.register("efficiency_upgrade", () -> new UpgradeItem(UpgradeType.EFFICIENCY, new Item.Properties().stacksTo(1)));
+
+    // === 🔮 儀式系統物品 (Ritual System Items) ===
+    public static final DeferredItem<Item> RITUALIST_CHALK = ITEMS.register("ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1)));
+    
+    public static final DeferredItem<Item> RESONANT_CRYSTAL = ITEMS.register("resonant_crystal", 
+            () -> new ResonantCrystalItem(new Item.Properties().stacksTo(16)));
+    
+    public static final DeferredItem<Item> VOID_PEARL = ITEMS.register("void_pearl", 
+            () -> new VoidPearlItem(new Item.Properties().stacksTo(4))); // 限制堆疊數量以示其稀有性
 
 
     public static void register(IEventBus eventBus){
