@@ -69,16 +69,16 @@ public class RitualCoreBlock extends BaseEntityBlock {
             if (blockEntity instanceof RitualCoreBlockEntity ritualCore) {
                 // 檢查玩家是否持有催化劑物品
                 if (player.getMainHandItem().isEmpty()) {
-                    player.sendSystemMessage(Component.literal("需要催化劑來啟動儀式"));
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.catalyst_needed"));
                     return InteractionResult.SUCCESS;
                 }
 
                 // 嘗試啟動儀式
                 boolean success = ritualCore.attemptStartRitual(player, player.getMainHandItem());
                 if (success) {
-                    player.sendSystemMessage(Component.literal("儀式開始!"));
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.started"));
                 } else {
-                    player.sendSystemMessage(Component.literal("儀式啟動失敗 - 檢查結構和材料"));
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.failed"));
                 }
                 return InteractionResult.SUCCESS;
             }

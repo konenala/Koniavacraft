@@ -1,5 +1,7 @@
 package com.github.nalamodikk.common.item.ritual;
 
+import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
+import com.github.nalamodikk.register.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -16,20 +18,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 /**
- * 儀式師的粉筆 - 用於在地面上繪製魔法陣圖案
- * 定義儀式區域和類型，有耐久度限制
+ * 儀式師的粉筆 - 可放置的粉筆符號方塊
+ * 不同顏色的粉筆用於不同類型的儀式驗證
  */
 public class RitualistChalkItem extends Item {
     private static final int MAX_DAMAGE = 64; // 可使用64次
+    private final ChalkGlyphBlock.ChalkColor chalkColor;
     
-    public RitualistChalkItem(Properties properties) {
+    public RitualistChalkItem(Properties properties, ChalkGlyphBlock.ChalkColor color) {
         super(properties.durability(MAX_DAMAGE));
+        this.chalkColor = color;
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
+        BlockPos clickedPos = context.getClickedPos();
         Player player = context.getPlayer();
         ItemStack stack = context.getItemInHand();
         Direction face = context.getClickedFace();
@@ -38,48 +42,68 @@ public class RitualistChalkItem extends Item {
             return InteractionResult.PASS;
         }
 
-        // 檢查是否在平坦的表面上使用
-        BlockState clickedBlock = level.getBlockState(pos);
-        if (!isValidSurface(clickedBlock)) {
+        BlockPos placePos = clickedPos.above();
+        
+        // 檢查是否可以放置
+        if (!canPlaceGlyph(level, clickedPos, placePos)) {
             if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.literal("需要在平坦的石質表面上繪製魔法陣"));
+                player.sendSystemMessage(Component.translatable("message.koniavacraft.chalk.cannot_place"));
             }
             return InteractionResult.FAIL;
         }
 
-        // 檢查上方是否為空氣
-        BlockPos abovePos = pos.above();
-        if (!level.getBlockState(abovePos).isAir()) {
-            if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.literal("上方空間不足以繪製魔法陣"));
-            }
-            return InteractionResult.FAIL;
+        // 檢查目標位置是否已有粉筆符號
+        BlockState targetState = level.getBlockState(placePos);
+        if (targetState.getBlock() instanceof ChalkGlyphBlock) {
+            // 如果是同色粉筆，切換圖案（在方塊的 useWithoutItem 中處理）
+            return InteractionResult.PASS;
         }
 
         if (!level.isClientSide()) {
-            // 這裡將來會實現魔法陣繪製邏輯
-            // 目前先顯示提示信息
-            player.sendSystemMessage(Component.literal("在此處繪製了魔法陣基礎結構"));
+            // 放置粉筆符號方塊
+            BlockState glyphState = ModBlocks.CHALK_GLYPH.get().defaultBlockState()
+                    .setValue(ChalkGlyphBlock.COLOR, chalkColor)
+                    .setValue(ChalkGlyphBlock.PATTERN, ChalkGlyphBlock.GlyphPattern.CIRCLE);
             
-            // 消耗耐久度
-            stack.hurtAndBreak(1, player, player.getEquipmentSlotForItem(stack));
+            if (level.setBlock(placePos, glyphState, 3)) {
+                // 消耗耐久度
+                stack.hurtAndBreak(1, player, player.getEquipmentSlotForItem(stack));
+                
+                player.sendSystemMessage(Component.translatable("message.koniavacraft.chalk.placed", chalkColor.getDisplayName()));
+                return InteractionResult.SUCCESS;
+            }
         }
 
         return InteractionResult.SUCCESS;
     }
 
     /**
-     * 檢查是否為有效的繪製表面
+     * 檢查是否可以放置粉筆符號
+     */
+    private boolean canPlaceGlyph(Level level, BlockPos supportPos, BlockPos placePos) {
+        // 檢查支撐方塊是否合適
+        BlockState supportBlock = level.getBlockState(supportPos);
+        if (!isValidSurface(supportBlock)) {
+            return false;
+        }
+
+        // 檢查放置位置是否可替換（空氣或可覆蓋的方塊）
+        BlockState placeBlockState = level.getBlockState(placePos);
+        return placeBlockState.isAir() || placeBlockState.canBeReplaced();
+    }
+
+    /**
+     * 檢查是否為有效的支撐表面
      */
     private boolean isValidSurface(BlockState state) {
-        // 允許在石質方塊上繪製
-        return state.is(Blocks.STONE) ||
-               state.is(Blocks.COBBLESTONE) ||
-               state.is(Blocks.STONE_BRICKS) ||
-               state.is(Blocks.POLISHED_BLACKSTONE) ||
-               state.is(Blocks.BLACKSTONE) ||
-               state.is(Blocks.DEEPSLATE) ||
-               state.is(Blocks.POLISHED_DEEPSLATE);
+        // 允許在大多數固體方塊上繪製
+        return state.isFaceSturdy(null, null, Direction.UP) && 
+               !state.is(Blocks.WATER) && 
+               !state.is(Blocks.LAVA);
+    }
+
+    public ChalkGlyphBlock.ChalkColor getChalkColor() {
+        return chalkColor;
     }
 
     @Override
@@ -89,9 +113,11 @@ public class RitualistChalkItem extends Item {
         int damage = stack.getDamageValue();
         int remaining = MAX_DAMAGE - damage;
         
-        tooltipComponents.add(Component.literal("剩余使用次數: " + remaining + "/" + MAX_DAMAGE));
-        tooltipComponents.add(Component.literal("右鍵點擊石質表面繪製魔法陣"));
-        tooltipComponents.add(Component.literal("用於定義儀式區域和類型"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.color", chalkColor.getDisplayName()));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.uses", remaining, MAX_DAMAGE));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.usage"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.switch_pattern"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.purpose"));
     }
 
     @Override
@@ -101,6 +127,13 @@ public class RitualistChalkItem extends Item {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return 0x9400D3; // 紫色耐久度條
+        return switch (chalkColor) {
+            case WHITE -> 0xFFFFFF;
+            case YELLOW -> 0xFFFF00;
+            case BLUE -> 0x0080FF;
+            case PURPLE -> 0x9400D3;
+            case RED -> 0xFF0000;
+            case GREEN -> 0x00FF00;
+        };
     }
 }

@@ -15,7 +15,12 @@
   "item.koniava.condensed_mana_dust": "Condensed Mana Dust",
   "item.koniava.mana_crystal_fragment": "Mana Crystal Fragment",
   "item.koniava.refined_mana_dust": "Refined Mana Dust",
-  "item.koniava.ritualist_chalk": "Ritualist's Chalk",
+  "item.koniava.white_ritualist_chalk": "White Ritualist's Chalk",
+  "item.koniava.yellow_ritualist_chalk": "Yellow Ritualist's Chalk",
+  "item.koniava.blue_ritualist_chalk": "Blue Ritualist's Chalk",
+  "item.koniava.purple_ritualist_chalk": "Purple Ritualist's Chalk",
+  "item.koniava.red_ritualist_chalk": "Red Ritualist's Chalk",
+  "item.koniava.green_ritualist_chalk": "Green Ritualist's Chalk",
   "item.koniava.resonant_crystal": "Resonant Crystal",
   "item.koniava.void_pearl": "Void Pearl",
 
@@ -39,6 +44,7 @@
   "block.koniava.rune_stone_celerity": "Rune Stone of Celerity",
   "block.koniava.rune_stone_stability": "Rune Stone of Stability",
   "block.koniava.rune_stone_augmentation": "Rune Stone of Augmentation",
+  "block.koniava.chalk_glyph": "Chalk Glyph",
 
   "tooltip.koniava.refined_mana_dust": "§7High-temperature refined mana dust with §bgreater purity§7, suitable for advanced materials.",
 
@@ -263,7 +269,32 @@
   "creativetab.koniava_modules": "Koniavacraft - Modules",
 
   "koniava.config.manaRecipeRefreshInterval": "How many ticks to refresh the mana crafting recipe result (Recommended value: 2-10)",
-  "koniava.config.showIntroAnimation": "Enable Login Animation"
-
-
+  "koniava.config.showIntroAnimation": "Enable Login Animation",
+  "gui.koniavacraft.arcane_conduit.range_indicator": "(±2B)",
+  "message.koniavacraft.mana_pylon.status": "Mana Pylon Status: %d/%d Mana %s",
+  "misc.koniavacraft.connected": "(Connected)",
+  "misc.koniavacraft.disconnected": "(Disconnected)",
+  "message.koniavacraft.ritual.catalyst_needed": "A catalyst is required to start the ritual",
+  "message.koniavacraft.ritual.started": "Ritual started!",
+  "message.koniavacraft.ritual.failed": "Ritual failed to start - check structure and materials",
+  "message.koniavacraft.rune_stone.info": "%s: %s",
+  "tooltip.koniavacraft.resonant_crystal.category": "§bRitual Catalyst",
+  "tooltip.koniavacraft.resonant_crystal.description": "Used to start most rituals",
+  "tooltip.koniavacraft.resonant_crystal.usage": "Right-click on a Ritual Core to begin",
+  "tooltip.koniavacraft.resonant_crystal.expendable": "§cConsumable - disappears after one use",
+  "message.koniavacraft.chalk.cannot_place": "Cannot place chalk symbol here",
+  "message.koniavacraft.chalk.placed": "Placed %s chalk symbol",
+  "tooltip.koniavacraft.chalk.color": "Color: %s",
+  "tooltip.koniavacraft.chalk.uses": "Uses remaining: %s/%s",
+  "tooltip.koniavacraft.chalk.usage": "Right-click to place a chalk symbol",
+  "tooltip.koniavacraft.chalk.switch_pattern": "Click again to switch pattern",
+  "tooltip.koniavacraft.chalk.purpose": "Used for ritual validation",
+  "tooltip.koniavacraft.void_pearl.category": "§5Forbidden Catalyst",
+  "tooltip.koniavacraft.void_pearl.description": "Used for high-risk, forbidden rituals",
+  "tooltip.koniavacraft.void_pearl.usage": "Right-click on a Ritual Core to begin a dangerous ritual",
+  "tooltip.koniavacraft.void_pearl.warning": "§cWarning: May cause unstable effects",
+  "tooltip.koniavacraft.void_pearl.expendable": "§cConsumable - disappears after one use",
+  "message.koniavacraft.void_pearl.ominous_energy": "§5The void pearl emanates an ominous energy...",
+  "misc.koniavacraft.position_format": "(%d, %d, %d)",
+  "misc.koniavacraft.unknown_block": "Unknown Block"
 }

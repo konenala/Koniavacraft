@@ -10,6 +10,7 @@ import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
 import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
 import com.github.nalamodikk.common.block.normal.ManaSoilBlock;
 import com.github.nalamodikk.common.block.ritual.*;
+import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -134,6 +135,15 @@ public class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> 2)
             , RuneStoneBlock.RuneType.AUGMENTATION));
+
+    // 粉筆符號方塊
+    public static final DeferredBlock<Block> CHALK_GLYPH =
+            registerBlock("chalk_glyph", () -> new ChalkGlyphBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.TRIPWIRE)
+                    .strength(0.0F)
+                    .noOcclusion()
+                    .sound(SoundType.WOOL)
+                    .lightLevel(state -> 1)
+            ));
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
         DeferredBlock<T> toReturn = BLOCKS.register(name, block);

@@ -23,12 +23,12 @@ public class VoidPearlItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-        
-        tooltipComponents.add(Component.literal("§5禁忌催化劑"));
-        tooltipComponents.add(Component.literal("用於高風險的禁忌儀式"));
-        tooltipComponents.add(Component.literal("右鍵點擊儀式核心以開始危險儀式"));
-        tooltipComponents.add(Component.literal("§c警告: 可能導致不穩定效應"));
-        tooltipComponents.add(Component.literal("§c消耗品 - 每次使用後消失"));
+
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.void_pearl.category"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.void_pearl.description"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.void_pearl.usage"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.void_pearl.warning"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.void_pearl.expendable"));
     }
 
     @Override
@@ -40,7 +40,7 @@ public class VoidPearlItem extends Item {
             if (level.random.nextFloat() < 0.05f) { // 5%機率
                 // 給予玩家短暫的虛弱效果作為持有懲罰
                 if (!level.isClientSide()) {
-                    player.sendSystemMessage(Component.literal("§5虛空珍珠散發出不祥的能量..."));
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.void_pearl.ominous_energy"));
                 }
             }
         }

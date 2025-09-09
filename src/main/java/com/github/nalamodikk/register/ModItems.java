@@ -5,6 +5,7 @@ import com.github.nalamodikk.common.item.UpgradeItem;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.item.ritual.*;
+import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import com.github.nalamodikk.experimental.particle.item.DebugParticleItem;
 import net.minecraft.world.item.Item;
@@ -39,8 +40,24 @@ public class ModItems {
     public static final DeferredItem<Item> EFFICIENCY_UPGRADE = ITEMS.register("efficiency_upgrade", () -> new UpgradeItem(UpgradeType.EFFICIENCY, new Item.Properties().stacksTo(1)));
 
     // === 🔮 儀式系統物品 (Ritual System Items) ===
-    public static final DeferredItem<Item> RITUALIST_CHALK = ITEMS.register("ritualist_chalk", 
-            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1)));
+    // 各色儀式師粉筆
+    public static final DeferredItem<Item> WHITE_RITUALIST_CHALK = ITEMS.register("white_ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1), ChalkGlyphBlock.ChalkColor.WHITE));
+    
+    public static final DeferredItem<Item> YELLOW_RITUALIST_CHALK = ITEMS.register("yellow_ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1), ChalkGlyphBlock.ChalkColor.YELLOW));
+    
+    public static final DeferredItem<Item> BLUE_RITUALIST_CHALK = ITEMS.register("blue_ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1), ChalkGlyphBlock.ChalkColor.BLUE));
+    
+    public static final DeferredItem<Item> PURPLE_RITUALIST_CHALK = ITEMS.register("purple_ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1), ChalkGlyphBlock.ChalkColor.PURPLE));
+    
+    public static final DeferredItem<Item> RED_RITUALIST_CHALK = ITEMS.register("red_ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1), ChalkGlyphBlock.ChalkColor.RED));
+    
+    public static final DeferredItem<Item> GREEN_RITUALIST_CHALK = ITEMS.register("green_ritualist_chalk", 
+            () -> new RitualistChalkItem(new Item.Properties().stacksTo(1), ChalkGlyphBlock.ChalkColor.GREEN));
     
     public static final DeferredItem<Item> RESONANT_CRYSTAL = ITEMS.register("resonant_crystal", 
             () -> new ResonantCrystalItem(new Item.Properties().stacksTo(16)));

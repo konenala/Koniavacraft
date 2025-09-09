@@ -84,7 +84,7 @@ public class RuneStoneBlock extends BaseEntityBlock {
                     case AUGMENTATION -> "有機率產出額外物品或附魔";
                 };
                 
-                player.sendSystemMessage(Component.literal(typeName + ": " + description));
+                player.sendSystemMessage(Component.translatable("message.koniavacraft.rune_stone.info", typeName, description));
                 return InteractionResult.SUCCESS;
             }
         }

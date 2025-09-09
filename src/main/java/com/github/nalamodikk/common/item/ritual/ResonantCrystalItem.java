@@ -20,11 +20,11 @@ public class ResonantCrystalItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-        
-        tooltipComponents.add(Component.literal("§b儀式催化劑"));
-        tooltipComponents.add(Component.literal("用於啟動大多數儀式"));
-        tooltipComponents.add(Component.literal("右鍵點擊儀式核心以開始儀式"));
-        tooltipComponents.add(Component.literal("§c消耗品 - 每次使用後消失"));
+
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.resonant_crystal.category"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.resonant_crystal.description"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.resonant_crystal.usage"));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.resonant_crystal.expendable"));
     }
 
     @Override

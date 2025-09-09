@@ -74,12 +74,16 @@ public class ManaPylonBlock extends BaseEntityBlock {
                 int maxMana = pylon.getMaxManaCapacity();
                 boolean isConnected = pylon.isConnectedToNetwork();
                 
-                player.sendSystemMessage(Component.literal(String.format(
-                    "魔力塔狀態: %d/%d Mana %s", 
-                    storedMana, 
-                    maxMana, 
-                    isConnected ? "(已連接)" : "(未連接)"
-                )));
+                Component statusText = isConnected ?
+                        Component.translatable("misc.koniavacraft.connected") :
+                        Component.translatable("misc.koniavacraft.disconnected");
+
+                player.sendSystemMessage(Component.translatable(
+                        "message.koniavacraft.mana_pylon.status",
+                        storedMana,
+                        maxMana,
+                        statusText
+                ));
                 return InteractionResult.SUCCESS;
             }
         }
