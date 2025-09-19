@@ -9,10 +9,11 @@ import org.jetbrains.annotations.UnknownNullability;
 
 public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<CompoundTag> {
 
-    private int mana;
+    private volatile int mana;
     private final int capacity;
-    protected boolean allowInsert = true;
-    protected boolean allowExtract = true;
+    protected volatile boolean allowInsert = true;
+    protected volatile boolean allowExtract = true;
+    private final Object lock = new Object();
 
     public ManaStorage(int capacity) {
         this.capacity = capacity;
@@ -44,14 +45,18 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
 
     @Override
     public void addMana(int amount) {
-        this.mana = Math.min(this.mana + amount, capacity);
-        onChanged(); // 添加魔力時通知變化
+        synchronized (lock) {
+            this.mana = Math.min(this.mana + amount, capacity);
+            onChanged(); // 添加魔力時通知變化
+        }
     }
 
     @Override
     public void consumeMana(int amount) {
-        this.mana = Math.max(this.mana - amount, 0);
-        onChanged(); // 消耗魔力時通知變化
+        synchronized (lock) {
+            this.mana = Math.max(this.mana - amount, 0);
+            onChanged(); // 消耗魔力時通知變化
+        }
     }
 
     @Override
@@ -61,8 +66,10 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
 
     @Override
     public void setMana(int amount) {
-        this.mana = Math.min(amount, capacity);
-        onChanged(); // 設置魔力時通知變化
+        synchronized (lock) {
+            this.mana = Math.min(amount, capacity);
+            onChanged(); // 設置魔力時通知變化
+        }
     }
 
     @Override
@@ -131,18 +138,24 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
 
     @Override
     public int extractMana(int amount, ManaAction action) {
-        if (amount <= 0 || mana == 0) {
+        if (amount <= 0) {
             return 0;
         }
 
-        int manaExtracted = Math.min(amount, mana);
+        synchronized (lock) {
+            if (mana == 0) {
+                return 0;
+            }
 
-        if (action.execute() && manaExtracted > 0) {
-            mana -= manaExtracted;
-            onChanged(); // 確保變更被通知
+            int manaExtracted = Math.min(amount, mana);
+
+            if (action.execute() && manaExtracted > 0) {
+                mana -= manaExtracted;
+                onChanged(); // 確保變更被通知
+            }
+
+            return manaExtracted;
         }
-
-        return manaExtracted;
     }
 
     @Override
@@ -150,12 +163,15 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
         if (amount <= 0) {
             return 0;
         }
-        int toReceive = Math.min(amount, getMaxManaStored() - getManaStored());
-        if (action.execute() && toReceive > 0) {
-            addMana(toReceive);
-            onChanged(); // 通知數據變更
+
+        synchronized (lock) {
+            int toReceive = Math.min(amount, getMaxManaStored() - getManaStored());
+            if (action.execute() && toReceive > 0) {
+                this.mana = Math.min(this.mana + toReceive, capacity);
+                onChanged(); // 通知數據變更
+            }
+            return toReceive;
         }
-        return toReceive;
     }
 
 
@@ -169,7 +185,8 @@ public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<Compo
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-        this.mana = nbt.getInt("Mana");
-
+        synchronized (lock) {
+            this.mana = nbt.getInt("Mana");
+        }
     }
 }

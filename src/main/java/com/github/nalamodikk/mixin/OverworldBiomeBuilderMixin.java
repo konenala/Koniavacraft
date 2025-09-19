@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.function.Consumer;
 
 /**
- * 使用 UniversalBiomeInjector 的 Mixin
+ * Mixin for injecting custom biomes using UniversalBiomeInjector
  */
 @Mixin(OverworldBiomeBuilder.class)
 public class OverworldBiomeBuilderMixin {
@@ -25,16 +25,18 @@ public class OverworldBiomeBuilderMixin {
     @Inject(method = "addBiomes", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/biome/OverworldBiomeBuilder;addOffCoastBiomes(Ljava/util/function/Consumer;)V"))
     private void injectCustomBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> consumer, CallbackInfo ci) {
-        LOGGER.info("🔧 OverworldBiomeBuilderMixin: 開始注入自訂生物群落...");
+        LOGGER.info("🔧 OverworldBiomeBuilderMixin: Starting custom biome injection...");
 
         try {
-            // 🌟 使用 UniversalBiomeInjector（已經修正深度問題）
+            // 🌟 Using UniversalBiomeInjector (depth issues have been fixed)
             UniversalBiomeInjector.injectBiomes(consumer);
 
-            LOGGER.info("🎉 自訂生物群落注入完成！");
+            LOGGER.info("🎉 Custom biome injection completed!");
 
         } catch (Exception e) {
-            LOGGER.error("❌ 自訂生物群落注入失敗！", e);
+            LOGGER.error("❌ Custom biome injection failed!", e);
+            // Fallback: continue without custom biomes rather than crashing
+            LOGGER.warn("Continuing world generation without custom biomes...");
         }
     }
 }

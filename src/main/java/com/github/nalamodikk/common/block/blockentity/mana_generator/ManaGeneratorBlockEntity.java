@@ -57,7 +57,9 @@
         private static final Logger LOGGER = LoggerFactory.getLogger(ManaGeneratorBlockEntity.class);
         private final EnumMap<Direction, BlockCapabilityCache<IUnifiedManaHandler, Direction>> manaCaches = new EnumMap<>(Direction.class);
         private final EnumMap<Direction, BlockCapabilityCache<IEnergyStorage, Direction>> energyCaches = new EnumMap<>(Direction.class);
-        private boolean isSyncing = false;
+        private volatile boolean isSyncing = false;
+        private long lastSyncTime = 0;
+        private static final long MIN_SYNC_INTERVAL = 100; // milliseconds
 
         private static final int MAX_MANA = 200000;
         private static final int MAX_ENERGY = 200000;
@@ -278,8 +280,8 @@
         }
 
         public void sync() {
-            if (isSyncing) {
-                return; // 防止遞歸調用
+            if (!shouldSync()) {
+                return;
             }
 
             isSyncing = true;
@@ -288,9 +290,11 @@
                     // 更新同步數據
                     syncHelper.syncFrom(this);
 
-                    // 立即同步到客戶端
+                    // 標記為已更改但不立即同步
                     super.setChanged();
-                    this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+
+                    // 記錄同步時間
+                    lastSyncTime = System.currentTimeMillis();
 
                     // 清除dirty狀態
                     syncHelper.flushSyncState(this);
@@ -298,6 +302,24 @@
             } finally {
                 isSyncing = false;
             }
+        }
+
+        private boolean shouldSync() {
+            if (isSyncing) {
+                return false; // 防止遞歸調用
+            }
+
+            long currentTime = System.currentTimeMillis();
+            return currentTime - lastSyncTime >= MIN_SYNC_INTERVAL; // 節流同步
+        }
+
+        public void forceSync() {
+            if (isSyncing) {
+                return;
+            }
+
+            lastSyncTime = 0; // 重置時間以允許立即同步
+            sync();
         }
 
         public ContainerData getContainerData() {
@@ -557,9 +579,42 @@
         public void setChanged() {
             super.setChanged();
 
-            // 立即更新同步數據
-            if (level != null && !level.isClientSide && !isSyncing) {
-                syncHelper.syncFrom(this);
+            // 節流同步數據
+            if (level != null && !level.isClientSide && shouldSync()) {
+                sync();
             }
+        }
+
+        // Resource cleanup methods
+        @Override
+        public void setRemoved() {
+            super.setRemoved();
+            cleanup();
+        }
+
+        @Override
+        public void onChunkUnloaded() {
+            super.onChunkUnloaded();
+            cleanup();
+        }
+
+        private void cleanup() {
+            // Clear capability caches to prevent memory leaks
+            manaCaches.clear();
+            energyCaches.clear();
+
+            // Reset sync state
+            isSyncing = false;
+
+            // Log cleanup for debugging
+            if (KoniavacraftMod.IS_DEV) {
+                LOGGER.debug("ManaGeneratorBlockEntity at {} cleaned up resources", worldPosition);
+            }
+        }
+
+        @Override
+        public void invalidateCaps() {
+            super.invalidateCaps();
+            cleanup();
         }
     }

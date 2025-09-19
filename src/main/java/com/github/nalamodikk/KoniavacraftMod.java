@@ -41,8 +41,10 @@ public class KoniavacraftMod {
 
 
         // debug test
-        LOGGER.debug("這是一條 DEBUG 測試訊息");
-        LOGGER.info("這是一條 INFO 測試訊息");
+        if (IS_DEV) {
+            LOGGER.debug("Debug mode enabled for development");
+            LOGGER.info("Development build loaded successfully");
+        }
         // Register the commonSetup method for modloading
 
         // 🌟 註冊生物群落
@@ -76,9 +78,9 @@ public class KoniavacraftMod {
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
             UniversalBiomeRegistration.init();
-            LOGGER.info("✅ 正常遊戲模式：啟用生物群系 Mixin 初始化");
+            LOGGER.info("✅ Normal game mode: Biome Mixin initialization enabled");
 
-        KoniavacraftMod.LOGGER.info("✅ Koniavacraft 世界生成系統初始化完成！");
+        KoniavacraftMod.LOGGER.info("✅ Koniavacraft world generation system initialization complete!");
     }
 
 
