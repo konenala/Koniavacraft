@@ -593,6 +593,15 @@
         }
 
         @Override
+        public void clearRemoved() {
+            super.clearRemoved();
+            // Re-initialize caches when block entity is restored
+            if (KoniavacraftMod.IS_DEV) {
+                LOGGER.debug("ManaGeneratorBlockEntity at {} restored", worldPosition);
+            }
+        }
+
+        @Override
         public void onChunkUnloaded() {
             super.onChunkUnloaded();
             cleanup();
@@ -612,9 +621,4 @@
             }
         }
 
-        @Override
-        public void invalidateCaps() {
-            super.invalidateCaps();
-            cleanup();
-        }
     }
