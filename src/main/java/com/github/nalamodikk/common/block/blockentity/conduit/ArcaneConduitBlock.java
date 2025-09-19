@@ -503,16 +503,18 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
             showQuickInfo(conduit, player);
 
             // ✅ 安全的名稱獲取
-            String blockName = blockItem.isEmpty() ? "Unknown Block" :
-                    blockItem.getHoverName().getString();
-
-            if (blockName != null && !blockName.isEmpty()) {
-                player.displayClientMessage(
-                        Component.translatable("message.koniava.conduit.gentle_hint", blockName)
-                                .withStyle(ChatFormatting.GRAY),
-                        true
-                );
+            Component blockNameComponent;
+            if (blockItem.isEmpty()) {
+                blockNameComponent = Component.translatable("misc.koniavacraft.unknown_block");
+            } else {
+                blockNameComponent = blockItem.getHoverName();
             }
+
+            player.displayClientMessage(
+                    Component.translatable("message.koniava.conduit.gentle_hint", blockNameComponent)
+                            .withStyle(ChatFormatting.GRAY),
+                    true
+            );
         } catch (Exception e) {
             // 容錯處理
             player.displayClientMessage(

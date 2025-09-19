@@ -96,6 +96,15 @@ public class ModCapabilities {
                     }
                     return blockEntity.getEnergyStorage(); // 🔧 返回你的能量儲存
                 });
+
+        // === 🔮 儀式系統能力註冊 ===
+        // 儀式核心 - 魔力能力
+        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.RITUAL_CORE.get(), 
+                (blockEntity, side) -> blockEntity.getManaStorage());
+
+        // 魔力塔 - 魔力能力  
+        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_PYLON.get(),
+                (blockEntity, side) -> blockEntity.getManaStorage());
         // 實體能力
 //        event.registerEntity(ModCapability.NARA,EntityType.PLAYER, (player, ctx) -> new NaraData());
         // 🆕 魔力注入機能力註冊

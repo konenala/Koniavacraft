@@ -109,8 +109,8 @@ public class BasicTechWandItem extends Item {
                 TechDataComponents.saveConfigDirections(stack, target, configBlock);
 
                 // 🎯 關鍵修復：安全的 Component 創建
-                Component positionText = Component.literal(String.format("(%d, %d, %d)",
-                        target.getX(), target.getY(), target.getZ()));
+                Component positionText = Component.translatable("misc.koniavacraft.position_format",
+                        target.getX(), target.getY(), target.getZ());
 
                 player.displayClientMessage(
                         Component.translatable("message.koniava.block_selected", positionText),
