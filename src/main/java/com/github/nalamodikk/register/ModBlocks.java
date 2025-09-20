@@ -12,6 +12,10 @@ import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBl
 import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
 import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
 import com.github.nalamodikk.common.block.normal.ManaSoilBlock;
+import com.github.nalamodikk.common.block.ritual.ManaPylonBlock;
+import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.ritual.RuneStoneBlock;
+import com.github.nalamodikk.common.block.ritual.RuneType;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -84,13 +88,17 @@ public class ModBlocks {
                     .lightLevel((state) -> 3)  // 比純土壤亮一點
             ));
 
-    // === 🔮 新增：魔力注入機 ===
+    /**
+     * 魔力注入機
+     */
     public static final DeferredBlock<ManaInfuserBlock> MANA_INFUSER = registerBlock("mana_infuser",
             () -> new ManaInfuserBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
                     .strength(3.5f).sound(SoundType.METAL).lightLevel(state ->
-                            state.getValue(ManaInfuserBlock.WORKING) ? 7 : 0))); // 工作時發光
+                            state.getValue(ManaInfuserBlock.WORKING) ? 7 : 0)));
 
-    // === 魔法儀式系統 ===
+    /**
+     * 魔法儀式系統
+     */
     public static final DeferredBlock<Block> RITUAL_CORE = registerBlock("ritual_core",
             () -> new RitualCoreBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
                     .strength(4.0f).requiresCorrectToolForDrops().noOcclusion()));
@@ -98,6 +106,33 @@ public class ModBlocks {
     public static final DeferredBlock<Block> ARCANE_PEDESTAL = registerBlock("arcane_pedestal",
             () -> new ArcanePedestalBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
                     .strength(2.5f).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final DeferredBlock<Block> MANA_PYLON = registerBlock("mana_pylon",
+            () -> new ManaPylonBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(3.0f).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final DeferredBlock<Block> CHALK_GLYPH = registerBlock("chalk_glyph",
+            () -> new ChalkGlyphBlock(BlockBehaviour.Properties.of().mapColor(MapColor.NONE)
+                    .strength(0.1f).noCollission().noOcclusion()));
+
+    /**
+     * 符文石系統
+     */
+    public static final DeferredBlock<Block> RUNE_STONE_EFFICIENCY = registerBlock("rune_stone_efficiency",
+            () -> new RuneStoneBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(2.0f).requiresCorrectToolForDrops(), RuneType.EFFICIENCY));
+
+    public static final DeferredBlock<Block> RUNE_STONE_CELERITY = registerBlock("rune_stone_celerity",
+            () -> new RuneStoneBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(2.0f).requiresCorrectToolForDrops(), RuneType.CELERITY));
+
+    public static final DeferredBlock<Block> RUNE_STONE_STABILITY = registerBlock("rune_stone_stability",
+            () -> new RuneStoneBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(2.0f).requiresCorrectToolForDrops(), RuneType.STABILITY));
+
+    public static final DeferredBlock<Block> RUNE_STONE_AUGMENTATION = registerBlock("rune_stone_augmentation",
+            () -> new RuneStoneBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)
+                    .strength(2.0f).requiresCorrectToolForDrops(), RuneType.AUGMENTATION));
 
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {

@@ -6,8 +6,11 @@ import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ManaPylonBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
 import net.minecraft.core.registries.Registries;
-import com.github.nalamodikk.common.block.blockentity.arcanematrix.arcanepedestal.ArcanePedestalBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -53,6 +56,19 @@ public class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("ritual_core", () ->
                     BlockEntityType.Builder.of(RitualCoreBlockEntity::new,
                             ModBlocks.RITUAL_CORE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<ManaPylonBlockEntity>> MANA_PYLON_BE =
+            BLOCK_ENTITY_TYPES.register("mana_pylon", () ->
+                    BlockEntityType.Builder.of(ManaPylonBlockEntity::new,
+                            ModBlocks.MANA_PYLON.get()).build(null));
+
+    public static final Supplier<BlockEntityType<RuneStoneBlockEntity>> RUNE_STONE_BE =
+            BLOCK_ENTITY_TYPES.register("rune_stone", () ->
+                    BlockEntityType.Builder.of(RuneStoneBlockEntity::new,
+                            ModBlocks.RUNE_STONE_EFFICIENCY.get(),
+                            ModBlocks.RUNE_STONE_CELERITY.get(),
+                            ModBlocks.RUNE_STONE_STABILITY.get(),
+                            ModBlocks.RUNE_STONE_AUGMENTATION.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->

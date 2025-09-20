@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.blockentity.arcanematrix.ritualcore;
 
+import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.sounds.SoundSource;
@@ -52,7 +52,7 @@ public class RitualCoreBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -62,9 +62,9 @@ public class RitualCoreBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
 
-        if (player.getItemInHand(hand).getItem() == ModItems.RESONANT_CRYSTAL.get()) {
+        if (player.getMainHandItem().getItem() == ModItems.RESONANT_CRYSTAL.get()) {
             if (!ritualCoreBE.isRitualActive()) {
-                player.getItemInHand(hand).shrink(1);
+                player.getMainHandItem().shrink(1);
                 ritualCoreBE.startRitual();
                 level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0f, 1.0f);
                 return InteractionResult.CONSUME;

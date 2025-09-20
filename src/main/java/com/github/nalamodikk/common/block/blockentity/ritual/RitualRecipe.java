@@ -1,8 +1,14 @@
 package com.github.nalamodikk.common.block.blockentity.ritual;
 
 import com.github.nalamodikk.register.ModRecipes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -14,6 +20,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 儀式配方 - 定義儀式的所有要求和產出
@@ -155,17 +162,124 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
      */
     public enum RitualTier {
         BASIC(1, "基礎"),
-        INTERMEDIATE(2, "中級"), 
+        INTERMEDIATE(2, "中級"),
         ADVANCED(3, "高級"),
         MASTER(4, "大師"),
         FORBIDDEN(5, "禁忌");
-        
+
         public final int level;
         public final String displayName;
-        
+
         RitualTier(int level, String displayName) {
             this.level = level;
             this.displayName = displayName;
+        }
+    }
+
+    /**
+     * 儀式配方序列化器
+     */
+    public static class Serializer implements RecipeSerializer<RitualRecipe> {
+
+        private static final MapCodec<RitualRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(
+                ResourceLocation.CODEC.fieldOf("id").forGetter(RitualRecipe::getId),
+                Codec.STRING.fieldOf("name").forGetter(RitualRecipe::getName),
+                Codec.STRING.xmap(
+                    name -> RitualTier.valueOf(name.toUpperCase()),
+                    tier -> tier.name().toLowerCase()
+                ).fieldOf("tier").forGetter(RitualRecipe::getTier),
+                Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").forGetter(recipe -> recipe.getIngredients().stream().toList()),
+                ItemStack.CODEC.fieldOf("result").forGetter(recipe -> recipe.getResultItem(null)),
+                ItemStack.CODEC.listOf().optionalFieldOf("additional_results", List.of()).forGetter(RitualRecipe::getAdditionalResults),
+                Codec.INT.fieldOf("mana_cost").forGetter(RitualRecipe::getManaCost),
+                Codec.INT.fieldOf("ritual_time").forGetter(RitualRecipe::getRitualTime),
+                Codec.FLOAT.optionalFieldOf("failure_chance", 0.0f).forGetter(RitualRecipe::getFailureChance),
+                Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("structure_requirements", Map.of()).forGetter(RitualRecipe::getStructureRequirements)
+            ).apply(instance, (id, name, tier, ingredients, result, additionalResults, manaCost, ritualTime, failureChance, structureRequirements) -> {
+                NonNullList<Ingredient> nonNullIngredients = NonNullList.create();
+                nonNullIngredients.addAll(ingredients);
+                return new RitualRecipe(id, name, tier, nonNullIngredients, result, additionalResults, manaCost, ritualTime, failureChance, structureRequirements);
+            })
+        );
+
+        private static final StreamCodec<RegistryFriendlyByteBuf, RitualRecipe> STREAM_CODEC = StreamCodec.of(
+            Serializer::toNetwork,
+            Serializer::fromNetwork
+        );
+
+        @Override
+        public MapCodec<RitualRecipe> codec() {
+            return CODEC;
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, RitualRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
+
+        private static void toNetwork(RegistryFriendlyByteBuf buffer, RitualRecipe recipe) {
+            buffer.writeResourceLocation(recipe.getId());
+            buffer.writeUtf(recipe.getName());
+            buffer.writeEnum(recipe.getTier());
+
+            buffer.writeVarInt(recipe.getIngredients().size());
+            for (Ingredient ingredient : recipe.getIngredients()) {
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+            }
+
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.getResultItem(null));
+
+            buffer.writeVarInt(recipe.getAdditionalResults().size());
+            for (ItemStack stack : recipe.getAdditionalResults()) {
+                ItemStack.STREAM_CODEC.encode(buffer, stack);
+            }
+
+            buffer.writeVarInt(recipe.getManaCost());
+            buffer.writeVarInt(recipe.getRitualTime());
+            buffer.writeFloat(recipe.getFailureChance());
+
+            Map<String, Integer> structure = recipe.getStructureRequirements();
+            buffer.writeVarInt(structure.size());
+            for (Map.Entry<String, Integer> entry : structure.entrySet()) {
+                buffer.writeUtf(entry.getKey());
+                buffer.writeVarInt(entry.getValue());
+            }
+        }
+
+        private static RitualRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+            ResourceLocation id = buffer.readResourceLocation();
+            String name = buffer.readUtf();
+            RitualTier tier = buffer.readEnum(RitualTier.class);
+
+            int ingredientCount = buffer.readVarInt();
+            NonNullList<Ingredient> ingredients = NonNullList.create();
+            for (int i = 0; i < ingredientCount; i++) {
+                ingredients.add(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
+            }
+
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+
+            int additionalCount = buffer.readVarInt();
+            List<ItemStack> additionalResults = new java.util.ArrayList<>();
+            for (int i = 0; i < additionalCount; i++) {
+                additionalResults.add(ItemStack.STREAM_CODEC.decode(buffer));
+            }
+
+            int manaCost = buffer.readVarInt();
+            int ritualTime = buffer.readVarInt();
+            float failureChance = buffer.readFloat();
+
+            int structureCount = buffer.readVarInt();
+            Map<String, Integer> structureRequirements = new HashMap<>();
+            for (int i = 0; i < structureCount; i++) {
+                String key = buffer.readUtf();
+                int value = buffer.readVarInt();
+                structureRequirements.put(key, value);
+            }
+
+            return new RitualRecipe(id, name, tier, ingredients, result, additionalResults,
+                                  manaCost, ritualTime, failureChance, structureRequirements);
         }
     }
 }

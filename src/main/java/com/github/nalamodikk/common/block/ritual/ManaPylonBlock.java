@@ -92,7 +92,7 @@ public class ManaPylonBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.MANA_PYLON.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.MANA_PYLON_BE.get(),
                 (world, pos, blockState, blockEntity) -> blockEntity.tick());
     }
 

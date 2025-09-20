@@ -26,6 +26,15 @@ public class NaraInitScreen extends Screen {
     ResourceLocation buttonTexture = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/nara_button.png");
     private int ticksElapsed = 0;
 
+    // 優化：快取渲染相關數據
+    private int cachedCenterX = 0;
+    private int cachedCenterY = 0;
+    private int cachedBgX = 0;
+    private int cachedBgY = 0;
+    private boolean layoutCached = false;
+    private static final int BG_WIDTH = 256;
+    private static final int BG_HEIGHT = 190;
+
     private final Component title = Component.translatable("screen.koniava.nara.title");
     private final Component[] lines = new Component[] {
             Component.translatable("screen.koniava.nara.line1"),
@@ -106,16 +115,30 @@ public class NaraInitScreen extends Screen {
                 .getTexture(overlayTexture)
                 .setFilter(false, false); // 關閉 linear filtering
 
+        // 優化：計算並快取佈局數據
+        updateLayoutCache();
+    }
+
+    // 優化：快取佈局計算
+    private void updateLayoutCache() {
+        cachedCenterX = this.width / 2;
+        cachedCenterY = this.height / 2;
+        cachedBgX = (this.width - BG_WIDTH) / 2;
+        cachedBgY = (this.height - BG_HEIGHT) / 2;
+        layoutCached = true;
     }
 
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // ❌ 不要呼叫 super，不要呼叫 renderBlurredBackground
+        // 優化：高效的背景渲染
+        guiGraphics.fill(0, 0, this.width, this.height, 0xFF000000);
     }
 
     @Override
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
+        // 優化：重新計算快取
+        updateLayoutCache();
         this.rebuildWidgets();
         this.initButtons();
         // 🔁 重建 UI 按鈕
@@ -124,26 +147,29 @@ public class NaraInitScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // 優化：檢查快取是否有效
+        if (!layoutCached) {
+            updateLayoutCache();
+        }
+
         graphics.setColor(1F, 1F, 1F, 1F); // 保證透明正常
 
-        // 背景遮罩
-        graphics.fill(0, 0, this.width, this.height, 0xFF000000); // 自己畫純黑遮罩
+        // 優化：使用更高效的背景渲染
+        renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        // 背景貼圖
-        int bgWidth = 256;
-        int bgHeight = 190;
-        int bgX = (this.width - bgWidth) / 2;
-        int bgY = (this.height - bgHeight) / 2;
+        // 優化：使用快取的背景位置
+        graphics.blit(overlayTexture, cachedBgX, cachedBgY, 0, 0, BG_WIDTH, BG_HEIGHT, BG_WIDTH, BG_HEIGHT);
 
-        graphics.blit(overlayTexture, bgX, bgY, 0, 0, bgWidth, bgHeight, bgWidth, bgHeight);
+        // 優化：快取文字起始位置
+        int startY = cachedCenterY - 50;
 
-        // 文字
-        int centerX = this.width / 2;
-        int startY = this.height / 2 - 50;
+        graphics.drawCenteredString(this.font, title, cachedCenterX, startY, 0xFFFFFF);
 
-        graphics.drawCenteredString(this.font, title, centerX, startY, 0xFFFFFF);
-        for (int i = 0; i < visibleLines; i++) {
-            graphics.drawCenteredString(this.font, lines[i], centerX, startY + 20 + i * 12, 0xAAAAAA);
+        // 優化：只渲染可見的文字行，減少繪製調用
+        if (visibleLines > 0) {
+            for (int i = 0; i < visibleLines; i++) {
+                graphics.drawCenteredString(this.font, lines[i], cachedCenterX, startY + 20 + i * 12, 0xAAAAAA);
+            }
         }
 
         super.render(graphics, mouseX, mouseY, partialTick);

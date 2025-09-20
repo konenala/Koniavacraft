@@ -99,11 +99,11 @@ public class ModCapabilities {
 
         // === 🔮 儀式系統能力註冊 ===
         // 儀式核心 - 魔力能力
-        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.RITUAL_CORE.get(), 
+        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.RITUAL_CORE_BE.get(),
                 (blockEntity, side) -> blockEntity.getManaStorage());
 
-        // 魔力塔 - 魔力能力  
-        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_PYLON.get(),
+        // 魔力塔 - 魔力能力
+        event.registerBlockEntity(ModCapabilities.MANA, ModBlockEntities.MANA_PYLON_BE.get(),
                 (blockEntity, side) -> blockEntity.getManaStorage());
         // 實體能力
 //        event.registerEntity(ModCapability.NARA,EntityType.PLAYER, (player, ctx) -> new NaraData());

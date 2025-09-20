@@ -1,6 +1,7 @@
 package com.github.nalamodikk.common.block.blockentity.ritual;
 
 import com.github.nalamodikk.common.block.ritual.RuneStoneBlock;
+import com.github.nalamodikk.common.block.ritual.RuneType;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class RuneStoneBlockEntity extends BlockEntity {
     
-    private final RuneStoneBlock.RuneType runeType;
+    private final RuneType runeType;
     private boolean isActive = false; // 是否正在參與儀式
     private float activationLevel = 0.0f; // 激活程度 (0.0 - 1.0)
     
@@ -31,8 +32,18 @@ public class RuneStoneBlockEntity extends BlockEntity {
     private int nearbyRuneCount = 0; // 附近同類符文石數量
     private boolean hasSynergyBonus = false; // 是否有協同獎勵
     
-    public RuneStoneBlockEntity(BlockPos pos, BlockState blockState, RuneStoneBlock.RuneType runeType) {
-        super(ModBlockEntities.RUNE_STONE.get(), pos, blockState);
+    public RuneStoneBlockEntity(BlockPos pos, BlockState blockState) {
+        super(ModBlockEntities.RUNE_STONE_BE.get(), pos, blockState);
+        // 從方塊狀態中獲取RuneType
+        if (blockState.getBlock() instanceof RuneStoneBlock runeBlock) {
+            this.runeType = runeBlock.getRuneType();
+        } else {
+            this.runeType = RuneType.EFFICIENCY; // 默認類型
+        }
+    }
+
+    public RuneStoneBlockEntity(BlockPos pos, BlockState blockState, RuneType runeType) {
+        super(ModBlockEntities.RUNE_STONE_BE.get(), pos, blockState);
         this.runeType = runeType;
     }
 
@@ -154,7 +165,7 @@ public class RuneStoneBlockEntity extends BlockEntity {
         switch (runeType) {
             case EFFICIENCY:
                 // 效率符文與穩定符文相鄰時獲得協同效應
-                return hasAdjacentRuneType(RuneStoneBlock.RuneType.STABILITY);
+                return hasAdjacentRuneType(RuneType.STABILITY);
                 
             case CELERITY:
                 // 迅捷符文在魔力塔正上方時獲得協同效應
@@ -176,7 +187,7 @@ public class RuneStoneBlockEntity extends BlockEntity {
     /**
      * 檢查相鄰是否有特定類型的符文石
      */
-    private boolean hasAdjacentRuneType(RuneStoneBlock.RuneType targetType) {
+    private boolean hasAdjacentRuneType(RuneType targetType) {
         for (var direction : net.minecraft.core.Direction.values()) {
             BlockPos adjacentPos = worldPosition.relative(direction);
             BlockEntity be = level.getBlockEntity(adjacentPos);
@@ -233,7 +244,7 @@ public class RuneStoneBlockEntity extends BlockEntity {
     }
 
     // Getters
-    public RuneStoneBlock.RuneType getRuneType() { return runeType; }
+    public RuneType getRuneType() { return runeType; }
     public boolean isActive() { return isActive; }
     public float getActivationLevel() { return activationLevel; }
     public float getGlowIntensity() { return glowIntensity; }

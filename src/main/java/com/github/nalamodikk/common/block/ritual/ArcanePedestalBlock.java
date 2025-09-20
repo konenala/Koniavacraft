@@ -88,7 +88,7 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.ARCANE_PEDESTAL.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.ARCANE_PEDESTAL_BE.get(),
                 (world, pos, blockState, blockEntity) -> blockEntity.tick());
     }
 

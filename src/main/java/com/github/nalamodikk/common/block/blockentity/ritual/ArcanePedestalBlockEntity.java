@@ -28,7 +28,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
     private int tickCount = 0;
     
     public ArcanePedestalBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.ARCANE_PEDESTAL.get(), pos, blockState);
+        super(ModBlockEntities.ARCANE_PEDESTAL_BE.get(), pos, blockState);
     }
 
     public void tick() {

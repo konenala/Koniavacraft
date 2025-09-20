@@ -43,7 +43,7 @@ public class RitualCoreBlockEntity extends BlockEntity {
     private int currentManaCost = 0;
     
     public RitualCoreBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.RITUAL_CORE.get(), pos, blockState);
+        super(ModBlockEntities.RITUAL_CORE_BE.get(), pos, blockState);
         this.manaStorage = new ManaStorage(1000000); // 1M 魔力容量
     }
 
@@ -238,6 +238,29 @@ public class RitualCoreBlockEntity extends BlockEntity {
             } else {
                 resultItems.set(i, ItemStack.EMPTY);
             }
+        }
+    }
+
+    /**
+     * 靜態Tick方法（供方塊調用）
+     */
+    public static void serverTick(Level level, BlockPos pos, BlockState state, RitualCoreBlockEntity blockEntity) {
+        blockEntity.tick();
+    }
+
+    /**
+     * 檢查儀式是否活躍
+     */
+    public boolean isRitualActive() {
+        return state == RitualState.RUNNING || state == RitualState.PREPARING;
+    }
+
+    /**
+     * 開始儀式（簡化版本）
+     */
+    public void startRitual() {
+        if (state == RitualState.IDLE) {
+            setState(RitualState.PREPARING);
         }
     }
 

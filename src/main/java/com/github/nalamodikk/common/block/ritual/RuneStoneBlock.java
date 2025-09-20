@@ -93,7 +93,7 @@ public class RuneStoneBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.RUNE_STONE.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.RUNE_STONE_BE.get(),
                 (world, pos, blockState, blockEntity) -> blockEntity.tick());
     }
 
@@ -101,13 +101,4 @@ public class RuneStoneBlock extends BaseEntityBlock {
         return runeType;
     }
 
-    /**
-     * 符文石類型枚舉
-     */
-    public enum RuneType {
-        EFFICIENCY,    // 效率符文 - 降低魔力消耗
-        CELERITY,      // 迅捷符文 - 提升速度
-        STABILITY,     // 穩定符文 - 降低失敗風險
-        AUGMENTATION   // 增幅符文 - 增強產出
-    }
 }

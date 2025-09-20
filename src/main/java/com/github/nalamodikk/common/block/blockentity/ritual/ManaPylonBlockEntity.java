@@ -43,7 +43,7 @@ public class ManaPylonBlockEntity extends BlockEntity {
     private int tickCount = 0;
     
     public ManaPylonBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.MANA_PYLON.get(), pos, blockState);
+        super(ModBlockEntities.MANA_PYLON_BE.get(), pos, blockState);
         this.manaStorage = new ManaStorage(MAX_CAPACITY);
         this.manaCapabilityCaches = new ArrayList<>();
         

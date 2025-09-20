@@ -20,8 +20,8 @@ public class ModRenderLayers {
         event.registerBlockEntityRenderer(ModBlockEntities.MANA_GENERATOR_BE.get(), ManaGeneratorRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SOLAR_MANA_COLLECTOR_BE.get(), SolarCollectorRenderer::new);
         // 儀式系統渲染器
-        event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_PEDESTAL.get(), ArcanePedestalRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.MANA_PYLON.get(), ManaPylonRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_PEDESTAL_BE.get(), ArcanePedestalRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.MANA_PYLON_BE.get(), ManaPylonRenderer::new);
 //        event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_CONDUIT_BE.get(), ArcaneConduitBlockEntityRenderer::new);
     }
 

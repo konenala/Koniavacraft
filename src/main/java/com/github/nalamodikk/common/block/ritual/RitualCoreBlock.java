@@ -88,7 +88,7 @@ public class RitualCoreBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.RITUAL_CORE.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.RITUAL_CORE_BE.get(),
                 (world, pos, blockState, blockEntity) -> blockEntity.tick());
     }
 
