@@ -1,9 +1,9 @@
 package com.github.nalamodikk.register;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.item.ResonantCrystalItem;
 import com.github.nalamodikk.common.item.UpgradeItem;
 import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
+import com.github.nalamodikk.common.item.ritual.ResonantCrystalItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.item.ritual.RitualistChalkItem;
 import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
