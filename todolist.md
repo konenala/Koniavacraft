@@ -1,0 +1,24 @@
+# Todo List
+
+- [x] 文件同步：更新 spec.md 與 api.md 加入語系維護流程描述（負責：Codex）
+- [x] 語系比對：檢查 `assets/koniava/lang/en_us.json` 與 `zh_tw.json` 缺漏（負責：Codex）－未發現缺漏鍵值
+- [x] 語系補齊：將缺失鍵值翻譯成繁體中文並寫入 `zh_tw.json`（負責：Codex）－未新增鍵值，已修正重複逗號避免 JSON 解析錯誤
+- [x] 圖片盤點：整理 `個人開發者小記錄/ritual` 目錄內資產（負責：Codex）－共計 48 張 PNG（chalk_07~09、sprite_00~45）
+- [x] 材質配對：依照 `個人開發者小記錄/代辦清單/儀式系統材質製作清單.md` 描述分類（負責：Codex）－對應完成並標記缺漏/重複
+
+- [x] 材質重命名：將儀式物品與方塊預覽檔對應至規格檔名（負責：Codex）－已依規格命名並將重複檔標記 `_dup_`
+- [x] 粉筆符號整理：依顏色與圖案命名 glyph 素材（負責：Codex）－完成 6 色 36+4 預覽命名，保留 alt/缺口記錄
+
+
+- [x] 資產應用檢查：確認註冊物品/方塊是否已有模型與材質（負責：Codex）－缺失詳列於本次報告
+- [x] 數據生成覆蓋：檢查 data/models/recipes 是否已有對應（負責：Codex）－目前未見對應 datagen 輸出
+
+- [x] 儀式素材整合：將 `個人開發者小記錄/ritual` 繪製檔搬入 `assets/koniava/textures` 並移除 `_dup_`（負責：Codex）
+- [x] 模型補齊：建立 `models/block`, `models/item`, `blockstates` 缺漏檔（負責：Codex）－透過 datagen provider 新增粉筆/符文配置
+- [x] 執行 runData：使用 `./gradlew runData` 產出資料並檢查輸出（負責：Codex）－成功執行，生成粉筆戰利品表，出現白色圓形紋理缺失警告待後續處理
+
+- [x] 補齊粉筆符文戰利品表：新增 `data/koniava/loot_tables/blocks/chalk_glyph.json` 以解除 runData 失敗（負責：Codex，透過 LootTable Provider 補齊）
+
+- [ ] 補齊粉筆白色圓形紋理：新增 `assets/koniava/textures/block/chalk_glyph_white_circle.png` 以消除 runData 警告（待指派）
+
+
