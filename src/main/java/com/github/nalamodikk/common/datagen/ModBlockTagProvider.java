@@ -19,9 +19,6 @@ public class ModBlockTagProvider extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
-//                .add(ModBlocks.BISMUTH_BLOCK.get())
-//                .add(ModBlocks.BISMUTH_ORE.get())
-//                .add(ModBlocks.BISMUTH_LAMP.get())
                 .add(ModBlocks.MAGIC_ORE.get())
                 .add(ModBlocks.DEEPSLATE_MAGIC_ORE.get())
                 .add(ModBlocks.MANA_BLOCK.get())
@@ -29,7 +26,14 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 .add(ModBlocks.MANA_GENERATOR.get())
                 .add(ModBlocks.SOLAR_MANA_COLLECTOR.get())
                 .add(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get())
-                .add(ModBlocks.MANA_INFUSER.get());
+                .add(ModBlocks.MANA_INFUSER.get())
+                .add(ModBlocks.RITUAL_CORE.get())
+                .add(ModBlocks.ARCANE_PEDESTAL.get())
+                .add(ModBlocks.MANA_PYLON.get())
+                .add(ModBlocks.RUNE_STONE_EFFICIENCY.get())
+                .add(ModBlocks.RUNE_STONE_CELERITY.get())
+                .add(ModBlocks.RUNE_STONE_STABILITY.get())
+                .add(ModBlocks.RUNE_STONE_AUGMENTATION.get());
 
 
 
@@ -38,7 +42,20 @@ public class ModBlockTagProvider extends BlockTagsProvider {
         tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.MANA_CRAFTING_TABLE_BLOCK.get());
 
+        tag(BlockTags.NEEDS_STONE_TOOL)
+                .add(ModBlocks.MANA_BLOCK.get())
+                .add(ModBlocks.MANA_GENERATOR.get())
+                .add(ModBlocks.SOLAR_MANA_COLLECTOR.get())
+                .add(ModBlocks.RITUAL_CORE.get())
+                .add(ModBlocks.ARCANE_PEDESTAL.get())
+                .add(ModBlocks.MANA_PYLON.get())
+                .add(ModBlocks.RUNE_STONE_EFFICIENCY.get())
+                .add(ModBlocks.RUNE_STONE_CELERITY.get())
+                .add(ModBlocks.RUNE_STONE_STABILITY.get())
+                .add(ModBlocks.RUNE_STONE_AUGMENTATION.get());
+
         tag(BlockTags.NEEDS_IRON_TOOL)
+                .add(ModBlocks.MAGIC_ORE.get())
                 .add(ModBlocks.DEEPSLATE_MAGIC_ORE.get());
 
         this.tag(BlockTags.MINEABLE_WITH_SHOVEL)

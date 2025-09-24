@@ -1,7 +1,9 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
 import com.github.nalamodikk.register.ModBlocks;
+
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
@@ -11,14 +13,32 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.neoforged.neoforge.client.model.generators.*;
+
+import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
+import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
+
+import net.neoforged.neoforge.client.model.generators.ModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.client.model.generators.ModelProvider;
+import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
+import net.neoforged.neoforge.client.model.generators.VariantBlockStateBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+
 public class ModBlockStateProvider extends BlockStateProvider {
+
+    private final Map<String, ModelFile> chalkGlyphModelCache = new HashMap<>();
+    private final ExistingFileHelper existingFileHelper;
 
     public ModBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
         super(output, KoniavacraftMod.MOD_ID, exFileHelper);
+        this.existingFileHelper = exFileHelper;
     }
 
     @Override
@@ -41,16 +61,12 @@ public class ModBlockStateProvider extends BlockStateProvider {
         createManaModelWithFacing(ModBlocks.MANA_INFUSER);
 
         // === 魔法儀式系統 ===
-        // 儀式核心 (Ritual Core) - 簡單方塊模型
         createManaModelWithFacing(ModBlocks.ARCANE_PEDESTAL);
-        createManaModelWithFacingAndWorking(ModBlocks.RITUAL_CORE);
+        createManaModelWithFacing(ModBlocks.MANA_PYLON);
+        createManaModel(ModBlocks.RITUAL_CORE);
 
-
-        // 奧術基座 (Arcane Pedestal) - 自定義模型
-        // 注意：這裡假設您會提供 'arcane_pedestal.json' 模型文件，
-        // 並且該文件定義了基座的複雜形狀和紋理。
-        // simpleBlockWithItem 會自動生成方塊狀態和物品模型。
-
+        generateRuneStoneStates();
+        createChalkGlyphStates();
     }
 
     // ===========================================
@@ -85,6 +101,90 @@ public class ModBlockStateProvider extends BlockStateProvider {
     // ===========================================
     // 🧪 特殊方塊模型
     // ===========================================
+    private void generateRuneStoneStates() {
+        blockWithItem(ModBlocks.RUNE_STONE_EFFICIENCY);
+        blockWithItem(ModBlocks.RUNE_STONE_CELERITY);
+        blockWithItem(ModBlocks.RUNE_STONE_STABILITY);
+        blockWithItem(ModBlocks.RUNE_STONE_AUGMENTATION);
+    }
+
+    private void createChalkGlyphStates() {
+        Block glyphBlock = ModBlocks.CHALK_GLYPH.get();
+        ModelFile defaultModel = getChalkGlyphModel("chalk_glyph_white_circle", resolveGlyphTexture("white", "circle"));
+
+        VariantBlockStateBuilder builder = getVariantBuilder(glyphBlock);
+        for (ChalkGlyphBlock.ChalkColor color : ChalkGlyphBlock.ChalkColor.values()) {
+            String colorName = color.getSerializedName();
+            for (ChalkGlyphBlock.GlyphPattern pattern : ChalkGlyphBlock.GlyphPattern.values()) {
+                String patternName = pattern.getSerializedName();
+                ResourceLocation texture = resolveGlyphTexture(colorName, patternName);
+                String modelName = "chalk_glyph_" + colorName + "_" + patternName;
+                ModelFile model = getChalkGlyphModel(modelName, texture);
+
+                builder.partialState()
+                        .with(ChalkGlyphBlock.COLOR, color)
+                        .with(ChalkGlyphBlock.PATTERN, pattern)
+                        .modelForState()
+                        .modelFile(model)
+                        .addModel();
+            }
+        }
+
+        simpleBlockItem(glyphBlock, defaultModel);
+    }
+
+    private ModelFile getChalkGlyphModel(String modelName, ResourceLocation texture) {
+        return chalkGlyphModelCache.computeIfAbsent(modelName, key -> {
+            BlockModelBuilder builder = models().getBuilder(key)
+                    .parent(models().getExistingFile(mcLoc("block/block")))
+                    .texture("particle", texture)
+                    .texture("glyph", texture)
+                    .renderType("minecraft:cutout");
+
+            builder.element()
+                    .from(0.0F, 0.0F, 0.0F)
+                    .to(16.0F, 0.5F, 16.0F)
+                    .shade(false)
+                    .face(Direction.UP).texture("#glyph").uvs(0, 0, 16, 16).cullface(Direction.UP).end()
+                    .face(Direction.DOWN).texture("#glyph").uvs(0, 0, 16, 16).cullface(Direction.DOWN).end()
+                    .face(Direction.NORTH).texture("#glyph").uvs(0, 15.5F, 16, 16).cullface(Direction.NORTH).end()
+                    .face(Direction.SOUTH).texture("#glyph").uvs(0, 15.5F, 16, 16).cullface(Direction.SOUTH).end()
+                    .face(Direction.WEST).texture("#glyph").uvs(0, 15.5F, 16, 16).cullface(Direction.WEST).end()
+                    .face(Direction.EAST).texture("#glyph").uvs(0, 15.5F, 16, 16).cullface(Direction.EAST).end()
+                    .end();
+
+            return builder;
+        });
+    }
+
+    private ResourceLocation resolveGlyphTexture(String color, String pattern) {
+        ResourceLocation target = modLoc("block/chalk_glyph_" + color + "_" + pattern);
+        if (textureFileExists(target)) {
+            return target;
+        }
+
+        ResourceLocation colorFallback = modLoc("block/chalk_glyph_" + color + "_circle");
+        if (!"circle".equals(pattern) && textureFileExists(colorFallback)) {
+            KoniavacraftMod.LOGGER.warn("缺少粉筆紋理 {}_{}, 使用同色圓形作為替代", color, pattern);
+            return colorFallback;
+        }
+
+        ResourceLocation defaultFallback = modLoc("block/chalk_glyph_white_circle");
+        if (!textureFileExists(defaultFallback)) {
+            KoniavacraftMod.LOGGER.warn("缺少白色圓形粉筆紋理，請補齊 block/chalk_glyph_white_circle.png");
+        }
+        return defaultFallback;
+    }
+
+    private boolean textureFileExists(ResourceLocation texture) {
+        if (!texture.getNamespace().equals(KoniavacraftMod.MOD_ID)) {
+            return existingFileHelper.exists(texture, ModelProvider.TEXTURE);
+        }
+        Path path = Path.of("src/main/resources/assets", texture.getNamespace(), "textures", texture.getPath() + ".png");
+        return Files.exists(path);
+    }
+
+
 
     /**
      * 🔧 創建基礎魔力方塊模型（無朝向屬性）
@@ -104,6 +204,12 @@ public class ModBlockStateProvider extends BlockStateProvider {
     private void createManaModelWithFacing(DeferredBlock<?> blockHolder) {
         Block block = blockHolder.get();
         String blockName = blockHolder.getId().getPath();
+        if (!block.defaultBlockState().hasProperty(HorizontalDirectionalBlock.FACING)) {
+            createManaModel(blockHolder);
+            return;
+        }
+
+
 
         getVariantBuilder(block)
                 // 北面 (默認方向)

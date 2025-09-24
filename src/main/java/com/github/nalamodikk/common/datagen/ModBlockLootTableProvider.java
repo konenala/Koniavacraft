@@ -106,6 +106,9 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.RUNE_STONE_STABILITY.get());
 
 
+        dropSelf(ModBlocks.CHALK_GLYPH.get());
+
+
         // ⛏️ 魔法礦 - 複雜掉落邏輯
         this.add(ModBlocks.MAGIC_ORE.get(), block ->
                 LootTableUtils.createOreDropsWithBonusAndSilkTouch(
