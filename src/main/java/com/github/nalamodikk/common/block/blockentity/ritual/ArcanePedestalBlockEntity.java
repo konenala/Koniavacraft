@@ -3,183 +3,275 @@ package com.github.nalamodikk.common.block.blockentity.ritual;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * 奧術基座方塊實體 - 儀式祭品展示台
- * 負責：
- * 1. 存儲單個祭品物品
- * 2. 提供物品渲染數據
- * 3. 參與儀式驗證
+ * 奧術基座（Arcane Pedestal）
+ * - 1 個物品槽：用於放置祭品
+ * - 旋轉角度與浮動幅度（供客戶端渲染）
+ * - 伺服端負責粒子與 Ritual Core 互動，客戶端負責動畫
  */
 public class ArcanePedestalBlockEntity extends BlockEntity {
-    
-    private ItemStack storedItem = ItemStack.EMPTY;
-    private boolean isConsumed = false; // 是否已被儀式消耗
-    
-    // 渲染相關
-    private float itemRotation = 0.0f;
-    private float itemHover = 0.0f;
-    private int tickCount = 0;
-    
-    public ArcanePedestalBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.ARCANE_PEDESTAL_BE.get(), pos, blockState);
+
+    private static final String TAG_ITEM = "Item";
+    private static final String TAG_SPIN = "Spin";
+    private static final String TAG_SPIN_SPEED = "SpinSpeed";
+    private static final String TAG_TICK_COUNT = "TickCount";
+    private static final String TAG_CONSUMED = "OfferingConsumed";
+
+    private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+
+    private float spin;           // 0..360f
+    private float spinSpeed = 2f; // 每 tick 角速度
+    private int tickCount;
+    private boolean offeringConsumed;
+
+    public ArcanePedestalBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.ARCANE_PEDESTAL_BE.get(), pos, state);
     }
 
-    public void tick() {
-        if (level == null) return;
-        
-        tickCount++;
-        
-        // 客戶端渲染動畫
-        if (level.isClientSide() && !storedItem.isEmpty()) {
-            // 旋轉動畫
-            itemRotation += 2.0f;
-            if (itemRotation >= 360.0f) {
-                itemRotation -= 360.0f;
+    // region 互動 API
+
+    /**
+     * 放置祭品（覆蓋原物），並同步客戶端。
+     */
+    public void setOffering(ItemStack stack) {
+        items.set(0, stack.copy());
+        offeringConsumed = false;
+        tickCount = 0;
+        spin = 0f;
+        setChangedAndSync();
+    }
+
+    /**
+     * 回傳目前祭品（可能為空）。
+     */
+    public ItemStack getOffering() {
+        return items.get(0);
+    }
+
+    /**
+     * 是否存在可供 Ritual Core 使用的祭品。
+     */
+    public boolean hasOffering() {
+        return !items.get(0).isEmpty();
+    }
+
+    /**
+     * 玩家嘗試放入祭品，回傳剩餘物品堆疊。
+     */
+    public ItemStack insertOffering(ItemStack stack) {
+        if (stack.isEmpty() || hasOffering()) {
+            return stack;
+        }
+        ItemStack copy = stack.copy();
+        ItemStack stored = copy.split(1);
+        setOffering(stored);
+        return copy;
+    }
+
+    /**
+     * 玩家取出祭品。
+     */
+    public ItemStack extractOffering() {
+        if (!hasOffering()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack result = items.get(0).copy();
+        items.set(0, ItemStack.EMPTY);
+        offeringConsumed = false;
+        tickCount = 0;
+        spin = 0f;
+        setChangedAndSync();
+        return result;
+    }
+
+    /**
+     * Ritual Core 消耗祭品時呼叫。
+     * @param count 欲消耗數量
+     * @return 實際消耗數量
+     */
+    public int consumeOffering(int count) {
+        ItemStack stack = items.get(0);
+        if (stack.isEmpty() || count <= 0) {
+            return 0;
+        }
+        int removed = Math.min(count, stack.getCount());
+        stack.shrink(removed);
+        if (stack.isEmpty()) {
+            items.set(0, ItemStack.EMPTY);
+            offeringConsumed = true;
+        }
+        setChangedAndSync();
+        return removed;
+    }
+
+    /**
+     * Ritual 失敗或重試時重置消耗狀態。
+     */
+    public void resetOfferingConsumption() {
+        if (offeringConsumed) {
+            offeringConsumed = false;
+            setChangedAndSync();
+        }
+    }
+
+    /**
+     * Ritual 中斷時掉落內容物。
+     */
+    public void dropContents() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        ItemStack stack = items.get(0);
+        if (!stack.isEmpty()) {
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, stack);
+            items.set(0, ItemStack.EMPTY);
+        }
+        offeringConsumed = false;
+        setChangedAndSync();
+    }
+
+    /**
+     * 供渲染器判斷祭品是否剛被消耗。
+     */
+    public boolean isOfferingConsumed() {
+        return offeringConsumed;
+    }
+
+    /**
+     * 調整旋轉速度（預留後端行為控制）。
+     */
+    public void setSpinSpeed(float speed) {
+        spinSpeed = Mth.clamp(speed, 0f, 20f);
+    }
+
+    // endregion
+
+    // region 渲染資料提供
+
+    public float getSpinForRender(float partialTick) {
+        return (spin + spinSpeed * partialTick) % 360f;
+    }
+
+    public float getHoverOffset(float partialTick) {
+        if (!hasOffering()) {
+            return 0f;
+        }
+        return (float) Math.sin((tickCount + partialTick) * 0.1f) * 0.1f;
+    }
+
+    // endregion
+
+    // region Tick
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, ArcanePedestalBlockEntity be) {
+        if (level.isClientSide) {
+            return;
+        }
+        be.tickCount++;
+
+        if (be.hasOffering() && level.getRandom().nextInt(10) == 0) {
+            double x = pos.getX() + 0.5 + (level.getRandom().nextDouble() - 0.5) * 0.4;
+            double y = pos.getY() + 1.1;
+            double z = pos.getZ() + 0.5 + (level.getRandom().nextDouble() - 0.5) * 0.4;
+            if (level instanceof ServerLevel server && level.getGameTime() % 100 == 0) {
+                server.sendParticles(
+                        ParticleTypes.ENCHANT,
+                        x, y, z,
+                        8,
+                        0.25, 0.25, 0.25,
+                        0.0
+                );
             }
-            
-            // 上下浮動動畫
-            itemHover = (float) Math.sin(tickCount * 0.1f) * 0.1f;
         }
-        
-        // 服務端邏輯
-        if (!level.isClientSide()) {
-            // 檢查是否需要參與儀式
-            checkForRitualParticipation();
-        }
+        // TODO: 與 Ritual Core 的同步邏輯將在儀式系統完成時補齊。
     }
 
-    /**
-     * 檢查是否需要參與儀式
-     */
-    private void checkForRitualParticipation() {
-        // TODO: 檢查附近的儀式核心，如果有正在進行的儀式，參與其中
-        // 這將在實現儀式邏輯時完善
-    }
-
-    /**
-     * 插入物品到基座
-     */
-    public ItemStack insertItem(ItemStack stack) {
-        if (storedItem.isEmpty() && !stack.isEmpty()) {
-            storedItem = stack.copy();
-            storedItem.setCount(1); // 基座只能存放一個物品
-            isConsumed = false;
-            setChanged();
-            
-            // 返回剩余物品
-            ItemStack remainder = stack.copy();
-            remainder.shrink(1);
-            return remainder.isEmpty() ? ItemStack.EMPTY : remainder;
+    public static void clientTick(Level level, BlockPos pos, BlockState state, ArcanePedestalBlockEntity be) {
+        if (!level.isClientSide) {
+            return;
         }
-        return stack; // 無法插入，返回原物品
-    }
-
-    /**
-     * 從基座提取物品
-     */
-    public ItemStack extractItem() {
-        if (!storedItem.isEmpty() && !isConsumed) {
-            ItemStack extracted = storedItem.copy();
-            storedItem = ItemStack.EMPTY;
-            isConsumed = false;
-            setChanged();
-            return extracted;
-        }
-        return ItemStack.EMPTY;
-    }
-
-    /**
-     * 消耗基座上的物品（用於儀式）
-     */
-    public ItemStack consumeItem() {
-        if (!storedItem.isEmpty() && !isConsumed) {
-            ItemStack consumed = storedItem.copy();
-            isConsumed = true;
-            setChanged();
-            return consumed;
-        }
-        return ItemStack.EMPTY;
-    }
-
-    /**
-     * 重置消耗狀態（儀式失敗時）
-     */
-    public void resetConsumption() {
-        if (isConsumed) {
-            isConsumed = false;
-            setChanged();
+        be.tickCount++;
+        if (be.hasOffering()) {
+            be.spin = (be.spin + be.spinSpeed) % 360f;
+        } else {
+            be.spin = 0f;
         }
     }
 
-    /**
-     * 獲取存儲的物品（不消耗）
-     */
-    public ItemStack getStoredItem() {
-        return storedItem.copy();
-    }
+    // endregion
 
-    /**
-     * 檢查是否有可用的物品
-     */
-    public boolean hasAvailableItem() {
-        return !storedItem.isEmpty() && !isConsumed;
-    }
-
-    /**
-     * 檢查是否包含特定物品
-     */
-    public boolean containsItem(ItemStack compareStack) {
-        return !storedItem.isEmpty() && 
-               ItemStack.isSameItem(storedItem, compareStack);
-    }
-
-    /**
-     * 掉落內容物
-     */
-    public void dropContents(Level level, BlockPos pos) {
-        if (!storedItem.isEmpty() && !isConsumed) {
-            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), storedItem);
-        }
-        storedItem = ItemStack.EMPTY;
-        isConsumed = false;
-    }
-
-    // 渲染相關 Getters
-    public float getItemRotation() { return itemRotation; }
-    public float getItemHover() { return itemHover; }
-    public boolean isItemConsumed() { return isConsumed; }
+    // region NBT 同步
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        
-        if (!storedItem.isEmpty()) {
-            tag.put("StoredItem", storedItem.saveOptional(registries));
-        }
-        tag.putBoolean("IsConsumed", isConsumed);
-        tag.putFloat("ItemRotation", itemRotation);
-        tag.putFloat("ItemHover", itemHover);
+
+        CompoundTag itemTag = new CompoundTag();
+        items.get(0).save(registries, itemTag);
+        tag.put(TAG_ITEM, itemTag);
+
+        tag.putFloat(TAG_SPIN, spin);
+        tag.putFloat(TAG_SPIN_SPEED, spinSpeed);
+        tag.putInt(TAG_TICK_COUNT, tickCount);
+        tag.putBoolean(TAG_CONSUMED, offeringConsumed);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        
-        if (tag.contains("StoredItem")) {
-            storedItem = ItemStack.parseOptional(registries, tag.getCompound("StoredItem"));
+
+        if (tag.contains(TAG_ITEM)) {
+            ItemStack stack = ItemStack.parse(registries, tag.getCompound(TAG_ITEM)).orElse(ItemStack.EMPTY);
+            items.set(0, stack);
         } else {
-            storedItem = ItemStack.EMPTY;
+            items.set(0, ItemStack.EMPTY);
         }
-        
-        isConsumed = tag.getBoolean("IsConsumed");
-        itemRotation = tag.getFloat("ItemRotation");
-        itemHover = tag.getFloat("ItemHover");
+
+        spin = tag.getFloat(TAG_SPIN);
+        spinSpeed = tag.contains(TAG_SPIN_SPEED) ? tag.getFloat(TAG_SPIN_SPEED) : 2f;
+        tickCount = tag.getInt(TAG_TICK_COUNT);
+        offeringConsumed = tag.getBoolean(TAG_CONSUMED);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        loadAdditional(pkt.getTag(), registries);
+    }
+
+    // endregion
+
+    private void setChangedAndSync() {
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            BlockState state = getBlockState();
+            level.sendBlockUpdated(worldPosition, state, state, 3);
+        }
     }
 }

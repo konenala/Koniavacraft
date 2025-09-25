@@ -2,7 +2,7 @@ package com.github.nalamodikk.register;
 
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.ritual.arcanematrix.arcanepedestal.ArcanePedestalBlock;
+import com.github.nalamodikk.common.block.ritual.*;
 import com.github.nalamodikk.common.block.ritual.arcanematrix.ritualcore.RitualCoreBlock;
 import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock;
@@ -12,10 +12,6 @@ import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBl
 import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
 import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
 import com.github.nalamodikk.common.block.normal.ManaSoilBlock;
-import com.github.nalamodikk.common.block.ritual.ManaPylonBlock;
-import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
-import com.github.nalamodikk.common.block.ritual.RuneStoneBlock;
-import com.github.nalamodikk.common.block.ritual.RuneType;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;

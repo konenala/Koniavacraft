@@ -11,11 +11,15 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -23,27 +27,41 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 奧術基座方塊 - 用於放置儀式祭品的平台
- * 具有物品渲染功能，可顯示放置在上面的物品
+ * 奧術基座方塊 - 用於放置儀式祭品的平台，支援動畫渲染。
  */
 public class ArcanePedestalBlock extends BaseEntityBlock {
     public static final MapCodec<ArcanePedestalBlock> CODEC = simpleCodec(ArcanePedestalBlock::new);
-
-    // 基座形狀 - 底部較寬，頂部平坦用於放置物品
+    private static final DirectionProperty FACING = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
     private static final VoxelShape SHAPE = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 10.0D, 13.0D);
 
     public ArcanePedestalBlock(Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(FACING, net.minecraft.core.Direction.NORTH));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    public @NotNull BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    public @NotNull BlockState mirror(BlockState state, Mirror mirror) {
+        return rotate(state, mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
     protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ArcanePedestalBlockEntity(pos, state);
     }
 
     @Override
@@ -63,33 +81,45 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
 
     @Override
     protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide()) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ArcanePedestalBlockEntity pedestal) {
-                // 如果玩家手中有物品，嘗試放置到基座上
-                if (!player.getMainHandItem().isEmpty()) {
-                    ItemStack handItem = player.getMainHandItem();
-                    ItemStack remainder = pedestal.insertItem(handItem);
-                    player.setItemInHand(player.getUsedItemHand(), remainder);
-                } else {
-                    // 如果玩家手為空，嘗試取出基座上的物品
-                    ItemStack extractedItem = pedestal.extractItem();
-                    if (!extractedItem.isEmpty()) {
-                        if (!player.addItem(extractedItem)) {
-                            player.drop(extractedItem, false);
-                        }
-                    }
-                }
-                return InteractionResult.SUCCESS;
-            }
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
         }
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof ArcanePedestalBlockEntity pedestal)) {
+            return InteractionResult.PASS;
+        }
+
+        ItemStack handItem = player.getMainHandItem();
+        if (!handItem.isEmpty()) {
+            ItemStack remainder = pedestal.insertOffering(handItem);
+            player.setItemInHand(player.getUsedItemHand(), remainder);
+            return InteractionResult.SUCCESS;
+        }
+
+        ItemStack extracted = pedestal.extractOffering();
+        if (!extracted.isEmpty()) {
+            if (!player.addItem(extracted)) {
+                player.drop(extracted, false);
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         return InteractionResult.PASS;
     }
 
+    @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.ARCANE_PEDESTAL_BE.get(),
-                (world, pos, blockState, blockEntity) -> blockEntity.tick());
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ArcanePedestalBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide) {
+            return createTickerHelper(type, ModBlockEntities.ARCANE_PEDESTAL_BE.get(), ArcanePedestalBlockEntity::clientTick);
+        }
+        return createTickerHelper(type, ModBlockEntities.ARCANE_PEDESTAL_BE.get(), ArcanePedestalBlockEntity::serverTick);
     }
 
     @Override
@@ -97,7 +127,7 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ArcanePedestalBlockEntity pedestal) {
-                pedestal.dropContents(level, pos);
+                pedestal.dropContents();
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
