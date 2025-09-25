@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.blockentity.arcanematrix.ritualcore;
+package com.github.nalamodikk.common.block.ritual.arcanematrix.ritualcore;
 
 import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;

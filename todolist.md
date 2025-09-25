@@ -21,4 +21,9 @@
 
 - [ ] 補齊粉筆白色圓形紋理：新增 `assets/koniava/textures/block/chalk_glyph_white_circle.png` 以消除 runData 警告（待指派）
 
+- [x] Nara Intro/Init Screen 動畫檢查：定位貼圖旋轉停用原因（負責：Codex）－已提供原因與修復建議
 
+
+- [ ] Arcane Pedestal 文檔同步：更新 spec.md / api.md 確認新方塊實體（負責：Codex）
+- [ ] Arcane Pedestal 崩潰修復：統一方塊實體與渲染註冊（負責：Codex）
+- [ ] Arcane Pedestal 測試：執行 .\gradlew.bat build 並記錄結果（負責：Codex）

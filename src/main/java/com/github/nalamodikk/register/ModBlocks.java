@@ -2,8 +2,8 @@ package com.github.nalamodikk.register;
 
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.blockentity.arcanematrix.arcanepedestal.ArcanePedestalBlock;
-import com.github.nalamodikk.common.block.blockentity.arcanematrix.ritualcore.RitualCoreBlock;
+import com.github.nalamodikk.common.block.ritual.arcanematrix.arcanepedestal.ArcanePedestalBlock;
+import com.github.nalamodikk.common.block.ritual.arcanematrix.ritualcore.RitualCoreBlock;
 import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlock;

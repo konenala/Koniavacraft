@@ -9,7 +9,7 @@ import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBl
 import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.ritual.ManaPylonBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
-import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.arcanematrix.arcanepedestal.ArcanePedestalBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
