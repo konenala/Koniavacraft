@@ -87,7 +87,6 @@ public class NaraIntroScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 優化：使用更高效的背景渲染
-        guiGraphics.fill(0, 0, this.width, this.height, 0xFF000000);
     }
 
     @Override

@@ -20,40 +20,87 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 奧術基座（Arcane Pedestal）
  * - 1 個物品槽：用於放置祭品
- * - 旋轉角度（客戶端渲染展示用）
+ * - 旋轉角度與浮動幅度（供客戶端渲染）
  * - 伺服器邏輯：可在 serverTick 內做粒子／檢查／與 Ritual Core 互動
  */
 public class ArcanePedestalBlockEntity extends BlockEntity {
 
-    // 單一物品槽：index 0 = 祭品
-    private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+    private static final String TAG_ITEM = "Item";
+    private static final String TAG_SPIN = "Spin";
+    private static final String TAG_SPIN_SPEED = "SpinSpeed";
+    private static final String TAG_TICK_COUNT = "TickCount";
+    private static final String TAG_CONSUMED = "OfferingConsumed";
 
-    // 客戶端顯示旋轉（給 BlockEntityRenderer 用）
+    private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+
     private float spin;          // 0..360f
-    private float spinSpeed = 2; // 每 tick 角速度（可由方塊狀態或 NBT 調整）
+    private float spinSpeed = 2f; // 每 tick 角速度（可由方塊狀態或 NBT 調整）
+    private int tickCount;
+    private boolean offeringConsumed;
 
     public ArcanePedestalBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ARCANE_PEDESTAL_BE.get(), pos, state);
     }
 
     /* ------------------------------
-       公開 API（給 Ritual Core 呼叫）
+       公開 API（給 Ritual Core 與方塊互動使用）
        ------------------------------ */
 
-    /** 放上一個祭品（覆蓋原有）。自動同步到客戶端。 */
+    /**
+     * 放上一個祭品（覆蓋原有），並同步客戶端。
+     */
     public void setOffering(ItemStack stack) {
         items.set(0, stack.copy());
+        offeringConsumed = false;
+        tickCount = 0;
+        spin = 0f;
         setChangedAndSync();
     }
 
-    /** 取得目前祭品（可能是 EMPTY）。 */
+    /**
+     * 取得目前祭品（可能為空）。
+     */
     public ItemStack getOffering() {
         return items.get(0);
     }
 
-    /** 是否有祭品可被 Ritual Core 消耗。 */
+    /**
+     * 是否存在可供 Ritual Core 使用的祭品。
+     */
     public boolean hasOffering() {
         return !items.get(0).isEmpty();
+    }
+
+    /**
+     * 透過玩家互動放入祭品，返回剩餘物品堆疊。
+     */
+    public ItemStack insertOffering(ItemStack stack) {
+        if (stack.isEmpty() || hasOffering()) {
+            return stack;
+        }
+        ItemStack copy = stack.copy();
+        ItemStack stored = copy.split(1);
+        setOffering(stored);
+        if (copy.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        return copy;
+    }
+
+    /**
+     * 透過玩家互動取出祭品。
+     */
+    public ItemStack extractOffering() {
+        if (!hasOffering()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack result = items.get(0).copy();
+        items.set(0, ItemStack.EMPTY);
+        offeringConsumed = false;
+        tickCount = 0;
+        spin = 0f;
+        setChangedAndSync();
+        return result;
     }
 
     /**
@@ -62,97 +109,145 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
      * @return 實際消耗數量
      */
     public int consumeOffering(int count) {
-        ItemStack s = items.get(0);
-        if (s.isEmpty() || count <= 0) return 0;
-        int removed = Math.min(count, s.getCount());
-        s.shrink(removed);
-        if (s.getCount() <= 0) items.set(0, ItemStack.EMPTY);
+        ItemStack stack = items.get(0);
+        if (stack.isEmpty() || count <= 0) {
+            return 0;
+        }
+        int removed = Math.min(count, stack.getCount());
+        stack.shrink(removed);
+        if (stack.isEmpty()) {
+            items.set(0, ItemStack.EMPTY);
+            offeringConsumed = true;
+        }
         setChangedAndSync();
         return removed;
     }
 
-    /** 儀式被中斷時，將物品掉落到世界。 */
+    /**
+     * 儀式被中斷時，將物品掉落到世界。
+     */
     public void dropContents() {
-        if (level == null || level.isClientSide) return;
-        ItemStack s = items.get(0);
-        if (!s.isEmpty()) {
-            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, s);
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        ItemStack stack = items.get(0);
+        if (!stack.isEmpty()) {
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, stack);
             items.set(0, ItemStack.EMPTY);
+        }
+        offeringConsumed = false;
+        setChangedAndSync();
+    }
+
+    /**
+     * Ritual 失敗或重試時重置消耗狀態。
+     */
+    public void resetOfferingConsumption() {
+        if (offeringConsumed) {
+            offeringConsumed = false;
             setChangedAndSync();
         }
+    }
+
+    /**
+     * 提供渲染器使用的旋轉角度。
+     */
+    public float getSpinForRender(float partialTick) {
+        return (spin + spinSpeed * partialTick) % 360f;
+    }
+
+    /**
+     * 提供渲染器使用的浮空偏移量。
+     */
+    public float getHoverOffset(float partialTick) {
+        if (!hasOffering()) {
+            return 0f;
+        }
+        return (float) Math.sin((tickCount + partialTick) * 0.1f) * 0.1f;
+    }
+
+    /**
+     * 供渲染器判斷祭品是否剛被消耗。
+     */
+    public boolean isOfferingConsumed() {
+        return offeringConsumed;
+    }
+
+    /**
+     * 調整旋轉速度（預留給未來資料驅動畫面）。
+     */
+    public void setSpinSpeed(float speed) {
+        spinSpeed = Mth.clamp(speed, 0f, 20f);
     }
 
     /* ------------------------------
        Tick：伺服器/客戶端
        ------------------------------ */
 
-
-
-    /** 伺服器端每 tick 呼叫（由 Block#getTicker 返回）。 */
+    /**
+     * 伺服端每 tick 呼叫，處理粒子與儀式邏輯。
+     */
     public static void serverTick(Level level, BlockPos pos, BlockState state, ArcanePedestalBlockEntity be) {
-        if (level.isClientSide) return; // 確保只在伺服器端執行
+        if (level.isClientSide) {
+            return;
+        }
+        be.tickCount++;
 
-        // 如果有祭品，每隔一段時間生成粒子效果
-        if (be.hasOffering() && level.getRandom().nextInt(10) == 0) { // 1/10 的機率
+        if (be.hasOffering() && level.getRandom().nextInt(10) == 0) {
             double x = pos.getX() + 0.5 + (level.getRandom().nextDouble() - 0.5) * 0.4;
             double y = pos.getY() + 1.1;
             double z = pos.getZ() + 0.5 + (level.getRandom().nextDouble() - 0.5) * 0.4;
-            if (!(level instanceof ServerLevel server)) return;     // 確保在伺服器端
-            if (level.getGameTime() % 100 == 0) {                    // 每 10 tick 播一次，避免太密
+            if (level instanceof ServerLevel server && level.getGameTime() % 100 == 0) {
                 server.sendParticles(
-                    ParticleTypes.ENCHANT,
-                    x, y, z,
-                    8,          // count：一次噴幾顆
-                    0.25, 0.25, 0.25, // dx, dy, dz：隨機擴散半徑
-                    0.0         // speed/初速（多數粒子可當作速度參數）
+                        ParticleTypes.ENCHANT,
+                        x, y, z,
+                        8,
+                        0.25, 0.25, 0.25,
+                        0.0
                 );
             }
         }
 
-        // 你可以在這裡放伺服器邏輯：例如與 Ritual Core 心跳同步、範圍找核心、生成粒子條件判斷等。
-        // 輕量化：不需要每 tick 都 setChanged（避免卡頓）；只有狀態改變時才 sync。
+        // TODO: 與 Ritual Core 的同步邏輯將在儀式系統完成時補齊。
     }
 
-    /** 客戶端每幀渲染前可由 BER 讀取 spin 值；這裡只提供一個便捷更新方法（可由 BER 或 clientTicker 呼叫）。 */
-    public void clientTickVisualOnly() {
-        spin = (spin + spinSpeed) % 360f;
-    }
-
-    public float getSpin() {
-        return spin;
-    }
-
-    public void setSpinSpeed(float speed) {
-        spinSpeed = Mth.clamp(speed, 0f, 20f);
+    /**
+     * 客戶端每 tick 呼叫，更新動畫參數供渲染器使用。
+     */
+    public static void clientTick(Level level, BlockPos pos, BlockState state, ArcanePedestalBlockEntity be) {
+        if (!level.isClientSide) {
+            return;
+        }
+        be.tickCount++;
+        if (be.hasOffering()) {
+            be.spin = (be.spin + be.spinSpeed) % 360f;
+        } else {
+            be.spin = 0f;
+        }
     }
 
     /* ------------------------------
        NBT 存讀（含 1.20.5+ HolderLookup）
        ------------------------------ */
 
-    private static final String TAG_ITEM = "Item";
-    private static final String TAG_SPIN = "Spin";
-    private static final String TAG_SPIN_SPEED = "SpinSpeed";
-
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
 
-        // 物品
         CompoundTag itemTag = new CompoundTag();
         items.get(0).save(registries, itemTag);
         tag.put(TAG_ITEM, itemTag);
 
-        // 視覺
         tag.putFloat(TAG_SPIN, spin);
         tag.putFloat(TAG_SPIN_SPEED, spinSpeed);
+        tag.putInt(TAG_TICK_COUNT, tickCount);
+        tag.putBoolean(TAG_CONSUMED, offeringConsumed);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
-        // 物品
         if (tag.contains(TAG_ITEM)) {
             ItemStack stack = ItemStack.parse(registries, tag.getCompound(TAG_ITEM)).orElse(ItemStack.EMPTY);
             items.set(0, stack);
@@ -160,9 +255,10 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
             items.set(0, ItemStack.EMPTY);
         }
 
-        // 視覺
         spin = tag.getFloat(TAG_SPIN);
         spinSpeed = tag.contains(TAG_SPIN_SPEED) ? tag.getFloat(TAG_SPIN_SPEED) : 2f;
+        tickCount = tag.getInt(TAG_TICK_COUNT);
+        offeringConsumed = tag.getBoolean(TAG_CONSUMED);
     }
 
     /* ------------------------------
@@ -171,7 +267,6 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        // 傳給客戶端的最小必要資料
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         return tag;

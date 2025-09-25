@@ -41,8 +41,16 @@
 
   "block.koniava.ritual_core": "儀式核心",
   "block.koniava.arcane_pedestal": "奧術基座",
+  "block.koniava.mana_pylon": "魔力塔",
+  "block.koniavacraft.rune_stone_efficiency": "效率符文石",
+  "block.koniavacraft.rune_stone_celerity": "迅捷符文石",
+  "block.koniavacraft.rune_stone_stability": "穩定符文石",
+  "block.koniavacraft.rune_stone_augmentation": "增幅符文石",
 
   "item.koniava.resonant_crystal": "共鳴水晶",
+  "item.koniava.void_pearl": "虛空珍珠",
+  "item.koniava.ritualist_chalk": "儀式師的粉筆",
+  "item.koniava.arcane_alloy_ingot": "奧術合金錠",
 
   "//4": "=== 裝備 ===",
   "equipment.koniava.helmet": "戰術頭盔",
@@ -108,6 +116,25 @@
   "tooltip.koniava.solar.generating": "正在吸收陽光產生魔力。",
   "tooltip.koniava.mana_infuser.mana_cost": "魔力消耗: %d",
   "tooltip.koniava.mana_infuser.infusion_time": "注入時間: %d tick",
+
+  "tooltip.koniavacraft.rune_stone_efficiency.description": "§7效率符文石可以降低儀式的魔力消耗。",
+  "tooltip.koniavacraft.rune_stone_celerity.description": "§7迅捷符文石可以加快儀式的執行速度。",
+  "tooltip.koniavacraft.rune_stone_stability.description": "§7穩定符文石可以降低儀式失敗的風險。",
+  "tooltip.koniavacraft.rune_stone_augmentation.description": "§7增幅符文石可以提升儀式的產出效果。",
+  "tooltip.koniavacraft.void_pearl.category": "§c禁忌催化劑",
+  "tooltip.koniavacraft.void_pearl.description": "§7用於高風險禁忌儀式的催化劑。",
+  "tooltip.koniavacraft.void_pearl.usage": "§7右鍵點擊儀式核心來啟動禁忌儀式。",
+  "tooltip.koniavacraft.void_pearl.warning": "§c警告：使用此物品可能導致危險後果！",
+  "tooltip.koniavacraft.void_pearl.expendable": "§7此物品為消耗品。",
+  "tooltip.koniavacraft.chalk.color": "§7顏色：%s",
+  "tooltip.koniavacraft.chalk.uses": "§7剩餘使用次數：%d/%d",
+  "tooltip.koniavacraft.chalk.usage": "§7右鍵在地面上繪製魔法陣圖案。",
+  "tooltip.koniavacraft.chalk.switch_pattern": "§7Shift+右鍵切換圖案類型。",
+  "tooltip.koniavacraft.chalk.purpose": "§7用於定義儀式區域和類型。",
+  "tooltip.koniavacraft.resonant_crystal.category": "§b儀式催化劑",
+  "tooltip.koniavacraft.resonant_crystal.description": "§7用於啟動魔法儀式的核心催化劑。",
+  "tooltip.koniavacraft.resonant_crystal.usage": "§7右鍵點擊儀式核心來啟動儀式。",
+  "tooltip.koniavacraft.resonant_crystal.expendable": "§7此物品為消耗品。",
 
   "//7": "=== JEI 整合 ===",
   "jei.koniava.fuel.mana": "魔力產出: %s",
@@ -308,7 +335,17 @@
   "message.koniava.biome.memory_warning": "§6[生態系] 記憶體使用量偏高：%.1fMB / %dMB",
   "message.koniava.biome.thread_init": "§e[生態系] 已初始化 %s，使用 %d 個線程",
 
-  "//22": "=== 配置GUI翻譯 ===",
+  "//22": "=== 魔法儀式系統訊息 ===",
+  "message.koniavacraft.rune_stone.info": "符文石類型：%s\n描述：%s",
+  "message.koniavacraft.ritual.catalyst_needed": "需要催化劑來啟動儀式！",
+  "message.koniavacraft.ritual.started": "儀式已開始！",
+  "message.koniavacraft.ritual.failed": "儀式啟動失敗！",
+  "message.koniavacraft.mana_pylon.status": "魔力塔狀態：%s",
+  "message.koniavacraft.void_pearl.ominous_energy": "虛空珍珠散發著不祥的能量...",
+  "message.koniavacraft.chalk.cannot_place": "無法在此處放置粉筆圖案！",
+  "message.koniavacraft.chalk.placed": "已放置 %s 粉筆圖案",
+
+  "//23": "=== 配置GUI翻譯 ===",
   "koniava.configuration.title": "魔法工業配置",
   "koniava.configuration.section.koniava.common.toml.title": "通用設定",
   "koniava.configuration.section.koniava.common.toml": "魔法工業的通用配置選項",
@@ -338,7 +375,7 @@
   "koniava.config.biome.processingEnabled": "啟用生物群系地表處理",
   "koniava.config.biome.processingEnabled.tooltip": "啟用後，伺服器會替換特定生物群系的地表方塊。",
 
-  "//23": "=== 配置工具提示 ===",
+  "//24": "=== 配置工具提示 ===",
   "koniava.config.biome.multithreading.tooltip": "啟用多線程加速生物群系處理。建議4核心以上CPU的伺服器使用。",
   "koniava.config.biome.threadCount.tooltip": "生物群系處理使用的線程數量。建議值：CPU核心數 - 2（最少1個，最多8個）。",
   "koniava.config.biome.maxProcessingTime.tooltip": "每tick生物群系處理的最大毫秒數。較高值 = 更快處理但可能影響 TPS。",
@@ -347,5 +384,12 @@
   "koniava.config.biome.maxMemory.tooltip": "生物群系處理的最大記憶體使用量（MB）。會根據伺服器記憶體自動調整。",
   "koniava.config.biome.snapshotDepth.tooltip": "地表快照深度（方塊層數）。較低值使用較少記憶體但可能遺漏深層替換。",
   "koniava.config.biome.adaptivePerformance.tooltip": "啟用自適應性能調整。系統會根據負載自動調整處理參數。",
-  "koniava.config.biome.autoSkipMinor.tooltip": "高負載時自動跳過次要生物群系。緊急模式下會跳過優先級較低的生物群系處理。"
+  "koniava.config.biome.autoSkipMinor.tooltip": "高負載時自動跳過次要生物群系。緊急模式下會跳過優先級較低的生物群系處理。",
+
+  "//25": "=== 魔法儀式系統其他 ===",
+  "misc.koniavacraft.connected": "已連接",
+  "misc.koniavacraft.disconnected": "未連接",
+  "misc.koniavacraft.position_format": "位置：%s",
+  "misc.koniavacraft.unknown_block": "未知方塊",
+  "gui.koniavacraft.arcane_conduit.range_indicator": "範圍指示器"
 }

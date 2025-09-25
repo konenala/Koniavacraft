@@ -41,8 +41,16 @@
 
   "block.koniava.ritual_core": "Ritual Core",
   "block.koniava.arcane_pedestal": "Arcane Pedestal",
+  "block.koniava.mana_pylon": "Mana Pylon",
+  "block.koniavacraft.rune_stone_efficiency": "Rune Stone of Efficiency",
+  "block.koniavacraft.rune_stone_celerity": "Rune Stone of Celerity",
+  "block.koniavacraft.rune_stone_stability": "Rune Stone of Stability",
+  "block.koniavacraft.rune_stone_augmentation": "Rune Stone of Augmentation",
 
   "item.koniava.resonant_crystal": "Resonant Crystal",
+  "item.koniava.void_pearl": "Void Pearl",
+  "item.koniava.ritualist_chalk": "Ritualist Chalk",
+  "item.koniava.arcane_alloy_ingot": "Arcane Alloy Ingot",
 
   "//4": "=== EQUIPMENT ===",
   "equipment.koniava.helmet": "Tactical Helmet",
@@ -108,6 +116,25 @@
   "tooltip.koniava.solar.nighttime": "It's nighttime. The collector is inactive.",
   "tooltip.koniava.solar.blocked": "Sunlight is blocked. Unable to generate mana.",
   "tooltip.koniava.solar.generating": "Generating mana from sunlight.",
+
+  "tooltip.koniavacraft.rune_stone_efficiency.description": "§7Rune Stone of Efficiency reduces mana cost of rituals.",
+  "tooltip.koniavacraft.rune_stone_celerity.description": "§7Rune Stone of Celerity increases ritual execution speed.",
+  "tooltip.koniavacraft.rune_stone_stability.description": "§7Rune Stone of Stability reduces ritual failure risk.",
+  "tooltip.koniavacraft.rune_stone_augmentation.description": "§7Rune Stone of Augmentation enhances ritual output effects.",
+  "tooltip.koniavacraft.void_pearl.category": "§cForbidden Catalyst",
+  "tooltip.koniavacraft.void_pearl.description": "§7A catalyst for high-risk forbidden rituals.",
+  "tooltip.koniavacraft.void_pearl.usage": "§7Right-click ritual core to start forbidden ritual.",
+  "tooltip.koniavacraft.void_pearl.warning": "§cWarning: Using this item may cause dangerous consequences!",
+  "tooltip.koniavacraft.void_pearl.expendable": "§7This item is consumable.",
+  "tooltip.koniavacraft.chalk.color": "§7Color: %s",
+  "tooltip.koniavacraft.chalk.uses": "§7Remaining uses: %d/%d",
+  "tooltip.koniavacraft.chalk.usage": "§7Right-click on ground to draw magic circle patterns.",
+  "tooltip.koniavacraft.chalk.switch_pattern": "§7Shift+Right-click to switch pattern type.",
+  "tooltip.koniavacraft.chalk.purpose": "§7Used to define ritual areas and types.",
+  "tooltip.koniavacraft.resonant_crystal.category": "§bRitual Catalyst",
+  "tooltip.koniavacraft.resonant_crystal.description": "§7Core catalyst for starting magic rituals.",
+  "tooltip.koniavacraft.resonant_crystal.usage": "§7Right-click ritual core to start ritual.",
+  "tooltip.koniavacraft.resonant_crystal.expendable": "§7This item is consumable.",
 
   "//7": "=== JEI INTEGRATION ===",
   "jei.koniava.fuel.mana": "Mana Output: %s",
@@ -308,7 +335,17 @@
   "message.koniava.biome.memory_warning": "§6[Biome] Memory usage high: %.1fMB / %dMB",
   "message.koniava.biome.thread_init": "§e[Biome] Initialized %s with %d threads",
 
-  "//22": "=== CONFIG GUI TRANSLATIONS ===",
+  "//22": "=== MAGIC RITUAL SYSTEM MESSAGES ===",
+  "message.koniavacraft.rune_stone.info": "Rune Stone Type: %s\nDescription: %s",
+  "message.koniavacraft.ritual.catalyst_needed": "A catalyst is needed to start the ritual!",
+  "message.koniavacraft.ritual.started": "Ritual has started!",
+  "message.koniavacraft.ritual.failed": "Failed to start the ritual!",
+  "message.koniavacraft.mana_pylon.status": "Mana Pylon Status: %s",
+  "message.koniavacraft.void_pearl.ominous_energy": "The Void Pearl emanates ominous energy...",
+  "message.koniavacraft.chalk.cannot_place": "Cannot place chalk pattern here!",
+  "message.koniavacraft.chalk.placed": "Placed %s chalk pattern",
+
+  "//23": "=== CONFIG GUI TRANSLATIONS ===",
   "koniava.configuration.title": "Koniavacraft Configuration",
   "koniava.configuration.section.koniava.common.toml.title": "Common Settings",
   "koniava.configuration.section.koniava.common.toml": "Common configuration options for Koniavacraft",
@@ -348,5 +385,12 @@
   "koniava.config.biome.maxMemory.tooltip": "Maximum memory usage for biome processing (MB). Auto-adjusted based on server memory.",
   "koniava.config.biome.snapshotDepth.tooltip": "Surface snapshot depth in block layers. Lower values use less memory but may miss deep replacements.",
   "koniava.config.biome.adaptivePerformance.tooltip": "Enable adaptive performance adjustment. System will automatically adjust processing parameters based on load.",
-  "koniava.config.biome.autoSkipMinor.tooltip": "Automatically skip minor biomes under high load. Skip lower priority biomes during emergency mode."
+  "koniava.config.biome.autoSkipMinor.tooltip": "Automatically skip minor biomes under high load. Skip lower priority biomes during emergency mode.",
+
+  "//24": "=== MAGIC RITUAL SYSTEM MISC ===",
+  "misc.koniavacraft.connected": "Connected",
+  "misc.koniavacraft.disconnected": "Disconnected",
+  "misc.koniavacraft.position_format": "Position: %s",
+  "misc.koniavacraft.unknown_block": "Unknown Block",
+  "gui.koniavacraft.arcane_conduit.range_indicator": "Range Indicator"
 }
