@@ -1,7 +1,9 @@
 // 🌍 生物群系整合管理器 - 庫版本
 package com.github.nalamodikk.biome.lib;
 
-import java.util.logging.Logger;
+
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 /**
  * 🌍 生物群系整合管理器 - 庫版本
@@ -13,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class BiomeIntegration {
 
-    private static final Logger LOGGER = Logger.getLogger("BiomeTerrainLib");
+    public static final Logger LOGGER = LogUtils.getLogger();
     private static boolean isInitialized = false;
 
     /**
@@ -40,8 +42,7 @@ public class BiomeIntegration {
             LOGGER.info("✅ 生物群系系統初始化完成！");
 
         } catch (Exception e) {
-            LOGGER.severe("❌ 生物群系系統初始化失敗！" + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("❌ 生物群系系統初始化失敗！{}", e.getMessage(), e);
         }
     }
 

@@ -28,7 +28,7 @@ public class KoniavacraftMod {
     public static final boolean IS_PRODUCTION = FMLLoader.isProduction();
     public static final boolean IS_DEV = !IS_PRODUCTION;
 
-    public static ResourceLocation rl(String path) {
+    public static ResourceLocation modLoc(String path) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
