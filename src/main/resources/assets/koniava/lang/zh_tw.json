@@ -43,6 +43,12 @@
   "block.koniava.arcane_pedestal": "奧術基座",
   "block.koniava.mana_pylon": "魔力塔",
   "block.koniavacraft.rune_stone_efficiency": "效率符文石",
+  "block.koniava.chalk_glyph": "粉筆符號",
+  "block.koniava.rune_stone_efficiency": "效率符文石",
+  "block.koniava.rune_stone_stability": "穩定符文石",
+  "block.koniava.rune_stone_augmentation": "增幅符文石",
+  "block.koniava.rune_stone_celerity": "迅捷符文石",
+
   "block.koniavacraft.rune_stone_celerity": "迅捷符文石",
   "block.koniavacraft.rune_stone_stability": "穩定符文石",
   "block.koniavacraft.rune_stone_augmentation": "增幅符文石",

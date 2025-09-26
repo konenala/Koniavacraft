@@ -43,6 +43,12 @@
   "block.koniava.arcane_pedestal": "Arcane Pedestal",
   "block.koniava.mana_pylon": "Mana Pylon",
   "block.koniavacraft.rune_stone_efficiency": "Rune Stone of Efficiency",
+  "block.koniava.chalk_glyph": "Chalk Glyph",
+  "block.koniava.rune_stone_efficiency": "Rune Stone of Efficiency",
+  "block.koniava.rune_stone_stability": "Rune Stone of Stability",
+  "block.koniava.rune_stone_augmentation": "Rune Stone of Augmentation",
+  "block.koniava.rune_stone_celerity": "Rune Stone of Celerity",
+
   "block.koniavacraft.rune_stone_celerity": "Rune Stone of Celerity",
   "block.koniavacraft.rune_stone_stability": "Rune Stone of Stability",
   "block.koniavacraft.rune_stone_augmentation": "Rune Stone of Augmentation",
