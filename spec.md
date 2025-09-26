@@ -15,6 +15,7 @@
 - **戰利品表**：粉筆符文方塊 `chalk_glyph` 需對應 `data/koniava/loot_tables/blocks/chalk_glyph.json`，確保資料生成與遊戲內掉落一致。
 - **儀式基座**：`common.block.blockentity.ritual.ArcanePedestalBlockEntity` 維護單一祭品槽、消耗狀態與動畫參數（旋轉 / 浮動），伺服端透過 `setChangedAndSync()` 同步庫存與狀態，並提供 `serverTick` / `clientTick` 介面供儀式核心與渲染器呼叫。
   - 空祭品狀態不寫入 NBT；同步封包應透過 `saveOptional` 或條件判斷避免序列化空堆疊，防止服務端崩潰。
+  - 粉筆紋理統一存於 `textures/block/ritual/` 子資料夾，資料生成需透過 `modLoc("block/ritual/...")` 讀取，避免與一般方塊資源混淆。
 - **Nara UI**：`narasystem.nara.screen.NaraIntroScreen` 與 `NaraInitScreen` 為客戶端過場 / 綁定流程，採用快取佈局與節奏驅動動畫；所有貼圖在 `init()` 先設定過濾方式，並需避免逐幀建立 Widget 與重複轉換矩陣以降低 GPU 負載。
 
 ## 3. 關鍵流程
@@ -30,6 +31,7 @@
 10. 儀式資產整合：將檔案從 `個人開發者小記錄/ritual` 搬運至正式資源路徑（`textures`, `models`, `blockstates`），並以資料生成驗證輸出。
 11. 粉筆資產補完：自動化產生缺漏粉筆圖案（以白色圖案套色）、補齊彩色粉筆物品模型並同步資料生成。
 12. Nara UI 優化：於畫面初始化緩存佈局與貼圖狀態，渲染循環僅進行必要變換，避免造成 GPU 過載。
+13. Chalk Glyph 紋理維護：資源集中於 `textures/block/ritual`，更新貼圖時需同步調整資料生成路徑。
 
 ## 4. 虛擬碼
 ```pseudo

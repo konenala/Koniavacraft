@@ -34,3 +34,6 @@
 - [x] Nara Screen 文檔同步：更新 spec.md / api.md 記錄 GPU 優化策略（負責：Codex）
 - [x] Nara Screen GPU 優化：調整 NaraInitScreen 與 NaraIntroScreen（負責：Codex）
 - [ ] Nara Screen 測試：執行 .\gradlew.bat build 並於客戶端驗證（負責：Codex）
+- [x] Chalk Glyph 文檔同步：記錄紋理移至 textures/block/ritual（負責：Codex）
+- [x] Chalk Glyph 紋理路徑調整：讓程式支援 ritual 子目錄（負責：Codex）
+- [ ] Chalk Glyph 測試：執行 runData / build 檢查警告（負責：Codex）

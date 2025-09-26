@@ -156,22 +156,38 @@ public class ModBlockStateProvider extends BlockStateProvider {
     }
 
     private ResourceLocation resolveGlyphTexture(String color, String pattern) {
-        ResourceLocation target = modLoc("block/chalk_glyph_" + color + "_" + pattern);
-        if (textureFileExists(target)) {
+        ResourceLocation target = findGlyphTexture(color, pattern);
+        if (target != null) {
             return target;
         }
 
-        ResourceLocation colorFallback = modLoc("block/chalk_glyph_" + color + "_circle");
-        if (!"circle".equals(pattern) && textureFileExists(colorFallback)) {
-            KoniavacraftMod.LOGGER.warn("缺少粉筆紋理 {}_{}, 使用同色圓形作為替代", color, pattern);
-            return colorFallback;
+        if (!"circle".equals(pattern)) {
+            ResourceLocation colorFallback = findGlyphTexture(color, "circle");
+            if (colorFallback != null) {
+                KoniavacraftMod.LOGGER.warn("缺少粉筆紋理 {}_{}, 使用同色圓形作為替代", color, pattern);
+                return colorFallback;
+            }
         }
 
-        ResourceLocation defaultFallback = modLoc("block/chalk_glyph_white_circle");
-        if (!textureFileExists(defaultFallback)) {
-            KoniavacraftMod.LOGGER.warn("缺少白色圓形粉筆紋理，請補齊 block/chalk_glyph_white_circle.png");
+        ResourceLocation defaultFallback = findGlyphTexture("white", "circle");
+        if (defaultFallback == null) {
+            defaultFallback = modLoc("block/ritual/chalk_glyph_white_circle");
+            KoniavacraftMod.LOGGER.warn("缺少白色圓形粉筆紋理，請補齊 block/ritual/chalk_glyph_white_circle.png");
         }
         return defaultFallback;
+    }
+
+    private ResourceLocation findGlyphTexture(String color, String pattern) {
+        ResourceLocation ritualPath = modLoc("block/ritual/chalk_glyph_" + color + "_" + pattern);
+        if (textureFileExists(ritualPath)) {
+            return ritualPath;
+        }
+
+        ResourceLocation legacyPath = modLoc("block/chalk_glyph_" + color + "_" + pattern);
+        if (textureFileExists(legacyPath)) {
+            return legacyPath;
+        }
+        return null;
     }
 
     private boolean textureFileExists(ResourceLocation texture) {
