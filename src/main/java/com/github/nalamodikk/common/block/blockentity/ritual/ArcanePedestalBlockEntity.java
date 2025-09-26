@@ -220,9 +220,12 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
 
-        CompoundTag itemTag = new CompoundTag();
-        items.get(0).save(registries, itemTag);
-        tag.put(TAG_ITEM, itemTag);
+        ItemStack offering = items.get(0);
+        if (!offering.isEmpty()) {
+            CompoundTag itemTag = new CompoundTag();
+            offering.save(registries, itemTag);
+            tag.put(TAG_ITEM, itemTag);
+        }
 
         tag.putFloat(TAG_SPIN, spin);
         tag.putFloat(TAG_SPIN_SPEED, spinSpeed);

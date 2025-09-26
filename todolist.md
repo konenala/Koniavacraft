@@ -27,3 +27,10 @@
 - [x] Arcane Pedestal 文檔同步：更新 spec.md / api.md 確認新方塊實體（負責：Codex）
 - [x] Arcane Pedestal 崩潰修復：統一方塊實體與渲染註冊（負責：Codex）
 - [x] Arcane Pedestal 測試：執行 .\gradlew.bat build 並記錄結果（負責：Codex）
+- [x] Arcane Pedestal 空祭品文檔同步：補充空堆疊同步策略（負責：Codex）
+- [x] Arcane Pedestal 空祭品崩潰修復：避免序列化空 ItemStack（負責：Codex）
+- [x] Arcane Pedestal 空祭品測試：執行 .\gradlew.bat build 與遊戲內重現（負責：Codex）
+- [ ] Arcane Pedestal 程式掃描：檢查潛在隱藏錯誤（負責：Codex）
+- [x] Nara Screen 文檔同步：更新 spec.md / api.md 記錄 GPU 優化策略（負責：Codex）
+- [x] Nara Screen GPU 優化：調整 NaraInitScreen 與 NaraIntroScreen（負責：Codex）
+- [ ] Nara Screen 測試：執行 .\gradlew.bat build 並於客戶端驗證（負責：Codex）

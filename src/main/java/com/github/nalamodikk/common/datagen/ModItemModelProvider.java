@@ -5,6 +5,7 @@ import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -30,39 +31,46 @@ public class ModItemModelProvider extends ItemModelProvider {
     }
     private final Set<ResourceLocation> customModelOverrides = new HashSet<>();
 
+
     @Override
     protected void registerModels() {
-        // === 魔法儀式系統 - 物品 ===
-        registerGeneratedItemModel(ModItems.RESONANT_CRYSTAL, this::applyResonantCrystalTransforms);
+        // 1) 這裡列出「已手做模型」的物品（需要你自行盤點）
+        useExistingItemModel(ModItems.RESONANT_CRYSTAL);
 
+        // 2) 其他物品：自動生成（有現成 model 就跳過）
         ModItems.ITEMS.getEntries().forEach(item -> {
-            if (customModelOverrides.contains(item.getId())) {
-                return;
-            }
+            if (customModelOverrides.contains(item.getId())) return;
 
             Item instance = item.get();
             String name = item.getId().getPath();
 
-            // ❌ 跳過 BlockItem（例如 mana_block）
-            if (instance instanceof BlockItem) {
+            // 跳過 BlockItem（交給 Block 模型流程或另行處理）
+            if (instance instanceof BlockItem) return;
+
+            // 如果 models/item/<name>.json 已存在 → 直接跳過（雙重保險）
+            if (existingFileHelper.exists(
+                modLoc("item/" + name),
+                new ExistingFileHelper.ResourceType(PackType.CLIENT_RESOURCES, ".json", "models")
+            )) {
                 return;
             }
 
-            // ❌ 若對應貼圖不存在，也跳過（避免崩潰）
+            // 沒有現成模型時，才用貼圖生成
             ResourceLocation texture = modLoc("item/" + name);
             if (!existingFileHelper.exists(texture, TEXTURE)) {
                 LOGGER.warn("Skipping item model for '{}': missing texture", name);
                 return;
             }
 
-            // ✅ 自動判斷工具或普通物品
+            // 工具類用 handheld，其餘用 basic
             if (instance instanceof TieredItem || instance instanceof SwordItem) {
-                handheldItem(instance);
+                handheldItem((DeferredItem<?>) item);        // 注意：這裡要傳 DeferredItem<?>
             } else {
-                basicItem(instance);
+                basicItem(instance);       // 注意：這裡要傳 Item
             }
         });
     }
+
 
     private void registerGeneratedItemModel(DeferredItem<?> item, Consumer<ItemModelBuilder> customizer) {
         ResourceLocation id = item.getId();
@@ -119,4 +127,26 @@ public class ModItemModelProvider extends ItemModelProvider {
                 ResourceLocation.parse("item/handheld")).texture("layer0",
                 ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID,"item/" + item.getId().getPath()));
     }
+
+    // 在 ModItemModelProvider 內
+
+
+    // 通用：這個物品已經有手做模型，請不要再生成
+    private void useExistingItemModel(DeferredItem<?> item) {
+        String name = item.getId().getPath();
+
+        // 檢查 assets/<modid>/models/item/<name>.json 是否存在
+        boolean exists = existingFileHelper.exists(
+            modLoc("item/" + name),
+            new ExistingFileHelper.ResourceType(PackType.CLIENT_RESOURCES, ".json", "models")
+        );
+
+        if (!exists) {
+            LOGGER.warn("Expected existing model for item '{}', but not found at models/item/{}.json", name, name);
+        }
+
+        // 登記 → 之後自動流程會跳過它
+        customModelOverrides.add(item.getId());
+    }
+
 }

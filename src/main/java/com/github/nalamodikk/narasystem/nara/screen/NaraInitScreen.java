@@ -1,6 +1,5 @@
 package com.github.nalamodikk.narasystem.nara.screen;
 
-
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
 import com.github.nalamodikk.narasystem.nara.network.server.NaraBindRequestPacket;
@@ -9,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.neoforged.fml.ModList;
 
 import java.util.List;
@@ -18,22 +18,24 @@ public class NaraInitScreen extends Screen {
     private enum Stage {
         SHOWING_LINES, AWAITING_CONFIRM
     }
+
     private Stage currentStage = Stage.SHOWING_LINES;
     private int visibleLines = 0;
-
-    private static final ResourceLocation overlayTexture = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/nara_overlay.png");
-
-    ResourceLocation buttonTexture = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/nara_button.png");
     private int ticksElapsed = 0;
 
-    // 優化：快取渲染相關數據
+    private static final ResourceLocation OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/nara_overlay.png");
+    private static final ResourceLocation BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/nara_button.png");
+    private static final List<Component> BIND_TOOLTIP = List.of(Component.translatable("tooltip.koniava.nara.bind"));
+    private static final List<Component> CANCEL_TOOLTIP = List.of(Component.translatable("tooltip.koniava.nara.cancel"));
+
+    // 佈局快取
+    private static final int BG_WIDTH = 256;
+    private static final int BG_HEIGHT = 190;
     private int cachedCenterX = 0;
     private int cachedCenterY = 0;
     private int cachedBgX = 0;
     private int cachedBgY = 0;
     private boolean layoutCached = false;
-    private static final int BG_WIDTH = 256;
-    private static final int BG_HEIGHT = 190;
 
     private final Component title = Component.translatable("screen.koniava.nara.title");
     private final Component[] lines = new Component[] {
@@ -47,11 +49,14 @@ public class NaraInitScreen extends Screen {
             ),
             Component.translatable("screen.koniava.nara.line6")
     };
+    private final FormattedCharSequence[] cachedLineSequences = new FormattedCharSequence[lines.length];
+    private final int[] lineWidths = new int[lines.length];
+    private final int[] cachedLineStartX = new int[lines.length];
+    private boolean textCacheDirty = true;
 
     public NaraInitScreen() {
         super(Component.empty());
     }
-
 
     @Override
     public void tick() {
@@ -64,117 +69,116 @@ public class NaraInitScreen extends Screen {
             }
             if (visibleLines == lines.length && ticksElapsed >= lines.length * 10 + 20) {
                 currentStage = Stage.AWAITING_CONFIRM;
-                initButtons(); // 延後加入按鈕
+                if (this.children().isEmpty()) {
+                    initButtons();
+                }
             }
         }
     }
-//LightningBoltRenderer
-    // ✅ 玩家登入時已強制綁定，不需每次操作再次檢查 Nara 綁定狀態
-    // 若未來允許跳過動畫或支援非強制模式，需補上 isBound() 檢查
 
     private void initButtons() {
+        this.clearWidgets();
         int centerX = this.width / 2;
         int centerY = this.height / 2;
-
         int texWidth = 90;
         int texHeight = 20;
 
         addRenderableWidget(new TooltipButton(
                 centerX - 100, centerY + 60, 90, 20,
                 Component.translatable("screen.koniava.nara.bind"),
-                buttonTexture, texWidth, texHeight,
+                BUTTON_TEXTURE, texWidth, texHeight,
                 btn -> {
                     NaraBindRequestPacket.send(true);
                     onClose();
                 },
-                () -> List.of(Component.translatable("tooltip.koniava.nara.bind"))
+                () -> BIND_TOOLTIP
         ));
 
         addRenderableWidget(new TooltipButton(
                 centerX + 10, centerY + 60, 90, 20,
                 Component.translatable("screen.koniava.nara.cancel"),
-                buttonTexture, texWidth, texHeight,
+                BUTTON_TEXTURE, texWidth, texHeight,
                 btn -> {
                     NaraBindRequestPacket.send(false);
-
                     onClose();
-                    // ❗中斷連線，顯示提示訊息
                     var connection = Minecraft.getInstance().getConnection();
                     if (connection != null) {
                         connection.disconnect(Component.translatable("message.koniava.nara.disconnect_message"));
                     }
                 },
-                () -> List.of(Component.translatable("tooltip.koniava.nara.cancel"))
+                () -> CANCEL_TOOLTIP
         ));
     }
-
 
     @Override
     protected void init() {
         Minecraft.getInstance().getTextureManager()
-                .getTexture(overlayTexture)
-                .setFilter(false, false); // 關閉 linear filtering
-
-        // 優化：計算並快取佈局數據
+                .getTexture(OVERLAY_TEXTURE)
+                .setFilter(false, false);
         updateLayoutCache();
     }
 
-    // 優化：快取佈局計算
     private void updateLayoutCache() {
         cachedCenterX = this.width / 2;
         cachedCenterY = this.height / 2;
         cachedBgX = (this.width - BG_WIDTH) / 2;
         cachedBgY = (this.height - BG_HEIGHT) / 2;
         layoutCached = true;
+        textCacheDirty = true;
     }
 
-    @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // 優化：高效的背景渲染
-        guiGraphics.fill(0, 0, this.width, this.height, 0xFF000000);
+    private void refreshTextCache() {
+        if (!textCacheDirty || this.font == null) {
+            return;
+        }
+        for (int i = 0; i < lines.length; i++) {
+            cachedLineSequences[i] = lines[i].getVisualOrderText();
+            lineWidths[i] = this.font.width(cachedLineSequences[i]);
+            cachedLineStartX[i] = cachedCenterX - lineWidths[i] / 2;
+        }
+        textCacheDirty = false;
     }
 
     @Override
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
-        // 優化：重新計算快取
-        updateLayoutCache();
-        this.rebuildWidgets();
-        this.initButtons();
-        // 🔁 重建 UI 按鈕
+        layoutCached = false;
+        textCacheDirty = true;
+        if (currentStage == Stage.AWAITING_CONFIRM) {
+            initButtons();
+        } else {
+            this.clearWidgets();
+        }
     }
-
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // 優化：檢查快取是否有效
         if (!layoutCached) {
             updateLayoutCache();
         }
+        refreshTextCache();
 
-        graphics.setColor(1F, 1F, 1F, 1F); // 保證透明正常
+        graphics.setColor(1F, 1F, 1F, 1F);
+        graphics.fillGradient(cachedBgX - 12, cachedBgY - 12, cachedBgX + BG_WIDTH + 12, cachedBgY + BG_HEIGHT + 12, 0xA0000000, 0x70000000);
+        graphics.blit(OVERLAY_TEXTURE, cachedBgX, cachedBgY, 0, 0, BG_WIDTH, BG_HEIGHT, BG_WIDTH, BG_HEIGHT);
 
-        // 優化：使用更高效的背景渲染
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-
-        // 優化：使用快取的背景位置
-        graphics.blit(overlayTexture, cachedBgX, cachedBgY, 0, 0, BG_WIDTH, BG_HEIGHT, BG_WIDTH, BG_HEIGHT);
-
-        // 優化：快取文字起始位置
         int startY = cachedCenterY - 50;
-
         graphics.drawCenteredString(this.font, title, cachedCenterX, startY, 0xFFFFFF);
 
-        // 優化：只渲染可見的文字行，減少繪製調用
         if (visibleLines > 0) {
-            for (int i = 0; i < visibleLines; i++) {
-                graphics.drawCenteredString(this.font, lines[i], cachedCenterX, startY + 20 + i * 12, 0xAAAAAA);
+            int linesToDraw = Math.min(visibleLines, cachedLineSequences.length);
+            for (int i = 0; i < linesToDraw; i++) {
+                graphics.drawString(this.font, cachedLineSequences[i], cachedLineStartX[i], startY + 20 + i * 12, 0xAAAAAA);
             }
         }
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    @Override
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // 由 render 方法進行背景渲染
+    }
 
     @Override
     public boolean shouldCloseOnEsc() {

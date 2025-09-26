@@ -26,8 +26,6 @@ import net.neoforged.neoforge.client.model.generators.VariantBlockStateBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -177,11 +175,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
     }
 
     private boolean textureFileExists(ResourceLocation texture) {
-        if (!texture.getNamespace().equals(KoniavacraftMod.MOD_ID)) {
-            return existingFileHelper.exists(texture, ModelProvider.TEXTURE);
-        }
-        Path path = Path.of("src/main/resources/assets", texture.getNamespace(), "textures", texture.getPath() + ".png");
-        return Files.exists(path);
+        return existingFileHelper.exists(texture, ModelProvider.TEXTURE);
     }
 
 

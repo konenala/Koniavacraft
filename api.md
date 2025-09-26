@@ -1,8 +1,8 @@
 # API 文件
 
 ## 版本資訊
-- **文件版本**：0.1.8
-- **最後更新**：同步 Arcane Pedestal 內部資料流描述，確認對外 API 無變動
+- **文件版本**：0.1.10
+- **最後更新**：補充 Nara UI GPU 優化指引，確認對外 API 無變動
 
 ## 總覽
 本模組目前不提供對外 HTTP/REST 介面。所有互動皆在 Minecraft 遊戲內部透過 NeoForge 能力、封包系統與方塊實體邏輯完成。本次更新補充 Arcane Pedestal 與客戶端渲染同步的資料流，未引入任何 REST 端點。
@@ -14,7 +14,8 @@
 
 ## 事件與封包
 - 伺服器與客戶端透過自訂 NeoForge packet channel 溝通，位於 `common/network` 套件。
-- Arcane Pedestal 目前透過 BlockEntity 更新封包（`setChangedAndSync()` 觸發 `ClientboundBlockEntityDataPacket`）向客戶端傳遞祭品物品與動畫參數，渲染器由 `common.block.blockentity.arcanematrix.arcanepedestal` 套件取得最新狀態。
+- Arcane Pedestal 目前透過 BlockEntity 更新封包（`setChangedAndSync()` 觸發 `ClientboundBlockEntityDataPacket`）向客戶端傳遞祭品物品與動畫參數，渲染器由 `common.block.blockentity.ritual` 套件取得最新狀態；封包生成時須略過空 `ItemStack` 以避免編碼錯誤。
+- Nara UI 過場畫面僅於 `init()` 綁定貼圖並快取佈局，後續渲染重用計算結果；任何新增動畫需避免逐幀建立 Widget 或重複載入貼圖，以免增加 GPU 開銷。
 - 若未來新增 REST 風格服務，應建立新的 `server/api` 套件並於此文件新增對應端點。
 
 ## 擴充建議
@@ -26,6 +27,8 @@
 - 暫無 API 測試流程；若建立 REST 端點，需補充自動化測試腳本與 Postman Collection。
 
 ## 變更紀錄
+- **0.1.10**：記錄 Nara UI 畫面需快取貼圖與佈局，避免座標重算造成 GPU 壓力，對 REST 端點無影響。
+- **0.1.9**：紀錄 Arcane Pedestal 封包需忽略空祭品堆疊，確認仍無對外端點。
 - **0.1.8**：補充 Arcane Pedestal 內部同步流程，確認仍無對外端點。
 - **0.1.7**：說明粉筆符文戰利品表缺漏會阻塞資料生成，對 REST 端點無影響。
 - **0.1.6**：紀錄資料生成前需備妥 JDK 21 與 `JAVA_HOME` 設定，對 REST 端點無影響。
