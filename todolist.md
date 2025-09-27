@@ -52,3 +52,12 @@
 - [ ] 模型中心突出調查：檢視方塊 blockstates 與模型 JSON 定位問題（負責：Codex）－進行中
 - [ ] 模型中心修正文件同步：更新 spec.md / api.md（負責：Codex）－待執行
 - [ ] 模型中心修正實作：調整模型或貼圖避免突出（負責：Codex）－待執行
+
+- [ ] 儀式驗證文件同步：更新 spec.md / api.md 記錄 Validator 與配方重構（負責：Codex）－進行中
+- [ ] 儀式驗證實作：建立結構/材料 Validator 並整合核心狀態機（負責：Codex）－待執行
+- [ ] 儀式配方序列化整合：統一 RitualRecipe Serializer（負責：Codex）－待執行
+- [ ] 符文效能優化：改寫 RuneStoneBlockEntity 搜尋邏輯（負責：Codex）－待執行
+
+- [x] 儀式系統文件同步：更新 spec.md / api.md 記錄 RitualBlock 整理（負責：Codex）－完成：資料模型增補 + API 版本 0.1.13
+- [x] 儀式系統類別盤點：整理 ritual block 與 blockentity 代碼（負責：Codex）－完成：列出 6 個方塊 + 6 個方塊實體
+- [x] 儀式系統文件輸出：撰寫《祭壇符文系統.md》於 `個人開發者小記錄/ritual`（負責：Codex）－完成：摘要層級、流程與 TODO

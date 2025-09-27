@@ -17,15 +17,20 @@
   - 空祭品狀態不寫入 NBT；同步封包應透過 `saveOptional` 或條件判斷避免序列化空堆疊，防止服務端崩潰。
   - 粉筆紋理統一存於 `textures/block/ritual/` 子資料夾，資料生成需透過 `modLoc("block/ritual/...")` 讀取，避免與一般方塊資源混淆。
 - **Nara UI**：`narasystem.nara.screen.NaraIntroScreen` 與 `NaraInitScreen` 為客戶端過場 / 綁定流程，採用快取佈局與節奏驅動動畫；所有貼圖在 `init()` 先設定過濾方式，並需避免逐幀建立 Widget 與重複轉換矩陣以降低 GPU 負載。
+- **儀式方塊族群**：`common.block.ritualblock` 與 `common.block.blockentity.ritual` 分別維護 Ritual Core、Arcane Pedestal、Rune Stone、Mana Pylon 與 Chalk Glyph；對應 BlockEntity 提供儀式進度、魔力儲量、祭品槽與符文加成的資料節點，詳細整理請參考 `個人開發者小記錄/ritual/祭壇符文系統.md`。
+  - 引入 `validator` 子套件：`RitualStructureValidator`、`RitualMaterialValidator` 與 `RitualValidationContext` 專責檢查幾何佈局與祭品清單；`RitualCoreBlockEntity` 僅維護狀態機並委派驗證。
+  - `RitualRecipe` 統一使用內建序列化器 (移除重複實作)，資料包新增欄位時集中於單一路徑維護。
+  - `RuneStoneBlockEntity` 透過核心廣播快取儀式中心位址，避免每 tick 掃描 32×32×16 範圍。
 
 ## 3. 關鍵流程
 1. 遊戲啟動時進行所有內容註冊（Blocks、Items、BlockEntities、Menus、Recipes）。
 2. 執行資料生成前，需先以 `powershell.exe -Command "java -version"` 確認 JDK 21 與 `JAVA_HOME` 設定無誤，並確認 `data/koniava/loot_tables/blocks/chalk_glyph.json` 存在，再透過 `./gradlew runData` 重建 JSON 配方、模型。
 3. 方塊實體 `tick` 中與能量儲存、網路傳輸交互，更新 GUI 與同步封包。
 4. Arcane Pedestal 伺服端 `serverTick` 處理粒子與儀式核心的互動，客戶端 `clientTick` 更新旋轉與浮動動畫，任何庫存／狀態變化需透過 `setChangedAndSync()` 通知客戶端，避免渲染器取得舊值。
-5. 同步封包前先檢查祭品是否為空堆疊，僅在有物品時寫入 NBT，避免 `ItemStack.save` 對空堆疊編碼導致崩潰。
-6. 文檔維運流程：更新 `spec.md` → 更新 `api.md` → 同步根目錄與 `docs/AGENTS.md` 的協作指南 → 更新 `todolist.md`。
-7. 語系資源維護：比對 `assets/koniava/lang/en_us.json` 與 `zh_tw.json`，補齊缺漏並確認翻譯符合繁體中文語境；本次新增 `message.koniava.cannot_place_here`、`message.koniava.conduit.error_occurred`、`message.koniava.ritual_already_active`、`message.koniava.config_save_failed`、`screen.koniava.solar.no_upgrades`、`screen.koniava.solar.upgrade_stats`、`screen.koniava.upgrade.fallback_error` 等鍵值以支援導管錯誤提示、儀式衝突訊息與太陽能升級介面。
+5. `RitualCoreBlockEntity` 在 `PREPARING` 狀態委派 `RitualStructureValidator` / `RitualMaterialValidator`；任何錯誤都會紀錄於 `RitualValidationContext` 並回報玩家。
+6. 同步封包前先檢查祭品是否為空堆疊，僅在有物品時寫入 NBT，避免 `ItemStack.save` 對空堆疊編碼導致崩潰。
+7. 文檔維運流程：更新 `spec.md` → 更新 `api.md` → 同步根目錄與 `docs/AGENTS.md` 的協作指南 → 更新 `todolist.md`。
+8. 語系資源維護：比對 `assets/koniava/lang/en_us.json` 與 `zh_tw.json`，補齊缺漏並確認翻譯符合繁體中文語境；本次新增 `message.koniava.cannot_place_here`、`message.koniava.conduit.error_occurred`、`message.koniava.ritual_already_active`、`message.koniava.config_save_failed`、`screen.koniava.solar.no_upgrades`、`screen.koniava.solar.upgrade_stats`、`screen.koniava.upgrade.fallback_error` 等鍵值以支援導管錯誤提示、儀式衝突訊息與太陽能升級介面。
    - 翻譯對照：`block.koniava.chalk_glyph` →「粉筆符號」、`block.koniava.rune_stone_efficiency` →「效率符文石」、`block.koniava.rune_stone_stability` →「穩定符文石」、`block.koniava.rune_stone_augmentation` →「增幅符文石」、`block.koniava.rune_stone_celerity` →「迅捷符文石」。
 8. 儀式資產維護：將 `個人開發者小記錄/ritual` 下的預覽材質依規格命名並紀錄缺漏項目，確保後續匯入遊戲資源時能直接對應。共鳴水晶物品模型需改用專用貼圖並維持 GUI 0.9 / 掉落 0.8 的縮放，避免放大產生的外殼視覺。
 9. 資產套用稽核：比對程式註冊（Blocks/Items）、模型、材質與資料生成輸出，確保新資產均已連結對應檔案並記錄缺失。
