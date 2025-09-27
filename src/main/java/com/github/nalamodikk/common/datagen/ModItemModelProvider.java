@@ -35,7 +35,7 @@ public class ModItemModelProvider extends ItemModelProvider {
     @Override
     protected void registerModels() {
         // 1) 這裡列出「已手做模型」的物品（需要你自行盤點）
-        useExistingItemModel(ModItems.RESONANT_CRYSTAL);
+//        useExistingItemModel(ModItems.RESONANT_CRYSTAL);
 
         // 2) 其他物品：自動生成（有現成 model 就跳過）
         ModItems.ITEMS.getEntries().forEach(item -> {

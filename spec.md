@@ -25,8 +25,9 @@
 4. Arcane Pedestal 伺服端 `serverTick` 處理粒子與儀式核心的互動，客戶端 `clientTick` 更新旋轉與浮動動畫，任何庫存／狀態變化需透過 `setChangedAndSync()` 通知客戶端，避免渲染器取得舊值。
 5. 同步封包前先檢查祭品是否為空堆疊，僅在有物品時寫入 NBT，避免 `ItemStack.save` 對空堆疊編碼導致崩潰。
 6. 文檔維運流程：更新 `spec.md` → 更新 `api.md` → 同步根目錄與 `docs/AGENTS.md` 的協作指南 → 更新 `todolist.md`。
-7. 語系資源維護：比對 `assets/koniava/lang/en_us.json` 與 `zh_tw.json`，補齊缺漏並確認翻譯符合繁體中文語境。
-8. 儀式資產維護：將 `個人開發者小記錄/ritual` 下的預覽材質依規格命名並紀錄缺漏項目，確保後續匯入遊戲資源時能直接對應。
+7. 語系資源維護：比對 `assets/koniava/lang/en_us.json` 與 `zh_tw.json`，補齊缺漏並確認翻譯符合繁體中文語境；本次新增 `message.koniava.cannot_place_here`、`message.koniava.conduit.error_occurred`、`message.koniava.ritual_already_active`、`message.koniava.config_save_failed`、`screen.koniava.solar.no_upgrades`、`screen.koniava.solar.upgrade_stats`、`screen.koniava.upgrade.fallback_error` 等鍵值以支援導管錯誤提示、儀式衝突訊息與太陽能升級介面。
+   - 翻譯對照：`block.koniava.chalk_glyph` →「粉筆符號」、`block.koniava.rune_stone_efficiency` →「效率符文石」、`block.koniava.rune_stone_stability` →「穩定符文石」、`block.koniava.rune_stone_augmentation` →「增幅符文石」、`block.koniava.rune_stone_celerity` →「迅捷符文石」。
+8. 儀式資產維護：將 `個人開發者小記錄/ritual` 下的預覽材質依規格命名並紀錄缺漏項目，確保後續匯入遊戲資源時能直接對應。共鳴水晶物品模型需改用專用貼圖並維持 GUI 0.9 / 掉落 0.8 的縮放，避免放大產生的外殼視覺。
 9. 資產套用稽核：比對程式註冊（Blocks/Items）、模型、材質與資料生成輸出，確保新資產均已連結對應檔案並記錄缺失。
 10. 儀式資產整合：將檔案從 `個人開發者小記錄/ritual` 搬運至正式資源路徑（`textures`, `models`, `blockstates`），並以資料生成驗證輸出。
 11. 粉筆資產補完：自動化產生缺漏粉筆圖案（以白色圖案套色）、補齊彩色粉筆物品模型並同步資料生成。

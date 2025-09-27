@@ -12,7 +12,7 @@ import java.util.List;
  * 消耗品，每次儀式都需要消耗一個
  */
 public class ResonantCrystalItem extends Item {
-    
+
     public ResonantCrystalItem(Properties properties) {
         super(properties);
     }

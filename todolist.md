@@ -22,6 +22,12 @@
 - [ ] 補齊粉筆白色圓形紋理：新增 `assets/koniava/textures/block/chalk_glyph_white_circle.png` 以消除 runData 警告（待指派）
 
 - [x] Nara Intro/Init Screen 動畫檢查：定位貼圖旋轉停用原因（負責：Codex）－已提供原因與修復建議
+- [x] Resonant Crystal 模型檢查：調查 item 模型中央柱狀渲染異常（負責：Codex）－已說明原因並提供調整建議
+
+- [x] 粉筆符號與符文石翻譯更新：補上 block.koniava.* 顯示名稱（負責：Codex）
+- [x] 共鳴水晶模型瘦身：調整展示比例與材質（負責：Codex）－已調整模型縮放與專用貼圖
+
+
 
 
 - [x] Arcane Pedestal 文檔同步：更新 spec.md / api.md 確認新方塊實體（負責：Codex）
@@ -37,3 +43,12 @@
 - [x] Chalk Glyph 文檔同步：記錄紋理移至 textures/block/ritual（負責：Codex）
 - [x] Chalk Glyph 紋理路徑調整：讓程式支援 ritual 子目錄（負責：Codex）
 - [ ] Chalk Glyph 測試：執行 runData / build 檢查警告（負責：Codex）
+- [x] 語系缺漏鍵文件同步：更新 spec.md 與 api.md 記錄補齊內容（負責：Codex）－完成：將新增的 7 個語系鍵記錄於規格/版本資訊
+- [x] 語系缺漏鍵補齊：新增 en_us / zh_tw 缺失鍵值（負責：Codex）－完成：已新增 7 個鍵值包含導管錯誤與太陽能介面
+- [x] 語系缺漏鍵測試：執行 .\gradlew.bat build 驗證（負責：Codex）－完成：2025-09-26 cmd.exe /C gradlew.bat build 成功
+
+- [x] Component.translatable 語系鍵檢查：確認鍵值於 `en_us.json` 與 `zh_tw.json` 完整（負責：Codex）－完成：缺少 7 個鍵，詳見報告
+
+- [ ] 模型中心突出調查：檢視方塊 blockstates 與模型 JSON 定位問題（負責：Codex）－進行中
+- [ ] 模型中心修正文件同步：更新 spec.md / api.md（負責：Codex）－待執行
+- [ ] 模型中心修正實作：調整模型或貼圖避免突出（負責：Codex）－待執行

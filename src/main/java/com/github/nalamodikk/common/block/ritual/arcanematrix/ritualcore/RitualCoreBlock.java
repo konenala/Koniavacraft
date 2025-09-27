@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEnti
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -69,7 +70,7 @@ public class RitualCoreBlock extends BaseEntityBlock {
                 return InteractionResult.CONSUME;
             } else {
                 // Ritual is already active, maybe send a message to the player
-                player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.koniava.ritual_already_active"));
+                player.sendSystemMessage(Component.translatable("message.koniava.ritual_already_active"));
                 return InteractionResult.FAIL;
             }
         }
