@@ -21,6 +21,8 @@
 - **粉筆顏色枚舉**：`ChalkGlyphBlock.ChalkColor` 將顏色名稱改為語系鍵 `color.koniavacraft.chalk.<color>`，並透過 `Component.translatable` 返回顯示用文字，供訊息與 tooltip 共用。
 
 - **儀式方塊族群**：`common.block.ritualblock` 與 `common.block.blockentity.ritual` 維護 Ritual Core、Arcane Pedestal、Rune Stone、Mana Pylon 與 Chalk Glyph；BlockEntity 提供儀式進度、魔力儲量、祭品槽與符文加成資料，詳見 `個人開發者小記錄/ritual/祭壇符文系統.md`。
+- **符文石模型**：`ModBlockStateProvider` 對四種 rune stone 以自訂 `BlockModelBuilder` 描述多段幾何（基座＋晶核），避免單純 `cube_all`，確保渲染與碰撞盒一致。
+
   - `validator` 子套件提供 `RitualStructureValidator` / `RitualMaterialValidator`，責任劃分為幾何佈局與祭品清單檢查；`RitualCoreBlockEntity` 僅負責狀態機。結構驗證現包括：
     - 掃描核心六格半徑內的基座並確認各自位於四向固定偏移，同時檢查 `ArcanePedestalBlock` 面向是否指向核心；違規時回報 `message.koniavacraft.ritual.error.pedestal_facing`。
     - 收集魔力塔並使用 `pedestal.total`、`pedestal.north/south/east/west`、`pylon.total` 等鍵填入 `structureSummary`，配方可透過 `structure_requirements` 要求最小數量，魔力塔距離超過 9 格會觸發 `message.koniavacraft.ritual.error.pylon_distance`。
@@ -28,6 +30,7 @@
     - 將統計輸出傳遞給 `RitualMaterialValidator`，由 `RitualRecipe.matches` 依 `structure_requirements` 逐鍵檢查需求，缺失時補充 `message.koniavacraft.ritual.error.structure_requirement`。
   - `RitualCoreTracker` 快取核心座標，基座與符文改用追蹤器查詢核心，基座在祭品變動時呼叫 `onPedestalContentsChanged()` 強制重新評估。
   - `RitualRecipe` 只保留內建 `Serializer`，配方序列化/反序列化集中於單一路徑維護。
+  - `RuneStoneBlock` 依 `RuneType` 設定專屬外觀：效率（矮柱＋晶核）、迅捷（細長石柱）、穩定（厚重護石）與增幅（分層尖頂）。程式內以 `EnumMap` 維護對應體素範圍，資料生成則輸出多段元素模型，貼圖來源於 `textures/block/rune_stone_<type>.png`。
 
 ## 3. 關鍵流程
 1. 遊戲啟動時進行所有內容註冊（Blocks、Items、BlockEntities、Menus、Recipes）。

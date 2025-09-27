@@ -64,7 +64,13 @@
 
 - [x] Ritual 結構驗證擴充：更新 spec.md / api.md（負責：Codex）－完成：2025-09-27 描述基座朝向與粉筆統計
 - [x] Ritual 結構驗證擴充：實作基座朝向＋粉筆圖案檢查（負責：Codex）－完成：擴充 StructureValidator / Recipe 檢查
-- [ ] Ritual 結構驗證擴充：測試 gradlew.bat build（負責：Codex）
+- [x] Ritual 結構驗證擴充：測試 gradlew.bat build（負責：Codex）－完成：2025-09-27 gradlew.bat build
 - [x] 粉筆語系轉換：更新 spec.md / api.md（負責：Codex）－完成：2025-09-27 語系鍵與訊息改寫
 - [x] 粉筆語系轉換：程式與語系檔調整（負責：Codex）－完成：ChalkGlyphBlock / 語系檔同步
-- [ ] 粉筆語系轉換：測試 gradlew.bat build（負責：Codex）
+- [x] 粉筆語系轉換：測試 gradlew.bat build（負責：Codex）－完成：2025-09-27 gradlew.bat build
+
+
+- [x] Rune Stone 外觀調整：更新 spec.md / api.md（負責：Codex）－完成：2025-09-27 記錄形狀與模型生成
+- [x] Rune Stone 外觀調整：程式與模型實作（負責：Codex）－完成：RuneStoneBlock / ModBlockStateProvider
+- [x] Rune Stone 外觀調整：更新《祭壇符文系統.md》（負責：Codex）－完成：新增 2.1 外觀描述
+- [x] Rune Stone 外觀調整：測試 gradlew.bat runData / build（負責：Codex）－完成：2025-09-27 runData + build
