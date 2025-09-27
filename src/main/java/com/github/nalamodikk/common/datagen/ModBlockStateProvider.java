@@ -28,6 +28,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.function.Consumer;
+
 public class ModBlockStateProvider extends BlockStateProvider {
 
     private final Map<String, ModelFile> chalkGlyphModelCache = new HashMap<>();
@@ -99,10 +101,46 @@ public class ModBlockStateProvider extends BlockStateProvider {
     // 🧪 特殊方塊模型
     // ===========================================
     private void generateRuneStoneStates() {
-        blockWithItem(ModBlocks.RUNE_STONE_EFFICIENCY);
-        blockWithItem(ModBlocks.RUNE_STONE_CELERITY);
-        blockWithItem(ModBlocks.RUNE_STONE_STABILITY);
-        blockWithItem(ModBlocks.RUNE_STONE_AUGMENTATION);
+        runeStoneBlock(ModBlocks.RUNE_STONE_EFFICIENCY, builder -> {
+            addCube(builder, 3.0F, 0.0F, 3.0F, 13.0F, 6.0F, 13.0F);
+            addCube(builder, 5.0F, 6.0F, 5.0F, 11.0F, 12.0F, 11.0F);
+        });
+        runeStoneBlock(ModBlocks.RUNE_STONE_CELERITY, builder -> {
+            addCube(builder, 4.0F, 0.0F, 4.0F, 12.0F, 5.0F, 12.0F);
+            addCube(builder, 6.0F, 5.0F, 6.0F, 10.0F, 16.0F, 10.0F);
+        });
+        runeStoneBlock(ModBlocks.RUNE_STONE_STABILITY, builder -> {
+            addCube(builder, 2.0F, 0.0F, 2.0F, 14.0F, 5.0F, 14.0F);
+            addCube(builder, 1.0F, 5.0F, 1.0F, 15.0F, 8.0F, 15.0F);
+        });
+        runeStoneBlock(ModBlocks.RUNE_STONE_AUGMENTATION, builder -> {
+            addCube(builder, 4.0F, 0.0F, 4.0F, 12.0F, 4.0F, 12.0F);
+            addCube(builder, 3.0F, 4.0F, 3.0F, 13.0F, 10.0F, 13.0F);
+            addCube(builder, 6.0F, 10.0F, 6.0F, 10.0F, 15.0F, 10.0F);
+        });
+
+    }
+
+
+    private void runeStoneBlock(DeferredBlock<Block> block, Consumer<BlockModelBuilder> geometry) {
+        String modelName = block.getId().getPath();
+        ResourceLocation texture = modLoc("block/" + modelName);
+        BlockModelBuilder builder = models().getBuilder(modelName)
+                .parent(new ModelFile.UncheckedModelFile("minecraft:block/block"))
+                .texture("all", texture)
+                .texture("particle", texture);
+        geometry.accept(builder);
+        simpleBlockWithItem(block.get(), builder);
+    }
+
+    private void addCube(BlockModelBuilder builder, float fromX, float fromY, float fromZ, float toX, float toY, float toZ) {
+        BlockModelBuilder.ElementBuilder element = builder.element()
+                .from(fromX, fromY, fromZ)
+                .to(toX, toY, toZ);
+        for (Direction direction : Direction.values()) {
+            element.face(direction).texture("#all").end();
+        }
+        element.end();
     }
 
     private void createChalkGlyphStates() {

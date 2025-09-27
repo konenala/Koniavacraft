@@ -3,6 +3,9 @@ package com.github.nalamodikk.common.block.ritualblock;
 import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
+
+import java.util.EnumMap;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -18,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,10 +33,33 @@ import org.jetbrains.annotations.Nullable;
 public class RuneStoneBlock extends BaseEntityBlock {
     public static final MapCodec<RuneStoneBlock> CODEC = simpleCodec(properties -> new RuneStoneBlock(properties, RuneType.EFFICIENCY));
 
-    private final RuneType runeType;
+    private static final VoxelShape DEFAULT_SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 8.0D, 14.0D);
+    private static final EnumMap<RuneType, VoxelShape> SHAPES = new EnumMap<>(RuneType.class);
 
-    // 符文石形狀 - 較矮的方塊
-    private static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 8.0D, 14.0D);
+    static {
+        SHAPES.put(RuneType.EFFICIENCY, mergeShapes(
+                Block.box(3.0D, 0.0D, 3.0D, 13.0D, 6.0D, 13.0D),
+                Block.box(5.0D, 6.0D, 5.0D, 11.0D, 12.0D, 11.0D)
+        ));
+
+        SHAPES.put(RuneType.CELERITY, mergeShapes(
+                Block.box(4.0D, 0.0D, 4.0D, 12.0D, 5.0D, 12.0D),
+                Block.box(6.0D, 5.0D, 6.0D, 10.0D, 16.0D, 10.0D)
+        ));
+
+        SHAPES.put(RuneType.STABILITY, mergeShapes(
+                Block.box(2.0D, 0.0D, 2.0D, 14.0D, 5.0D, 14.0D),
+                Block.box(1.0D, 5.0D, 1.0D, 15.0D, 8.0D, 15.0D)
+        ));
+
+        SHAPES.put(RuneType.AUGMENTATION, mergeShapes(
+                Block.box(4.0D, 0.0D, 4.0D, 12.0D, 4.0D, 12.0D),
+                Block.box(3.0D, 4.0D, 3.0D, 13.0D, 10.0D, 13.0D),
+                Block.box(6.0D, 10.0D, 6.0D, 10.0D, 15.0D, 10.0D)
+        ));
+    }
+
+    private final RuneType runeType;
 
     public RuneStoneBlock(Properties properties, RuneType runeType) {
         super(properties);
@@ -51,12 +78,12 @@ public class RuneStoneBlock extends BaseEntityBlock {
 
     @Override
     protected @NotNull VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return SHAPES.getOrDefault(runeType, DEFAULT_SHAPE);
     }
 
     @Override
     protected @NotNull VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return SHAPES.getOrDefault(runeType, DEFAULT_SHAPE);
     }
 
     @Override
@@ -69,7 +96,6 @@ public class RuneStoneBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof RuneStoneBlockEntity runeStone) {
-                // 顯示符文石資訊
                 Component typeName = Component.translatable(runeType.getTranslationKey());
                 Component description = Component.translatable(runeType.getDescriptionKey());
                 player.sendSystemMessage(Component.translatable("message.koniavacraft.rune_stone.info", typeName, description));
@@ -89,4 +115,11 @@ public class RuneStoneBlock extends BaseEntityBlock {
         return runeType;
     }
 
+    private static VoxelShape mergeShapes(VoxelShape... parts) {
+        VoxelShape shape = Shapes.empty();
+        for (VoxelShape part : parts) {
+            shape = Shapes.or(shape, part);
+        }
+        return shape;
+    }
 }
