@@ -4,6 +4,7 @@ import com.github.nalamodikk.common.item.ritual.RitualistChalkItem;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -143,15 +144,12 @@ public class ChalkGlyphBlock extends Block {
             return name;
         }
 
-        public String getDisplayName() {
-            return switch (this) {
-                case WHITE -> "白色";
-                case YELLOW -> "黃色";
-                case BLUE -> "藍色";
-                case PURPLE -> "紫色";
-                case RED -> "紅色";
-                case GREEN -> "綠色";
-            };
+        public String getTranslationKey() {
+            return "color.koniavacraft.chalk." + name;
+        }
+
+        public Component getDisplayComponent() {
+            return Component.translatable(getTranslationKey());
         }
     }
 

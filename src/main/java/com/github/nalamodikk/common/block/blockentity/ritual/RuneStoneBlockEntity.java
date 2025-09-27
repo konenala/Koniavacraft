@@ -2,6 +2,7 @@ package com.github.nalamodikk.common.block.blockentity.ritual;
 
 import com.github.nalamodikk.common.block.ritualblock.RuneStoneBlock;
 import com.github.nalamodikk.common.block.ritualblock.RuneType;
+import com.github.nalamodikk.common.block.blockentity.ritual.tracker.RitualCoreTracker;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -106,30 +107,40 @@ public class RuneStoneBlockEntity extends BlockEntity {
     }
 
     /**
-     * 檢查附近的儀式活動
+     * 檢查附近的儀式活動：改用核心追蹤器避免全面掃描。
      */
     private boolean checkForNearbyRituals() {
-        // 在32x32範圍內搜索儀式核心
-        for (int x = -16; x <= 16; x++) {
-            for (int z = -16; z <= 16; z++) {
-                for (int y = -8; y <= 8; y++) {
-                    BlockPos checkPos = worldPosition.offset(x, y, z);
-                    BlockEntity be = level.getBlockEntity(checkPos);
-                    if (be instanceof RitualCoreBlockEntity ritualCore) {
-                        RitualCoreBlockEntity.RitualState state = ritualCore.getState();
-                        if (state == RitualCoreBlockEntity.RitualState.RUNNING) {
-                            // 計算激活程度（基於距離）
-                            double distance = Math.sqrt(x*x + y*y + z*z);
-                            activationLevel = Math.max(0.0f, 1.0f - (float)(distance / 16.0));
-                            return true;
-                        }
-                    }
+        if (level == null) {
+            activationLevel = 0.0f;
+            return false;
+        }
+
+        double maxDistance = 16.0;
+        double closestSq = Double.MAX_VALUE;
+        boolean found = false;
+
+        for (BlockPos corePos : RitualCoreTracker.getCores(level)) {
+            double distanceSq = corePos.distSqr(worldPosition);
+            if (distanceSq > maxDistance * maxDistance) {
+                continue;
+            }
+            BlockEntity be = level.getBlockEntity(corePos);
+            if (be instanceof RitualCoreBlockEntity ritualCore) {
+                RitualCoreBlockEntity.RitualState state = ritualCore.getState();
+                if (state == RitualCoreBlockEntity.RitualState.RUNNING || state == RitualCoreBlockEntity.RitualState.PREPARING) {
+                    closestSq = Math.min(closestSq, distanceSq);
+                    found = true;
                 }
             }
         }
 
-        activationLevel = 0.0f;
-        return false;
+        if (found) {
+            double distance = Math.sqrt(closestSq);
+            activationLevel = Math.max(0.0f, 1.0f - (float) (distance / maxDistance));
+        } else {
+            activationLevel = 0.0f;
+        }
+        return found;
     }
 
     /**

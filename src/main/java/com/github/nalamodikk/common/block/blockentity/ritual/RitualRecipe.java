@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * 儀式配方 - 定義儀式的所有要求和產出
@@ -57,13 +58,21 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
 
     @Override
     public boolean matches(RitualInput input, Level level) {
-        // 檢查祭品是否匹配
+        if (!matchesIngredientsAndMana(input)) {
+            return false;
+        }
+        return findFirstUnmetStructureRequirement(input.getAvailableStructure()).isEmpty();
+    }
+
+    /**
+     * 檢查祭品與魔力是否符合要求（不檢查結構）。
+     */
+    public boolean matchesIngredientsAndMana(RitualInput input) {
         List<ItemStack> availableItems = input.getIngredients();
         if (availableItems.size() < ingredients.size()) {
             return false;
         }
-        
-        // 檢查每個必需材料是否可用
+
         for (Ingredient ingredient : ingredients) {
             boolean found = false;
             for (ItemStack available : availableItems) {
@@ -76,13 +85,24 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
                 return false;
             }
         }
-        
-        // 檢查魔力是否充足
-        if (input.getAvailableMana() < manaCost) {
-            return false;
+
+        return input.getAvailableMana() >= manaCost;
+    }
+
+    /**
+     * 找出第一個未達標的結構需求。
+     */
+    public Optional<StructureRequirementStatus> findFirstUnmetStructureRequirement(Map<String, Integer> availableStructure) {
+        if (structureRequirements.isEmpty()) {
+            return Optional.empty();
         }
-        
-        return true;
+        for (Map.Entry<String, Integer> entry : structureRequirements.entrySet()) {
+            int actual = availableStructure.getOrDefault(entry.getKey(), 0);
+            if (actual < entry.getValue()) {
+                return Optional.of(new StructureRequirementStatus(entry.getKey(), entry.getValue(), actual));
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -94,6 +114,8 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
     public boolean canCraftInDimensions(int width, int height) {
         return true; // 儀式不受尺寸限制
     }
+
+    public record StructureRequirementStatus(String key, int required, int actual) {}
 
     @Override
     public ItemStack getResultItem(HolderLookup.Provider registries) {

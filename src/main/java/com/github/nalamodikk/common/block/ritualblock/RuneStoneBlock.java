@@ -69,21 +69,9 @@ public class RuneStoneBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof RuneStoneBlockEntity runeStone) {
-                // 顯示符文石信息
-                String typeName = switch (runeType) {
-                    case EFFICIENCY -> "效率符文";
-                    case CELERITY -> "迅捷符文";
-                    case STABILITY -> "穩定符文";
-                    case AUGMENTATION -> "增幅符文";
-                };
-
-                String description = switch (runeType) {
-                    case EFFICIENCY -> "降低儀式魔力消耗 8%";
-                    case CELERITY -> "提升儀式速度 10%";
-                    case STABILITY -> "降低儀式失敗風險";
-                    case AUGMENTATION -> "有機率產出額外物品或附魔";
-                };
-
+                // 顯示符文石資訊
+                Component typeName = Component.translatable(runeType.getTranslationKey());
+                Component description = Component.translatable(runeType.getDescriptionKey());
                 player.sendSystemMessage(Component.translatable("message.koniavacraft.rune_stone.info", typeName, description));
                 return InteractionResult.SUCCESS;
             }

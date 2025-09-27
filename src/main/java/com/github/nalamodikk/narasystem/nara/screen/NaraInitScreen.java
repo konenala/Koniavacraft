@@ -157,6 +157,7 @@ public class NaraInitScreen extends Screen {
             updateLayoutCache();
         }
         refreshTextCache();
+        graphics.fillGradient(0, 0, this.width, this.height, 0xD0000000, 0x90000000);
 
         graphics.setColor(1F, 1F, 1F, 1F);
         graphics.fillGradient(cachedBgX - 12, cachedBgY - 12, cachedBgX + BG_WIDTH + 12, cachedBgY + BG_HEIGHT + 12, 0xA0000000, 0x70000000);

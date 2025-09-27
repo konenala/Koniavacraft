@@ -53,11 +53,18 @@
 - [ ] 模型中心修正文件同步：更新 spec.md / api.md（負責：Codex）－待執行
 - [ ] 模型中心修正實作：調整模型或貼圖避免突出（負責：Codex）－待執行
 
-- [ ] 儀式驗證文件同步：更新 spec.md / api.md 記錄 Validator 與配方重構（負責：Codex）－進行中
-- [ ] 儀式驗證實作：建立結構/材料 Validator 並整合核心狀態機（負責：Codex）－待執行
-- [ ] 儀式配方序列化整合：統一 RitualRecipe Serializer（負責：Codex）－待執行
-- [ ] 符文效能優化：改寫 RuneStoneBlockEntity 搜尋邏輯（負責：Codex）－待執行
+- [x] 儀式驗證文件同步：更新 spec.md / api.md 記錄 Validator 與配方重構（負責：Codex）－完成：spec.md 增補構架 / api.md 版本 0.1.16
+- [x] 儀式驗證實作：建立結構/材料 Validator 並整合核心狀態機（負責：Codex）－完成：RitualStructureValidator / RitualMaterialValidator 已串接
+- [x] 儀式配方序列化整合：統一 RitualRecipe Serializer（負責：Codex）－完成：移除 RitualRecipeSerializer.java、統一使用內建 Serializer
+- [x] 符文效能優化：改寫 RuneStoneBlockEntity 搜尋邏輯（負責：Codex）－完成：導入 RitualCoreTracker 快取核心位置
 
 - [x] 儀式系統文件同步：更新 spec.md / api.md 記錄 RitualBlock 整理（負責：Codex）－完成：資料模型增補 + API 版本 0.1.13
 - [x] 儀式系統類別盤點：整理 ritual block 與 blockentity 代碼（負責：Codex）－完成：列出 6 個方塊 + 6 個方塊實體
 - [x] 儀式系統文件輸出：撰寫《祭壇符文系統.md》於 `個人開發者小記錄/ritual`（負責：Codex）－完成：摘要層級、流程與 TODO
+
+- [x] Ritual 結構驗證擴充：更新 spec.md / api.md（負責：Codex）－完成：2025-09-27 描述基座朝向與粉筆統計
+- [x] Ritual 結構驗證擴充：實作基座朝向＋粉筆圖案檢查（負責：Codex）－完成：擴充 StructureValidator / Recipe 檢查
+- [ ] Ritual 結構驗證擴充：測試 gradlew.bat build（負責：Codex）
+- [x] 粉筆語系轉換：更新 spec.md / api.md（負責：Codex）－完成：2025-09-27 語系鍵與訊息改寫
+- [x] 粉筆語系轉換：程式與語系檔調整（負責：Codex）－完成：ChalkGlyphBlock / 語系檔同步
+- [ ] 粉筆語系轉換：測試 gradlew.bat build（負責：Codex）

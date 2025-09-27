@@ -69,7 +69,7 @@ public class RitualistChalkItem extends Item {
                 // 消耗耐久度
                 stack.hurtAndBreak(1, player, player.getEquipmentSlotForItem(stack));
 
-                player.sendSystemMessage(Component.translatable("message.koniavacraft.chalk.placed", chalkColor.getDisplayName()));
+                player.sendSystemMessage(Component.translatable("message.koniavacraft.chalk.placed", chalkColor.getDisplayComponent()));
                 return InteractionResult.SUCCESS;
             }
         }
@@ -113,7 +113,7 @@ public class RitualistChalkItem extends Item {
         int damage = stack.getDamageValue();
         int remaining = MAX_DAMAGE - damage;
 
-        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.color", chalkColor.getDisplayName()));
+        tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.color", chalkColor.getDisplayComponent()));
         tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.uses", remaining, MAX_DAMAGE));
         tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.usage"));
         tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.switch_pattern"));

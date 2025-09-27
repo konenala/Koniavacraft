@@ -58,8 +58,8 @@ public class NaraIntroScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         cacheCenter();
+        graphics.fill(0, 0, this.width, this.height, 0xFF000000); // 自己畫純黑遮罩
 
-        graphics.fillGradient(0, 0, this.width, this.height, 0xD0000000, 0x90000000);
 
         float interpolatedAngle = currentAngle + (ROTATION_SPEED * partialTick);
 

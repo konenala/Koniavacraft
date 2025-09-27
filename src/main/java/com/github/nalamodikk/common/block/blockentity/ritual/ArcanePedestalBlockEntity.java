@@ -1,6 +1,9 @@
 package com.github.nalamodikk.common.block.blockentity.ritual;
 
+import com.github.nalamodikk.common.block.blockentity.ritual.tracker.RitualCoreTracker;
 import com.github.nalamodikk.register.ModBlockEntities;
+import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -53,6 +56,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
         tickCount = 0;
         spin = 0f;
         setChangedAndSync();
+        notifyCoreOfChange();
     }
 
     /**
@@ -95,6 +99,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
         tickCount = 0;
         spin = 0f;
         setChangedAndSync();
+        notifyCoreOfChange();
         return result;
     }
 
@@ -115,6 +120,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
             offeringConsumed = true;
         }
         setChangedAndSync();
+        notifyCoreOfChange();
         return removed;
     }
 
@@ -142,6 +148,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
         }
         offeringConsumed = false;
         setChangedAndSync();
+        notifyCoreOfChange();
     }
 
     /**
@@ -197,7 +204,6 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
                 );
             }
         }
-        // TODO: 與 Ritual Core 的同步邏輯將在儀式系統完成時補齊。
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, ArcanePedestalBlockEntity be) {
@@ -266,6 +272,33 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         loadAdditional(pkt.getTag(), registries);
+    }
+
+    /**
+     * 通知最近的儀式核心：祭品內容已變更。
+     */
+    private void notifyCoreOfChange() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+        RitualCoreBlockEntity nearest = null;
+        double closest = Double.MAX_VALUE;
+        for (BlockPos corePos : RitualCoreTracker.getCores(level)) {
+            double distance = corePos.distSqr(worldPosition);
+            if (distance > 100) {
+                continue;
+            }
+            var blockEntity = level.getBlockEntity(corePos);
+            if (blockEntity instanceof RitualCoreBlockEntity core) {
+                if (distance < closest) {
+                    closest = distance;
+                    nearest = core;
+                }
+            }
+        }
+        if (nearest != null) {
+            nearest.onPedestalContentsChanged();
+        }
     }
 
     // endregion
