@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
 import com.github.nalamodikk.register.ModBlocks;
 
 import net.minecraft.core.Direction;
@@ -18,7 +18,6 @@ import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
 
-import net.neoforged.neoforge.client.model.generators.ModelBuilder;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.client.model.generators.ModelProvider;
 import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;

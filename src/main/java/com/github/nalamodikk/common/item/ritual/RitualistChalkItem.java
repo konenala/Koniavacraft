@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.item.ritual;
 
-import com.github.nalamodikk.common.block.ritual.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
 import com.github.nalamodikk.register.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,7 +24,7 @@ import java.util.List;
 public class RitualistChalkItem extends Item {
     private static final int MAX_DAMAGE = 64; // 可使用64次
     private final ChalkGlyphBlock.ChalkColor chalkColor;
-    
+
     public RitualistChalkItem(Properties properties, ChalkGlyphBlock.ChalkColor color) {
         super(properties.durability(MAX_DAMAGE));
         this.chalkColor = color;
@@ -43,7 +43,7 @@ public class RitualistChalkItem extends Item {
         }
 
         BlockPos placePos = clickedPos.above();
-        
+
         // 檢查是否可以放置
         if (!canPlaceGlyph(level, clickedPos, placePos)) {
             if (!level.isClientSide()) {
@@ -64,11 +64,11 @@ public class RitualistChalkItem extends Item {
             BlockState glyphState = ModBlocks.CHALK_GLYPH.get().defaultBlockState()
                     .setValue(ChalkGlyphBlock.COLOR, chalkColor)
                     .setValue(ChalkGlyphBlock.PATTERN, ChalkGlyphBlock.GlyphPattern.CIRCLE);
-            
+
             if (level.setBlock(placePos, glyphState, 3)) {
                 // 消耗耐久度
                 stack.hurtAndBreak(1, player, player.getEquipmentSlotForItem(stack));
-                
+
                 player.sendSystemMessage(Component.translatable("message.koniavacraft.chalk.placed", chalkColor.getDisplayName()));
                 return InteractionResult.SUCCESS;
             }
@@ -97,8 +97,8 @@ public class RitualistChalkItem extends Item {
      */
     private boolean isValidSurface(BlockState state) {
         // 允許在大多數固體方塊上繪製
-        return state.isFaceSturdy(null, null, Direction.UP) && 
-               !state.is(Blocks.WATER) && 
+        return state.isFaceSturdy(null, null, Direction.UP) &&
+               !state.is(Blocks.WATER) &&
                !state.is(Blocks.LAVA);
     }
 
@@ -109,10 +109,10 @@ public class RitualistChalkItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-        
+
         int damage = stack.getDamageValue();
         int remaining = MAX_DAMAGE - damage;
-        
+
         tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.color", chalkColor.getDisplayName()));
         tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.uses", remaining, MAX_DAMAGE));
         tooltipComponents.add(Component.translatable("tooltip.koniavacraft.chalk.usage"));

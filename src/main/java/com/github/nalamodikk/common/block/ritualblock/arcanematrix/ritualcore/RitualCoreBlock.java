@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.ritual.arcanematrix.ritualcore;
+package com.github.nalamodikk.common.block.ritualblock.arcanematrix.ritualcore;
 
 import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;

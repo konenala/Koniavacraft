@@ -1,11 +1,9 @@
-package com.github.nalamodikk.common.block.ritual;
+package com.github.nalamodikk.common.block.ritualblock;
 
 import com.github.nalamodikk.common.item.ritual.RitualistChalkItem;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -19,9 +17,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -37,7 +32,7 @@ public class ChalkGlyphBlock extends Block {
 
     // 顏色屬性 - 決定儀式功能
     public static final EnumProperty<ChalkColor> COLOR = EnumProperty.create("color", ChalkColor.class);
-    
+
     // 圖案屬性 - 只影響視覺外觀
     public static final EnumProperty<GlyphPattern> PATTERN = EnumProperty.create("pattern", GlyphPattern.class);
 
@@ -74,7 +69,7 @@ public class ChalkGlyphBlock extends Block {
     }
 
     @Override
-    public @NotNull BlockState updateShape(BlockState state, Direction facing, BlockState facingState, 
+    public @NotNull BlockState updateShape(BlockState state, Direction facing, BlockState facingState,
                                           LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
         if (!this.canSurvive(state, level, currentPos)) {
             return Blocks.AIR.defaultBlockState();
@@ -91,18 +86,18 @@ public class ChalkGlyphBlock extends Block {
     }
 
     @Override
-    protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, 
+    protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                         Player player, BlockHitResult hit) {
         // 如果玩家手持同色粉筆，可以切換圖案
         if (player.getMainHandItem().getItem() instanceof RitualistChalkItem chalkItem) {
             ChalkColor chalkColor = chalkItem.getChalkColor();
             ChalkColor currentColor = state.getValue(COLOR);
-            
+
             if (chalkColor == currentColor) {
                 // 同色粉筆，切換圖案
                 GlyphPattern currentPattern = state.getValue(PATTERN);
                 GlyphPattern nextPattern = getNextPattern(currentPattern);
-                
+
                 if (!level.isClientSide()) {
                     level.setBlock(pos, state.setValue(PATTERN, nextPattern), 3);
                 }

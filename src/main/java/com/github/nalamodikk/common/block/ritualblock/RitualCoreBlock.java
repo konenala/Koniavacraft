@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.block.ritual;
+package com.github.nalamodikk.common.block.ritualblock;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -23,20 +23,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 符文石方塊 - 增強儀式的輔助方塊
- * 四種基礎類型：效率、迅捷、穩定、增幅
+ * 儀式核心方塊 - 儀式系統的中心方塊
+ * 處理儀式的邏輯、結構驗證和執行
  */
-public class RuneStoneBlock extends BaseEntityBlock {
-    public static final MapCodec<RuneStoneBlock> CODEC = simpleCodec(properties -> new RuneStoneBlock(properties, RuneType.EFFICIENCY));
+public class RitualCoreBlock extends BaseEntityBlock {
+    public static final MapCodec<RitualCoreBlock> CODEC = simpleCodec(RitualCoreBlock::new);
 
-    private final RuneType runeType;
+    // 方塊形狀 - 比完整方塊稍微小一點，更有儀式感
+    private static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
 
-    // 符文石形狀 - 較矮的方塊
-    private static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 8.0D, 14.0D);
-
-    public RuneStoneBlock(Properties properties, RuneType runeType) {
+    public RitualCoreBlock(Properties properties) {
         super(properties);
-        this.runeType = runeType;
     }
 
     @Override
@@ -46,7 +43,7 @@ public class RuneStoneBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new RuneStoneBlockEntity(pos, state, runeType);
+        return new RitualCoreBlockEntity(pos, state);
     }
 
     @Override
@@ -68,23 +65,20 @@ public class RuneStoneBlock extends BaseEntityBlock {
     protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof RuneStoneBlockEntity runeStone) {
-                // 顯示符文石信息
-                String typeName = switch (runeType) {
-                    case EFFICIENCY -> "效率符文";
-                    case CELERITY -> "迅捷符文";
-                    case STABILITY -> "穩定符文";
-                    case AUGMENTATION -> "增幅符文";
-                };
-                
-                String description = switch (runeType) {
-                    case EFFICIENCY -> "降低儀式魔力消耗 8%";
-                    case CELERITY -> "提升儀式速度 10%";
-                    case STABILITY -> "降低儀式失敗風險";
-                    case AUGMENTATION -> "有機率產出額外物品或附魔";
-                };
-                
-                player.sendSystemMessage(Component.translatable("message.koniavacraft.rune_stone.info", typeName, description));
+            if (blockEntity instanceof RitualCoreBlockEntity ritualCore) {
+                // 檢查玩家是否持有催化劑物品
+                if (player.getMainHandItem().isEmpty()) {
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.catalyst_needed"));
+                    return InteractionResult.SUCCESS;
+                }
+
+                // 嘗試啟動儀式
+                boolean success = ritualCore.attemptStartRitual(player, player.getMainHandItem());
+                if (success) {
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.started"));
+                } else {
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.failed"));
+                }
                 return InteractionResult.SUCCESS;
             }
         }
@@ -93,12 +87,18 @@ public class RuneStoneBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.RUNE_STONE_BE.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.RITUAL_CORE_BE.get(),
                 (world, pos, blockState, blockEntity) -> blockEntity.tick());
     }
 
-    public RuneType getRuneType() {
-        return runeType;
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof RitualCoreBlockEntity ritualCore) {
+                ritualCore.dropContents(level, pos);
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
-
 }

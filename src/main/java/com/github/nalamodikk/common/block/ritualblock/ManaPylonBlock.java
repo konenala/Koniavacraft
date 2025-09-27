@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.ritual;
+package com.github.nalamodikk.common.block.ritualblock;
 
 import com.github.nalamodikk.common.block.blockentity.ritual.ManaPylonBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
@@ -73,7 +73,7 @@ public class ManaPylonBlock extends BaseEntityBlock {
                 int storedMana = pylon.getStoredMana();
                 int maxMana = pylon.getMaxManaCapacity();
                 boolean isConnected = pylon.isConnectedToNetwork();
-                
+
                 Component statusText = isConnected ?
                         Component.translatable("misc.koniavacraft.connected") :
                         Component.translatable("misc.koniavacraft.disconnected");

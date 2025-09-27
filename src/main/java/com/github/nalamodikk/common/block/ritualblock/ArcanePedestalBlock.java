@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.ritual;
+package com.github.nalamodikk.common.block.ritualblock;
 
 import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
