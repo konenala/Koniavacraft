@@ -82,9 +82,18 @@ public class RitualCoreBlockEntity extends BlockEntity {
         }
 
         RitualValidationContext context = new RitualValidationContext(level, worldPosition);
-        Optional<RitualRecipe> recipeOptional = structureValidator.validate(context)
-                ? materialValidator.validate(context, manaStorage.getManaStored(), level.getRecipeManager())
-                : Optional.empty();
+
+        boolean structureValid = structureValidator.validate(context);
+        if (!structureValid) {
+            context.sendFirstErrorTo(player);
+            return false;
+        }
+
+        Optional<RitualRecipe> recipeOptional = materialValidator.validate(
+                context,
+                manaStorage.getManaStored(),
+                level.getRecipeManager()
+        );
 
         if (recipeOptional.isEmpty()) {
             context.sendFirstErrorTo(player);
