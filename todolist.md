@@ -74,3 +74,8 @@
 - [x] Rune Stone 外觀調整：程式與模型實作（負責：Codex）－完成：RuneStoneBlock / ModBlockStateProvider
 - [x] Rune Stone 外觀調整：更新《祭壇符文系統.md》（負責：Codex）－完成：新增 2.1 外觀描述
 - [x] Rune Stone 外觀調整：測試 gradlew.bat runData / build（負責：Codex）－完成：2025-09-27 runData + build
+
+
+- [x] Ritual 催化驗證：更新 spec.md / api.md（負責：Codex）－完成：2025-09-27 催化劑驗證說明
+- [x] Ritual 催化驗證：核心程式調整（負責：Codex）－完成：RitualCoreBlockEntity 前置驗證
+- [x] Ritual 催化驗證：測試 gradlew.bat build（負責：Codex）－完成：2025-09-27 gradlew.bat build

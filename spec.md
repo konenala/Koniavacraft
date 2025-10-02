@@ -37,7 +37,7 @@
 2. 執行資料生成前，需先以 `powershell.exe -Command "java -version"` 確認 JDK 21 與 `JAVA_HOME` 設定無誤，並確認 `data/koniava/loot_tables/blocks/chalk_glyph.json` 存在，再透過 `./gradlew runData` 重建 JSON 配方、模型。
 3. 方塊實體 `tick` 中與能量儲存、網路傳輸交互，更新 GUI 與同步封包。
 4. Arcane Pedestal 伺服端 `serverTick` 處理粒子與儀式核心的互動，客戶端 `clientTick` 更新旋轉與浮動動畫，任何庫存／狀態變化需透過 `setChangedAndSync()` 通知客戶端，避免渲染器取得舊值。
-5. `RitualCoreBlockEntity` 在 `PREPARING` 狀態委派 `RitualStructureValidator` / `RitualMaterialValidator`；結構驗證會檢查基座位置與朝向、魔力塔距離、粉筆顏色與圖案統計，並輸出 `structureSummary`（含 `pedestal.*`、`pylon.*`、`glyph.color.*`、`glyph.pattern.*`），材料驗證依 `structure_requirements` 逐鍵比對，不符時將錯誤寫入 `RitualValidationContext` 並提示玩家。
+5. `RitualCoreBlockEntity` 在 `PREPARING` 狀態委派 `RitualStructureValidator` / `RitualMaterialValidator`；結構驗證會檢查基座位置與朝向、魔力塔距離、粉筆顏色與圖案統計，並輸出 `structureSummary`（含 `pedestal.*`、`pylon.*`、`glyph.color.*`、`glyph.pattern.*`），材料驗證依 `structure_requirements` 逐鍵比對，不符時將錯誤寫入 `RitualValidationContext` 並提示玩家；催化劑僅在兩階驗證皆通過後才會扣除。
 6. Arcane Pedestal 祭品變更時會透過 `RitualCoreTracker` 通知核心，核心於 `RUNNING`/`PREPARING` 狀態下自動中止並提示。
 7. 同步封包前先檢查祭品是否為空堆疊，僅在有物品時寫入 NBT，避免 `ItemStack.save` 對空堆疊編碼導致崩潰。
 8. 文檔維運流程：更新 `spec.md` → 更新 `api.md` → 同步根目錄與 `docs/AGENTS.md` 的協作指南 → 更新 `todolist.md`。
