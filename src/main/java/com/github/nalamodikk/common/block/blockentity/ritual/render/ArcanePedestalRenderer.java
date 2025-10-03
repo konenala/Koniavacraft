@@ -307,7 +307,7 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
                                 PoseStack poseStack, MultiBufferSource bufferSource,
                                 int packedLight, int packedOverlay, ItemStack offering) {
         poseStack.pushPose();
-        poseStack.translate(0.5D, 1.25D, 0.5D); // 調整高度讓物品在基座頂部
+        poseStack.translate(0.5D, 2.0D, 0.5D); // 物品在方塊頂部 (16x16x16 碰撞箱頂部)
 
         float hoverOffset = blockEntity.getHoverOffset(partialTick);
         poseStack.translate(0.0D, hoverOffset, 0.0D);

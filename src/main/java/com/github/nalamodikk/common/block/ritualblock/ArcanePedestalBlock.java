@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 public class ArcanePedestalBlock extends BaseEntityBlock {
     public static final MapCodec<ArcanePedestalBlock> CODEC = simpleCodec(ArcanePedestalBlock::new);
     private static final DirectionProperty FACING = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
-    private static final VoxelShape SHAPE = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 10.0D, 13.0D);
+    private static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
 
     public ArcanePedestalBlock(Properties properties) {
         super(properties);
@@ -76,7 +76,7 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
 
     @Override
     protected @NotNull RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
