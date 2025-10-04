@@ -41,6 +41,11 @@
 - [x] Nara Screen GPU 優化：調整 NaraInitScreen 與 NaraIntroScreen（負責：Codex）
 - [ ] Nara Screen 測試：執行 .\gradlew.bat build 並於客戶端驗證（負責：Codex）
 - [x] Chalk Glyph 文檔同步：記錄紋理移至 textures/block/ritual（負責：Codex）
+- [x] Nara Intro Screen 極限效能優化：以烘焙渲染或序列貼圖將耗損降至 1/10（負責：Codex）
+- [x] Nara Intro Screen 測試：執行 .\gradlew.bat build 並記錄基準效能（負責：Codex）
+- [x] Nara Init Screen 極限效能優化：套用背景烘焙與按鈕池化維持視覺一致（負責：Codex）
+- [x] Nara Init Screen 測試：執行 .\gradlew.bat build 與客戶端驗證（負責：Codex）
+
 - [x] Chalk Glyph 紋理路徑調整：讓程式支援 ritual 子目錄（負責：Codex）
 - [ ] Chalk Glyph 測試：執行 runData / build 檢查警告（負責：Codex）
 - [x] 語系缺漏鍵文件同步：更新 spec.md 與 api.md 記錄補齊內容（負責：Codex）－完成：將新增的 7 個語系鍵記錄於規格/版本資訊
