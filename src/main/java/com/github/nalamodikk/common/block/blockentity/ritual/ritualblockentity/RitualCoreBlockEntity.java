@@ -1,9 +1,9 @@
-package com.github.nalamodikk.common.block.blockentity.ritual;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.tracker.RitualCoreTracker;
-import com.github.nalamodikk.common.block.blockentity.ritual.validator.RitualMaterialValidator;
-import com.github.nalamodikk.common.block.blockentity.ritual.validator.RitualStructureValidator;
-import com.github.nalamodikk.common.block.blockentity.ritual.validator.RitualValidationContext;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.tracker.RitualCoreTracker;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator.RitualMaterialValidator;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator.RitualStructureValidator;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator.RitualValidationContext;
 import com.github.nalamodikk.common.capability.ManaStorage;
 import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.register.ModBlockEntities;

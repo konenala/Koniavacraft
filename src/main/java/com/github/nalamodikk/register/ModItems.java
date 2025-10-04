@@ -6,7 +6,7 @@ import com.github.nalamodikk.common.item.debug.ManaDebugToolItem;
 import com.github.nalamodikk.common.item.ritual.ResonantCrystalItem;
 import com.github.nalamodikk.common.item.tool.BasicTechWandItem;
 import com.github.nalamodikk.common.item.ritual.RitualistChalkItem;
-import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.ChalkGlyphBlock;
 import com.github.nalamodikk.common.utils.upgrade.UpgradeType;
 import com.github.nalamodikk.experimental.particle.item.DebugParticleItem;
 import net.minecraft.world.item.Item;

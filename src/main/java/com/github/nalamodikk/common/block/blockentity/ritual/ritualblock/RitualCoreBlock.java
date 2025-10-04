@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.block.ritualblock;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblock;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.ManaPylonBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualCoreBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -18,24 +18,21 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 魔力塔方塊 - 儀式系統的魔力供應器
- * 從相鄰的魔力導管網絡中抽取大量魔力供儀式使用
+ * 儀式核心方塊 - 儀式系統的中心方塊
+ * 處理儀式的邏輯、結構驗證和執行
  */
-public class ManaPylonBlock extends BaseEntityBlock {
-    public static final MapCodec<ManaPylonBlock> CODEC = simpleCodec(ManaPylonBlock::new);
+public class RitualCoreBlock extends BaseEntityBlock {
+    public static final MapCodec<RitualCoreBlock> CODEC = simpleCodec(RitualCoreBlock::new);
 
-    // 塔狀形狀 - 高而細，頂部有水晶狀結構
-    private static final VoxelShape BASE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 10.0D, 11.0D);
-    private static final VoxelShape CRYSTAL = Block.box(6.0D, 10.0D, 6.0D, 10.0D, 16.0D, 10.0D);
-    private static final VoxelShape SHAPE = Shapes.or(BASE, CRYSTAL);
+    // 方塊形狀 - 比完整方塊稍微小一點，更有儀式感
+    private static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
 
-    public ManaPylonBlock(Properties properties) {
+    public RitualCoreBlock(Properties properties) {
         super(properties);
     }
 
@@ -46,7 +43,7 @@ public class ManaPylonBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ManaPylonBlockEntity(pos, state);
+        return new RitualCoreBlockEntity(pos, state);
     }
 
     @Override
@@ -68,22 +65,20 @@ public class ManaPylonBlock extends BaseEntityBlock {
     protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ManaPylonBlockEntity pylon) {
-                // 顯示魔力塔狀態信息
-                int storedMana = pylon.getStoredMana();
-                int maxMana = pylon.getMaxManaCapacity();
-                boolean isConnected = pylon.isConnectedToNetwork();
+            if (blockEntity instanceof RitualCoreBlockEntity ritualCore) {
+                // 檢查玩家是否持有催化劑物品
+                if (player.getMainHandItem().isEmpty()) {
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.catalyst_needed"));
+                    return InteractionResult.SUCCESS;
+                }
 
-                Component statusText = isConnected ?
-                        Component.translatable("misc.koniavacraft.connected") :
-                        Component.translatable("misc.koniavacraft.disconnected");
-
-                player.sendSystemMessage(Component.translatable(
-                        "message.koniavacraft.mana_pylon.status",
-                        storedMana,
-                        maxMana,
-                        statusText
-                ));
+                // 嘗試啟動儀式
+                boolean success = ritualCore.attemptStartRitual(player, player.getMainHandItem());
+                if (success) {
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.started"));
+                } else {
+                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.failed"));
+                }
                 return InteractionResult.SUCCESS;
             }
         }
@@ -92,7 +87,7 @@ public class ManaPylonBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, ModBlockEntities.MANA_PYLON_BE.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.RITUAL_CORE_BE.get(),
                 (world, pos, blockState, blockEntity) -> blockEntity.tick());
     }
 
@@ -100,8 +95,8 @@ public class ManaPylonBlock extends BaseEntityBlock {
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ManaPylonBlockEntity pylon) {
-                pylon.onRemoved();
+            if (blockEntity instanceof RitualCoreBlockEntity ritualCore) {
+                ritualCore.dropContents(level, pos);
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);

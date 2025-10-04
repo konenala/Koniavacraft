@@ -1,8 +1,7 @@
-package com.github.nalamodikk.common.block.blockentity.ritual;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity;
 
 import com.github.nalamodikk.register.ModRecipes;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -27,7 +26,7 @@ import java.util.Optional;
  * 儀式配方 - 定義儀式的所有要求和產出
  */
 public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
-    
+
     private final ResourceLocation id;
     private final String name;
     private final RitualTier tier;
@@ -38,7 +37,7 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
     private final int ritualTime;
     private final float failureChance;
     private final Map<String, Integer> structureRequirements;
-    
+
     public RitualRecipe(ResourceLocation id, String name, RitualTier tier,
                        NonNullList<Ingredient> ingredients, ItemStack result,
                        List<ItemStack> additionalResults, int manaCost,
@@ -156,8 +155,8 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
         private final List<ItemStack> ingredients;
         private final int availableMana;
         private final Map<String, Integer> availableStructure;
-        
-        public RitualInput(List<ItemStack> ingredients, int availableMana, 
+
+        public RitualInput(List<ItemStack> ingredients, int availableMana,
                           Map<String, Integer> availableStructure) {
             this.ingredients = ingredients;
             this.availableMana = availableMana;
@@ -173,7 +172,7 @@ public class RitualRecipe implements Recipe<RitualRecipe.RitualInput> {
         public int size() {
             return ingredients.size();
         }
-        
+
         public List<ItemStack> getIngredients() { return ingredients; }
         public int getAvailableMana() { return availableMana; }
         public Map<String, Integer> getAvailableStructure() { return availableStructure; }

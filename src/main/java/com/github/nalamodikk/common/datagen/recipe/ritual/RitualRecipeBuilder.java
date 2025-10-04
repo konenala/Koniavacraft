@@ -1,8 +1,7 @@
 package com.github.nalamodikk.common.datagen.recipe.ritual;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.blockentity.ritual.RitualRecipe;
-import com.github.nalamodikk.register.ModRecipes;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualRecipe;
 import net.minecraft.core.NonNullList;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -125,7 +124,7 @@ public class RitualRecipeBuilder {
         }
 
         ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "ritual/" + id);
-        
+
         RitualRecipe recipe = new RitualRecipe(
             recipeId,
             name,

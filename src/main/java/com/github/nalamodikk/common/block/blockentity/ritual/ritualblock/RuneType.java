@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.ritualblock;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblock;
 
 /**
  * 符文石類型枚舉

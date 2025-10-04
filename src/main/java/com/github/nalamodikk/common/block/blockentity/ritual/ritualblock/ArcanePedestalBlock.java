@@ -1,10 +1,12 @@
-package com.github.nalamodikk.common.block.ritualblock;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblock;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ArcanePedestalBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -80,31 +82,44 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected @NotNull ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
+                                                       BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (level.isClientSide) {
+            return ItemInteractionResult.SUCCESS;
+        }
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof ArcanePedestalBlockEntity pedestal)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (!stack.isEmpty()) {
+            ItemStack remainder = pedestal.insertOffering(stack);
+            player.setItemInHand(hand, remainder);
+            return ItemInteractionResult.CONSUME;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                                        Player player, BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
-
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof ArcanePedestalBlockEntity pedestal)) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof ArcanePedestalBlockEntity pedestal)) {
             return InteractionResult.PASS;
         }
 
-        ItemStack handItem = player.getMainHandItem();
-        if (!handItem.isEmpty()) {
-            ItemStack remainder = pedestal.insertOffering(handItem);
-            player.setItemInHand(player.getUsedItemHand(), remainder);
-            return InteractionResult.SUCCESS;
-        }
-
-        ItemStack extracted = pedestal.extractOffering();
-        if (!extracted.isEmpty()) {
-            if (!player.addItem(extracted)) {
-                player.drop(extracted, false);
+        if (pedestal.hasOffering()) {
+            ItemStack extracted = pedestal.extractOffering();
+            if (!extracted.isEmpty()) {
+                if (!player.addItem(extracted)) {
+                    player.drop(extracted, false);
+                }
             }
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
         }
-
         return InteractionResult.PASS;
     }
 

@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.block.ritualblock.arcanematrix.ritualcore;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.arcanematrix.ritualcore;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualCoreBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

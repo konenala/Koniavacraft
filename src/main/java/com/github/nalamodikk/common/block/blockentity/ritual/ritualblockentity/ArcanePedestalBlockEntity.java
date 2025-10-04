@@ -1,8 +1,7 @@
-package com.github.nalamodikk.common.block.blockentity.ritual;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.tracker.RitualCoreTracker;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.tracker.RitualCoreTracker;
 import com.github.nalamodikk.register.ModBlockEntities;
-import com.github.nalamodikk.common.block.blockentity.ritual.RitualCoreBlockEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;

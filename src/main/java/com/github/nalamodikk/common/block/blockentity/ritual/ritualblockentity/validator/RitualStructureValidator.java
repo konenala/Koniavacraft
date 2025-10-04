@@ -1,11 +1,11 @@
-package com.github.nalamodikk.common.block.blockentity.ritual.validator;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
-import com.github.nalamodikk.common.block.blockentity.ritual.ManaPylonBlockEntity;
-import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
-import com.github.nalamodikk.common.block.ritualblock.ArcanePedestalBlock;
-import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
-import com.github.nalamodikk.common.block.ritualblock.RuneType;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ArcanePedestalBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ManaPylonBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RuneStoneBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.ArcanePedestalBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.RuneType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

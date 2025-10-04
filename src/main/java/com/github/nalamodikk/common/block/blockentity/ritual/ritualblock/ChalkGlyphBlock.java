@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.ritualblock;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblock;
 
 import com.github.nalamodikk.common.item.ritual.RitualistChalkItem;
 import com.mojang.serialization.MapCodec;

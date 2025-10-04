@@ -4,7 +4,7 @@ import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserRecipe;
-import com.github.nalamodikk.common.block.blockentity.ritual.RitualRecipe;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;

@@ -1,6 +1,6 @@
-package com.github.nalamodikk.common.block.ritualblock;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblock;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RuneStoneBlockEntity;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 

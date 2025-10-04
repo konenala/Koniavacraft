@@ -1,8 +1,8 @@
-package com.github.nalamodikk.common.block.blockentity.ritual;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity;
 
-import com.github.nalamodikk.common.block.ritualblock.RuneStoneBlock;
-import com.github.nalamodikk.common.block.ritualblock.RuneType;
-import com.github.nalamodikk.common.block.blockentity.ritual.tracker.RitualCoreTracker;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.RuneStoneBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.RuneType;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.tracker.RitualCoreTracker;
 import com.github.nalamodikk.register.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;

@@ -1,10 +1,10 @@
-package com.github.nalamodikk.common.block.blockentity.ritual.validator;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
-import com.github.nalamodikk.common.block.blockentity.ritual.ManaPylonBlockEntity;
-import com.github.nalamodikk.common.block.blockentity.ritual.RuneStoneBlockEntity;
-import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
-import com.github.nalamodikk.common.block.ritualblock.RuneType;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ArcanePedestalBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ManaPylonBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RuneStoneBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.RuneType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;

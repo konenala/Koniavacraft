@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.item.ritual;
 
-import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.ChalkGlyphBlock;
 import com.github.nalamodikk.register.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

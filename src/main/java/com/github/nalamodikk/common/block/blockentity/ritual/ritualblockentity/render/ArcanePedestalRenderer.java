@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.block.blockentity.ritual.render;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.render;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ArcanePedestalBlockEntity;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -19,7 +19,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.io.InputStreamReader;
 import java.util.*;
@@ -323,12 +322,12 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
 
         poseStack.scale(0.5f, 0.5f, 0.5f);
 
-        // 使用固定光照避免物品全黑
-        int fullBright = 0xF000F0;
+        // 使用方塊位置的實際光照值
+        int light = getLightLevel(blockEntity.getLevel(), blockEntity.getBlockPos());
         itemRenderer.renderStatic(
                 offering,
                 ItemDisplayContext.GROUND,
-                fullBright,
+                light,
                 packedOverlay,
                 poseStack,
                 bufferSource,
@@ -337,6 +336,18 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
         );
 
         poseStack.popPose();
+    }
+
+    /**
+     * 取得方塊位置的光照等級
+     */
+    private int getLightLevel(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (level == null) {
+            return 0xF000F0; // 預設最大光照
+        }
+        int blockLight = level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, pos);
+        int skyLight = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, pos);
+        return net.minecraft.client.renderer.LightTexture.pack(blockLight, skyLight);
     }
 
     // === 數據類 ===

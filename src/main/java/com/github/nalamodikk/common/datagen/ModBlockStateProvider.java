@@ -1,7 +1,7 @@
 package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.common.block.ritualblock.ChalkGlyphBlock;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblock.ChalkGlyphBlock;
 import com.github.nalamodikk.register.ModBlocks;
 
 import net.minecraft.core.Direction;

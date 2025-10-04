@@ -1,7 +1,7 @@
-package com.github.nalamodikk.common.block.blockentity.ritual.validator;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.ArcanePedestalBlockEntity;
-import com.github.nalamodikk.common.block.blockentity.ritual.RitualRecipe;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ArcanePedestalBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualRecipe;
 import com.github.nalamodikk.register.ModRecipes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;

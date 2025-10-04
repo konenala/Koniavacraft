@@ -1,6 +1,6 @@
 package com.github.nalamodikk.common.datagen.recipe.ritual;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.RitualRecipe;
+import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualRecipe;
 import com.github.nalamodikk.register.ModItems;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.world.item.Items;
@@ -10,14 +10,14 @@ import net.minecraft.world.item.crafting.Ingredient;
  * 儀式配方數據生成器 - 根據GDD生成所有儀式配方
  */
 public class RitualRecipeProvider {
-    
+
     public static void generate(RecipeOutput output) {
         generateTier1Rituals(output);
         generateTier2Rituals(output);
         generateTier3Rituals(output);
         generateTier4Rituals(output);
     }
-    
+
     /**
      * 生成初級儀式配方 (Tier 1)
      */
@@ -34,7 +34,7 @@ public class RitualRecipeProvider {
             .structureRequirement("pedestals", 4)
             .structureRequirement("core", 1)
             .save(output);
-        
+
         // 活化木材
         RitualRecipeBuilder.create("livingwood_creation")
             .name("活化木材")
@@ -48,7 +48,7 @@ public class RitualRecipeProvider {
             .structureRequirement("core", 1)
             .save(output);
     }
-    
+
     /**
      * 生成中級儀式配方 (Tier 2)
      */
@@ -67,7 +67,7 @@ public class RitualRecipeProvider {
             .structureRequirement("core", 1)
             .structureRequirement("pylons", 1)
             .save(output);
-        
+
         // 效率符文的刻印
         RitualRecipeBuilder.create("efficiency_rune_inscription")
             .name("效率符文的刻印")
@@ -82,7 +82,7 @@ public class RitualRecipeProvider {
             .structureRequirement("core", 1)
             .save(output);
     }
-    
+
     /**
      * 生成高級儀式配方 (Tier 3)
      */
@@ -102,7 +102,7 @@ public class RitualRecipeProvider {
             .structureRequirement("pylons", 2)
             .structureRequirement("celerity_runes", 4)
             .save(output);
-        
+
         // 禁忌 - 虛空珍珠的裂解
         RitualRecipeBuilder.create("void_pearl_fracture")
             .name("禁忌 - 虛空珍珠的裂解")
@@ -117,7 +117,7 @@ public class RitualRecipeProvider {
             .structureRequirement("core", 1)
             .save(output);
     }
-    
+
     /**
      * 生成終極儀式配方 (Tier 4)
      */

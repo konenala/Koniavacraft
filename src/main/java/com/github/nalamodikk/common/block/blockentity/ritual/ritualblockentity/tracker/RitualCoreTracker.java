@@ -1,4 +1,4 @@
-package com.github.nalamodikk.common.block.blockentity.ritual.tracker;
+package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.tracker;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
