@@ -15,7 +15,7 @@
 ## 事件與封包
 - 伺服器與客戶端透過自訂 NeoForge packet channel 溝通，位於 `common/network` 套件。
 - Arcane Pedestal 目前透過 BlockEntity 更新封包（`setChangedAndSync()` 觸發 `ClientboundBlockEntityDataPacket`）向客戶端傳遞祭品物品與動畫參數，渲染器由 `common.block.blockentity.ritual` 套件取得最新狀態；封包生成時須略過空 `ItemStack` 以避免編碼錯誤。
-- Nara UI 過場畫面 Intro 採預烘焙序列貼圖搭配插值播放，Init 畫面共用背景緩存並池化按鈕；任何新增動畫仍需避免逐幀建立 Widget 或重複載入貼圖，以免增加 GPU 開銷。
+- Nara UI 過場畫面 Intro 採預烘焙序列貼圖搭配插值播放並在退出時釋放動態貼圖，Init 畫面共用背景緩存並池化按鈕且離場即釋放緩存；任何新增動畫仍需避免逐幀建立 Widget 或重複載入貼圖，以免增加 GPU 開銷。
 - Chalk Glyph 資源集中於 `textures/block/ritual/`，資料生成需透過子資料夾路徑取得，避免在運行時發生缺失警告。
 - 若未來新增 REST 風格服務，應建立新的 `server/api` 套件並於此文件新增對應端點。
 

@@ -307,7 +307,7 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
                                 PoseStack poseStack, MultiBufferSource bufferSource,
                                 int packedLight, int packedOverlay, ItemStack offering) {
         poseStack.pushPose();
-        poseStack.translate(0.5D, 2.0D, 0.5D); // 物品在方塊頂部 (16x16x16 碰撞箱頂部)
+        poseStack.translate(0.5D, 1.0D, 0.5D); // 物品在方塊頂部
 
         float hoverOffset = blockEntity.getHoverOffset(partialTick);
         poseStack.translate(0.0D, hoverOffset, 0.0D);
@@ -323,10 +323,12 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
 
         poseStack.scale(0.5f, 0.5f, 0.5f);
 
+        // 使用固定光照避免物品全黑
+        int fullBright = 0xF000F0;
         itemRenderer.renderStatic(
                 offering,
                 ItemDisplayContext.GROUND,
-                packedLight,
+                fullBright,
                 packedOverlay,
                 poseStack,
                 bufferSource,
