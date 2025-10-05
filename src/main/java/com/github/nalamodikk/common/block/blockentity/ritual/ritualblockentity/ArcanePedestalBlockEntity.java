@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity;
 import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.tracker.RitualCoreTracker;
 import com.github.nalamodikk.register.ModBlockEntities;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+
 
 /**
  * 奧術基座（Arcane Pedestal）
@@ -32,6 +35,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
     private static final String TAG_SPIN_SPEED = "SpinSpeed";
     private static final String TAG_TICK_COUNT = "TickCount";
     private static final String TAG_CONSUMED = "OfferingConsumed";
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 
@@ -227,9 +231,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
 
         ItemStack offering = items.get(0);
         if (!offering.isEmpty()) {
-            CompoundTag itemTag = new CompoundTag();
-            offering.save(registries, itemTag);
-            tag.put(TAG_ITEM, itemTag);
+            tag.put(TAG_ITEM, offering.saveOptional(registries));
         }
 
         tag.putFloat(TAG_SPIN, spin);
@@ -243,7 +245,7 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
 
         if (tag.contains(TAG_ITEM)) {
-            ItemStack stack = ItemStack.parse(registries, tag.getCompound(TAG_ITEM)).orElse(ItemStack.EMPTY);
+            ItemStack stack = ItemStack.parseOptional(registries, tag.getCompound(TAG_ITEM));
             items.set(0, stack);
         } else {
             items.set(0, ItemStack.EMPTY);
@@ -270,7 +272,10 @@ public class ArcanePedestalBlockEntity extends BlockEntity {
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
-        loadAdditional(pkt.getTag(), registries);
+        CompoundTag tag = pkt.getTag();
+        if (tag != null) {
+            loadAdditional(tag, registries);
+        }
     }
 
     /**

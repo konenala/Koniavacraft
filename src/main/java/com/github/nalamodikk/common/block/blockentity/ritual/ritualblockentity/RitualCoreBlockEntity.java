@@ -72,23 +72,28 @@ public class RitualCoreBlockEntity extends BlockEntity {
      */
     public boolean attemptStartRitual(Player player, ItemStack catalyst) {
         if (state != RitualState.IDLE) {
+            player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.already_in_progress"));
             return false;
         }
         if (level == null || level.isClientSide()) {
             return false;
         }
         if (!isValidCatalyst(catalyst)) {
+            player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.invalid_catalyst"));
             return false;
         }
 
         RitualValidationContext context = new RitualValidationContext(level, worldPosition);
 
+        // 驗證結構
         boolean structureValid = structureValidator.validate(context);
         if (!structureValid) {
             context.sendFirstErrorTo(player);
+            // 結構驗證失敗，不消耗催化劑
             return false;
         }
 
+        // 驗證材料
         Optional<RitualRecipe> recipeOptional = materialValidator.validate(
                 context,
                 manaStorage.getManaStored(),
@@ -97,16 +102,21 @@ public class RitualCoreBlockEntity extends BlockEntity {
 
         if (recipeOptional.isEmpty()) {
             context.sendFirstErrorTo(player);
+            // 材料驗證失敗，不消耗催化劑
             return false;
         }
 
+        // 驗證通過，開始儀式
         activeRecipe = recipeOptional.get();
         currentRitualId = activeRecipe.getId().toString();
         currentManaCost = activeRecipe.getManaCost();
         maxRitualTime = Math.max(MIN_RITUAL_TIME, activeRecipe.getRitualTime());
         ritualProgress = 0;
         resetResultItems();
+
+        // 只有在驗證全部通過後才消耗催化劑
         catalyst.shrink(1);
+
         setState(RitualState.PREPARING);
         return true;
     }

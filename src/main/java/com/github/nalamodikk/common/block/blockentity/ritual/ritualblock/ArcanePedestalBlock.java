@@ -77,9 +77,7 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected @NotNull RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
-    }
+    public RenderShape getRenderShape(BlockState state) { return RenderShape.ENTITYBLOCK_ANIMATED; }
 
     @Override
     protected @NotNull ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
@@ -136,6 +134,7 @@ public class ArcanePedestalBlock extends BaseEntityBlock {
         }
         return createTickerHelper(type, ModBlockEntities.ARCANE_PEDESTAL_BE.get(), ArcanePedestalBlockEntity::serverTick);
     }
+
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {

@@ -35,7 +35,7 @@ public class ModItems {
     /**
      * 儀式系統
      */
-    public static final DeferredItem<Item> RESONANT_CRYSTAL = ITEMS.register("resonant_crystal", () -> new ResonantCrystalItem(new Item.Properties()));
+    public static final DeferredItem<Item> RESONANT_CRYSTAL = ITEMS.register("resonant_crystal", () -> new ResonantCrystalItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> VOID_PEARL = ITEMS.register("void_pearl", () -> new Item(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<Item> RITUALIST_CHALK = ITEMS.register("ritualist_chalk", () -> new RitualistChalkItem(new Item.Properties(), ChalkGlyphBlock.ChalkColor.WHITE));
 

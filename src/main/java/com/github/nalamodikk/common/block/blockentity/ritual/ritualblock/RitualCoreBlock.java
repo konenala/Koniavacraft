@@ -5,8 +5,10 @@ import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -62,27 +64,28 @@ public class RitualCoreBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide()) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof RitualCoreBlockEntity ritualCore) {
-                // 檢查玩家是否持有催化劑物品
-                if (player.getMainHandItem().isEmpty()) {
-                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.catalyst_needed"));
-                    return InteractionResult.SUCCESS;
-                }
-
-                // 嘗試啟動儀式
-                boolean success = ritualCore.attemptStartRitual(player, player.getMainHandItem());
-                if (success) {
-                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.started"));
-                } else {
-                    player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.failed"));
-                }
-                return InteractionResult.SUCCESS;
-            }
+    protected @NotNull ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                                       Player player, InteractionHand hand, BlockHitResult hit) {
+        if (level.isClientSide()) {
+            return ItemInteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof RitualCoreBlockEntity ritualCore)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (stack.isEmpty()) {
+            player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.catalyst_needed"));
+            return ItemInteractionResult.FAIL;
+        }
+
+        // 嘗試啟動儀式
+        boolean success = ritualCore.attemptStartRitual(player, stack);
+        if (success) {
+            player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.started"));
+        }
+        return ItemInteractionResult.SUCCESS;
     }
 
     @Override

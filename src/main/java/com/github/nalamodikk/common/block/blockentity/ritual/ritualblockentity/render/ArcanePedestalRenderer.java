@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.logging.LogUtils;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,6 +20,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
+import org.slf4j.Logger;
 
 import java.io.InputStreamReader;
 import java.util.*;
@@ -27,6 +29,7 @@ import java.util.*;
  * 奧術基座渲染器 - 渲染方塊模型與浮動的祭品物品
  */
 public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedestalBlockEntity> {
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final ItemRenderer itemRenderer;
 
@@ -89,6 +92,9 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
             ModelElement modelElement = parseElement(element);
             groupElements.computeIfAbsent(groupName, k -> new ArrayList<>()).add(modelElement);
         }
+
+        // 除錯：顯示所有群組名稱
+        LOGGER.info("ArcanePedestal groups: {}", groupElements.keySet());
     }
 
     /**
@@ -119,7 +125,10 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
                 // 嵌套群組
                 JsonObject nestedGroup = child.getAsJsonObject();
                 if (nestedGroup.has("children")) {
-                    parseGroupChildren(nestedGroup.getAsJsonArray("children"), groupName, elementToGroup);
+                    // 使用嵌套群組自己的名稱（如果有的話）
+                    String nestedGroupName = nestedGroup.has("name") ?
+                        nestedGroup.get("name").getAsString() : groupName;
+                    parseGroupChildren(nestedGroup.getAsJsonArray("children"), nestedGroupName, elementToGroup);
                 }
             }
         }
@@ -179,10 +188,31 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
                        PoseStack poseStack, MultiBufferSource bufferSource,
                        int packedLight, int packedOverlay) {
 
-        // 🎨 渲染方塊模型
-        if (modelLoaded) {
-            renderBlockModel(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        if (!modelLoaded || blockEntity.getLevel() == null) return;
+
+        // 🎯 計算動畫參數（與魔力發電機完全相同）
+        float time = (blockEntity.getLevel().getGameTime() + partialTick) * 0.05F;
+        float boneFloat = (float) Math.sin(time) * 0.125F;
+
+        poseStack.pushPose();
+
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entitySolid(TEXTURE));
+
+        // 🧱 渲染所有群組（與魔力發電機完全相同的方式）
+        for (Map.Entry<String, List<ModelElement>> entry : groupElements.entrySet()) {
+            String groupName = entry.getKey();
+
+            if ("bone".equalsIgnoreCase(groupName)) {
+                // bone 群組：浮動動畫（基礎高度 + 浮動偏移）
+                float baseOffset = 0.5f; // 基礎向上偏移 8 像素
+                renderGroup(poseStack, vertexConsumer, packedLight, packedOverlay, groupName, 0, baseOffset + boneFloat, 0, 0);
+            } else {
+                // 其他群組：靜止
+                renderGroup(poseStack, vertexConsumer, packedLight, packedOverlay, groupName, 0, 0, 0, 0);
+            }
         }
+
+        poseStack.popPose();
 
         // 🎁 渲染祭品物品
         ItemStack offering = blockEntity.getOffering();
@@ -192,31 +222,26 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
     }
 
     /**
-     * 🎨 渲染方塊模型
-     */
-    private void renderBlockModel(ArcanePedestalBlockEntity blockEntity, float partialTick,
-                                   PoseStack poseStack, MultiBufferSource bufferSource,
-                                   int packedLight, int packedOverlay) {
-        poseStack.pushPose();
-
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entitySolid(TEXTURE));
-
-        // 🧱 渲染所有群組
-        for (Map.Entry<String, List<ModelElement>> entry : groupElements.entrySet()) {
-            renderGroup(poseStack, vertexConsumer, packedLight, packedOverlay, entry.getValue());
-        }
-
-        poseStack.popPose();
-    }
-
-    /**
-     * 🎨 渲染群組元素
+     * 🎨 渲染特定群組（完全模仿魔力發電機的實作）
      */
     private void renderGroup(PoseStack poseStack, VertexConsumer vertexConsumer,
-                             int packedLight, int packedOverlay, List<ModelElement> elements) {
+                             int packedLight, int packedOverlay, String groupName,
+                             float offsetX, float offsetY, float offsetZ, float rotationY) {
+
+        List<ModelElement> elements = groupElements.get(groupName);
+        if (elements == null || elements.isEmpty()) return;
+
+        poseStack.pushPose();
+
+        // 🎯 應用動畫變換
+        poseStack.translate(offsetX, offsetY, offsetZ);
+
+        // 🧱 渲染這個群組的所有元素（作為整體）
         for (ModelElement element : elements) {
             renderElement(poseStack, vertexConsumer, packedLight, packedOverlay, element);
         }
+
+        poseStack.popPose();
     }
 
     /**
@@ -306,33 +331,39 @@ public class ArcanePedestalRenderer implements BlockEntityRenderer<ArcanePedesta
                                 PoseStack poseStack, MultiBufferSource bufferSource,
                                 int packedLight, int packedOverlay, ItemStack offering) {
         poseStack.pushPose();
-        poseStack.translate(0.5D, 1.0D, 0.5D); // 物品在方塊頂部
 
+        // 基礎位置：方塊中心上方
+        poseStack.translate(0.5D, 1.6D, 0.5D);
+
+        // 浮動動畫
         float hoverOffset = blockEntity.getHoverOffset(partialTick);
         poseStack.translate(0.0D, hoverOffset, 0.0D);
 
+        // 旋轉動畫
         float rotation = blockEntity.getSpinForRender(partialTick);
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
+        // 消耗狀態脈動效果
         if (blockEntity.isOfferingConsumed()) {
             float pulse = 0.3f + 0.2f * (float) Math.sin((blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0L) / 5.0f);
             float consumedScale = 0.8f + pulse * 0.05f;
             poseStack.scale(consumedScale, consumedScale, consumedScale);
         }
 
-        poseStack.scale(0.5f, 0.5f, 0.5f);
+        // 物品縮放
+        poseStack.scale(0.4f, 0.4f, 0.4f);
 
         // 使用方塊位置的實際光照值
         int light = getLightLevel(blockEntity.getLevel(), blockEntity.getBlockPos());
         itemRenderer.renderStatic(
                 offering,
-                ItemDisplayContext.GROUND,
+                ItemDisplayContext.FIXED,
                 light,
                 packedOverlay,
                 poseStack,
                 bufferSource,
                 blockEntity.getLevel(),
-                0
+                1
         );
 
         poseStack.popPose();
