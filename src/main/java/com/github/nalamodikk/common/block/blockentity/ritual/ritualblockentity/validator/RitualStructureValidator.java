@@ -202,6 +202,7 @@ public class RitualStructureValidator {
 
     /**
      * 檢查基座是否位於預期的四個方向並保持高度一致。
+     * 注意：不再檢查基座朝向，只檢查位置。
      */
     private void validatePedestalLayout(RitualValidationContext context, BlockPos corePos,
                                          List<ArcanePedestalBlockEntity> pedestals,
@@ -212,7 +213,6 @@ public class RitualStructureValidator {
         }
 
         EnumSet<Direction> matchedDirections = EnumSet.noneOf(Direction.class);
-        boolean facingMismatch = false;
 
         for (ArcanePedestalBlockEntity pedestal : pedestals) {
             BlockPos pos = pedestal.getBlockPos();
@@ -227,23 +227,11 @@ public class RitualStructureValidator {
             if (expected != null) {
                 matchedDirections.add(expected);
                 directionCounts.merge(expected, 1, Integer::sum);
-
-                BlockState state = pedestal.getBlockState();
-                if (state.getBlock() instanceof ArcanePedestalBlock) {
-                    Direction facing = state.getValue(HorizontalDirectionalBlock.FACING);
-                    if (facing != expected) {
-                        facingMismatch = true;
-                    }
-                } else {
-                    facingMismatch = true;
-                }
             }
         }
 
         if (matchedDirections.size() < REQUIRED_PEDESTAL_OFFSETS.size()) {
             context.addError(Component.translatable("message.koniavacraft.ritual.error.pedestal_layout"));
-        } else if (facingMismatch) {
-            context.addError(Component.translatable("message.koniavacraft.ritual.error.pedestal_facing"));
         }
     }
 

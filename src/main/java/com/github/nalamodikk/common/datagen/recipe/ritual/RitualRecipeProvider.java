@@ -31,8 +31,7 @@ public class RitualRecipeProvider {
             .result(ModItems.MANA_INGOT.get(), 4) // 使用現有的魔力錠作為奧術合金
             .manaCost(5000)
             .ritualTime(200) // 10秒
-            .structureRequirement("pedestals", 4)
-            .structureRequirement("core", 1)
+            .structureRequirement("pedestal.total", 4)
             .save(output);
 
         // 活化木材
@@ -44,8 +43,7 @@ public class RitualRecipeProvider {
             .result(Items.OAK_LOG, 16) // 暫時使用橡木代替活化木材
             .manaCost(2000)
             .ritualTime(160) // 8秒
-            .structureRequirement("pedestals", 2)
-            .structureRequirement("core", 1)
+            .structureRequirement("pedestal.total", 2)
             .save(output);
     }
 
@@ -63,9 +61,8 @@ public class RitualRecipeProvider {
             .result(Items.SPYGLASS, 1) // 暫時使用望遠鏡代替魔力透鏡
             .manaCost(25000)
             .ritualTime(400) // 20秒
-            .structureRequirement("pedestals", 4)
-            .structureRequirement("core", 1)
-            .structureRequirement("pylons", 1)
+            .structureRequirement("pedestal.total", 4)
+            .structureRequirement("pylon.total", 1)
             .save(output);
 
         // 效率符文的刻印
@@ -78,8 +75,7 @@ public class RitualRecipeProvider {
             .result(Items.DEEPSLATE_TILES, 1) // 暫時使用深板岩磚代替符文石
             .manaCost(50000)
             .ritualTime(600) // 30秒
-            .structureRequirement("pedestals", 1)
-            .structureRequirement("core", 1)
+            .structureRequirement("pedestal.total", 1)
             .save(output);
     }
 
@@ -97,10 +93,9 @@ public class RitualRecipeProvider {
             .result(Items.NETHERITE_INGOT, 2) // 暫時使用下界合金代替星辰金屬
             .manaCost(500000)
             .ritualTime(1200) // 60秒
-            .structureRequirement("pedestals", 8)
-            .structureRequirement("core", 1)
-            .structureRequirement("pylons", 2)
-            .structureRequirement("celerity_runes", 4)
+            .structureRequirement("pedestal.total", 8)
+            .structureRequirement("pylon.total", 2)
+            .structureRequirement("rune.celerity", 4)
             .save(output);
 
         // 禁忌 - 虛空珍珠的裂解
@@ -113,8 +108,7 @@ public class RitualRecipeProvider {
             .manaCost(100000)
             .ritualTime(800) // 40秒
             .failureChance(0.3f) // 30%失敗率
-            .structureRequirement("pedestals", 4)
-            .structureRequirement("core", 1)
+            .structureRequirement("pedestal.total", 4)
             .save(output);
     }
 
@@ -133,13 +127,12 @@ public class RitualRecipeProvider {
             .result(Items.BEACON, 1) // 暫時使用信標代替世界之心
             .manaCost(10000000) // 10M 魔力
             .ritualTime(2400) // 120秒 (2分鐘)
-            .structureRequirement("pedestals", 12)
-            .structureRequirement("core", 1)
-            .structureRequirement("pylons", 4)
-            .structureRequirement("efficiency_runes", 4)
-            .structureRequirement("celerity_runes", 4)
-            .structureRequirement("stability_runes", 4)
-            .structureRequirement("augmentation_runes", 4)
+            .structureRequirement("pedestal.total", 12)
+            .structureRequirement("pylon.total", 4)
+            .structureRequirement("rune.efficiency", 4)
+            .structureRequirement("rune.celerity", 4)
+            .structureRequirement("rune.stability", 4)
+            .structureRequirement("rune.augmentation", 4)
             .save(output);
     }
 }

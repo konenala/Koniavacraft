@@ -1,5 +1,10 @@
 # Todo List
 
+- [x] Ritual 結構鍵同步文檔：更新 spec.md / api.md 記錄結構統計鍵與 JEI 支援規劃（負責：Codex）
+- [x] Ritual 配方 DataGen 修正：調整 Builder/Provider 鍵名並重新輸出資料（負責：Codex）
+- [x] Ritual JEI 支援：新增 JEI 類別與註冊顯示儀式配方（負責：Codex）
+- [x] Ritual 任務測試：執行 .\gradlew.bat runData 與 build 驗證（負責：Codex）
+
 - [x] 文件同步：更新 spec.md 與 api.md 加入語系維護流程描述（負責：Codex）
 - [x] 語系比對：檢查 `assets/koniava/lang/en_us.json` 與 `zh_tw.json` 缺漏（負責：Codex）－未發現缺漏鍵值
 - [x] 語系補齊：將缺失鍵值翻譯成繁體中文並寫入 `zh_tw.json`（負責：Codex）－未新增鍵值，已修正重複逗號避免 JSON 解析錯誤

@@ -5,13 +5,21 @@ import com.github.nalamodikk.register.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionResult;
@@ -52,29 +60,29 @@ public class RitualCoreBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
+    protected @NotNull ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                                       Player player, InteractionHand hand, BlockHitResult hit) {
+        if (level.isClientSide()) {
+            return ItemInteractionResult.SUCCESS;
         }
 
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof RitualCoreBlockEntity ritualCoreBE)) {
-            return InteractionResult.PASS;
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof RitualCoreBlockEntity ritualCore)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
-        if (player.getMainHandItem().getItem() == ModItems.RESONANT_CRYSTAL.get()) {
-            if (!ritualCoreBE.isRitualActive()) {
-                player.getMainHandItem().shrink(1);
-                ritualCoreBE.startRitual();
-                level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0f, 1.0f);
-                return InteractionResult.CONSUME;
-            } else {
-                // Ritual is already active, maybe send a message to the player
-                player.sendSystemMessage(Component.translatable("message.koniava.ritual_already_active"));
-                return InteractionResult.FAIL;
-            }
+        if (stack.isEmpty()) {
+            player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.catalyst_needed"));
+            return ItemInteractionResult.FAIL;
         }
 
-        return InteractionResult.PASS;
+        // 嘗試啟動儀式（傳遞玩家手中的實際物品）
+        ItemStack heldItem = player.getItemInHand(hand);
+        boolean success = ritualCore.attemptStartRitual(player, heldItem);
+        if (success) {
+            player.sendSystemMessage(Component.translatable("message.koniavacraft.ritual.started"));
+            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0f, 1.0f);
+        }
+        return ItemInteractionResult.SUCCESS;
     }
 }

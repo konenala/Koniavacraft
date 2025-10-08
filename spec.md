@@ -17,8 +17,9 @@
   - 空祭品狀態不寫入 NBT；同步封包應透過 `saveOptional` 或條件判斷避免序列化空堆疊，防止服務端崩潰。
   - 粉筆紋理統一存於 `textures/block/ritual/` 子資料夾，資料生成需透過 `modLoc("block/ritual/...")` 讀取，避免與一般方塊資源混淆。
 - **Nara UI**：`narasystem.nara.screen.NaraIntroScreen` 與 `NaraInitScreen` 為客戶端過場 / 綁定流程，採用快取佈局與節奏驅動動畫；所有貼圖在 `init()` 先設定過濾方式，並需避免逐幀建立 Widget 與重複轉換矩陣以降低 GPU 負載。
-- **儀式配方**：`RitualRecipe.matches` 會以 `RitualValidationContext` 的 `structureSummary` 對照 `structure_requirements`，逐鍵驗證基座數量、魔力塔距離與粉筆顏色／圖案條件，不符時回傳對應錯誤訊息。
+- **儀式配方**：`RitualRecipe.matches` 會以 `RitualValidationContext` 的 `structureSummary` 對照 `structure_requirements`，逐鍵驗證基座數量、魔力塔距離與粉筆顏色／圖案條件，不符時回傳對應錯誤訊息。`structureSummary` 目前輸出 `pedestal.total`、`pedestal.north/south/east/west`、`pylon.total`、`glyph.total`、`glyph.color.*`、`glyph.pattern.*` 與 `rune.<rune_type>` 等鍵，資料生成須使用相同命名以確保驗證通過。
 - **粉筆顏色枚舉**：`ChalkGlyphBlock.ChalkColor` 將顏色名稱改為語系鍵 `color.koniavacraft.chalk.<color>`，並透過 `Component.translatable` 返回顯示用文字，供訊息與 tooltip 共用。
+- **儀式配方 JEI 視覺化**：規劃新增 Ritual 專屬 JEI Plugin 與 Recipe Category，顯示多方塊結構需求、祭品清單與魔力消耗；資料來源沿用 `RitualRecipe` 的 `structure_requirements` 與 `ModRecipes.RITUAL_TYPE`，並在 JEI 介面中同步展示結構鍵說明。
 
 - **儀式方塊族群**：`common.block.ritualblock` 與 `common.block.blockentity.ritual` 維護 Ritual Core、Arcane Pedestal、Rune Stone、Mana Pylon 與 Chalk Glyph；BlockEntity 提供儀式進度、魔力儲量、祭品槽與符文加成資料，詳見 `個人開發者小記錄/ritual/祭壇符文系統.md`。
 - **符文石模型**：`ModBlockStateProvider` 對四種 rune stone 以自訂 `BlockModelBuilder` 描述多段幾何（基座＋晶核），避免單純 `cube_all`，確保渲染與碰撞盒一致。
@@ -37,7 +38,7 @@
 2. 執行資料生成前，需先以 `powershell.exe -Command "java -version"` 確認 JDK 21 與 `JAVA_HOME` 設定無誤，並確認 `data/koniava/loot_tables/blocks/chalk_glyph.json` 存在，再透過 `./gradlew runData` 重建 JSON 配方、模型。
 3. 方塊實體 `tick` 中與能量儲存、網路傳輸交互，更新 GUI 與同步封包。
 4. Arcane Pedestal 伺服端 `serverTick` 處理粒子與儀式核心的互動，客戶端 `clientTick` 更新旋轉與浮動動畫，任何庫存／狀態變化需透過 `setChangedAndSync()` 通知客戶端，避免渲染器取得舊值。
-5. `RitualCoreBlockEntity` 在 `PREPARING` 狀態委派 `RitualStructureValidator` / `RitualMaterialValidator`；結構驗證會檢查基座位置與朝向、魔力塔距離、粉筆顏色與圖案統計，並輸出 `structureSummary`（含 `pedestal.*`、`pylon.*`、`glyph.color.*`、`glyph.pattern.*`），材料驗證依 `structure_requirements` 逐鍵比對，不符時將錯誤寫入 `RitualValidationContext` 並提示玩家；催化劑僅在兩階驗證皆通過後才會扣除。
+5. `RitualCoreBlockEntity` 在 `PREPARING` 狀態委派 `RitualStructureValidator` / `RitualMaterialValidator`；結構驗證會檢查基座位置與朝向、魔力塔距離、粉筆顏色與圖案統計，並輸出 `structureSummary`（含 `pedestal.total`、`pedestal.north/south/east/west`、`pylon.total`、`glyph.total`、`glyph.color.*`、`glyph.pattern.*`、`rune.*`），材料驗證依 `structure_requirements` 逐鍵比對，不符時將錯誤寫入 `RitualValidationContext` 並提示玩家；催化劑僅在兩階驗證皆通過後才會扣除。
 6. Arcane Pedestal 祭品變更時會透過 `RitualCoreTracker` 通知核心，核心於 `RUNNING`/`PREPARING` 狀態下自動中止並提示。
 7. 同步封包前先檢查祭品是否為空堆疊，僅在有物品時寫入 NBT，避免 `ItemStack.save` 對空堆疊編碼導致崩潰。
 8. 文檔維運流程：更新 `spec.md` → 更新 `api.md` → 同步根目錄與 `docs/AGENTS.md` 的協作指南 → 更新 `todolist.md`。

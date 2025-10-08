@@ -111,7 +111,20 @@ public class RitualRecipeBuilder {
     }
 
     public RitualRecipeBuilder structureRequirement(String component, int count) {
-        this.structureRequirements.put(component, count);
+        String normalized = switch (component) {
+            case "core" -> null; // 核心方塊由執行環境保證存在
+            case "pedestals" -> "pedestal.total";
+            case "pylons" -> "pylon.total";
+            case "efficiency_runes" -> "rune.efficiency";
+            case "celerity_runes" -> "rune.celerity";
+            case "stability_runes" -> "rune.stability";
+            case "augmentation_runes" -> "rune.augmentation";
+            default -> component;
+        };
+        if (normalized == null) {
+            return this;
+        }
+        this.structureRequirements.put(normalized, count);
         return this;
     }
 
@@ -156,44 +169,40 @@ public class RitualRecipeBuilder {
      * 預定義的結構要求快捷方法
      */
     public RitualRecipeBuilder basicStructure() {
-        return structureRequirement("core", 1)
-               .structureRequirement("pedestals", 4);
+        return structureRequirement("pedestal.total", 4);
     }
 
     public RitualRecipeBuilder intermediateStructure() {
-        return structureRequirement("core", 1)
-               .structureRequirement("pedestals", 4)
-               .structureRequirement("pylons", 1);
+        return structureRequirement("pedestal.total", 4)
+               .structureRequirement("pylon.total", 1);
     }
 
     public RitualRecipeBuilder advancedStructure() {
-        return structureRequirement("core", 1)
-               .structureRequirement("pedestals", 8)
-               .structureRequirement("pylons", 2);
+        return structureRequirement("pedestal.total", 8)
+               .structureRequirement("pylon.total", 2);
     }
 
     public RitualRecipeBuilder masterStructure() {
-        return structureRequirement("core", 1)
-               .structureRequirement("pedestals", 12)
-               .structureRequirement("pylons", 4);
+        return structureRequirement("pedestal.total", 12)
+               .structureRequirement("pylon.total", 4);
     }
 
     /**
      * 符文石要求快捷方法
      */
     public RitualRecipeBuilder requireEfficiencyRunes(int count) {
-        return structureRequirement("efficiency_runes", count);
+        return structureRequirement("rune.efficiency", count);
     }
 
     public RitualRecipeBuilder requireCelerityRunes(int count) {
-        return structureRequirement("celerity_runes", count);
+        return structureRequirement("rune.celerity", count);
     }
 
     public RitualRecipeBuilder requireStabilityRunes(int count) {
-        return structureRequirement("stability_runes", count);
+        return structureRequirement("rune.stability", count);
     }
 
     public RitualRecipeBuilder requireAugmentationRunes(int count) {
-        return structureRequirement("augmentation_runes", count);
+        return structureRequirement("rune.augmentation", count);
     }
 }
