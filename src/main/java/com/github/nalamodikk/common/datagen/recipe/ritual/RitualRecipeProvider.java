@@ -24,7 +24,7 @@ public class RitualRecipeProvider {
     private static void generateTier1Rituals(RecipeOutput output) {
         // 奧術合金的誕生
         RitualRecipeBuilder.create("arcane_alloy_birth")
-            .name("奧術合金的誕生")
+            .name("recipe.koniava.ritual.arcane_alloy_birth")
             .tier(RitualRecipe.RitualTier.BASIC)
             .ingredient(Ingredient.of(Items.IRON_INGOT), 4)
             .ingredient(Ingredient.of(Items.LAPIS_LAZULI), 4)
@@ -36,7 +36,7 @@ public class RitualRecipeProvider {
 
         // 活化木材
         RitualRecipeBuilder.create("livingwood_creation")
-            .name("活化木材")
+            .name("recipe.koniava.ritual.livingwood_creation")
             .tier(RitualRecipe.RitualTier.BASIC)
             .ingredient(Ingredient.of(Items.OAK_LOG, Items.BIRCH_LOG, Items.SPRUCE_LOG), 16)
             .ingredient(Ingredient.of(Items.EMERALD), 2)
@@ -53,7 +53,7 @@ public class RitualRecipeProvider {
     private static void generateTier2Rituals(RecipeOutput output) {
         // 魔力透鏡的精煉
         RitualRecipeBuilder.create("mana_lens_refinement")
-            .name("魔力透鏡的精煉")
+            .name("recipe.koniava.ritual.mana_lens_refinement")
             .tier(RitualRecipe.RitualTier.INTERMEDIATE)
             .ingredient(Ingredient.of(ModItems.MANA_INGOT.get()), 4) // 奧術合金錠
             .ingredient(Ingredient.of(Items.AMETHYST_SHARD), 4)
@@ -67,7 +67,7 @@ public class RitualRecipeProvider {
 
         // 效率符文的刻印
         RitualRecipeBuilder.create("efficiency_rune_inscription")
-            .name("效率符文的刻印")
+            .name("recipe.koniava.ritual.efficiency_rune_inscription")
             .tier(RitualRecipe.RitualTier.INTERMEDIATE)
             .ingredient(Ingredient.of(Items.OBSIDIAN), 1)
             .ingredient(Ingredient.of(ModItems.MANA_INGOT.get()), 4)
@@ -85,7 +85,7 @@ public class RitualRecipeProvider {
     private static void generateTier3Rituals(RecipeOutput output) {
         // 星辰金屬的鍛造
         RitualRecipeBuilder.create("starmetal_forging")
-            .name("星辰金屬的鍛造")
+            .name("recipe.koniava.ritual.starmetal_forging")
             .tier(RitualRecipe.RitualTier.ADVANCED)
             .ingredient(Ingredient.of(Items.NETHER_STAR), 1)
             .ingredient(Ingredient.of(Items.NETHERITE_INGOT), 4)
@@ -100,7 +100,7 @@ public class RitualRecipeProvider {
 
         // 禁忌 - 虛空珍珠的裂解
         RitualRecipeBuilder.create("void_pearl_fracture")
-            .name("禁忌 - 虛空珍珠的裂解")
+            .name("recipe.koniava.ritual.void_pearl_fracture")
             .tier(RitualRecipe.RitualTier.FORBIDDEN)
             .ingredient(Ingredient.of(Items.ENDER_PEARL), 1)
             .ingredient(Ingredient.of(Items.CHORUS_FRUIT), 4)
@@ -118,7 +118,7 @@ public class RitualRecipeProvider {
     private static void generateTier4Rituals(RecipeOutput output) {
         // 世界之心
         RitualRecipeBuilder.create("heart_of_the_world")
-            .name("世界之心")
+            .name("recipe.koniava.ritual.heart_of_the_world")
             .tier(RitualRecipe.RitualTier.MASTER)
             .ingredient(Ingredient.of(Items.DRAGON_EGG), 1)
             .ingredient(Ingredient.of(Items.HEART_OF_THE_SEA), 1)

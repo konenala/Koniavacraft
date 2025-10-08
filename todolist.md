@@ -1,5 +1,9 @@
 # Todo List
 
+- [x] 儀式多基座文檔：更新 spec.md / api.md / 祭壇教學描述可擴充配置（負責：Codex）－已補充 ring1/2/3 與 extra 鍵值說明
+- [x] 儀式多基座實作：擴充 validator 輸出多環統計並支援彈性擺放（負責：Codex）－新增多環統計與彈性基座計數
+- [x] 儀式多基座驗證：執行 .\gradlew.bat build 並回報結果（負責：Codex）－2025-10-08 完成
+
 - [x] Ritual 結構鍵同步文檔：更新 spec.md / api.md 記錄結構統計鍵與 JEI 支援規劃（負責：Codex）
 - [x] Ritual 配方 DataGen 修正：調整 Builder/Provider 鍵名並重新輸出資料（負責：Codex）
 - [x] Ritual JEI 支援：新增 JEI 類別與註冊顯示儀式配方（負責：Codex）

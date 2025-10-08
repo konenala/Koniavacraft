@@ -1,6 +1,5 @@
 package com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.validator;
 
-import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.ArcanePedestalBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.ritual.ritualblockentity.RitualRecipe;
 import com.github.nalamodikk.register.ModRecipes;
 import net.minecraft.network.chat.Component;
@@ -16,13 +15,7 @@ import java.util.Optional;
 public class RitualMaterialValidator {
 
     public Optional<RitualRecipe> validate(RitualValidationContext context, int availableMana, RecipeManager recipeManager) {
-        List<ArcanePedestalBlockEntity> pedestals = context.getPedestals();
-        boolean hasEmptyPedestal = pedestals.stream().anyMatch(p -> p.getOffering().isEmpty());
-        if (hasEmptyPedestal) {
-            context.addError(Component.translatable("message.koniavacraft.ritual.error.missing_ingredients"));
-            return Optional.empty();
-        }
-
+        // 僅收集目前放置的祭品，允許剩餘基座保持空槽
         List<ItemStack> offerings = context.getPedestalOfferings();
         if (offerings.isEmpty()) {
             context.addError(Component.translatable("message.koniavacraft.ritual.error.missing_ingredients"));

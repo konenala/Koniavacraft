@@ -34,6 +34,10 @@ public class RitualStructureValidator {
 
     public static final String STRUCTURE_KEY_PEDESTAL = "pedestal.total";
     public static final String STRUCTURE_KEY_PYLON = "pylon.total";
+    public static final String STRUCTURE_KEY_PEDESTAL_RING1 = "pedestal.ring1";
+    public static final String STRUCTURE_KEY_PEDESTAL_RING2 = "pedestal.ring2";
+    public static final String STRUCTURE_KEY_PEDESTAL_RING3 = "pedestal.ring3";
+    public static final String STRUCTURE_KEY_PEDESTAL_EXTRA = "pedestal.extra";
 
     private static final int PEDESTAL_SCAN_RADIUS = 6;
     private static final int PYLON_SCAN_RADIUS = 10;
@@ -47,6 +51,18 @@ public class RitualStructureValidator {
             new BlockPos(-2, 0, 0),
             new BlockPos(0, 0, 2),
             new BlockPos(0, 0, -2)
+    );
+    private static final Set<BlockPos> OPTIONAL_RING2_OFFSETS = Set.of(
+            new BlockPos(2, 0, 2),
+            new BlockPos(2, 0, -2),
+            new BlockPos(-2, 0, 2),
+            new BlockPos(-2, 0, -2)
+    );
+    private static final Set<BlockPos> OPTIONAL_RING3_OFFSETS = Set.of(
+            new BlockPos(4, 0, 0),
+            new BlockPos(-4, 0, 0),
+            new BlockPos(0, 0, 4),
+            new BlockPos(0, 0, -4)
     );
 
     private static final Map<RuneType, Integer> REQUIRED_RUNES = Map.of(
@@ -84,6 +100,8 @@ public class RitualStructureValidator {
 
         Map<String, Integer> summary = new HashMap<>();
         summary.put(STRUCTURE_KEY_PEDESTAL, pedestals.size());
+        Map<String, Integer> pedestalRingSummary = summarizePedestalRings(corePos, pedestals);
+        summary.putAll(pedestalRingSummary);
         pedestalDirectionCounts.forEach((direction, count) -> summary.put(
                 STRUCTURE_KEY_PREFIX_PEDESTAL_DIRECTION + direction.getName(), count));
         summary.put(STRUCTURE_KEY_PYLON, pylons.size());
@@ -198,6 +216,39 @@ public class RitualStructureValidator {
             return Direction.SOUTH;
         }
         return null;
+    }
+
+    private Map<String, Integer> summarizePedestalRings(BlockPos corePos, List<ArcanePedestalBlockEntity> pedestals) {
+        int ring1 = 0;
+        int ring2 = 0;
+        int ring3 = 0;
+        int extra = 0;
+
+        for (ArcanePedestalBlockEntity pedestal : pedestals) {
+            BlockPos relative = pedestal.getBlockPos().subtract(corePos);
+            if (Math.abs(relative.getY()) > MAX_PEDESTAL_HEIGHT_DELTA) {
+                continue;
+            }
+            BlockPos horizontal = new BlockPos(relative.getX(), 0, relative.getZ());
+            if (REQUIRED_PEDESTAL_OFFSETS.contains(horizontal)) {
+                ring1++;
+            } else if (OPTIONAL_RING2_OFFSETS.contains(horizontal)) {
+                ring2++;
+            } else if (OPTIONAL_RING3_OFFSETS.contains(horizontal)) {
+                ring3++;
+            } else {
+                extra++;
+            }
+        }
+
+        Map<String, Integer> rings = new HashMap<>();
+        rings.put(STRUCTURE_KEY_PEDESTAL_RING1, ring1);
+        rings.put(STRUCTURE_KEY_PEDESTAL_RING2, ring2);
+        rings.put(STRUCTURE_KEY_PEDESTAL_RING3, ring3);
+        if (extra > 0) {
+            rings.put(STRUCTURE_KEY_PEDESTAL_EXTRA, extra);
+        }
+        return rings;
     }
 
     /**
