@@ -69,7 +69,7 @@ public class ModRecipeProvider extends RecipeProvider {
                 .save(output, "solar_mana_collector");
 
         // 🔗 奧術導管 (批量製作)
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ARCANE_CONDUIT.get(), 4)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.ARCANE_CONDUIT.get(), 8)
                 .pattern("MMM")
                 .pattern("IGI")
                 .pattern("MMM")

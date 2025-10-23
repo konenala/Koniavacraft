@@ -38,19 +38,19 @@ public class ManaCraftingRecipeProvider {
                 .save(output);
 
 
-            ManaCraftingRecipeBuilder.create(ModBlocks.MANA_INFUSER.get(), 1)
-                    .shaped(true)  // 明確設置為有序
-                    .pattern("RGR")
-                    .pattern("MIM")
-                    .pattern("CDC")
-                    .define('R', Items.REDSTONE_BLOCK)
-                    .define('G', Items.GLASS)
-                    .define('M', ModItems.MANA_DUST.get())
-                    .define('I', Items.IRON_BLOCK)
-                    .define('C', ModItems.REFINED_MANA_DUST.get())
-                    .define('D', Items.DIAMOND)
-                    .manaCost(50000)
-                    .save(output, "mana_infuser_machine");
+        ManaCraftingRecipeBuilder.create(ModBlocks.MANA_INFUSER.get(), 1)
+                .shaped(true)  // 明確設置為有序
+                .pattern("RGR")
+                .pattern("MIM")
+                .pattern("CDC")
+                .define('R', Items.REDSTONE_BLOCK)
+                .define('G', Items.GLASS)
+                .define('M', ModItems.MANA_DUST.get())
+                .define('I', Items.IRON_BLOCK)
+                .define('C', ModItems.REFINED_MANA_DUST.get())
+                .define('D', Items.DIAMOND)
+                .manaCost(30000)
+                .save(output, "mana_infuser_machine");
 
 
         // ✅ 有序合成配方
