@@ -8,6 +8,7 @@ import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCrafting
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlock;
 import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
+import com.github.nalamodikk.common.block.normal.ManaBloomBlock;
 import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
 import com.github.nalamodikk.common.block.normal.ManaSoilBlock;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -50,6 +51,10 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =
             registerBlock("solar_mana_collector", () -> new SolarManaCollectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+
+    // === 魔力生態系統 - 地表植物 ===
+    public static final DeferredBlock<ManaBloomBlock> MANA_BLOOM =
+            registerBlock("mana_bloom", ManaBloomBlock::new);
 
 
     public static final DeferredBlock<Block> MAGIC_ORE =

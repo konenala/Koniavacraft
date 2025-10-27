@@ -52,5 +52,11 @@ public class ModItemTagProvider extends ItemTagsProvider {
                         ModItems.DIAGNOSTIC_DISPLAY_UPGRADE.get()
                 );
 
+        tag(ItemTags.SMALL_FLOWERS)
+                .add(ModBlocks.MANA_BLOOM.get().asItem());
+
+        tag(ItemTags.FLOWERS)
+                .add(ModBlocks.MANA_BLOOM.get().asItem());
+
     }
 }

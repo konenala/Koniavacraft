@@ -117,6 +117,16 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
                         0.2f,                                // 額外掉落機率：20%
                         this.registries.lookupOrThrow(Registries.ENCHANTMENT)
                 ));
+
+        this.add(ModBlocks.MANA_BLOOM.get(), block ->
+                LootTableUtils.createOreDropsWithBonusAndSilkTouch(
+                        block,
+                        ModItems.RAW_MANA_DUST.get(),
+                        1, 4,
+                        ModItems.CORRUPTED_MANA_DUST.get(),
+                        0.2f,
+                        this.registries.lookupOrThrow(Registries.ENCHANTMENT)
+                ));
     }
 
     /**

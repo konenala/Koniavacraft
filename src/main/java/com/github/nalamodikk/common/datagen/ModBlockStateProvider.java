@@ -32,6 +32,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
         // 🌱 草方塊 (使用通用生成器)
         createGrassBlock(ModBlocks.MANA_GRASS_BLOCK, "mana_grass_block", "mana_soil");
+        saplingBlock(ModBlocks.MANA_BLOOM);
 
         // 🔗 導管系統
         createArcaneConduitModel();
@@ -349,10 +350,11 @@ public class ModBlockStateProvider extends BlockStateProvider {
     /**
      * 樹苗方塊 (十字交叉模型)
      */
-    private void saplingBlock(DeferredBlock<Block> blockRegistryObject) {
-        simpleBlock(blockRegistryObject.get(),
-                models().cross(BuiltInRegistries.BLOCK.getKey(blockRegistryObject.get()).getPath(),
-                        blockTexture(blockRegistryObject.get())).renderType("cutout"));
+    private void saplingBlock(DeferredBlock<? extends Block> blockRegistryObject) {
+        var crossModel = models().cross(BuiltInRegistries.BLOCK.getKey(blockRegistryObject.get()).getPath(),
+                blockTexture(blockRegistryObject.get())).renderType("cutout");
+        simpleBlock(blockRegistryObject.get(), crossModel);
+        simpleBlockItem(blockRegistryObject.get(), crossModel);
     }
 
     /**

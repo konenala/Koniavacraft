@@ -54,6 +54,12 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 .add(ModBlocks.MANA_SOIL.get())
                 .add(ModBlocks.DEEP_MANA_SOIL.get());
 
+        tag(BlockTags.SMALL_FLOWERS)
+                .add(ModBlocks.MANA_BLOOM.get());
+
+        tag(BlockTags.FLOWERS)
+                .add(ModBlocks.MANA_BLOOM.get());
+
 //        tag(BlockTags.NEEDS_DIAMOND_TOOL)
 //                .add(ModBlocks.BISMUTH_LAMP.get());
 //
