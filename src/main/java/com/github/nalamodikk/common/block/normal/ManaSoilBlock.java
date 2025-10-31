@@ -45,25 +45,29 @@ public class ManaSoilBlock extends Block {
 
 
     // 🌱 加速植物生長（可選功能）
+    // ⚡ 性能優化：暫時禁用隨機 tick，因為功能尚未實現
+    // TODO: 當魔力草方塊實現後，重新啟用此功能
     @Override
     public boolean isRandomlyTicking(BlockState state) {
-        return true;
+        return false; // ✅ 禁用直到功能實現，避免浪費 CPU
     }
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         super.randomTick(state, level, pos, random);
 
-        // 有機會在上方生成魔力草（如果條件合適）
+        // ✅ 優化：先進行便宜的隨機檢查，99% 的情況直接返回
+        if (random.nextFloat() >= 0.01f) {
+            return;
+        }
+
+        // ✅ 只有在通過隨機檢查後才執行昂貴的操作
         BlockPos abovePos = pos.above();
         BlockState aboveState = level.getBlockState(abovePos);
 
         if (aboveState.isAir() && level.getMaxLocalRawBrightness(abovePos) >= 9) {
-            // 1% 機率嘗試生成魔力草
-            if (random.nextFloat() < 0.01f) {
-                // 這裡之後會放置魔力草方塊
-                // level.setBlock(abovePos, ModBlocks.MANA_GRASS.get().defaultBlockState(), 3);
-            }
+            // 這裡之後會放置魔力草方塊
+            // level.setBlock(abovePos, ModBlocks.MANA_GRASS.get().defaultBlockState(), 3);
         }
     }
 }

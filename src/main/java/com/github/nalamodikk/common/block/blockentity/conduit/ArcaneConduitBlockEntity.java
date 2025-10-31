@@ -156,9 +156,16 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
         // 更新統計管理器
         statsManager.tick();
 
-        // 如果閒置且沒有魔力，降低處理頻率
+        // ✅ 性能優化：智能休眠 - 閒置且無魔力時大幅降低更新頻率
+        // 從每 200 tick (10秒) 改為每 400 tick (20秒) 檢查一次
         if (statsManager.isIdle() && buffer.getManaStored() == 0) {
-            if (statsManager.getTickCounter() % 200 != tickOffset % 200) {
+            // ✅ 深度休眠：完全閒置時每 20 秒才檢查一次
+            if (statsManager.getTickCounter() % 400 != tickOffset % 400) {
+                return;
+            }
+        } else if (statsManager.isIdle()) {
+            // ✅ 輕度休眠：有魔力但閒置時每 4 秒檢查一次
+            if (statsManager.getTickCounter() % 80 != tickOffset % 80) {
                 return;
             }
         }
@@ -332,6 +339,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
 
             // 委派給緩存管理器清理
             cacheManager.invalidateAll();
+
+            // ✅ 性能優化：清理靜態 map 中的條目，防止內存洩漏
+            conduitTickOffsets.remove(worldPosition);
 
             LOGGER.debug("Conduit removed successfully: {}", worldPosition);
         } catch (Exception e) {

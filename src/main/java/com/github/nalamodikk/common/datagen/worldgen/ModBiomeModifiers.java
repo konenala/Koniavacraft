@@ -18,7 +18,8 @@ import java.util.List;
 public class ModBiomeModifiers {
     public static final ResourceKey<BiomeModifier> ADD_MAGIC_ORE = registerKey("add_magic_ore");
     public static final ResourceKey<BiomeModifier> ADD_MANA_BLOOM = registerKey("add_mana_bloom");
-    private static final TagKey<Biome> PLAINS_BIOMES = TagKey.create(Registries.BIOME, ResourceLocation.withDefaultNamespace("is_plains"));
+    private static final TagKey<Biome> MANA_BLOOM_BIOMES = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "has_mana_bloom"));
 
     public static void bootstrap(BootstrapContext<BiomeModifier> context) {
         var placedFeatures = context.lookup(Registries.PLACED_FEATURE);
@@ -30,7 +31,7 @@ public class ModBiomeModifiers {
         ));
 
         context.register(ADD_MANA_BLOOM, new BiomeModifiers.AddFeaturesBiomeModifier(
-                biomes.getOrThrow(PLAINS_BIOMES),
+                biomes.getOrThrow(MANA_BLOOM_BIOMES),
                 HolderSet.direct(List.of(placedFeatures.getOrThrow(ModPlacedFeatures.MANA_BLOOM_PLACED_KEY))),
                 GenerationStep.Decoration.VEGETAL_DECORATION
         ));

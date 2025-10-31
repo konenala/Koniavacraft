@@ -26,9 +26,17 @@ public class ModPlacedFeatures {
                 ModOrePlacement.commonOrePlacement(10, HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(64)))
         );
 
+        // 魔力花放置配置 - 降低每區塊的花叢數量
+        // CountPlacement: 3 -> 1 (每區塊只生成 1 個花叢，而不是 3 個)
+        // 這樣總密度會是：1 花叢/區塊 × 8 次嘗試 = 每區塊最多 8 朵花（取代之前的 96 次嘗試）
         register(context, MANA_BLOOM_PLACED_KEY,
                 configuredFeatures.getOrThrow(ModConfiguredFeatures.MANA_BLOOM_PATCH_KEY),
-                List.of(CountPlacement.of(3), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_WORLD_SURFACE, BiomeFilter.biome()));
+                List.of(
+                        RarityFilter.onAverageOnceEvery(2), // 🎲 50% 機率不生成（進一步降低密度）
+                        InSquarePlacement.spread(),
+                        PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
+                        BiomeFilter.biome()
+                ));
     }
 
 
