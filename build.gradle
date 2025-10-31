@@ -61,12 +61,40 @@ neoForge {
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+
+            // ✅ 性能優化：添加 JVM 參數
+            jvmArgument '-Xmx4G'
+            jvmArgument '-Xms2G'
+            jvmArgument '-XX:+UseG1GC'
+            jvmArgument '-XX:+ParallelRefProcEnabled'
+            jvmArgument '-XX:MaxGCPauseMillis=200'
+            jvmArgument '-XX:+UnlockExperimentalVMOptions'
+            jvmArgument '-XX:+DisableExplicitGC'
+            jvmArgument '-XX:G1NewSizePercent=30'
+            jvmArgument '-XX:G1MaxNewSizePercent=40'
+            jvmArgument '-XX:G1HeapRegionSize=8M'
+            jvmArgument '-XX:G1ReservePercent=20'
+            jvmArgument '-XX:G1HeapWastePercent=5'
+            jvmArgument '-XX:G1MixedGCCountTarget=4'
+            jvmArgument '-XX:InitiatingHeapOccupancyPercent=15'
+            jvmArgument '-XX:G1MixedGCLiveThresholdPercent=90'
+            jvmArgument '-XX:G1RSetUpdatingPauseTimePercent=5'
+            jvmArgument '-XX:SurvivorRatio=32'
+            jvmArgument '-XX:+PerfDisableSharedMem'
+            jvmArgument '-XX:MaxTenuringThreshold=1'
         }
 
         server {
             server()
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+
+            // ✅ 性能優化：添加 JVM 參數
+            jvmArgument '-Xmx4G'
+            jvmArgument '-Xms2G'
+            jvmArgument '-XX:+UseG1GC'
+            jvmArgument '-XX:+ParallelRefProcEnabled'
+            jvmArgument '-XX:MaxGCPauseMillis=200'
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -106,29 +134,6 @@ neoForge {
 
             // Set the file encoding for the JVM to UTF-8
             systemProperty 'file.encoding', 'UTF-8'
-
-            // ✅ 性能優化：添加 JVM 優化參數以提升開發環境性能
-            jvmArgs(
-                '-Xmx4G',                    // 最大堆內存 4GB（與 gradle.properties 一致）
-                '-Xms2G',                    // 初始堆內存 2GB
-                '-XX:+UseG1GC',              // 使用 G1 垃圾回收器
-                '-XX:+ParallelRefProcEnabled', // 並行處理引用
-                '-XX:MaxGCPauseMillis=200',  // GC 暫停目標 200ms
-                '-XX:+UnlockExperimentalVMOptions',
-                '-XX:+DisableExplicitGC',    // 禁用顯式 GC 調用
-                '-XX:G1NewSizePercent=30',
-                '-XX:G1MaxNewSizePercent=40',
-                '-XX:G1HeapRegionSize=8M',
-                '-XX:G1ReservePercent=20',
-                '-XX:G1HeapWastePercent=5',
-                '-XX:G1MixedGCCountTarget=4',
-                '-XX:InitiatingHeapOccupancyPercent=15',
-                '-XX:G1MixedGCLiveThresholdPercent=90',
-                '-XX:G1RSetUpdatingPauseTimePercent=5',
-                '-XX:SurvivorRatio=32',
-                '-XX:+PerfDisableSharedMem',
-                '-XX:MaxTenuringThreshold=1'
-            )
         }
     }
 
