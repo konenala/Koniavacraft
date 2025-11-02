@@ -46,6 +46,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ArcaneConduitBlock extends BaseEntityBlock {
+    // 🆕 導管等級
+    private final ConduitTier tier;
+
     private static final Map<UUID, List<Long>> playerBuildingHistory = new ConcurrentHashMap<>();
     private static final long HISTORY_CLEANUP_INTERVAL = 300000; // 5分鐘
     private static long lastCleanup = 0;
@@ -73,8 +76,10 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
     private static final VoxelShape UP_SHAPE = Block.box(6, 10, 6, 10, 16, 10);
     private static final VoxelShape DOWN_SHAPE = Block.box(6, 0, 6, 10, 6, 10);
 
-    public ArcaneConduitBlock(Properties properties) {
+    // 🆕 修改建構子，接受等級參數
+    public ArcaneConduitBlock(Properties properties, ConduitTier tier) {
         super(properties);
+        this.tier = tier;
         // 預設所有方向都不連接
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(NORTH, false)
@@ -83,6 +88,13 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
                 .setValue(EAST, false)
                 .setValue(UP, false)
                 .setValue(DOWN, false));
+    }
+
+    /**
+     * 🆕 獲取導管等級
+     */
+    public ConduitTier getTier() {
+        return tier;
     }
 
 
@@ -166,7 +178,10 @@ public class ArcaneConduitBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ArcaneConduitBlockEntity(pos, state);
+        // 🆕 創建 BlockEntity 時傳入等級
+        ArcaneConduitBlockEntity be = new ArcaneConduitBlockEntity(pos, state);
+        be.setTier(this.tier); // 設定方塊的等級
+        return be;
     }
 
     @Nullable

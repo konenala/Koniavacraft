@@ -34,6 +34,9 @@
   "block.koniava.solar_mana_collector": "Solar Mana Collector",
   "block.koniava.modular_machine": "Modular Machine",
   "block.koniava.arcane_conduit": "Arcane Conduit",
+  "block.koniava.basic_arcane_conduit": "Basic Arcane Conduit",
+  "block.koniava.advanced_arcane_conduit": "Advanced Arcane Conduit",
+  "block.koniava.elite_arcane_conduit": "Elite Arcane Conduit",
   "block.koniava.mana_soil": "Mana Soil",
   "block.koniava.deep_mana_soil": "Deep Mana Soil",
   "block.koniava.mana_grass_block": "Mana Grass Block",
@@ -150,6 +153,8 @@
   "message.koniava.conduit.choice_info": "§7• Right click again: View conduit details",
   "message.koniava.conduit.choice_place": "§a• Click edge or Shift+Right click: Place block",
   "message.koniava.conduit.info_header": "=== Conduit Detailed Information ===",
+  "message.koniava.conduit.tier": "§dTier: §f%s",
+  "message.koniava.conduit.transfer_rate": "§eTransfer Rate: §f%s/tick",
   "message.koniava.conduit.detailed_config_with_shape": "Direction %s: %s (Priority: %d) %s",
   "message.koniava.conduit.mana_status": "§bMana: §f%s/%s",
   "message.koniava.conduit.connections": "§aActive Connections: §f%s",
@@ -162,6 +167,12 @@
   "message.koniava.conduit.transfer_stats": "§7Connections: %s | Transfer Rate: %s",
   "message.koniava.conduit.detailed_config": "§e%s: §f%s §7(Priority: %d)",
   "message.koniava.conduit.technical_info": "§6Technical Info§r\nPosition: %s\nMana: %s\nNetwork: %s",
+
+  "//9": "=== Conduit Tiers ===",
+  "tier.koniava.conduit.basic": "Basic",
+  "tier.koniava.conduit.advanced": "Advanced",
+  "tier.koniava.conduit.elite": "Elite",
+
   "message.koniava.manual_mana_transfer_todo": "§eManual mana transfer feature in development...",
 
   "//11": "=== MACHINE MESSAGES ===",

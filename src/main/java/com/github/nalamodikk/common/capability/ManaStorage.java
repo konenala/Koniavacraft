@@ -10,13 +10,26 @@ import org.jetbrains.annotations.UnknownNullability;
 public class ManaStorage implements IUnifiedManaHandler , INBTSerializable<CompoundTag> {
 
     private int mana;
-    private final int capacity;
+    private int capacity; // 🆕 改為可變，支援動態容量調整
     protected boolean allowInsert = true;
     protected boolean allowExtract = true;
 
     public ManaStorage(int capacity) {
         this.capacity = capacity;
         this.mana = 0;
+    }
+
+    /**
+     * 🆕 設定新的容量
+     * 如果當前魔力超過新容量，會被截斷
+     */
+    public void setCapacity(int newCapacity) {
+        this.capacity = newCapacity;
+        // 如果當前魔力超過新容量，截斷到新容量
+        if (this.mana > newCapacity) {
+            this.mana = newCapacity;
+            onChanged();
+        }
     }
 
     public boolean canInsert() {

@@ -4,6 +4,7 @@ package com.github.nalamodikk.register;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.blockentity.collector.solarmana.SolarManaCollectorBlock;
 import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock;
+import com.github.nalamodikk.common.block.blockentity.conduit.ConduitTier;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlock;
@@ -41,12 +42,43 @@ public class ModBlocks {
     public static final DeferredBlock<Block> MANA_GENERATOR =
             registerBlock("mana_generator", () -> new ManaGeneratorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
 
+    // 🆕 三種等級的導管
+    public static final DeferredBlock<Block> BASIC_ARCANE_CONDUIT =
+            registerBlock("basic_arcane_conduit", () -> new ArcaneConduitBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS)
+                            .strength(1.5f)
+                            .noOcclusion()
+                            .lightLevel(state -> 5), // 基礎等級 - 較弱的光
+                    ConduitTier.BASIC
+            ));
+
+    public static final DeferredBlock<Block> ADVANCED_ARCANE_CONDUIT =
+            registerBlock("advanced_arcane_conduit", () -> new ArcaneConduitBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS)
+                            .strength(2.0f)
+                            .noOcclusion()
+                            .lightLevel(state -> 7), // 進階等級 - 中等光
+                    ConduitTier.ADVANCED
+            ));
+
+    public static final DeferredBlock<Block> ELITE_ARCANE_CONDUIT =
+            registerBlock("elite_arcane_conduit", () -> new ArcaneConduitBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS)
+                            .strength(2.5f)
+                            .noOcclusion()
+                            .lightLevel(state -> 9), // 精英等級 - 最強的光
+                    ConduitTier.ELITE
+            ));
+
+    // ⚠️ 已棄用：保留舊的 arcane_conduit 以向後兼容
+    @Deprecated
     public static final DeferredBlock<Block> ARCANE_CONDUIT =
             registerBlock("arcane_conduit", () -> new ArcaneConduitBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS)
                             .strength(1.5f)
                             .noOcclusion()
-                            .lightLevel(state -> 7) // 發光等級
+                            .lightLevel(state -> 7), // 發光等級
+                    ConduitTier.BASIC // 預設為基礎等級
             ));
 
     public static final DeferredBlock<Block> SOLAR_MANA_COLLECTOR =

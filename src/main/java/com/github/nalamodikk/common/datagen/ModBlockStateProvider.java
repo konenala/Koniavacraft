@@ -37,6 +37,11 @@ public class ModBlockStateProvider extends BlockStateProvider {
         // 🔗 導管系統
         createArcaneConduitModel();
 
+        // 🆕 三種等級的導管變種
+        createBasicConduitModel();
+        createAdvancedConduitModel();
+        createEliteConduitModel();
+
         // 🧪 特殊方塊 (自定義模型)
         createManaModel(ModBlocks.MANA_CRAFTING_TABLE_BLOCK);
         createManaModelWithFacing(ModBlocks.MANA_INFUSER);
@@ -171,6 +176,48 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 ModBlocks.ARCANE_CONDUIT.get(),      // 方塊實例
                 "conduit/arcane_conduit_core",       // 核心材質
                 "conduit/arcane_conduit_pipe",       // 管道材質
+                null,                                // 不要水晶材質
+                new int[]{6, 10},                    // 核心大小 6-10
+                null,                                // 不要水晶大小
+                new int[]{6, 10}                     // 管道粗細 6-10
+        );
+    }
+
+    // 🆕 基礎導管模型
+    private void createBasicConduitModel() {
+        createConduitModel(
+                "basic_arcane_conduit",              // 導管名稱
+                ModBlocks.BASIC_ARCANE_CONDUIT.get(), // 方塊實例
+                "conduit/basic_conduit_core",        // 核心材質
+                "conduit/basic_conduit_pipe",        // 管道材質
+                null,                                // 不要水晶材質
+                new int[]{6, 10},                    // 核心大小 6-10
+                null,                                // 不要水晶大小
+                new int[]{6, 10}                     // 管道粗細 6-10
+        );
+    }
+
+    // 🆕 進階導管模型
+    private void createAdvancedConduitModel() {
+        createConduitModel(
+                "advanced_arcane_conduit",           // 導管名稱
+                ModBlocks.ADVANCED_ARCANE_CONDUIT.get(), // 方塊實例
+                "conduit/advanced_conduit_core",     // 核心材質
+                "conduit/advanced_conduit_pipe",     // 管道材質
+                null,                                // 不要水晶材質
+                new int[]{6, 10},                    // 核心大小 6-10
+                null,                                // 不要水晶大小
+                new int[]{6, 10}                     // 管道粗細 6-10
+        );
+    }
+
+    // 🆕 精英導管模型
+    private void createEliteConduitModel() {
+        createConduitModel(
+                "elite_arcane_conduit",              // 導管名稱
+                ModBlocks.ELITE_ARCANE_CONDUIT.get(), // 方塊實例
+                "conduit/elite_conduit_core",        // 核心材質
+                "conduit/elite_conduit_pipe",        // 管道材質
                 null,                                // 不要水晶材質
                 new int[]{6, 10},                    // 核心大小 6-10
                 null,                                // 不要水晶大小

@@ -5,13 +5,23 @@ import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.Cache
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.IOManager;
 import net.minecraft.core.Direction;
 
+import java.util.Comparator;
 import java.util.List;
 // === 負載平衡策略類 ===
 
 public class BalancingStrategy {
 
+    // 🆕 優先級權重因子
+    private static final int PRIORITY_WEIGHT = 1000; // 優先級每增加1，權重增加1000
+    private static final int SPACE_WEIGHT = 1;       // 可用空間每增加1，權重增加1
+    private static final int LOAD_PENALTY = 2;       // 當前負載每增加1，權重減少2
+
     /**
-     * 選擇最佳目標方向
+     * 🆕 選擇最佳目標方向（改進版）
+     * 優先級制度：
+     * 1. 高優先級絕對優先（除非完全無法傳輸）
+     * 2. 相同優先級時，選擇可用空間最大的
+     * 3. 如果都滿了，輪詢等待
      */
     public static Direction selectBestTarget(List<Direction> validTargets,
                                              ArcaneConduitBlockEntity conduit,
@@ -20,127 +30,95 @@ public class BalancingStrategy {
                                              long tickCounter) {
         if (validTargets.isEmpty()) return null;
 
-        // 策略1：優先級策略
-        Direction priorityTarget = findHighestPriorityTarget(validTargets, ioManager, networkManager);
-
-        // 策略2：負載平衡策略
-        Direction balancedTarget = findLightestLoadTarget(validTargets, networkManager);
-
-        // 策略3：輪詢策略
-        Direction roundRobinTarget = findRoundRobinTarget(validTargets, tickCounter);
-
-        // 決策邏輯
-        return chooseBestStrategy(priorityTarget, balancedTarget, roundRobinTarget, ioManager, networkManager);
+        // 🆕 使用權重系統選擇最佳目標
+        return validTargets.stream()
+                .max(Comparator.comparingInt(dir ->
+                    calculateTargetScore(dir, ioManager, networkManager)))
+                .orElse(null);
     }
 
     /**
-     * 找到優先級最高的目標
+     * 🆕 計算目標方向的得分
+     * 得分越高，優先級越高
      */
-    private static Direction findHighestPriorityTarget(List<Direction> validTargets,
-                                                       IOManager ioManager,
-                                                       NetworkManager networkManager) {
-        Direction bestDir = null;
-        int maxPriority = Integer.MIN_VALUE;
+    private static int calculateTargetScore(Direction dir,
+                                           IOManager ioManager,
+                                           NetworkManager networkManager) {
+        CacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
+        if (target == null || !target.canReceive) {
+            return Integer.MIN_VALUE; // 無法接收的目標直接排除
+        }
 
+        int score = 0;
+
+        // 1. 優先級權重（最重要）
+        int priority = ioManager.getPriority(dir);
+        score += priority * PRIORITY_WEIGHT;
+
+        // 2. 可用空間權重（優先送到空間大的地方）
+        score += target.availableSpace * SPACE_WEIGHT;
+
+        // 3. 當前負載懲罰（避免送到已經很滿的地方）
+        if (target.isConduit) {
+            score -= target.storedMana * LOAD_PENALTY;
+        }
+
+        // 4. 如果目標完全沒有空間，大幅降低分數
+        if (target.availableSpace <= 0) {
+            score -= 1000000; // 嚴重懲罰
+        }
+
+        return score;
+    }
+
+    // === 🆕 輔助方法：供外部調試和監控使用 ===
+
+    /**
+     * 🆕 獲取目標的詳細評分信息（用於調試）
+     */
+    public static String getTargetScoreDebugInfo(Direction dir,
+                                                 IOManager ioManager,
+                                                 NetworkManager networkManager) {
+        CacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
+        if (target == null) {
+            return dir.name() + ": No target info";
+        }
+
+        int priority = ioManager.getPriority(dir);
+        int priorityScore = priority * PRIORITY_WEIGHT;
+        int spaceScore = target.availableSpace * SPACE_WEIGHT;
+        int loadPenalty = target.isConduit ? -(target.storedMana * LOAD_PENALTY) : 0;
+        int totalScore = calculateTargetScore(dir, ioManager, networkManager);
+
+        return String.format("%s: Total=%d (Priority=%d*%d=%d, Space=%d*%d=%d, Load Penalty=%d)",
+                dir.name(), totalScore,
+                priority, PRIORITY_WEIGHT, priorityScore,
+                target.availableSpace, SPACE_WEIGHT, spaceScore,
+                loadPenalty);
+    }
+
+    /**
+     * 🆕 檢查是否所有目標都已滿
+     */
+    public static boolean areAllTargetsFull(List<Direction> validTargets,
+                                           NetworkManager networkManager) {
         for (Direction dir : validTargets) {
             CacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
-            if (target != null) {
-                int priority = target.getPriority() + ioManager.getPriority(dir);
-
-                if (priority > maxPriority) {
-                    maxPriority = priority;
-                    bestDir = dir;
-                }
+            if (target != null && target.availableSpace > 0) {
+                return false;
             }
         }
-
-        return bestDir;
+        return true;
     }
 
     /**
-     * 找到負載最輕的目標
+     * 🆕 獲取最高優先級值（用於UI顯示）
      */
-    private static Direction findLightestLoadTarget(List<Direction> validTargets,
-                                                    NetworkManager networkManager) {
-        Direction lightestDir = null;
-        int minLoad = Integer.MAX_VALUE;
-
-        for (Direction dir : validTargets) {
-            CacheManager.TargetInfo target = networkManager.getTargetInfo(dir);
-            if (target != null) {
-                // 如果是導管，考慮其當前魔力量
-                int currentLoad;
-                if (target.isConduit) {
-                    currentLoad = target.storedMana; // 魔力越少，負載越輕
-                } else {
-                    // 非導管設備，使用可用空間作為負載指標
-                    currentLoad = target.availableSpace > 0 ? 0 : Integer.MAX_VALUE;
-                }
-
-                if (currentLoad < minLoad) {
-                    minLoad = currentLoad;
-                    lightestDir = dir;
-                }
-            }
-        }
-
-        return lightestDir;
-    }
-
-    /**
-     * 輪詢策略
-     */
-    private static Direction findRoundRobinTarget(List<Direction> validTargets, long tickCounter) {
-        if (validTargets.isEmpty()) return null;
-
-        // 使用 tick 計數器實現簡單輪詢
-        int index = (int) (tickCounter % validTargets.size());
-        return validTargets.get(index);
-    }
-
-    /**
-     * 選擇最佳策略
-     */
-    private static Direction chooseBestStrategy(Direction priorityTarget,
-                                                Direction balancedTarget,
-                                                Direction roundRobinTarget,
-                                                IOManager ioManager,
-                                                NetworkManager networkManager) {
-        // 如果有明確的高優先級目標，使用它
-        if (priorityTarget != null) {
-            int highestPriority = ioManager.getPriority(priorityTarget);
-
-            // 但如果其他目標的優先級差不多，就考慮負載平衡
-            if (balancedTarget != null) {
-                int balancedPriority = ioManager.getPriority(balancedTarget);
-                if (Math.abs(balancedPriority - highestPriority) <= 5) {
-                    // 在相近優先級中選擇負載最輕的
-                    return chooseBalancedTarget(priorityTarget, balancedTarget, networkManager);
-                }
-            }
-
-            return priorityTarget;
-        }
-
-        // 沒有明確優先級時，使用負載平衡
-        return balancedTarget != null ? balancedTarget : roundRobinTarget;
-    }
-
-    /**
-     * 在優先級相近時做平衡選擇
-     */
-    private static Direction chooseBalancedTarget(Direction priorityTarget,
-                                                  Direction balancedTarget,
-                                                  NetworkManager networkManager) {
-        CacheManager.TargetInfo priorityInfo = networkManager.getTargetInfo(priorityTarget);
-        CacheManager.TargetInfo balancedInfo = networkManager.getTargetInfo(balancedTarget);
-
-        // 如果優先級目標已經負載很重，選擇平衡目標
-        if (priorityInfo != null && balancedInfo != null &&
-                priorityInfo.isConduit && priorityInfo.storedMana > balancedInfo.storedMana) {
-            return balancedTarget;
-        }
-
-        return priorityTarget;
+    public static int getHighestPriority(List<Direction> validTargets,
+                                        IOManager ioManager) {
+        return validTargets.stream()
+                .mapToInt(ioManager::getPriority)
+                .max()
+                .orElse(0);
     }
 }

@@ -33,10 +33,14 @@ public class ModBlockEntities {
                     BlockEntityType.Builder.of(SolarManaCollectorBlockEntity::new,
                             ModBlocks.SOLAR_MANA_COLLECTOR.get()).build(null));
 
+    // 🆕 所有導管變種共用同一個 BlockEntity 類型
     public static final Supplier<BlockEntityType<ArcaneConduitBlockEntity>> ARCANE_CONDUIT_BE =
             BLOCK_ENTITY_TYPES.register("arcane_conduit", () ->
                     BlockEntityType.Builder.of(ArcaneConduitBlockEntity::new,
-                            ModBlocks.ARCANE_CONDUIT.get()).build(null));
+                            ModBlocks.ARCANE_CONDUIT.get(),
+                            ModBlocks.BASIC_ARCANE_CONDUIT.get(),
+                            ModBlocks.ADVANCED_ARCANE_CONDUIT.get(),
+                            ModBlocks.ELITE_ARCANE_CONDUIT.get()).build(null));
 
     public static final Supplier<BlockEntityType<ManaInfuserBlockEntity>> MANA_INFUSER =
             BLOCK_ENTITY_TYPES.register("mana_infuser", () ->

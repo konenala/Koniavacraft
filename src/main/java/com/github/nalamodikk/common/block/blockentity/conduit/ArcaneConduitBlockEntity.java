@@ -3,6 +3,7 @@ package com.github.nalamodikk.common.block.blockentity.conduit;// 🏗️ 簡化
 // === 1. 在頂部添加所有 Manager imports ===
 
 import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.common.block.blockentity.conduit.ConduitTier;
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.CacheManager;
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.IOManager;
 import com.github.nalamodikk.common.block.blockentity.conduit.manager.core.StatsManager;
@@ -45,7 +46,10 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 保留的常量和靜態字段 ===
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final int BUFFER_SIZE = 100;
+    // ⚠️ 已棄用：使用 ConduitTier 系統取代固定容量
+    @Deprecated
+    private static final int LEGACY_BUFFER_SIZE = 100;
+
     private static final int NETWORK_SCAN_INTERVAL = 600;
     private static final int PULL_INTERVAL_TICKS = 10; // 每10tick拉取一次
     private static final int MAX_PULL_PER_TICK = 100;  // 每次最多拉取100魔力
@@ -59,7 +63,11 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     private static final Map<BlockPos, Integer> conduitTickOffsets = new ConcurrentHashMap<>();
 
     // === 🆕 組件化核心 ===
-    private final ManaStorage buffer = new ManaStorage(BUFFER_SIZE);
+    // 🆕 導管等級系統
+    private ConduitTier tier = ConduitTier.BASIC; // 預設為基礎等級
+
+    // 緩衝區根據等級動態調整
+    private final ManaStorage buffer;
     private final IOManager ioManager;
     private final StatsManager statsManager;
     private final CacheManager cacheManager;
@@ -91,6 +99,9 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 🆕 簡化的建構子 ===
     public ArcaneConduitBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.ARCANE_CONDUIT_BE.get(), pos, blockState);
+
+        // 🆕 根據等級初始化緩衝區
+        this.buffer = new ManaStorage(tier.getBufferCapacity());
 
         // 初始化所有管理器
         this.ioManager = new IOManager();
@@ -362,8 +373,10 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
 
-        // 保存緩衝區
+        // 🆕 保存等級
+        tag.putString("ConduitTier", tier.getSerializedName());
 
+        // 保存緩衝區
         tag.put("Buffer", buffer.serializeNBT(registries));
         if (virtualNetwork != null) {
             tag.putInt("VirtualNetworkMana", virtualNetwork.getTotalManaStored());
@@ -396,6 +409,13 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+
+        // 🆕 載入等級
+        if (tag.contains("ConduitTier")) {
+            tier = ConduitTier.fromString(tag.getString("ConduitTier"));
+            // 更新緩衝區容量
+            buffer.setCapacity(tier.getBufferCapacity());
+        }
 
         // 載入緩衝區
         if (tag.contains("Buffer")) {
@@ -533,6 +553,46 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
                 .orElse(worldPosition);
 
         return worldPosition.equals(minPos);
+    }
+
+    // === 🆕 等級系統相關方法 ===
+
+    /**
+     * 獲取導管等級
+     */
+    public ConduitTier getTier() {
+        return tier;
+    }
+
+    /**
+     * 設定導管等級（用於升級）
+     */
+    public void setTier(ConduitTier newTier) {
+        if (newTier != this.tier) {
+            this.tier = newTier;
+            // 更新緩衝區容量
+            buffer.setCapacity(newTier.getBufferCapacity());
+            setChanged();
+
+            // 通知客戶端
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
+
+            LOGGER.info("Conduit at {} upgraded to tier: {}", worldPosition, newTier.getSerializedName());
+        }
+    }
+
+    /**
+     * 升級到下一等級
+     * @return 是否成功升級
+     */
+    public boolean upgradeToNextTier() {
+        if (tier.hasNext()) {
+            setTier(tier.getNext());
+            return true;
+        }
+        return false;
     }
 
     // === 保留的 IUnifiedManaHandler 實現 ===
@@ -708,6 +768,16 @@ public class ArcaneConduitBlockEntity extends BlockEntity implements IUnifiedMan
     // === 保留的信息顯示方法 ===
     private void showConduitInfo(Player player) {
         player.displayClientMessage(Component.translatable("message.koniava.conduit.info_header"), false);
+
+        // 🆕 顯示等級資訊
+        player.displayClientMessage(Component.translatable(
+                "message.koniava.conduit.tier",
+                Component.translatable(tier.getDisplayName())), false);
+
+        // 🆕 顯示傳輸速率
+        player.displayClientMessage(Component.translatable(
+                "message.koniava.conduit.transfer_rate",
+                tier.getTransferRate()), false);
 
         player.displayClientMessage(Component.translatable(
                 "message.koniava.conduit.mana_status",
