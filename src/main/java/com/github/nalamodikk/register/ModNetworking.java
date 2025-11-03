@@ -4,6 +4,7 @@ import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
 import com.github.nalamodikk.common.network.packet.server.conduit.PriorityUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.conduit.ResetPrioritiesPacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionBatchUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ModeChangePacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.TechWandModePacket;
@@ -25,6 +26,7 @@ public class ModNetworking {
         TechWandModePacket.registerTo(registrar);
         ModeChangePacket.registerTo(registrar);
         ConfigDirectionUpdatePacket.registerTo(registrar);
+        ConfigDirectionBatchUpdatePacket.registerTo(registrar);
         ToggleModePacket.registerTo(registrar);
         OpenUpgradeGuiPacket.registerTo(registrar);
 

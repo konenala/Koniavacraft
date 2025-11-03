@@ -3,7 +3,7 @@ package com.github.nalamodikk.common.screen.block.shared;
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
 import com.github.nalamodikk.common.coreapi.block.IConfigurableBlock;
-import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionUpdatePacket;
+import com.github.nalamodikk.common.network.packet.server.manatool.ConfigDirectionBatchUpdatePacket;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,11 +20,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * 🎛️ 通用配置介面
+ *
+ * 實作智能延遲同步系統：
+ * - 按鈕點擊立即更新客戶端顯示（視覺反饋）
+ * - 300ms 防抖動延遲後批次發送封包
+ * - 關閉介面時立即同步所有未保存的變更
+ */
 public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConfigMenu> {
 
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/universal_config.png");
@@ -34,10 +43,25 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     private static final ResourceLocation BUTTON_TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/button_config_disabled.png");
     private static final int BUTTON_WIDTH = 20;
     private static final int BUTTON_HEIGHT = 20;
-    private final EnumMap<Direction, TooltipButton> directionButtonMap = new EnumMap<>(Direction.class);
 
+    // ⏱️ 延遲同步參數（300ms）
+    private static final long SYNC_DELAY_MS = 300;
+
+    // 🔧 靜態 Executor，所有介面實例共用
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = new Thread(r, "UniversalConfigScreen-Sync");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    private final EnumMap<Direction, TooltipButton> directionButtonMap = new EnumMap<>(Direction.class);
     private final EnumMap<Direction, IOHandlerUtils.IOType> currentIOMap = new EnumMap<>(Direction.class);
     private final BlockEntity blockEntity;
+
+    // ⏱️ 延遲同步狀態
+    private ScheduledFuture<?> pendingSyncTask = null;
+    private final Set<Direction> dirtyDirections = new HashSet<>();
+    private final EnumMap<Direction, IOHandlerUtils.IOType> originalIOMap = new EnumMap<>(Direction.class);
 
     public UniversalConfigScreen(UniversalConfigMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -45,8 +69,11 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         this.imageWidth = 176;
         this.imageHeight = 166;
 
+        // 初始化配置映射
         for (Direction direction : Direction.values()) {
-            currentIOMap.put(direction, IOHandlerUtils.IOType.DISABLED); // ✅ 初始化為禁用
+            IOHandlerUtils.IOType type = menu.getIOType(direction);
+            currentIOMap.put(direction, type);
+            originalIOMap.put(direction, type);
         }
     }
 
@@ -56,7 +83,6 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         int baseX = (this.width - this.imageWidth) / 2 + this.imageWidth / 2 - BUTTON_WIDTH / 2;
         int baseY = (this.height - this.imageHeight) / 2 + this.imageHeight / 2 - BUTTON_HEIGHT / 2;
 
-        // ✅ 修復：初始化時直接從BlockEntity獲取最新數據
         updateCurrentConfigFromMenu();
         initDirectionButtons(baseX, baseY);
         updateAllButtonTooltipsAndTextures();
@@ -77,21 +103,16 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         Direction up = Direction.UP;
         Direction down = Direction.DOWN;
 
-        // 視覺 layout：
-        //     [UP]
-        // [LEFT][FRONT][RIGHT]
-        //     [DOWN]
-        //     [BACK]
         int adjustedBaseY = (this.height - this.imageHeight) / 2 + this.imageHeight / 2 - BUTTON_HEIGHT / 2 - 10;
 
         directionOffsets.put(Direction.UP,     new int[]{0, -50});
         directionOffsets.put(Direction.DOWN,   new int[]{0, 30});
-        directionOffsets.put(front,            new int[]{0, -20});  // ✅ 改這行
+        directionOffsets.put(front,            new int[]{0, -20});
         directionOffsets.put(back,             new int[]{0, 60});
         directionOffsets.put(left,             new int[]{-60, 0});
         directionOffsets.put(right,            new int[]{60, 0});
 
-        directionButtonMap.clear(); // ← 清空舊的映射
+        directionButtonMap.clear();
 
         for (Direction direction : Direction.values()) {
             if (directionOffsets.containsKey(direction)) {
@@ -118,7 +139,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
                         () -> Collections.singletonList(getTooltipText(direction))
                 );
 
-                directionButtonMap.put(direction, button); // 🔁 儲存按鈕
+                directionButtonMap.put(direction, button);
                 this.addRenderableWidget(button);
             }
         }
@@ -127,8 +148,6 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     @Override
     protected void containerTick() {
         super.containerTick();
-
-        // 🔧 關鍵修復：從Menu獲取最新數據，而不是直接從BlockEntity
         updateCurrentConfigFromMenu();
     }
 
@@ -140,27 +159,23 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
                 IOHandlerUtils.IOType syncedType = menu.getIOType(direction);
                 IOHandlerUtils.IOType currentDisplayed = currentIOMap.get(direction);
 
-                if (syncedType != currentDisplayed) {
+                if (syncedType != currentDisplayed && !dirtyDirections.contains(direction)) {
                     currentIOMap.put(direction, syncedType);
                     hasChanges = true;
                 }
             }
 
-            // 只在有變化時才更新按鈕顯示
             if (hasChanges) {
                 updateAllButtonTooltipsAndTextures();
             }
         } catch (Exception e) {
-            // 使用 KoniavacraftMod.LOGGER 記錄錯誤
             KoniavacraftMod.LOGGER.error("Error updating config from menu: {}", e.getMessage(), e);
         }
     }
 
-
-
     private void updateAllButtonTooltipsAndTextures() {
         for (Direction direction : Direction.values()) {
-            TooltipButton button = getButtonByDirection(direction);
+            TooltipButton button = directionButtonMap.get(direction);
             if (button != null) {
                 updateButtonTooltip(button, direction);
                 updateButtonTexture(button, direction);
@@ -168,78 +183,149 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         }
     }
 
-
-    private TooltipButton getButtonByDirection(Direction direction) {
-        return directionButtonMap.get(direction);
-    }
-
-
-    // 🔧 修復按鈕點擊邏輯
+    /**
+     * 🎯 按鈕點擊處理（核心優化點）
+     *
+     * 流程：
+     * 1. 立即更新客戶端顯示（視覺反饋）
+     * 2. 標記為 dirty
+     * 3. 取消之前的延遲任務
+     * 4. 安排新的延遲同步任務（300ms 後）
+     */
     private void onDirectionConfigButtonClick(Direction direction) {
         try {
-            if (blockEntity instanceof IConfigurableBlock configurableBlock) {
-                // 🔧 使用Menu的同步數據而不是直接查詢BlockEntity
-                IOHandlerUtils.IOType current = menu.getIOType(direction);
-                IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
+            if (!(blockEntity instanceof IConfigurableBlock)) {
+                return;
+            }
 
-                // 立即更新本地顯示
-                currentIOMap.put(direction, next);
+            // 1️⃣ 立即切換到下一個狀態（純客戶端，無延遲）
+            IOHandlerUtils.IOType current = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+            IOHandlerUtils.IOType next = IOHandlerUtils.nextIOType(current);
 
-                // 更新按鈕顯示
-                TooltipButton button = directionButtonMap.get(direction);
-                if (button != null) {
-                    updateButtonTexture(button, direction);
-                    updateButtonTooltip(button, direction);
-                }
+            currentIOMap.put(direction, next);
 
-                // 發送封包給伺服器
-                PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(
-                        blockEntity.getBlockPos(), direction, next));
+            // 2️⃣ 立即更新按鈕顯示（視覺反饋）
+            TooltipButton button = directionButtonMap.get(direction);
+            if (button != null) {
+                updateButtonTexture(button, direction);
+                updateButtonTooltip(button, direction);
+            }
 
-                // 顯示通知
-                if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.displayClientMessage(Component.translatable(
-                            "message.koniava.config_button_clicked",
-                            direction.getName(),
-                            Component.translatable("mode.koniava." + next.name().toLowerCase())
-                    ), true);
-                }
+            // 3️⃣ 標記為需要同步
+            dirtyDirections.add(direction);
 
-                // 🔧 調試日誌（放在 if 區塊內）
-                if (KoniavacraftMod.IS_DEV) {
-                    KoniavacraftMod.LOGGER.debug("Direction config button clicked: {} -> {}",
-                            direction, next);
-                }
-            } // ← 這裡關閉 if (blockEntity instanceof IConfigurableBlock) 區塊
+            // 4️⃣ 取消之前的延遲任務
+            if (pendingSyncTask != null && !pendingSyncTask.isDone()) {
+                pendingSyncTask.cancel(false);
+            }
+
+            // 5️⃣ 安排新的延遲同步任務（300ms 後）
+            pendingSyncTask = scheduler.schedule(() -> {
+                // 在主線程執行網路操作
+                Minecraft.getInstance().execute(this::syncDirtyDirections);
+            }, SYNC_DELAY_MS, TimeUnit.MILLISECONDS);
+
+            // 6️⃣ 顯示操作提示（可選）
+            if (Minecraft.getInstance().player != null) {
+                Minecraft.getInstance().player.displayClientMessage(Component.translatable(
+                        "message.koniava.config_button_clicked",
+                        direction.getName(),
+                        Component.translatable("mode.koniava." + next.name().toLowerCase())
+                ), true);
+            }
+
+            if (KoniavacraftMod.IS_DEV) {
+                KoniavacraftMod.LOGGER.debug("[Client] Button clicked: {} → {} (sync scheduled)", direction, next);
+            }
+
         } catch (Exception e) {
-            KoniavacraftMod.LOGGER.error("Error handling direction config button click: {}",
-                    e.getMessage(), e);
+            KoniavacraftMod.LOGGER.error("Error handling direction config button click: {}", e.getMessage(), e);
         }
     }
+
+    /**
+     * 📤 同步所有 dirty 的配置到伺服器
+     */
+    private void syncDirtyDirections() {
+        if (dirtyDirections.isEmpty()) {
+            return;
+        }
+
+        try {
+            // 構建批次更新映射
+            Map<Direction, IOHandlerUtils.IOType> updatedConfig = new HashMap<>();
+            for (Direction direction : dirtyDirections) {
+                IOHandlerUtils.IOType newType = currentIOMap.get(direction);
+                updatedConfig.put(direction, newType);
+            }
+
+            // 發送批次更新封包
+            PacketDistributor.sendToServer(new ConfigDirectionBatchUpdatePacket(
+                    blockEntity.getBlockPos(),
+                    updatedConfig
+            ));
+
+            if (KoniavacraftMod.IS_DEV) {
+                KoniavacraftMod.LOGGER.info("[Client] 📤 Synced {} dirty directions: {}",
+                        dirtyDirections.size(), dirtyDirections);
+            }
+
+            // 清除 dirty 標記
+            dirtyDirections.clear();
+
+        } catch (Exception e) {
+            KoniavacraftMod.LOGGER.error("Error syncing dirty directions: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 🚪 關閉介面時的處理
+     */
     @Override
     public void onClose() {
+        // 1️⃣ 取消待處理的延遲任務
+        if (pendingSyncTask != null && !pendingSyncTask.isDone()) {
+            pendingSyncTask.cancel(false);
+        }
+
+        // 2️⃣ 立即同步所有未保存的變更
+        syncDirtyDirections();
+
+        // 3️⃣ 如果還有與原始狀態不同的配置，也要同步
+        syncRemainingChanges();
+
         super.onClose();
+    }
 
-        if (blockEntity instanceof IConfigurableBlock) {
-            for (Direction direction : Direction.values()) {
-                IOHandlerUtils.IOType oldValue = menu.getOriginalIOMap().getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
-                IOHandlerUtils.IOType newValue = currentIOMap.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
+    /**
+     * 🔄 同步所有與原始狀態不同的配置
+     */
+    private void syncRemainingChanges() {
+        Map<Direction, IOHandlerUtils.IOType> changedConfig = new HashMap<>();
 
-                if (oldValue != newValue) {
-                    PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(blockEntity.getBlockPos(), direction, newValue));
+        for (Direction direction : Direction.values()) {
+            IOHandlerUtils.IOType original = originalIOMap.get(direction);
+            IOHandlerUtils.IOType current = currentIOMap.get(direction);
 
-                    if (KoniavacraftMod.IS_DEV) {
-                        KoniavacraftMod.LOGGER.info("[Client] Changed direction: {} → {}, sending packet", direction.getName(), newValue.name());
-                    }
-                }
+            if (original != current) {
+                changedConfig.put(direction, current);
+            }
+        }
+
+        if (!changedConfig.isEmpty()) {
+            PacketDistributor.sendToServer(new ConfigDirectionBatchUpdatePacket(
+                    blockEntity.getBlockPos(),
+                    changedConfig
+            ));
+
+            if (KoniavacraftMod.IS_DEV) {
+                KoniavacraftMod.LOGGER.info("[Client] 🔄 Synced {} remaining changes on close", changedConfig.size());
             }
         }
     }
 
-
-
     private void updateButtonTooltip(TooltipButton button, Direction direction) {
-        button.setTooltip(null); // 禁用靜態 tooltip
+        button.setTooltip(null);
         directionButtonMap.put(direction, button);
     }
 
@@ -263,9 +349,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
         MutableComponent tooltip = Component.translatable("screen.koniava.configure_side.full", localizedDirection, modeText);
 
-        // 🔧 正確的 Shift 鍵檢查方式
         try {
-            // 使用 Screen.hasShiftDown() 檢查實際的 Shift 鍵狀態
             if (Screen.hasShiftDown()) {
                 tooltip.append("\n")
                         .append(Component.translatable("screen.koniava.debug_world_direction", direction.getName()));
@@ -274,7 +358,6 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
                         .append(Component.translatable("screen.koniava.hold_shift"));
             }
         } catch (Exception e) {
-            // 如果出現任何錯誤，只顯示基本信息
             tooltip.append("\n")
                     .append(Component.translatable("screen.koniava.hold_shift"));
             KoniavacraftMod.LOGGER.debug("Could not check shift key state: {}", e.getMessage());
@@ -282,7 +365,6 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
 
         return tooltip;
     }
-
 
     @Override
     protected void renderBg(GuiGraphics pGuiGraphics, float partialTicks, int mouseX, int mouseY) {
@@ -295,8 +377,7 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTicks) {
         this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
-        renderButtonTooltips(pGuiGraphics, pMouseX, pMouseY); // ✅ 加上這行
-
+        renderButtonTooltips(pGuiGraphics, pMouseX, pMouseY);
     }
 
     @Override
@@ -319,4 +400,3 @@ public class UniversalConfigScreen extends AbstractContainerScreen<UniversalConf
         return false;
     }
 }
-
