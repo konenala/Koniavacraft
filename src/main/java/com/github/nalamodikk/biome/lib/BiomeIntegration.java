@@ -41,7 +41,7 @@ public class BiomeIntegration {
             LOGGER.info("✅ 生物群系系統初始化完成！");
 
         } catch (Exception e) {
-            LOGGER.severe("❌ 生物群系系統初始化失敗！" + e.getMessage());
+            LOGGER.error("❌ 生物群系系統初始化失敗！" + e.getMessage());
             e.printStackTrace();
         }
     }
