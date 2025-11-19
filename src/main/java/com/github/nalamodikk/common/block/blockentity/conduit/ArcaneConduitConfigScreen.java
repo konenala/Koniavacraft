@@ -29,6 +29,20 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
     private final EnumMap<Direction, EditBox> priorityInputs = new EnumMap<>(Direction.class);
     private final EnumMap<Direction, TooltipButton> ioButtons = new EnumMap<>(Direction.class);
 
+    // 🔧 GUI 顯示中的 IO 狀態快取
+    private final EnumMap<Direction, IOHandlerUtils.IOType> displayIOStates = new EnumMap<>(Direction.class);
+
+    // 🆕 客戶端預測：追蹤等待伺服端確認的狀態與剩餘冷卻
+    private final EnumMap<Direction, PendingUpdate> pendingIOStates = new EnumMap<>(Direction.class);
+
+    private static final int PENDING_COOLDOWN_TICKS = 6; // 約 0.3 秒的防閃爍緩衝
+
+    private record PendingUpdate(IOHandlerUtils.IOType targetType, int remainingTicks) {
+        PendingUpdate tickDown() {
+            return new PendingUpdate(targetType, Math.max(remainingTicks - 1, 0));
+        }
+    }
+
     public ArcaneConduitConfigScreen(ArcaneConduitConfigMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 256;
@@ -41,6 +55,12 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
 
         int startX = leftPos + 20;
         int startY = topPos + 30;
+
+        // 🔧 初始化所有方向的狀態
+        for (Direction dir : Direction.values()) {
+            IOHandlerUtils.IOType current = menu.getIOType(dir);
+            displayIOStates.put(dir, current);
+        }
 
         // 為每個方向創建配置控件
         for (Direction dir : Direction.values()) {
@@ -136,6 +156,15 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
         IOHandlerUtils.IOType currentType = menu.getIOType(dir);
         IOHandlerUtils.IOType nextType = getNextIOType(currentType);
 
+        // 🆕 客戶端預測：立即更新按鈕顯示
+        pendingIOStates.put(dir, new PendingUpdate(nextType, PENDING_COOLDOWN_TICKS));
+        TooltipButton ioButton = ioButtons.get(dir);
+        if (ioButton != null) {
+            ioButton.setMessage(getIOTypeLabel(nextType));
+            ioButton.setTexture(getIOTypeTexture(nextType), 20, 20);
+            displayIOStates.put(dir, nextType); // 更新顯示快取
+        }
+
         // 🔧 發送封包到伺服器
         PacketDistributor.sendToServer(new ConfigDirectionUpdatePacket(menu.getConduitPos(), dir, nextType));
     }
@@ -195,12 +224,29 @@ public class ArcaneConduitConfigScreen extends AbstractContainerScreen<ArcaneCon
 
     private void updateAllControls() {
         for (Direction dir : Direction.values()) {
-            // 更新 IO 按鈕 - 使用您現有的 TooltipButton
+            // 🔧 修復閃爍：只在 IO 類型實際改變時更新按鈕
             TooltipButton ioButton = ioButtons.get(dir);
             if (ioButton != null) {
-                IOHandlerUtils.IOType currentType = menu.getIOType(dir);
-                ioButton.setMessage(getIOTypeLabel(currentType));
-                ioButton.setTexture(getIOTypeTexture(currentType), 20, 20);
+                IOHandlerUtils.IOType serverType = menu.getIOType(dir);
+
+                PendingUpdate pending = pendingIOStates.get(dir);
+                if (pending != null) {
+                    if (serverType == pending.targetType()) {
+                        pendingIOStates.remove(dir); // 伺服端已確認
+                    } else if (pending.remainingTicks() > 0) {
+                        pendingIOStates.put(dir, pending.tickDown());
+                        continue; // 冷卻期間忽略舊值
+                    } else {
+                        pendingIOStates.remove(dir); // 冷卻結束，允許伺服端覆寫
+                    }
+                }
+
+                IOHandlerUtils.IOType displayType = displayIOStates.getOrDefault(dir, IOHandlerUtils.IOType.BOTH);
+                if (displayType != serverType) {
+                    ioButton.setMessage(getIOTypeLabel(serverType));
+                    ioButton.setTexture(getIOTypeTexture(serverType), 20, 20);
+                    displayIOStates.put(dir, serverType);
+                }
             }
 
             // 🔧 修復：更新優先級輸入框時檢查焦點狀態
