@@ -6,6 +6,7 @@ import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitConfi
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingScreen;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorScreen;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserScreen;
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.OreGrinderScreen;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigScreen;
 import com.github.nalamodikk.common.screen.block.shared.UpgradeScreen;
 import com.github.nalamodikk.common.screen.player.ExtraEquipmentScreen;
