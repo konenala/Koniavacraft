@@ -8,6 +8,7 @@ import com.github.nalamodikk.common.block.blockentity.conduit.ConduitTier;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlock;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlock;
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.OreGrinderBlock;
 import com.github.nalamodikk.common.block.normal.DeepManaSoilBlock;
 import com.github.nalamodikk.common.block.normal.ManaBloomBlock;
 import com.github.nalamodikk.common.block.normal.ManaGrassBlock;
@@ -124,6 +125,12 @@ public class ModBlocks {
             () -> new ManaInfuserBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
                     .strength(3.5f).sound(SoundType.METAL).lightLevel(state ->
                             state.getValue(ManaInfuserBlock.WORKING) ? 7 : 0))); // 工作時發光
+
+    // === ⚙️ 新增：礦石粉碎機 ===
+    public static final DeferredBlock<OreGrinderBlock> ORE_GRINDER = registerBlock("ore_grinder",
+            () -> new OreGrinderBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
+                    .strength(3.5f).sound(SoundType.METAL).lightLevel(state ->
+                            state.getValue(OreGrinderBlock.WORKING) ? 6 : 0))); // 工作時發光
 
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {

@@ -6,6 +6,7 @@ import com.github.nalamodikk.common.block.blockentity.conduit.ArcaneConduitBlock
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.OreGrinderBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -46,6 +47,12 @@ public class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("mana_infuser", () ->
                     BlockEntityType.Builder.of(ManaInfuserBlockEntity::new,
                             ModBlocks.MANA_INFUSER.get()).build(null));
+
+    // === ⚙️ 新增：礦石粉碎機 ===
+    public static final Supplier<BlockEntityType<OreGrinderBlockEntity>> ORE_GRINDER =
+            BLOCK_ENTITY_TYPES.register("ore_grinder", () ->
+                    BlockEntityType.Builder.of(OreGrinderBlockEntity::new,
+                            ModBlocks.ORE_GRINDER.get()).build(null));
 
 //    public static final Supplier<BlockEntityType<ModularMachineBlockEntity>> MODULAR_MACHINE_BE =
 //            BLOCK_ENTITY_TYPES.register("modular_machine", () ->

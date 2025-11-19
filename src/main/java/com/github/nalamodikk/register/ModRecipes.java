@@ -4,6 +4,7 @@ import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.block.blockentity.mana_crafting.ManaCraftingTableRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_generator.recipe.ManaGenFuelRecipe;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserRecipe;
+import com.github.nalamodikk.common.coreapi.recipe.ProcessingRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -67,8 +68,13 @@ public class ModRecipes {
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ManaGenFuelRecipe>> MANA_FUEL_SERIALIZER =
             SERIALIZERS.register("mana_fuel", () -> ManaGenFuelRecipe.FuelRecipeSerializer.INSTANCE);
 
+    // === ⚙️ 通用加工配方系統 ===
+    public static final Supplier<RecipeType<ProcessingRecipe>> PROCESSING_TYPE =
+            TYPES.register("processing", () -> RecipeType.simple(
+                    ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "processing")));
 
-
+    public static final Supplier<RecipeSerializer<ProcessingRecipe>> PROCESSING_SERIALIZER =
+            SERIALIZERS.register("processing", ProcessingRecipe.Serializer::new);
 
     // 綁定用註冊方法
     public static void register(IEventBus modEventBus) {

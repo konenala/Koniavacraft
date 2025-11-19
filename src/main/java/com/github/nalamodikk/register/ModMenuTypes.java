@@ -21,6 +21,8 @@ import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGenerat
 import com.github.nalamodikk.common.block.blockentity.mana_generator.ManaGeneratorMenu;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserBlockEntity;
 import com.github.nalamodikk.common.block.blockentity.mana_infuser.ManaInfuserMenu;
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.OreGrinderBlockEntity;
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.OreGrinderMenu;
 import com.github.nalamodikk.common.screen.block.shared.FallbackUpgradeMenu;
 import com.github.nalamodikk.common.screen.block.shared.UniversalConfigMenu;
 import com.github.nalamodikk.common.screen.block.shared.UpgradeMenu;
@@ -86,6 +88,20 @@ public class ModMenuTypes {
                                     (be != null ? be.getClass().getSimpleName() : "null"));
                         }
                         return new ManaInfuserMenu(id, inv, infuser);
+                    });
+
+    // === ⚙️ 新增：礦石粉碎機菜單 ===
+    public static final DeferredHolder<MenuType<?>, MenuType<OreGrinderMenu>> ORE_GRINDER_MENU =
+            registerMenuType("ore_grinder",
+                    (id, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        Level level = inv.player.level();
+                        BlockEntity be = level.getBlockEntity(pos);
+                        if (!(be instanceof OreGrinderBlockEntity grinder)) {
+                            throw new IllegalStateException("Expected OreGrinderBlockEntity at " + pos + " but found " +
+                                    (be != null ? be.getClass().getSimpleName() : "null"));
+                        }
+                        return new OreGrinderMenu(id, inv, grinder);
                     });
 
     /**
