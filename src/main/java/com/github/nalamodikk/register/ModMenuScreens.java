@@ -27,6 +27,7 @@ public class ModMenuScreens {
         event.register(ModMenuTypes.EXTRA_EQUIPMENT_MENU.get(), ExtraEquipmentScreen::new);
         event.register(ModMenuTypes.CONDUIT_CONFIG_MENU.get(), ArcaneConduitConfigScreen::new);
         event.register(ModMenuTypes.MANA_INFUSER.get(), ManaInfuserScreen::new);
+        event.register(ModMenuTypes.ORE_GRINDER_MENU.get(), OreGrinderScreen::new);
 
     }
 

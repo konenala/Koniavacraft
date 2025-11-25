@@ -2,166 +2,146 @@ package com.github.nalamodikk.common.datagen;
 
 import com.github.nalamodikk.KoniavacraftMod;
 import com.github.nalamodikk.common.coreapi.recipe.ProcessingRecipe;
-import com.github.nalamodikk.register.ModRecipes;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.conditions.IConditionBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
- * ⚙️ 加工配方數據生成器
+ * ⚙️ 加工配方數據生成器（靜態工具類）
  *
- * 此類自動生成所有加工配方的 JSON 文件
- * 執行 ./gradlew runData 時自動運行
+ * 此類提供靜態方法來生成所有加工配方的 JSON 文件
+ * 由 ModRecipeProvider 的 buildRecipes() 調用
  * 輸出到 src/generated/resources/data/koniava/recipes/
  */
-public class ProcessingRecipeProvider extends RecipeProvider implements IConditionBuilder {
+public class ProcessingRecipeProvider {
 
-    public ProcessingRecipeProvider(PackOutput pOutput, CompletableFuture<HolderLookup.Provider> pRegistries) {
-        super(pOutput, pRegistries);
-    }
-
-    @Override
-    protected void buildRecipes(RecipeOutput pRecipeOutput) {
+    /**
+     * 🔧 生成所有加工配方
+     *
+     * 由 ModRecipeProvider.buildRecipes() 調用
+     */
+    public static void generate(RecipeOutput output) {
         // ============================================
         // 🔨 粉碎機配方（Grinder Recipes）
         // ============================================
 
         // 🪨 石頭 → 沙粒
-        createProcessingRecipe(pRecipeOutput, "grinder/stone_grind")
-                .inputs(Ingredient.of(Blocks.STONE))
-                .mainOutput(new ItemStack(Items.SAND, 1))
+        createProcessingRecipe(output, "grinder/stone_grind", "grinder")
+                .input(Blocks.STONE)
+                .output(Items.SAND, 1)
                 .manaCost(50)
                 .processingTime(100)
-                .machineType("grinder")
                 .save();
 
-        // 💎 鑽石礦 → 鑽石粉（假設有此物品）
-        createProcessingRecipe(pRecipeOutput, "grinder/diamond_ore_grind")
-                .inputs(Ingredient.of(Items.DIAMOND))
-                .mainOutput(new ItemStack(Items.GLASS, 1))  // 臨時用玻璃代替
-                .addChanceOutput(new ItemStack(Items.GRAVEL, 1), 0.2f)  // 20% 副產品
+        // 💎 鑽石 → 玻璃 + 礫石 (20%)
+        createProcessingRecipe(output, "grinder/diamond_grind", "grinder")
+                .input(Items.DIAMOND)
+                .output(Items.GLASS, 1)
+                .chanceOutput(Items.GRAVEL, 1, 0.2f)
                 .manaCost(200)
                 .processingTime(150)
-                .machineType("grinder")
                 .save();
 
         // ============================================
         // 🌊 清洗機配方（Washer Recipes）
         // ============================================
 
-        // 灰塵 → 淨化物品
-        createProcessingRecipe(pRecipeOutput, "washer/dust_clean")
-                .inputs(Ingredient.of(Items.GRAVEL))
-                .mainOutput(new ItemStack(Items.SAND, 1))
+        // 礫石 → 沙粒
+        createProcessingRecipe(output, "washer/gravel_wash", "washer")
+                .input(Items.GRAVEL)
+                .output(Items.SAND, 1)
                 .manaCost(75)
                 .processingTime(80)
-                .machineType("washer")
                 .save();
 
         // ============================================
         // ✨ 富集機配方（Enricher Recipes）
         // ============================================
 
-        // 沙粒 → 濃縮物
-        createProcessingRecipe(pRecipeOutput, "enricher/sand_enrich")
-                .inputs(Ingredient.of(Items.SAND))
-                .mainOutput(new ItemStack(Items.DIRT, 1))  // 臨時示例
+        // 沙粒 → 土
+        createProcessingRecipe(output, "enricher/sand_enrich", "enricher")
+                .input(Items.SAND)
+                .output(Items.DIRT, 1)
                 .manaCost(100)
                 .processingTime(120)
-                .machineType("enricher")
                 .save();
 
         // ============================================
         // 🔨 多輸入示例
         // ============================================
 
-        // 石頭 + 圓石 → 磚塊（示例多輸入）
-        createProcessingRecipe(pRecipeOutput, "grinder/multi_input_example")
-                .inputs(
-                        Ingredient.of(Blocks.STONE),
-                        Ingredient.of(Blocks.COBBLESTONE)
-                )
-                .mainOutput(new ItemStack(Items.BRICKS, 2))
-                .addChanceOutput(new ItemStack(Items.CLAY_BALL, 1), 0.15f)
+        // 石頭 + 圓石 → 磚塊 x2 + 黏土 (15%)
+        createProcessingRecipe(output, "grinder/multi_input_example", "grinder")
+                .input(Blocks.STONE)
+                .input(Blocks.COBBLESTONE)
+                .output(Items.BRICKS, 2)
+                .chanceOutput(Items.CLAY_BALL, 1, 0.15f)
                 .manaCost(150)
                 .processingTime(200)
-                .machineType("grinder")
                 .save();
 
-        KoniavacraftMod.LOGGER.info("✅ 生成了 {} 個加工配方", 5);
+        KoniavacraftMod.LOGGER.info("✅ 生成了 5 個加工配方");
     }
 
     /**
-     * 🔧 配方構建器（流暢 API）
+     * 🔧 配方構建器輔助方法
      */
-    private ProcessingRecipeBuilder createProcessingRecipe(RecipeOutput output, String name) {
-        return new ProcessingRecipeBuilder(output, name);
+    private static ProcessingRecipeHelper createProcessingRecipe(RecipeOutput output, String name, String machineType) {
+        return new ProcessingRecipeHelper(output, name, machineType);
     }
 
     /**
-     * 🔨 內部構建器類
+     * 🔨 ProcessingRecipe 的輔助構建器
      */
-    public static class ProcessingRecipeBuilder {
+    private static class ProcessingRecipeHelper {
         private final RecipeOutput output;
         private final String name;
+        private final String machineType;
         private final List<Ingredient> inputs = new ArrayList<>();
         private ItemStack mainOutput = ItemStack.EMPTY;
         private final List<ProcessingRecipe.ChanceOutput> chanceOutputs = new ArrayList<>();
         private int manaCost = 0;
         private int processingTime = 200;
-        private String machineType = "grinder";
 
-        public ProcessingRecipeBuilder(RecipeOutput output, String name) {
+        public ProcessingRecipeHelper(RecipeOutput output, String name, String machineType) {
             this.output = output;
             this.name = name;
+            this.machineType = machineType;
         }
 
-        public ProcessingRecipeBuilder inputs(Ingredient... ingredients) {
-            for (Ingredient ingredient : ingredients) {
-                this.inputs.add(ingredient);
-            }
+        public ProcessingRecipeHelper input(ItemLike item) {
+            this.inputs.add(Ingredient.of(item));
             return this;
         }
 
-        public ProcessingRecipeBuilder mainOutput(ItemStack output) {
-            this.mainOutput = output;
+        public ProcessingRecipeHelper output(ItemLike item, int count) {
+            this.mainOutput = new ItemStack(item, count);
             return this;
         }
 
-        public ProcessingRecipeBuilder addChanceOutput(ItemStack output, float chance) {
-            this.chanceOutputs.add(new ProcessingRecipe.ChanceOutput(output, chance));
+        public ProcessingRecipeHelper chanceOutput(ItemLike item, int count, float chance) {
+            this.chanceOutputs.add(new ProcessingRecipe.ChanceOutput(
+                    new ItemStack(item, count), chance));
             return this;
         }
 
-        public ProcessingRecipeBuilder manaCost(int cost) {
+        public ProcessingRecipeHelper manaCost(int cost) {
             this.manaCost = cost;
             return this;
         }
 
-        public ProcessingRecipeBuilder processingTime(int ticks) {
+        public ProcessingRecipeHelper processingTime(int ticks) {
             this.processingTime = ticks;
             return this;
         }
 
-        public ProcessingRecipeBuilder machineType(String type) {
-            this.machineType = type;
-            return this;
-        }
-
-        /**
-         * 儲存配方到 JSON
-         */
         public void save() {
             // 建立 NonNullList
             net.minecraft.core.NonNullList<Ingredient> ingredientList = net.minecraft.core.NonNullList.create();

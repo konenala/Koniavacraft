@@ -31,6 +31,8 @@ public class ModRecipeProvider extends RecipeProvider {
         ManaFuelRecipeProvider.generate(recipeOutput);
         ManaCraftingRecipeProvider.generate(recipeOutput);
         ManaInfuserRecipeProvider.generate(recipeOutput);
+        // ⚙️ 加工配方（粉碎機、清洗機、富集機）
+        ProcessingRecipeProvider.generate(recipeOutput);
 
         // === 📋 剩餘的主要配方類別 ===
         generateMachineRecipes(recipeOutput);
@@ -229,4 +231,5 @@ public class ModRecipeProvider extends RecipeProvider {
                     .save(recipeOutput, KoniavacraftMod.MOD_ID + ":" + getItemName(result) + suffix + "_" + getItemName(item));
         }
     }
+
 }
