@@ -1,18 +1,18 @@
 package com.github.nalamodikk.common.block.blockentity.mana_generator;
 
 import com.github.nalamodikk.KoniavacraftMod;
-import com.github.nalamodikk.client.screenAPI.component.button.TexturedButton;
-import com.github.nalamodikk.client.screenAPI.component.button.TooltipButton;
-import com.github.nalamodikk.client.screenAPI.TooltipSupplier;
+import com.github.nalamodikk.client.screenAPI.component.BurnProgressWidget;
+import com.github.nalamodikk.client.screenAPI.component.EnergyBarWidget;
+import com.github.nalamodikk.client.screenAPI.component.ManaBarWidget;
+import com.github.nalamodikk.client.screenAPI.framework.AbstractWidget;
+import com.github.nalamodikk.client.screenAPI.framework.ButtonWidget;
+import com.github.nalamodikk.client.screenAPI.framework.ModularScreen;
+import com.github.nalamodikk.client.screenAPI.framework.Panel;
 import com.github.nalamodikk.common.network.packet.server.OpenUpgradeGuiPacket;
 import com.github.nalamodikk.common.network.packet.server.manatool.ToggleModePacket;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,21 +20,14 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
 
-public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMenu> {
+public class ManaGeneratorScreen extends ModularScreen<ManaGeneratorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_generator_gui.png");
     private static final ResourceLocation BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/mana_generator_button_texture.png");
-    private static final ResourceLocation MANA_BAR_FULL = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/mana_bar_full.png");
-    private static final ResourceLocation ENERGY_BAR_FULL =  ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/energy_bar_full.png");
-    private static final ResourceLocation FUEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/fuel_bar.png");
-    private static final int MANA_BAR_HEIGHT = 47;
-    private static final int MANA_BAR_WIDTH = 7;
-    private static final int ENERGY_BAR_HEIGHT = 47;
-    private static final int ENERGY_BAR_WIDTH = 7;
-    private static final int TOGGLE_BUTTON_X_OFFSET = 130;
-    private static final int TOGGLE_BUTTON_Y_OFFSET = 25;
+    private static final ResourceLocation UPGRADE_BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/upgrade_button.png");
+    
+    // 警告相關
     private boolean showWarning = false;
     private long warningStartTime = 0;
-    private TexturedButton toggleModeButton;
 
     public ManaGeneratorScreen(ManaGeneratorMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -43,292 +36,127 @@ public class ManaGeneratorScreen extends AbstractContainerScreen<ManaGeneratorMe
     }
 
     @Override
-    protected void init() {
-        super.init();
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
+    protected void buildGui(Panel root) {
+        // 1. 魔力條 (11, 19)
+        root.add(new ManaBarWidget(11, 19, menu::getManaStored, menu::getMaxMana)
+                .setSize(7, 47)
+                .setDrawBackground(false)); // 關閉 Widget 背景
 
-        toggleModeButton = new TexturedButton(
-                x + TOGGLE_BUTTON_X_OFFSET, y + TOGGLE_BUTTON_Y_OFFSET, 20, 20,
-                Component.empty(),
-                BUTTON_TEXTURE, 20, 20,
-                btn -> {
-                    // 如果機器正在運行，顯示紅字並記錄時間
-                    if (this.menu.getBurnTime() > 0) {
-                        KoniavacraftMod.LOGGER.info("⚠ 發電機正在運行，無法切換模式！");
-                        showWarning = true;
-                        warningStartTime = System.currentTimeMillis(); // 記錄警告開始時間
-                        return;
-                    }
+        // 2. 能量條 (156, 19)
+        root.add(new EnergyBarWidget(156, 19, menu::getEnergyStored, menu::getMaxEnergy)
+                .setSize(8, 47)
+                .setDrawBackground(false)); // 關閉 Widget 背景
 
-                    // 允許發送封包
-                    BlockPos blockPos = this.menu.getBlockEntityPos();
-                    ToggleModePacket.sendToServer(blockPos); // 發送方向封包
+        // 3. 燃燒進度 (56, 36)
+        root.add(new BurnProgressWidget(56, 36, menu::getBurnTime, menu::getCurrentBurnTime));
+
+        // 4. 模式文字 (置中, y=15)
+        root.add(new AbstractWidget(0, 15, imageWidth, 10) {
+            @Override
+            protected void renderWidget(GuiGraphics graphics, int localX, int localY, int screenX, int screenY) {
+                String modeText = menu.getCurrentMode() == 1
+                        ? Component.translatable("mode.koniava.energy").getString()
+                        : Component.translatable("mode.koniava.mana").getString();
+                Component currentMode = Component.translatable("screen.koniava.current_mode", modeText);
+
+                float scale = 0.85f;
+                float originalX = (imageWidth - font.width(currentMode)) / 2f;
+                
+                graphics.pose().pushPose();
+                graphics.pose().scale(scale, scale, scale);
+                graphics.drawString(font, currentMode, (int)(originalX / scale), 0, 4210752, false);
+                graphics.pose().popPose();
+            }
+        });
+
+        // 5. 診斷資訊 (y=62)
+        root.add(new AbstractWidget(0, 62, imageWidth, 20) {
+            @Override
+            protected void renderWidget(GuiGraphics graphics, int localX, int localY, int screenX, int screenY) {
+                if (!menu.hasDiagnosticDisplay()) return;
+
+                boolean isManaMode = menu.getCurrentMode() == 0;
+                int rate = isManaMode ? menu.getManaRate() : menu.getEnergyRate();
+                long totalOutput = (long) rate * menu.getCurrentBurnTime();
+
+                Component rateText, yieldText;
+                if (menu.isWorking()) {
+                    String unit = isManaMode ? "Mana/t" : "RF/t";
+                    rateText = Component.translatable("gui.koniava.rate", String.format("%d %s", rate, unit));
+                    String totalUnit = isManaMode ? "Mana" : "RF";
+                    yieldText = Component.translatable("gui.koniava.total_yield", String.format("%,d %s", totalOutput, totalUnit));
+                } else {
+                    rateText = Component.translatable("gui.koniava.rate", "N/A");
+                    yieldText = Component.translatable("gui.koniava.total_yield", "N/A");
                 }
-        );
 
-        this.addRenderableWidget(toggleModeButton);
-        toggleModeButton.setTooltip(Tooltip.create(Component.translatable("screen.koniava.toggle_mode")));
-        
-        // 添加升級按鈕
-        TooltipSupplier.Positioned upgradeTooltip = (mouseX, mouseY) -> List.of(
-                Component.translatable("screen.koniava.upgrade_button.tooltip")
-        );
-        
-        this.addRenderableWidget(new TooltipButton(
-                x + 150, y + 5, // 位置
-                18, 18, // 尺寸
-                Component.empty(),
-                ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/widget/upgrade_button.png"),
-                18, 18, // 紋理尺寸
-                button -> {
-                    // 發送封包：打開升級GUI
-                    BlockPos pos = this.menu.getBlockEntityPos();
-                    OpenUpgradeGuiPacket.sendToServer(pos);
-                },
-                upgradeTooltip
-        ));
-    }
+                float scale = 0.8f;
+                int color = 0x404040;
+                
+                graphics.pose().pushPose();
+                graphics.pose().scale(scale, scale, scale);
+                
+                float centerX = (imageWidth / 2f) / scale;
+                graphics.drawCenteredString(font, rateText, (int) centerX, 0, color);
+                graphics.drawCenteredString(font, yieldText, (int) centerX, (int)(10 / scale), color);
+                
+                graphics.pose().popPose();
+            }
+        });
 
+        // 6. 模式切換按鈕 (130, 25)
+        root.add(new ButtonWidget(130, 25, 20, 20, BUTTON_TEXTURE, 20, 20, btn -> {
+            if (this.menu.getBurnTime() > 0) {
+                KoniavacraftMod.LOGGER.info("⚠ 發電機正在運行，無法切換模式！");
+                showWarning = true;
+                warningStartTime = System.currentTimeMillis();
+                return;
+            }
+            BlockPos blockPos = this.menu.getBlockEntityPos();
+            ToggleModePacket.sendToServer(blockPos);
+        }).setTooltip(() -> List.of(Component.translatable("screen.koniava.toggle_mode"))));
 
-
-    @Override
-    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
-
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-
-        RenderSystem.setShaderTexture(0, TEXTURE);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
-        pGuiGraphics.blit(TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
-//
-//        // 渲染魔力條
-//        int manaBarHeight = 47;
-//        int manaBarWidth = 7;
-//        int mana = this.menu.getManaStored();
-//        int maxMana = this.menu.getMaxMana();
-//        if (maxMana > 0 && mana > 0) {
-//            int renderHeight = (int) (((float) mana / maxMana) * manaBarHeight);
-//            RenderSystem.setShaderTexture(0, MANA_BAR_FULL);
-//            pGuiGraphics.blit(MANA_BAR_FULL, this.leftPos + 11, this.topPos + 19 + (manaBarHeight - renderHeight), 49, 11, manaBarWidth, renderHeight);
-//        }
-
-        drawManaBar(pGuiGraphics, 11, 19); // 魔力條的位置偏移（可以根據需要調整）
-
-        drawEnergyBar(pGuiGraphics, 156, 19); // 這裡的 xOffset 和 yOffset 是相對於 GUI 左上角的位置偏移
-
-//        // 渲染能量條（在右側）
-//        int energyBarHeight = 47;
-//        int energyBarWidth = 8;
-//        int energy = this.menu.getEnergyStored(); // 从 containerData 中获取能量值
-//        int maxEnergy = this.menu.getMaxEnergy();
-//        if (maxEnergy > 0 && energy > 0) {
-//            int renderHeight = (int) (((float) energy / maxEnergy) * ENERGY_BAR_HEIGHT);
-//            RenderSystem.setShaderTexture(0, ENERGY_BAR_FULL);
-//            pGuiGraphics.blit(ENERGY_BAR_FULL, this.leftPos + 156, this.topPos + 19 + (energyBarHeight - renderHeight), 49, 11, energyBarWidth, renderHeight);
-//        }
-
-    }
-
-    private void drawEnergyBar(GuiGraphics pGuiGraphics, int xOffset, int yOffset) {
-        int energyBarHeight = 47;
-        int energyBarWidth = 8;
-        int energy = menu.getEnergyStored();
-        int maxEnergy = this.menu.getMaxEnergy();
-
-        if (maxEnergy > 0 && energy > 0) {
-            int renderHeight = (int) (((float) energy / maxEnergy) * energyBarHeight); // 計算應該渲染的高度
-            RenderSystem.setShaderTexture(0, ENERGY_BAR_FULL); // 設置能量條的紋理
-            pGuiGraphics.blit(ENERGY_BAR_FULL, this.leftPos + xOffset, this.topPos + yOffset + (energyBarHeight - renderHeight),
-                    49, 11, energyBarWidth, renderHeight);
-        }
-    }
-
-    private void drawManaBar(GuiGraphics pGuiGraphics, int xOffset, int yOffset) {
-        int manaBarHeight = 47;
-        int manaBarWidth = 8;
-        int mana = this.menu.getManaStored(); // 從 containerData 中獲取魔力值
-        int maxMana = this.menu.getMaxMana();
-
-        if (maxMana > 0 && mana > 0) {
-            int renderHeight = (int) (((float) mana / maxMana) * manaBarHeight); // 計算應該渲染的高度
-            RenderSystem.setShaderTexture(0, MANA_BAR_FULL); // 設置魔力條的紋理
-            pGuiGraphics.blit(MANA_BAR_FULL, this.leftPos + xOffset, this.topPos + yOffset + (manaBarHeight - renderHeight),
-                    49, 11, manaBarWidth, renderHeight);
-        }
-    }
-    @Override
-    public void containerTick() {
-        super.containerTick();
-        // 這會確保GUI每tick都重新繪製，讓數值變化立即顯示
-    }
-
-    private int getFuelProgressHeight() {
-        int burnTime = this.menu.getBurnTime();
-        int currentBurnTime = this.menu.getCurrentBurnTime();
-        return currentBurnTime > 0 ? (int) ((float) burnTime / currentBurnTime * 13) : 0;
-    }
-
-    protected void renderLabels(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
-        super.renderLabels(pGuiGraphics, pMouseX, pMouseY);
-        int fuelHeight = getFuelProgressHeight();
-        if (fuelHeight > 0) {
-            RenderSystem.setShaderTexture(0, FUEL_TEXTURE);
-            pGuiGraphics.blit(FUEL_TEXTURE, 56, 36 + 12 - fuelHeight, 36, 36 - fuelHeight, 14, fuelHeight);
-        }
-
-
-        String modeText = this.menu.getCurrentMode() == 1
-                ? Component.translatable("mode.koniava.energy").getString()
-                : Component.translatable("mode.koniava.mana").getString();
-        Component currentMode = Component.translatable("screen.koniava.current_mode", modeText);
-
-
-        // 設置文字的初始渲染位置（在縮放之前）
-        float originalX = (this.imageWidth - this.font.width(currentMode)) / 2f;
-        float originalY = 15f; // 假設你想讓文本在 Y 軸上距離 10 像素的位置顯示
-
-
-        // 從 pGuiGraphics 中獲取 PoseStack 以進行縮放操作
-        PoseStack poseStack = pGuiGraphics.pose();
-
-        // 設置縮放比例
-        float scale = 0.85f;
-
-        // 保存當前渲染狀態
-        poseStack.pushPose();
-
-        // 縮放文本
-        poseStack.scale(scale, scale, scale);
-
-        // 因為文字縮放了，所以位置也需要縮放來保證顯示正常
-        float scaledX = originalX / scale;
-        float scaledY = originalY / scale;
-
-
-        // 渲染文字
-        pGuiGraphics.drawString(this.font, currentMode, (int) scaledX, (int) scaledY, 4210752);
-
-        // 恢復渲染狀態
-        poseStack.popPose();
-
+        // 7. 升級按鈕 (150, 5)
+        root.add(new ButtonWidget(150, 5, 18, 18, UPGRADE_BUTTON_TEXTURE, 18, 18, btn -> {
+            BlockPos pos = this.menu.getBlockEntityPos();
+            OpenUpgradeGuiPacket.sendToServer(pos);
+        }).setTooltip(() -> List.of(Component.translatable("screen.koniava.upgrade_button.tooltip"))));
     }
 
     @Override
-    public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTicks) {
-        this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
-        super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTicks);
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        super.renderBg(graphics, partialTick, mouseX, mouseY);
+    }
 
-/**
- * 顯示錯誤紅字
- */
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+
+        // 震動警告特效
         if (showWarning && System.currentTimeMillis() - warningStartTime < 3000) {
-            PoseStack poseStack = pGuiGraphics.pose();
-            poseStack.pushPose();
-
-            float scale = 0.8f; // 縮小字體
-            poseStack.scale(scale, scale, scale);
-
-            // 震動效果
-            long time = System.currentTimeMillis();
-            double shakeFactor = Math.sin(time * 0.015) * Math.cos(time * 0.025); // 平滑震動
-            int shakeX = (int) (shakeFactor * 3); // 左右震動 ±3px
-            int shakeY = (int) (shakeFactor * 2); // 上下震動 ±2px
-
-            // **調整 warningY 讓它對齊物品欄**
-            int warningX = (int) ((this.leftPos + this.imageWidth / 2) / scale) + shakeX;
-            int warningY = (int) ((this.topPos + 65) / scale) + shakeY; // **改這裡！調整 Y 軸到 85**
-
-            // 畫出警告訊息
-            pGuiGraphics.drawCenteredString(font, Component.translatable("screen.koniava.cannot_toggle")
-                    .withStyle(ChatFormatting.RED), warningX, warningY, 0xFF0000);
-
-            poseStack.popPose();
-        } else {
-            showWarning = false; // 超時後隱藏紅字
+            renderWarning(graphics);
         }
-
-
-
-        /**
-         * 這是外面了
-         *
-         */
-
-        if (isHoveringManaBar(pMouseX, pMouseY)) {
-            pGuiGraphics.renderTooltip(this.font, Component.translatable("tooltip.mana", this.menu.getManaStored(), this.menu.getMaxMana()), pMouseX, pMouseY);
-        }
-
-        if (isHoveringEnergyBar(pMouseX, pMouseY)) {
-            pGuiGraphics.renderTooltip(this.font, Component.translatable("tooltip.energy", this.menu.getEnergyStored(), this.menu.getMaxEnergy()), pMouseX, pMouseY);
-        }
-
-        // 💡 新增：診斷顯示儀邏輯
-        if (this.menu.hasDiagnosticDisplay()) {
-            renderDiagnosticInfo(pGuiGraphics);
-        }
-
-        this.renderTooltip(pGuiGraphics, pMouseX, pMouseY);
     }
 
-    private boolean isHoveringManaBar(int mouseX, int mouseY) {
-        int manaBarX = this.leftPos + 11;
-        int manaBarY = this.topPos + 19;
-        return mouseX >= manaBarX && mouseX <= manaBarX + MANA_BAR_WIDTH && mouseY >= manaBarY && mouseY <= manaBarY + MANA_BAR_HEIGHT;
-    }
+    private void renderWarning(GuiGraphics graphics) {
+        PoseStack poseStack = graphics.pose();
+        poseStack.pushPose();
 
-    private boolean isHoveringEnergyBar(int mouseX, int mouseY) {
-        int energyBarX = this.leftPos + 157;
-        int energyBarY = this.topPos + 19;
-        return mouseX >= energyBarX && mouseX <= energyBarX + ENERGY_BAR_WIDTH && mouseY >= energyBarY && mouseY <= energyBarY + ENERGY_BAR_HEIGHT;
-    }
-
-    private void renderDiagnosticInfo(GuiGraphics guiGraphics) {
-        // 從 Menu 獲取數據
-        boolean isManaMode = this.menu.getCurrentMode() == 0;
-        int rate = isManaMode ? this.menu.getManaRate() : this.menu.getEnergyRate();
-        int burnTime = this.menu.getCurrentBurnTime();
-        long totalOutput = (long) rate * burnTime;
-
-        // 準備要顯示的文字
-        Component rateText;
-        Component yieldText;
-
-        if (this.menu.isWorking()) {
-            String unit = isManaMode ? "Mana/t" : "RF/t";
-            rateText = Component.translatable("gui.koniava.rate", String.format("%d %s", rate, unit));
-            
-            String totalUnit = isManaMode ? "Mana" : "RF";
-            yieldText = Component.translatable("gui.koniava.total_yield", String.format("%,d %s", totalOutput, totalUnit));
-        } else {
-            rateText = Component.translatable("gui.koniava.rate", "N/A");
-            yieldText = Component.translatable("gui.koniava.total_yield", "N/A");
-        }
-
-        // 設定繪製參數
-        PoseStack poseStack = guiGraphics.pose();
         float scale = 0.8f;
-        int color = 0x404040; // Dark Gray
-        
-        // 繪製第一行：產率
-        poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-        
-        float textX = (this.leftPos + (this.imageWidth / 2f)) / scale;
-        float textY1 = (this.topPos + 62) / scale;
-        guiGraphics.drawCenteredString(this.font, rateText, (int) textX, (int) textY1, color);
-        
-        poseStack.popPose();
 
-        // 繪製第二行：總產出
-        poseStack.pushPose();
-        poseStack.scale(scale, scale, scale);
-        
-        float textY2 = (this.topPos + 72) / scale;
-        guiGraphics.drawCenteredString(this.font, yieldText, (int) textX, (int) textY2, color);
+        long time = System.currentTimeMillis();
+        double shakeFactor = Math.sin(time * 0.015) * Math.cos(time * 0.025);
+        int shakeX = (int) (shakeFactor * 3);
+        int shakeY = (int) (shakeFactor * 2);
+
+        int warningX = (int) ((this.leftPos + this.imageWidth / 2) / scale) + shakeX;
+        int warningY = (int) ((this.topPos + 65) / scale) + shakeY;
+
+        graphics.drawCenteredString(font, Component.translatable("screen.koniava.cannot_toggle")
+                .withStyle(ChatFormatting.RED), warningX, warningY, 0xFF0000);
 
         poseStack.popPose();
     }
-
 }

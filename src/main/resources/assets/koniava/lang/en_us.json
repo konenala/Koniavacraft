@@ -42,6 +42,7 @@
   "block.koniava.mana_grass_block": "Mana Grass Block",
   "block.koniava.mana_bloom": "Mana Bloom",
   "block.koniava.mana_infuser": "Mana Infuser",
+  "block.koniava.ore_grinder": "Ore Grinder",
 
   "//4": "=== RPG SYSTEM ===",
   "rpg.class.none": "None",

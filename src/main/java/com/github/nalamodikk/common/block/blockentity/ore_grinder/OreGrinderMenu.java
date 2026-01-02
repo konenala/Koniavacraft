@@ -1,5 +1,6 @@
 package com.github.nalamodikk.common.block.blockentity.ore_grinder;
 
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.sync.OreGrinderSyncHelper;
 import com.github.nalamodikk.register.ModMenuTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -11,20 +12,21 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /**
  * 🎛️ 粉碎機 Menu
- *
- * 管理 6 個槽位：
- * - 0-1: 輸入槽
- * - 2-5: 輸出槽
  */
 public class OreGrinderMenu extends AbstractContainerMenu {
 
     private final OreGrinderBlockEntity blockEntity;
     private final ItemStackHandler itemHandler;
+    private final OreGrinderSyncHelper syncHelper;
 
     public OreGrinderMenu(int containerId, Inventory playerInventory, OreGrinderBlockEntity blockEntity) {
         super(ModMenuTypes.ORE_GRINDER_MENU.get(), containerId);
         this.blockEntity = blockEntity;
         this.itemHandler = blockEntity.getItemHandler();
+        this.syncHelper = blockEntity.getSyncHelper();
+
+        // 註冊數據同步
+        this.addDataSlots(syncHelper.getContainerData());
 
         if (this.itemHandler == null) {
             throw new IllegalArgumentException("OreGrinder 必須有 ItemHandler");
@@ -80,36 +82,31 @@ public class OreGrinderMenu extends AbstractContainerMenu {
         return true;
     }
 
-    // === 📊 數據同步 ===
+    // === 📊 數據同步 (改為從 syncHelper 讀取，確保 Client 端有效) ===
 
-    /**
-     * 取得當前進度百分比 (0-100)
-     */
+    public int getProgress() {
+        return syncHelper.getProgress();
+    }
+
+    public int getMaxProgress() {
+        return syncHelper.getMaxProgress();
+    }
+
     public int getProgressPercentage() {
-        if (blockEntity.getMaxProgress() == 0) return 0;
-        return (blockEntity.getProgress() * 100) / blockEntity.getMaxProgress();
+        int max = getMaxProgress();
+        if (max == 0) return 0;
+        return (getProgress() * 100) / max;
     }
 
-    /**
-     * 取得當前魔力值
-     */
     public int getCurrentMana() {
-        var manaStorage = blockEntity.getManaStorage();
-        return manaStorage != null ? manaStorage.getManaStored() : 0;
+        return syncHelper.getMana();
     }
 
-    /**
-     * 取得最大魔力值
-     */
     public int getMaxMana() {
-        var manaStorage = blockEntity.getManaStorage();
-        return manaStorage != null ? manaStorage.getMaxManaStored() : 0;
+        return OreGrinderBlockEntity.getMaxMana(); // 靜態最大值
     }
 
-    /**
-     * 判斷機器是否正在工作
-     */
     public boolean isWorking() {
-        return blockEntity.getProgress() > 0;
+        return getProgress() > 0;
     }
 }

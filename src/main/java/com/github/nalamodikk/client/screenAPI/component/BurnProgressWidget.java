@@ -9,22 +9,20 @@ import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.List;
 
-public class ManaBarWidget extends VerticalBarWidget {
+public class BurnProgressWidget extends VerticalBarWidget {
     
-    private static final ResourceLocation BAR_EMPTY = KoniavacraftMod.rl("textures/gui/widget/bar_empty.png");
-    private static final ResourceLocation MANA_FULL = KoniavacraftMod.rl("textures/gui/mana_bar_full.png");
+    private static final ResourceLocation FUEL_FULL = KoniavacraftMod.rl("textures/gui/fuel_bar.png");
     private static final DecimalFormat FORMAT = new DecimalFormat("#,###");
 
-    public ManaBarWidget(int x, int y, IntSupplier value, IntSupplier max) {
-        super(x, y, 14, 50, BAR_EMPTY, MANA_FULL, value, max);
+    public BurnProgressWidget(int x, int y, IntSupplier value, IntSupplier max) {
+        super(x, y, 14, 14, null, FUEL_FULL, value, max);
     }
 
     @Override
     public List<Component> getTooltip() {
         return Collections.singletonList(
-            Component.translatable("tooltip.mana", 
-                FORMAT.format(valueSupplier.getAsInt()), 
-                FORMAT.format(maxSupplier.getAsInt())
+            Component.translatable("jei.koniava.burn_time", 
+                FORMAT.format(valueSupplier.getAsInt())
             )
         );
     }

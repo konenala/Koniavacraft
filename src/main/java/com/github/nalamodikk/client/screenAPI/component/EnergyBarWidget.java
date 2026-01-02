@@ -4,19 +4,34 @@ import com.github.nalamodikk.KoniavacraftMod;
 import net.minecraft.resources.ResourceLocation;
 import java.util.function.IntSupplier;
 
+import net.minecraft.network.chat.Component;
+import java.text.DecimalFormat;
+import java.util.Collections;
+import java.util.List;
+
 public class EnergyBarWidget extends VerticalBarWidget {
     
-    // 背景已經畫在 GUI 上了，所以這裡是 null
+    private static final ResourceLocation BAR_EMPTY = KoniavacraftMod.rl("textures/gui/widget/bar_empty.png");
     private static final ResourceLocation ENERGY_FULL = KoniavacraftMod.rl("textures/gui/energy_bar_full.png");
+    private static final DecimalFormat FORMAT = new DecimalFormat("#,###");
 
     public EnergyBarWidget(int x, int y, IntSupplier value, IntSupplier max) {
-        // 假設能量條標準寬高是 12x48 或類似，這裡先設為 10x50，您可以在 new 的時候調整
-        // 這裡我們暫定為 14x50 (基於常見設計)
-        super(x, y, 14, 50, null, ENERGY_FULL, value, max);
+        // 恢復預設背景，保證通用性
+        super(x, y, 14, 50, BAR_EMPTY, ENERGY_FULL, value, max);
+    }
+
+    @Override
+    public List<Component> getTooltip() {
+        return Collections.singletonList(
+            Component.translatable("tooltip.energy", 
+                FORMAT.format(valueSupplier.getAsInt()), 
+                FORMAT.format(maxSupplier.getAsInt())
+            )
+        );
     }
 
     @Override
     protected String getTooltipPrefix() {
-        return "Energy"; // 建議用 Component.translatable("tooltip.koniava.energy").getString()
+        return ""; // 不再使用，因為已覆寫 getTooltip
     }
 }

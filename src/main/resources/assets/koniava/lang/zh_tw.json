@@ -42,6 +42,7 @@
   "block.koniava.mana_grass_block": "魔力草方塊",
   "block.koniava.mana_bloom": "魔力花",
   "block.koniava.mana_infuser": "魔力注入機",
+  "block.koniava.ore_grinder": "粉碎機",
 
   "//4": "=== RPG 系統 ===",
   "rpg.class.none": "無職業",

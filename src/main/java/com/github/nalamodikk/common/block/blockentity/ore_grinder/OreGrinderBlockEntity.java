@@ -29,14 +29,10 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.nalamodikk.common.block.blockentity.ore_grinder.sync.OreGrinderSyncHelper;
+
 /**
  * ⚙️ 礦石粉碎機 BlockEntity
- *
- * 功能：
- * - 2 個輸入槽（支援不同礦物）
- * - 4 個輸出槽（主產物 + 副產物）
- * - 魔力驅動
- * - 概率副輸出
  */
 public class OreGrinderBlockEntity extends AbstractManaMachineEntityBlock {
 
@@ -53,36 +49,39 @@ public class OreGrinderBlockEntity extends AbstractManaMachineEntityBlock {
 
     // === 🔧 配置常量 ===
     private static final int MAX_MANA_CAPACITY = 100000;
-    private static final int MANA_TRANSFER_RATE = 500;
     private static final int GRINDING_TIME = 200;  // 10 秒
-    private static final int MANA_PER_CYCLE = 0;   // 不產生魔力，只消耗
     private static final int INTERVAL_TICK = 1;
 
-    // === 📊 同步狀態追蹤變量 ===
-    private int lastSyncedMana = 0;
-    private int lastSyncedProgress = 0;
-    private boolean lastSyncedWorking = false;
-    private int lastSyncedMaxProgress = 0;
+    // === 📊 同步助手 ===
+    private final OreGrinderSyncHelper syncHelper = new OreGrinderSyncHelper();
 
     // === 📊 狀態變量 ===
     private final EnumMap<Direction, IOHandlerUtils.IOType> directionConfig = new EnumMap<>(Direction.class);
     private ProcessingRecipe currentRecipe = null;
-    public boolean hasInputChanged = false; // 設為 public，供 OreGrinderBlock 訪問
+    public boolean hasInputChanged = false;
 
     public OreGrinderBlockEntity(BlockPos pos, BlockState blockState) {
         super(
                 ModBlockEntities.ORE_GRINDER.get(),
                 pos,
                 blockState,
-                false,                    // 不需要能量系統
-                0,                        // 最大能量為 0
-                MAX_MANA_CAPACITY,        // 魔力容量
-                INTERVAL_TICK,            // 間隔 tick
-                MANA_PER_CYCLE            // 每次生產的魔力（0=不生產）
+                false,
+                0,
+                MAX_MANA_CAPACITY,
+                INTERVAL_TICK,
+                0
         );
 
         this.maxProgress = GRINDING_TIME;
         initializeIOConfig();
+    }
+    
+    public static int getMaxMana() {
+        return MAX_MANA_CAPACITY;
+    }
+
+    public OreGrinderSyncHelper getSyncHelper() {
+        return syncHelper;
     }
 
     // === 🏗️ 初始化 ===
@@ -126,34 +125,31 @@ public class OreGrinderBlockEntity extends AbstractManaMachineEntityBlock {
         };
     }
 
-    // === ⚡ 核心機器邏輯 ===
-
     @Override
     public void tickMachine() {
         if (level == null || level.isClientSide()) return;
 
-        // 1. 處理輸入變化
+        // 1. 同步數據到 Helper (由 Menu 讀取)
+        syncHelper.syncFrom(this);
+
+        // 2. 處理輸入變化
         if (hasInputChanged) {
             updateCurrentRecipe();
             hasInputChanged = false;
         }
 
-        // 2. 嘗試進行研磨
+        // 3. 嘗試進行研磨
         if (currentRecipe != null && progress < maxProgress) {
             int manaCost = currentRecipe.getManaCost();
 
             if (manaStorage != null && manaStorage.getManaStored() >= manaCost) {
                 progress++;
-                manaStorage.extractMana(manaCost, ManaAction.EXECUTE); // 實際提取魔力
+                manaStorage.extractMana(manaCost, ManaAction.EXECUTE);
                 setChanged();
-
-                if (KoniavacraftMod.IS_DEV) {
-                    LOGGER.debug("Grinding progress: {}/{}", progress, maxProgress);
-                }
             }
         }
 
-        // 3. 完成時輸出結果
+        // 4. 完成時輸出結果
         if (currentRecipe != null && progress >= maxProgress) {
             finishGrinding();
         }
@@ -303,7 +299,7 @@ public class OreGrinderBlockEntity extends AbstractManaMachineEntityBlock {
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("Ore Grinder");
+        return Component.translatable("block.koniava.ore_grinder");
     }
 
     // === 💾 數據保存 ===

@@ -19,14 +19,14 @@ import javax.annotation.Nullable;
 public abstract class VerticalBarWidget extends AbstractWidget {
 
     @Nullable
-    protected final ResourceLocation textureEmpty;
+    protected ResourceLocation textureEmpty; // 可為 null
     protected final ResourceLocation textureFull;
     protected final IntSupplier valueSupplier;
     protected final IntSupplier maxSupplier;
     
     // 預設大小
     public static final int DEFAULT_WIDTH = 18;
-    public static final int DEFAULT_HEIGHT = 60; // 假設的高度，您可能需要調整
+    public static final int DEFAULT_HEIGHT = 60; 
     
     private static final DecimalFormat FORMAT = new DecimalFormat("#,###");
 
@@ -40,6 +40,23 @@ public abstract class VerticalBarWidget extends AbstractWidget {
         this.maxSupplier = max;
     }
 
+    /**
+     * 設定是否繪製背景 (空槽)。
+     * 如果設為 false，則 textureEmpty 會被視為 null。
+     */
+    public VerticalBarWidget setDrawBackground(boolean draw) {
+        if (!draw) {
+            this.textureEmpty = null;
+        }
+        return this;
+    }
+
+    @Override
+    public VerticalBarWidget setSize(int w, int h) {
+        super.setSize(w, h);
+        return this;
+    }
+
     @Override
     protected void renderWidget(GuiGraphics graphics, int localMouseX, int localMouseY, int screenMouseX, int screenMouseY) {
         // 1. 繪製背景 (Empty) - 只有當不為 null 時才畫
@@ -51,7 +68,6 @@ public abstract class VerticalBarWidget extends AbstractWidget {
         int max = maxSupplier.getAsInt();
         if (max > 0) {
             int val = valueSupplier.getAsInt();
-            // 防止數值溢出
             if (val > max) val = max;
             if (val < 0) val = 0;
 
@@ -59,16 +75,12 @@ public abstract class VerticalBarWidget extends AbstractWidget {
             
             if (fillHeight > 0) {
                 // 3. 繪製前景 (Full) - 由下往上裁切
-                // blit(texture, x, y, u, v, width, height, textureWidth, textureHeight)
-                // 我們要畫在底部：y = height - fillHeight
-                // UV 的 v 也要對應：v = height - fillHeight
-                
                 int yOffset = height - fillHeight;
                 graphics.blit(textureFull, 
-                    0, yOffset,             // 螢幕上的 (x, y)
-                    0, yOffset,             // 材質上的 (u, v)
-                    width, fillHeight,      // 繪製的寬高
-                    width, height           // 材質總寬高
+                    0, yOffset,
+                    0, yOffset,
+                    width, fillHeight,
+                    width, height
                 );
             }
         }

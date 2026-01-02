@@ -1,120 +1,60 @@
 package com.github.nalamodikk.common.block.blockentity.ore_grinder;
 
 import com.github.nalamodikk.KoniavacraftMod;
+import com.github.nalamodikk.client.screenAPI.component.ArrowProgressWidget;
+import com.github.nalamodikk.client.screenAPI.component.ManaBarWidget;
+import com.github.nalamodikk.client.screenAPI.framework.ModularScreen;
+import com.github.nalamodikk.client.screenAPI.framework.Panel;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * ⚙️ 粉碎機 GUI 界面
- *
- * 簡單設計：
- * - 背景材質
- * - 進度條
- * - 魔力條
- * - 6 個物品槽位（自動渲染）
+ * ⚙️ 粉碎機 GUI 界面 (模組化版本)
  */
-public class OreGrinderScreen extends AbstractContainerScreen<OreGrinderMenu> {
+public class OreGrinderScreen extends ModularScreen<OreGrinderMenu> {
 
-    // GUI 材質位置
+    // GUI 材質位置 (大圖)
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(KoniavacraftMod.MOD_ID, "textures/gui/ore_grinder_gui.png");
 
-    // GUI 尺寸
-    private static final int GUI_WIDTH = 176;
-    private static final int GUI_HEIGHT = 222;
-
-    // 進度條位置和尺寸
-    private static final int PROGRESS_BAR_X = 79;
-    private static final int PROGRESS_BAR_Y = 35;
-    private static final int PROGRESS_BAR_WIDTH = 26;
-    private static final int PROGRESS_BAR_HEIGHT = 16;
-
-    // 魔力條位置和尺寸
-    private static final int MANA_BAR_X = 9;
-    private static final int MANA_BAR_Y = 17;
-    private static final int MANA_BAR_WIDTH = 10;
-    private static final int MANA_BAR_HEIGHT = 48;
-
     public OreGrinderScreen(OreGrinderMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
-        this.imageWidth = GUI_WIDTH;
-        this.imageHeight = GUI_HEIGHT;
+        this.imageWidth = 176;
+        this.imageHeight = 222;
     }
 
     @Override
-    protected void init() {
-        super.init();
-        // 如果需要的話，在這裡添加按鈕或其他小工具
+    protected void buildGui(Panel root) {
+        // 1. 進度條 (箭頭)
+        // 位置 (79, 35)，尺寸 24x17 (基於之前 ArrowProgressWidget 的預設)
+        root.add(new ArrowProgressWidget(79, 35, 
+            menu::getProgress, 
+            menu::getMaxProgress
+        ));
+
+        // 2. 魔力條
+        // 位置 (9, 17)，尺寸由 ManaBarWidget 決定 (預設 14x50)
+        // 如果您的背景槽位尺寸不同，可以在建構子中調整
+        root.add(new ManaBarWidget(9, 17, 
+            menu::getCurrentMana, 
+            menu::getMaxMana
+        ));
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // 繪製背景
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
-
-        // 繪製進度條
-        renderProgressBar(guiGraphics);
-
-        // 繪製魔力條
-        renderManaBar(guiGraphics);
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        // 繪製大背景圖 (包含 Slot 框框)
+        graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        
+        // 繪製 Widget
+        super.renderBg(graphics, partialTick, mouseX, mouseY);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
-        // 繪製工具提示
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
-    }
-
-    /**
-     * 🔄 繪製進度條
-     */
-    private void renderProgressBar(GuiGraphics guiGraphics) {
-        if (menu.isWorking()) {
-            int progress = menu.getProgressPercentage();
-            int progressPixels = (progress * PROGRESS_BAR_WIDTH) / 100;
-
-            // 從材質中的進度條部分截取 (UV 座標)
-            guiGraphics.blit(TEXTURE,
-                    this.leftPos + PROGRESS_BAR_X,
-                    this.topPos + PROGRESS_BAR_Y,
-                    176, 0,  // UV 座標 (材質右側的進度條圖案)
-                    progressPixels,
-                    PROGRESS_BAR_HEIGHT);
-        }
-    }
-
-    /**
-     * ⚡ 繪製魔力條
-     */
-    private void renderManaBar(GuiGraphics guiGraphics) {
-        int currentMana = menu.getCurrentMana();
-        int maxMana = menu.getMaxMana();
-
-        if (maxMana > 0) {
-            int manaPixels = (currentMana * MANA_BAR_HEIGHT) / maxMana;
-
-            // 繪製魔力條背景
-            guiGraphics.fill(
-                    this.leftPos + MANA_BAR_X,
-                    this.topPos + MANA_BAR_Y,
-                    this.leftPos + MANA_BAR_X + MANA_BAR_WIDTH,
-                    this.topPos + MANA_BAR_Y + MANA_BAR_HEIGHT,
-                    0xFF1A1A2E
-            );
-
-            // 繪製魔力條填充 (從上到下)
-            guiGraphics.fill(
-                    this.leftPos + MANA_BAR_X,
-                    this.topPos + MANA_BAR_Y + (MANA_BAR_HEIGHT - manaPixels),
-                    this.leftPos + MANA_BAR_X + MANA_BAR_WIDTH,
-                    this.topPos + MANA_BAR_Y + MANA_BAR_HEIGHT,
-                    0xFF6A5AFF
-            );
-        }
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        // 這裡會自動繪製 rootPanel (箭頭與魔力條) 和 Tooltip
     }
 }

@@ -37,23 +37,18 @@ public abstract class ModularScreen<T extends AbstractContainerMenu> extends Abs
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         
-        // 1. 繪製 RootPanel (包含所有子元件)
-        // 注意：我們傳入的是相對於螢幕左上角的滑鼠座標
-        // RootPanel 位於 (leftPos, topPos)，所以傳給它的 mouseX 應該是 mouseX - leftPos
-        // 等等，AbstractWidget.render 的邏輯是傳入 localMouseX
-        // RootPanel 的 x, y 是 leftPos, topPos
-        // 所以 graphics 不需要先 translate (render 內部會做)
-        
-        rootPanel.render(graphics, mouseX, mouseY);
-        
-        // 2. 繪製 Tooltip
+        // 繪製 Tooltip (在最上層)
         renderTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        // 可以在這裡畫背景圖，或者讓 RootPanel 畫
-        // 這裡留空，建議在 buildGui 裡加入一個 ImageWidget 作為背景
+        // 1. 繪製 RootPanel (背景層與 Widget)
+        // 注意：renderBg 的 mouseX, mouseY 是絕對座標
+        // RootPanel 已經設置在 (leftPos, topPos)
+        // 它的 render 會 translate 到正確位置
+        
+        rootPanel.render(graphics, mouseX, mouseY);
     }
     
     @Override
