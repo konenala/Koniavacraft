@@ -1,6 +1,10 @@
+<<<<<<< HEAD
+# Eclipse
+=======
 # ================================
 # Eclipse IDE
 # ================================
+>>>>>>> b30810b (1)
 bin/
 *.launch
 .settings/
@@ -9,15 +13,61 @@ bin/
 .project
 eclipse/
 
+<<<<<<< HEAD
+# IntelliJ IDEA
+=======
 # ================================
 # IntelliJ IDEA
 # ================================
+>>>>>>> b30810b (1)
 out/
 *.ipr
 *.iws
 *.iml
 .idea/
 
+<<<<<<< HEAD
+# Gradle
+build/
+.gradle/
+
+# NeoForge run directories
+eclipse/
+run/
+runs/
+run-data/
+
+# Generated resources (data generation)
+src/generated/
+
+# Local repository
+repo/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archives (but keep source archives in repo if needed)
+*.zip
+*.jar
+*.rar
+*.tar
+*.gz
+
+# Specific files to ignore
+.gitattributes
+.github/workflows/Konenala21.yml
+TEMPLATE_LICENSE.txt
+=======
 # ================================
 # Gradle
 # ================================
@@ -91,5 +141,4 @@ repo/
 *~.nib
 local.properties
 /todolist.md
-/AGENTS.md
-/configs/
+>>>>>>> b30810b (1)
