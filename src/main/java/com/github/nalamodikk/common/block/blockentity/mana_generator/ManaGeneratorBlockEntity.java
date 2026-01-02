@@ -65,11 +65,6 @@
         private static final int MANA_PER_CYCLE = 10;
         private static final int FUEL_SLOT_COUNT = 1;
         private static final int UPGRADE_SLOT_COUNT = 4;
-        private static final int MANA_STORED_INDEX = 0;
-        private static final int ENERGY_STORED_INDEX = 1;
-        private static final int MODE_INDEX = 2;
-        private static final int BURN_TIME_INDEX = 3;
-        private static final int CURRENT_BURN_TIME_INDEX = 4;
         private static final int DEFAULT_ENERGY_PER_TICK = 40; // 或你想用的預設值
         // 替代原本的 UnifiedSyncManager syncManager
         private final ManaGeneratorSyncHelper syncHelper = new ManaGeneratorSyncHelper();
@@ -130,11 +125,6 @@
         }
 
 
-        public static int getManaStoredIndex() {return MANA_STORED_INDEX;}
-        public static int getEnergyStoredIndex() {return ENERGY_STORED_INDEX;}
-        public static int getModeIndex() {return MODE_INDEX;}
-        public static int getBurnTimeIndex() {return BURN_TIME_INDEX;}
-        public static int getCurrentBurnTimeIndex() {return CURRENT_BURN_TIME_INDEX;}
         public static int getMaxMana() {return MAX_MANA;}
         public static int getMaxEnergy() {return MAX_ENERGY;}
         public ManaGeneratorStateManager getStateManager() {return stateManager;}

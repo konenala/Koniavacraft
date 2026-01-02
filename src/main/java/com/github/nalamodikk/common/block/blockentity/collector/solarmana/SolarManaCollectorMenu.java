@@ -112,11 +112,11 @@ public class SolarManaCollectorMenu extends AbstractContainerMenu {
 
     // 🔧 修復的 getter 方法
     public int getSpeedLevel() {
-        return syncHelper.getRawSyncManager().get(SolarCollectorSyncHelper.SyncIndex.SPEED_LEVEL.ordinal());
+        return syncHelper.getSpeedLevel();
     }
 
     public int getEfficiencyLevel() {
-        return syncHelper.getRawSyncManager().get(SolarCollectorSyncHelper.SyncIndex.EFFICIENCY_LEVEL.ordinal());
+        return syncHelper.getEfficiencyLevel();
     }
 
     // 🆕 檢查同步狀態

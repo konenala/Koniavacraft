@@ -280,8 +280,8 @@
             int actualEff = upgradeManager.getUpgradeInventory().getUpgradeCount(UpgradeType.EFFICIENCY);
 
             // 檢查同步數據
-            int syncSpeed = syncHelper.getRawSyncManager().get(SolarCollectorSyncHelper.SyncIndex.SPEED_LEVEL.ordinal());
-            int syncEff = syncHelper.getRawSyncManager().get(SolarCollectorSyncHelper.SyncIndex.EFFICIENCY_LEVEL.ordinal());
+            int syncSpeed = syncHelper.getSpeedLevel();
+            int syncEff = syncHelper.getEfficiencyLevel();
 
             // 如果不一致，強制同步
             if (actualSpeed != syncSpeed || actualEff != syncEff) {

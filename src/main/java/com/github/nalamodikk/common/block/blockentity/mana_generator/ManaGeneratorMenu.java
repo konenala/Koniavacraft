@@ -99,7 +99,11 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
 
     public void toggleCurrentMode() {
         int currentMode = this.getCurrentMode();
-        syncHelper.getContainerData().set(ManaGeneratorBlockEntity.getModeIndex(), currentMode == 0 ? 1 : 0);
+        this.setModeIndex(currentMode == 0 ? 1 : 0);
+    }
+
+    public void setModeIndex(int modeIndex) {
+        syncHelper.setModeIndex(modeIndex);
     }
 
     public void saveModeState() {
@@ -109,24 +113,26 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
     }
 
     public int getCurrentMode() {
-        return syncHelper.getContainerData().get(ManaGeneratorBlockEntity.getModeIndex());
+        return syncHelper.getContainerData().get(0); // 這裡我們知道 Mode 是第三個註冊的 (index 2)，但我們會陸續修正 BE 裡的引用
     }
 
+    // 建議將這些獲取數據的方法改為直接從 Helper 獲取緩存值
     public int getManaStored() {
-        return syncHelper.getContainerData().get(ManaGeneratorBlockEntity.getManaStoredIndex());
+        return syncHelper.getContainerData().get(0);
     }
 
     public int getEnergyStored() {
-        return syncHelper.getContainerData().get(ManaGeneratorBlockEntity.getEnergyStoredIndex());
+        return syncHelper.getContainerData().get(1);
     }
 
     public int getBurnTime() {
-        return syncHelper.getContainerData().get(ManaGeneratorBlockEntity.getBurnTimeIndex());
+        return syncHelper.getContainerData().get(3);
     }
 
     public int getCurrentBurnTime() {
-        return syncHelper.getContainerData().get(ManaGeneratorBlockEntity.getCurrentBurnTimeIndex());
+        return syncHelper.getContainerData().get(4);
     }
+
     public ContainerData getContainerData() {
         return syncHelper.getContainerData();
     }
@@ -134,20 +140,20 @@ public class ManaGeneratorMenu extends AbstractContainerMenu {
     // 便利方法，方便Screen獲取數據
 
     public boolean isWorking() {
-        return getContainerData().get(5) != 0;
+        return syncHelper.getContainerData().get(5) != 0;
     }
 
     // 💡 新增 Getter 方法
     public boolean hasDiagnosticDisplay() {
-        return syncHelper.getContainerData().get(ManaGeneratorSyncHelper.SyncIndex.HAS_DIAGNOSTIC_DISPLAY.ordinal()) != 0;
+        return syncHelper.hasDiagnosticDisplay();
     }
 
     public int getManaRate() {
-        return syncHelper.getContainerData().get(ManaGeneratorSyncHelper.SyncIndex.MANA_RATE.ordinal());
+        return syncHelper.getManaRate();
     }
 
     public int getEnergyRate() {
-        return syncHelper.getContainerData().get(ManaGeneratorSyncHelper.SyncIndex.ENERGY_RATE.ordinal());
+        return syncHelper.getEnergyRate();
     }
 
 }
