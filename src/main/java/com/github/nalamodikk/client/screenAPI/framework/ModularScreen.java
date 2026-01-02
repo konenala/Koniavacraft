@@ -53,9 +53,9 @@ public abstract class ModularScreen<T extends AbstractContainerMenu> extends Abs
     
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        // 禁用原版的 Label 繪製 (title, inventory)，改由 Widget 處理
-        // 或者手動畫：
-        // graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+        // 繪製標題和背包標籤
+        graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+        graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
     }
 
     @Override

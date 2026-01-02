@@ -1,6 +1,8 @@
 package com.github.nalamodikk.common.block.blockentity.mana_infuser;
 
+import com.github.nalamodikk.common.block.blockentity.mana_infuser.sync.ManaInfuserSyncHelper;
 import com.github.nalamodikk.common.block.blockentity.manabase.AbstractManaMachineEntityBlock;
+import com.github.nalamodikk.common.capability.mana.ManaAction;
 import com.github.nalamodikk.common.utils.capability.IOHandlerUtils;
 import com.github.nalamodikk.register.ModBlockEntities;
 import com.github.nalamodikk.register.ModRecipes;
@@ -25,73 +27,36 @@ import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.Optional;
 
-/**
- * 🔮 魔力注入機 BlockEntity
- *
- * 繼承自 AbstractManaMachineEntityBlock，獲得：
- * - 魔力儲存管理
- * - 標準化的 tick 系統
- * - 進度管理
- * - 能量支援（可選）
- */
 public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // === 📦 槽位定義 ===
     private static final int INPUT_SLOT = 0;
     private static final int OUTPUT_SLOT = 1;
     private static final int SLOT_COUNT = 2;
 
-    // === 📊 Menu 數據同步相關變數 ===
-
-    private int lastMenuSyncedMana = 0;           // 上次 Menu 同步的魔力值
-    private int lastMenuSyncedProgress = 0;       // 上次 Menu 同步的進度
-    private boolean lastMenuSyncedWorking = false; // 上次 Menu 同步的工作狀態
-    private int lastMenuSyncedMaxProgress = 0;    // 上次 Menu 同步的最大進度
-
-
-
-    // === 🔧 配置常量 ===
     private static final int MAX_MANA_CAPACITY = 10000;
     private static final int MANA_TRANSFER_RATE = 200;
-    private static final int INFUSION_TIME = 60;      // 注入時間 (ticks)
-    private static final int MANA_PER_CYCLE = 0;      // 不產生魔力，只消耗
-    private static final int INTERVAL_TICK = 5;       // 每5 tick檢查一次
+    private static final int INFUSION_TIME = 60;
+    private static final int MANA_PER_CYCLE = 0;
+    private static final int INTERVAL_TICK = 5;
 
-    // === 📊 同步狀態追蹤變量 ===
-    private int lastSyncedMana = 0;           // 上次同步的魔力值
-    private int lastSyncedProgress = 0;       // 上次同步的進度
-    private boolean lastSyncedWorking = false; // 上次同步的工作狀態
-    private int lastSyncedMaxProgress = 0;    // 上次同步的最大進度
-
-    // === 📊 狀態變量 ===
+    private final ManaInfuserSyncHelper syncHelper = new ManaInfuserSyncHelper();
     private final EnumMap<Direction, IOHandlerUtils.IOType> directionConfig = new EnumMap<>(Direction.class);
     private ManaInfuserRecipe currentRecipe = null;
-    private boolean needsSync = false;
     private boolean hasInputChanged = false;
+    private boolean needsSync = false;
 
     public ManaInfuserBlockEntity(BlockPos pos, BlockState blockState) {
-        super(
-                ModBlockEntities.MANA_INFUSER.get(),
-                pos,
-                blockState,
-                false,                    // 不需要能量系統
-                0,                        // 最大能量為0
-                MAX_MANA_CAPACITY,        // 魔力容量
-                INTERVAL_TICK,            // 間隔tick
-                MANA_PER_CYCLE            // 每次生產的魔力（0=不生產）
-        );
-
+        super(ModBlockEntities.MANA_INFUSER.get(), pos, blockState, false, 0, MAX_MANA_CAPACITY, INTERVAL_TICK, 0);
         this.maxProgress = INFUSION_TIME;
         initializeIOConfig();
     }
+    
+    public ManaInfuserSyncHelper getSyncHelper() {
+        return syncHelper;
+    }
 
-    // === 🏗️ 初始化 ===
-
-    /**
-     * 🔧 初始化 IO 配置
-     */
     private void initializeIOConfig() {
         directionConfig.put(Direction.UP, IOHandlerUtils.IOType.INPUT);
         directionConfig.put(Direction.DOWN, IOHandlerUtils.IOType.OUTPUT);
@@ -101,17 +66,13 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         directionConfig.put(Direction.WEST, IOHandlerUtils.IOType.BOTH);
     }
 
-    /**
-     * 📦 創建物品處理器（覆寫基類方法）
-     */
     @Override
     protected ItemStackHandler createHandler() {
         return new ItemStackHandler(SLOT_COUNT) {
             @Override
             protected void onContentsChanged(int slot) {
-                setChanged(); // 這會通知 Menu
+                setChanged();
                 hasInputChanged = true;
-                // 🆕 移除 needsSync = true，因為會被自動檢測
             }
 
             @Override
@@ -119,130 +80,52 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
                 if (slot == INPUT_SLOT) {
                     return hasRecipeForItem(stack);
                 } else if (slot == OUTPUT_SLOT) {
-                    return false; // 輸出槽不允許手動放入
+                    return false;
                 }
                 return super.isItemValid(slot, stack);
             }
         };
     }
 
-    // === ⚡ 核心機器邏輯（覆寫基類方法）===
-
-
-
     @Override
     public void tickMachine() {
-        // 🚨 避免每個 tick 都進行複雜計算
         if (level == null || level.isClientSide()) return;
 
-        // 從鄰居提取魔力 - 降低頻率
-        if (tickCounter % 20 == 0) { // 從每10tick改為每20tick (1秒)
+        syncHelper.syncFrom(this);
+
+        if (tickCounter % 20 == 0) {
             extractManaFromNeighbors();
         }
 
-        // 處理輸入變化 - 只在真的變化時處理
         if (hasInputChanged) {
             updateCurrentRecipe();
             hasInputChanged = false;
         }
 
-        // 處理注入邏輯
         processInfusion();
-
-        // 🔧 優化同步頻率 - 只在必要時同步
-        if (tickCounter % 5 == 0 && needsSyncToClient()) { // 降低同步頻率
+        
+        if (needsSync) {
             syncToClient();
-            updateLastSyncedValues();
-        }
-
-        // 🔧 優化 Menu 通知頻率
-        if (tickCounter % 3 == 0) { // 降低 Menu 更新頻率
-            notifyMenuDataChanged();
+            needsSync = false;
         }
 
         tickCounter++;
     }
-/*
- * 🔄 更新上次同步的數值
- */
-    private void updateLastSyncedValues() {
-        if (manaStorage != null) {
-            lastSyncedMana = manaStorage.getManaStored();
-        } else {
-            lastSyncedMana = 0;
-        }
-        lastSyncedProgress = progress;
-        lastSyncedWorking = (progress > 0);
-        lastSyncedMaxProgress = maxProgress;
-        needsSync = false;
-    }
 
-    // 🆕 通知 Menu 數據變化
-    private void notifyMenuDataChanged() {
-        if (level == null || level.isClientSide()) return;
-
-        // 🚨 使用快取值，避免重複計算
-        int currentMana = manaStorage != null ? manaStorage.getManaStored() : 0;
-        int currentProgress = progress;
-        boolean currentWorking = progress > 0; // 直接使用，不調用方法
-        int currentMaxProgress = maxProgress;
-
-        // 只檢查真正的變化
-        boolean menuDataChanged = (currentMana != lastMenuSyncedMana) ||
-                (currentProgress != lastMenuSyncedProgress) ||
-                (currentWorking != lastMenuSyncedWorking) ||
-                (currentMaxProgress != lastMenuSyncedMaxProgress);
-
-        if (menuDataChanged) {
-            setChanged(); // 這個調用很昂貴，只在必要時調用
-
-            // 更新追蹤值
-            lastMenuSyncedMana = currentMana;
-            lastMenuSyncedProgress = currentProgress;
-            lastMenuSyncedWorking = currentWorking;
-            lastMenuSyncedMaxProgress = currentMaxProgress;
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 
-
-    private boolean needsSyncToClient() {
-        if (level == null || level.isClientSide()) return false;
-        if (needsSync) return true;
-
-        // 🚨 快取當前值，避免重複調用
-        int currentMana = manaStorage != null ? manaStorage.getManaStored() : 0;
-        int currentProgress = progress;
-        boolean currentWorking = progress > 0; // 直接計算，不調用 isWorking()
-        int currentMaxProgress = maxProgress;
-
-        // 只有真的變化才返回 true
-        boolean hasChanges = (currentMana != lastSyncedMana) ||
-                (currentProgress != lastSyncedProgress) ||
-                (currentWorking != lastSyncedWorking) ||
-                (currentMaxProgress != lastSyncedMaxProgress);
-
-        return hasChanges;
-    }
-
-
-    /**
-     * ✅ 檢查是否可以生成（注入）
-     */
     @Override
     protected boolean canGenerate() {
         if (currentRecipe == null) return false;
-
-        // 檢查魔力
         if (manaStorage != null && manaStorage.getManaStored() < currentRecipe.getManaCost()) return false;
 
-        // 檢查輸入物品
-        ItemStack input = null;
-        if (itemHandler != null) {
-            input = itemHandler.getStackInSlot(INPUT_SLOT);
-        }
+        ItemStack input = itemHandler != null ? itemHandler.getStackInSlot(INPUT_SLOT) : ItemStack.EMPTY;
         if (input.getCount() < currentRecipe.getInputCount()) return false;
 
-        // 檢查輸出槽
         ItemStack output = itemHandler.getStackInSlot(OUTPUT_SLOT);
         if (!output.isEmpty()) {
             ItemStack result = currentRecipe.getResult();
@@ -251,52 +134,26 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
                 return false;
             }
         }
-
         return true;
     }
 
-    /**
-     * 🔮 處理注入邏輯
-     */
     private void processInfusion() {
         boolean wasWorking = isWorking();
-
         if (!canGenerate()) {
-            if (progress > 0) {
-                progress = 0;
-                // 進度變化會被 needsSyncToClient() 自動檢測
-            }
-
-            // 如果停止工作，立即更新方塊狀態
-            if (wasWorking) {
-                updateBlockWorkingState(false);
-            }
+            if (progress > 0) progress = 0;
+            if (wasWorking) updateBlockWorkingState(false);
             return;
         }
+        if (!wasWorking) updateBlockWorkingState(true);
 
-        // 如果剛開始工作，更新方塊狀態
-        if (!wasWorking) {
-            updateBlockWorkingState(true);
-        }
-
-        // 增加進度
-        int oldProgress = progress;
         progress++;
-
-        // 🆕 進度變化會被 needsSyncToClient() 自動檢測
-        // 不需要手動設置 needsSync = true
-
-        // 檢查是否完成注入
         if (progress >= maxProgress) {
             completeInfusion();
             progress = 0;
-            // 完成後更新方塊狀態為不工作
             updateBlockWorkingState(false);
         }
     }
 
-
-    // 🔧 修正 2: 新增專門的方塊狀態更新方法
     private void updateBlockWorkingState(boolean working) {
         if (level != null && !level.isClientSide()) {
             BlockState currentState = getBlockState();
@@ -308,179 +165,73 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
             }
         }
     }
-    /**
-     * ✅ 完成注入
-     */
+
     private void completeInfusion() {
         if (currentRecipe == null) return;
+        manaStorage.extractMana(currentRecipe.getManaCost(), ManaAction.EXECUTE);
+        itemHandler.extractItem(INPUT_SLOT, currentRecipe.getInputCount(), false);
 
-        int manaBeforeConsume = manaStorage.getManaStored();
-
-        // 🚨 只在 DEBUG 級別輸出詳細日誌
-
-
-        // 消耗魔力 (修復錯字：currentRecive -> currentRecipe)
-        int consumedMana = manaStorage.extractMana(currentRecipe.getManaCost(),
-                com.github.nalamodikk.common.capability.mana.ManaAction.EXECUTE);
-
-
-
-        // 消耗輸入物品
-        ItemStack extractedInput = itemHandler.extractItem(INPUT_SLOT, currentRecipe.getInputCount(), false);
-        if (extractedInput.getCount() < currentRecipe.getInputCount()) {
-            LOGGER.warn("輸入物品不足！需要 {} 但只提取了 {}",
-                    currentRecipe.getInputCount(), extractedInput.getCount());
-            return;
-        }
-
-        // 產生輸出物品
         ItemStack result = currentRecipe.getResult().copy();
         ItemStack currentOutput = itemHandler.getStackInSlot(OUTPUT_SLOT);
-
         if (currentOutput.isEmpty()) {
             itemHandler.setStackInSlot(OUTPUT_SLOT, result);
         } else {
             currentOutput.grow(result.getCount());
         }
-
-        // 觸發完成效果
         onGenerate(currentRecipe.getManaCost());
-
-        // 🚨 只在 DEBUG 級別輸出完成日誌
-        if (LOGGER.isDebugEnabled()) {
-            int manaAfterConsume = manaStorage.getManaStored();
-            LOGGER.debug("完成魔力注入: {} x{}, 魔力 {} -> {}",
-                    result.getDisplayName().getString(), result.getCount(),
-                    manaBeforeConsume, manaAfterConsume);
-        }
     }
-
-
-
-    /**
-     * 🔍 更新當前配方
-     */
 
     private void updateCurrentRecipe() {
         if (level == null || level.isClientSide()) return;
-
         ItemStack input = itemHandler.getStackInSlot(INPUT_SLOT);
-
-        // 🚨 如果輸入沒有真的變化，不要重新查找配方
-        if (input.isEmpty() && currentRecipe == null) {
-            return; // 都是空的，不需要更新
-        }
-
-        ManaInfuserRecipe oldRecipe = currentRecipe;
-        int oldMaxProgress = maxProgress;
-
         if (input.isEmpty()) {
             currentRecipe = null;
             maxProgress = INFUSION_TIME;
-        } else {
-            // 🚨 先檢查當前配方是否還適用，避免不必要的查找
-            if (currentRecipe != null && currentRecipe.getInput().test(input)) {
-                // 當前配方仍然適用，不需要重新查找
-                return;
-            }
-
-            // 需要查找新配方
-            ManaInfuserRecipe.ManaInfuserInput recipeInput = new ManaInfuserRecipe.ManaInfuserInput(input);
-            Optional<RecipeHolder<ManaInfuserRecipe>> recipeHolder = level.getRecipeManager()
-                    .getRecipeFor(ModRecipes.MANA_INFUSER_TYPE.get(), recipeInput, level);
-
-            if (recipeHolder.isPresent()) {
-                currentRecipe = recipeHolder.get().value();
-                maxProgress = currentRecipe.getInfusionTime();
-            } else {
-                currentRecipe = null;
-                maxProgress = INFUSION_TIME;
-            }
-        }
-
-        // 只在真的變化時重置進度
-        if (oldRecipe != currentRecipe || oldMaxProgress != maxProgress) {
             progress = 0;
+            return;
         }
-    }
+        if (currentRecipe != null && currentRecipe.getInput().test(input)) return;
 
-// === 🔧 修復6: 添加清理方法 ===
+        ManaInfuserRecipe.ManaInfuserInput recipeInput = new ManaInfuserRecipe.ManaInfuserInput(input);
+        Optional<RecipeHolder<ManaInfuserRecipe>> recipeHolder = level.getRecipeManager()
+                .getRecipeFor(ModRecipes.MANA_INFUSER_TYPE.get(), recipeInput, level);
+
+        if (recipeHolder.isPresent()) {
+            currentRecipe = recipeHolder.get().value();
+            maxProgress = currentRecipe.getInfusionTime();
+        } else {
+            currentRecipe = null;
+            maxProgress = INFUSION_TIME;
+        }
+        progress = 0;
+    }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-
-        // 🚨 清理引用，防止記憶體洩漏
         currentRecipe = null;
         directionConfig.clear();
-
-        // 重置同步狀態
-        needsSync = false;
         hasInputChanged = false;
-
-        LOGGER.debug("ManaInfuserBlockEntity 已清理: {}", worldPosition);
     }
-
-    // 🆕 強制同步方法（用於特殊情況）
-    public void forceSyncToClient() {
-        needsSync = true;
-    }
-
-    /**
-     * ⚡ 從鄰居提取魔力
-     */
 
     private void extractManaFromNeighbors() {
-        if (level == null || level.isClientSide()) return;
+        if (level == null || level.isClientSide() || manaStorage == null) return;
+        if (manaStorage.getManaStored() >= manaStorage.getMaxManaStored()) return;
 
-        // 🚨 如果魔力已滿，跳過提取
-        if (manaStorage.getManaStored() >= manaStorage.getMaxManaStored()) {
-            return;
-        }
-
-        int manaBeforeExtract = manaStorage.getManaStored();
-
-        IOHandlerUtils.extractManaFromNeighbors(
-                level,
-                worldPosition,
-                manaStorage,
-                directionConfig,
-                MANA_TRANSFER_RATE
-        );
-
-        // 只有真的變化時才記錄
-        int manaAfterExtract = manaStorage.getManaStored();
-        if (manaAfterExtract != manaBeforeExtract) {
-            // 魔力變化會被 needsSyncToClient() 自動檢測，不需要額外處理
-        }
+        IOHandlerUtils.extractManaFromNeighbors(level, worldPosition, manaStorage, directionConfig, MANA_TRANSFER_RATE);
     }
-    /**
-     * 🔍 檢查物品是否有配方
-     */
+
     private boolean hasRecipeForItem(ItemStack stack) {
         if (level == null || stack.isEmpty()) return false;
-
         ManaInfuserRecipe.ManaInfuserInput input = new ManaInfuserRecipe.ManaInfuserInput(stack);
         return level.getRecipeManager()
                 .getRecipeFor(ModRecipes.MANA_INFUSER_TYPE.get(), input, level)
                 .isPresent();
     }
 
-    /**
-     * ✨ 完成注入時的特效
-     */
     @Override
     protected void onGenerate(int amount) {
-        // 更新方塊狀態顯示工作狀態
-        if (level != null && !level.isClientSide()) {
-            BlockState newState = getBlockState().setValue(ManaInfuserBlock.WORKING, progress > 0);
-            level.setBlock(worldPosition, newState, 3);
-        }
-
-        // TODO: 添加粒子效果和音效
     }
-
-    // === 🖥️ 界面相關（覆寫基類方法）===
 
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
@@ -494,174 +245,20 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
 
     // === 🔧 配置相關 ===
 
+    public void onNeighborChanged() {
+        // no-op
+    }
+
     public void toggleIOMode(Direction direction) {
         IOHandlerUtils.IOType currentType = directionConfig.get(direction);
         IOHandlerUtils.IOType nextType = IOHandlerUtils.nextIOType(currentType);
         directionConfig.put(direction, nextType);
         setChanged();
-        needsSync = true;
+        syncToClient();
     }
 
     public IOHandlerUtils.IOType getIOMode(Direction direction) {
         return directionConfig.getOrDefault(direction, IOHandlerUtils.IOType.DISABLED);
-    }
-
-    // === 📊 狀態查詢方法 ===
-
-    public int getCurrentMana() {
-        return manaStorage != null ? manaStorage.getManaStored() : 0;
-    }
-
-    public int getMaxMana() {
-        return manaStorage != null ? manaStorage.getMaxManaStored() : 0;
-    }
-
-    public boolean isWorking() {
-        // ✅ 修正：只要有進度就表示在工作，不管配方狀態
-        return progress > 0;
-    }
-
-
-
-    public int getInfusionProgress() {
-        return progress;
-    }
-
-    public int getMaxInfusionTime() {
-        return maxProgress;
-    }
-
-    @Nullable
-    public ManaInfuserRecipe getCurrentRecipe() {
-        return currentRecipe;
-    }
-
-    // === 💾 NBT 序列化（擴展基類）===
-
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries); // 🔑 這會保存魔力、物品、進度等
-
-        // 保存 IO 配置
-        CompoundTag ioTag = new CompoundTag();
-        for (Direction dir : Direction.values()) {
-            ioTag.putString(dir.name(), directionConfig.get(dir).name());
-        }
-        tag.put("IOConfig", ioTag);
-
-        // 保存配方狀態
-        tag.putBoolean("HasRecipe", currentRecipe != null);
-
-        // 🆕 保存客戶端同步狀態
-        CompoundTag syncTag = new CompoundTag();
-        syncTag.putInt("lastSyncedMana", lastSyncedMana);
-        syncTag.putInt("lastSyncedProgress", lastSyncedProgress);
-        syncTag.putBoolean("lastSyncedWorking", lastSyncedWorking);
-        syncTag.putInt("lastSyncedMaxProgress", lastSyncedMaxProgress);
-        tag.put("SyncState", syncTag);
-
-        // 🆕 保存 Menu 同步狀態
-        CompoundTag menuSyncTag = new CompoundTag();
-        menuSyncTag.putInt("lastMenuSyncedMana", lastMenuSyncedMana);
-        menuSyncTag.putInt("lastMenuSyncedProgress", lastMenuSyncedProgress);
-        menuSyncTag.putBoolean("lastMenuSyncedWorking", lastMenuSyncedWorking);
-        menuSyncTag.putInt("lastMenuSyncedMaxProgress", lastMenuSyncedMaxProgress);
-        tag.put("MenuSyncState", menuSyncTag);
-
-        // 🔍 調試日誌
-
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries); // 🔑 這會載入魔力、物品、進度等
-
-        // 載入 IO 配置
-        if (tag.contains("IOConfig")) {
-            CompoundTag ioTag = tag.getCompound("IOConfig");
-            for (Direction dir : Direction.values()) {
-                if (ioTag.contains(dir.name())) {
-                    try {
-                        IOHandlerUtils.IOType type = IOHandlerUtils.IOType.valueOf(ioTag.getString(dir.name()));
-                        directionConfig.put(dir, type);
-                    } catch (IllegalArgumentException e) {
-                        directionConfig.put(dir, IOHandlerUtils.IOType.BOTH);
-                    }
-                }
-            }
-        }
-
-        // 標記需要重新查找配方
-        if (tag.getBoolean("HasRecipe")) {
-            hasInputChanged = true;
-        }
-
-        // 🆕 載入客戶端同步狀態
-        if (tag.contains("SyncState")) {
-            CompoundTag syncTag = tag.getCompound("SyncState");
-            lastSyncedMana = syncTag.getInt("lastSyncedMana");
-            lastSyncedProgress = syncTag.getInt("lastSyncedProgress");
-            lastSyncedWorking = syncTag.getBoolean("lastSyncedWorking");
-            lastSyncedMaxProgress = syncTag.getInt("lastSyncedMaxProgress");
-        } else {
-            // 🔧 修復：使用正確的方法名
-            updateLastSyncedValues();
-        }
-
-        // 🆕 載入 Menu 同步狀態
-        if (tag.contains("MenuSyncState")) {
-            CompoundTag menuSyncTag = tag.getCompound("MenuSyncState");
-            lastMenuSyncedMana = menuSyncTag.getInt("lastMenuSyncedMana");
-            lastMenuSyncedProgress = menuSyncTag.getInt("lastMenuSyncedProgress");
-            lastMenuSyncedWorking = menuSyncTag.getBoolean("lastMenuSyncedWorking");
-            lastMenuSyncedMaxProgress = menuSyncTag.getInt("lastMenuSyncedMaxProgress");
-        } else {
-            // 初始化為當前值
-            lastMenuSyncedMana = getCurrentMana();
-            lastMenuSyncedProgress = progress;
-            lastMenuSyncedWorking = (progress > 0); // 直接計算而不是調用 isWorking()
-            lastMenuSyncedMaxProgress = maxProgress;
-        }
-    }
-
-    // === 🔗 網路同步 ===
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
-        saveAdditional(tag, registries);
-        return tag;
-    }
-
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        loadAdditional(tag, lookupProvider);
-    }
-
-    @Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
-        handleUpdateTag(pkt.getTag(), lookupProvider);
-    }
-
-    private void syncToClient() {
-        if (level != null && !level.isClientSide()) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
-    }
-
-    // === 🗑️ 清理方法 ===
-
-    public void onNeighborChanged() {
-        needsSync = true;
-    }
-
-    public boolean isConfigurable() {
-        return true;
     }
 
     @Override
@@ -687,5 +284,82 @@ public class ManaInfuserBlockEntity extends AbstractManaMachineEntityBlock {
         directionConfig.putAll(map);
         setChanged();
         needsSync = true;
+    }
+
+    public int getCurrentMana() {
+        return manaStorage != null ? manaStorage.getManaStored() : 0;
+    }
+
+    public int getMaxMana() {
+        return manaStorage != null ? manaStorage.getMaxManaStored() : 0;
+    }
+
+    public boolean isWorking() {
+        return progress > 0;
+    }
+
+    public int getInfusionProgress() {
+        return progress;
+    }
+
+    public int getMaxInfusionTime() {
+        return maxProgress;
+    }
+
+    @Nullable
+    public ManaInfuserRecipe getCurrentRecipe() {
+        return currentRecipe;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        CompoundTag ioTag = new CompoundTag();
+        for (Direction dir : Direction.values()) {
+            ioTag.putString(dir.name(), directionConfig.get(dir).name());
+        }
+        tag.put("IOConfig", ioTag);
+        tag.putBoolean("HasRecipe", currentRecipe != null);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("IOConfig")) {
+            CompoundTag ioTag = tag.getCompound("IOConfig");
+            for (Direction dir : Direction.values()) {
+                if (ioTag.contains(dir.name())) {
+                    try {
+                        IOHandlerUtils.IOType type = IOHandlerUtils.IOType.valueOf(ioTag.getString(dir.name()));
+                        directionConfig.put(dir, type);
+                    } catch (IllegalArgumentException e) {
+                        directionConfig.put(dir, IOHandlerUtils.IOType.BOTH);
+                    }
+                }
+            }
+        }
+        if (tag.getBoolean("HasRecipe")) hasInputChanged = true;
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        loadAdditional(tag, lookupProvider);
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+        handleUpdateTag(pkt.getTag(), lookupProvider);
     }
 }

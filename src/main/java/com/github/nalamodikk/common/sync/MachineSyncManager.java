@@ -1,10 +1,17 @@
 package com.github.nalamodikk.common.sync;
 
+import com.github.nalamodikk.common.capability.ManaStorage;
+import com.github.nalamodikk.common.compat.energy.ModNeoNalaEnergyStorage;
+import com.github.nalamodikk.common.sync.annotation.Sync;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.DataSlot;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -14,11 +21,12 @@ import java.util.function.Supplier;
  * 
  * 用法範例：
  * MachineSyncManager sync = new MachineSyncManager();
- * sync.trackInt(energy::getEnergyStored, energy::setEnergyStored);
- * sync.trackFloat(() -> temperature, val -> temperature = val);
+ * sync.autoRegister(this); // 自動掃描標有 @Sync 的欄位與方法
  */
 public class MachineSyncManager implements ContainerData {
     
+    private static final Map<Class<?>, List<Field>> FIELD_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, List<Method>> METHOD_CACHE = new ConcurrentHashMap<>();
     private final List<ISyncableData> syncables = new ArrayList<>();
     private int totalIntCount = 0;
     private boolean isDirty = false;
@@ -29,6 +37,150 @@ public class MachineSyncManager implements ContainerData {
     
     public void markDirty(boolean dirty) {
         this.isDirty = dirty;
+    }
+
+    // --- 自動註冊邏輯 ---
+
+    /**
+     * 自動掃描並註冊物件中帶有 @Sync 註解的欄位與方法。
+     */
+    public void autoRegister(Object provider) {
+        Class<?> clazz = provider.getClass();
+        
+        // 1. 處理欄位
+        List<Field> fields = FIELD_CACHE.computeIfAbsent(clazz, c -> {
+            List<Field> syncFields = new ArrayList<>();
+            Class<?> current = c;
+            while (current != null && current != Object.class) {
+                for (Field f : current.getDeclaredFields()) {
+                    if (f.isAnnotationPresent(Sync.class)) {
+                        f.setAccessible(true);
+                        syncFields.add(f);
+                    }
+                }
+                current = current.getSuperclass();
+            }
+            return syncFields;
+        });
+
+        for (Field f : fields) {
+            registerField(provider, f);
+        }
+
+        // 2. 處理方法
+        List<Method> methods = METHOD_CACHE.computeIfAbsent(clazz, c -> {
+            List<Method> syncMethods = new ArrayList<>();
+            Class<?> current = c;
+            while (current != null && current != Object.class) {
+                for (Method m : current.getDeclaredMethods()) {
+                    if (m.isAnnotationPresent(Sync.class) && m.getParameterCount() == 0) {
+                        m.setAccessible(true);
+                        syncMethods.add(m);
+                    }
+                }
+                current = current.getSuperclass();
+            }
+            return syncMethods;
+        });
+
+        for (Method m : methods) {
+            registerMethod(provider, m);
+        }
+    }
+
+    private void registerMethod(Object provider, Method m) {
+        Class<?> returnType = m.getReturnType();
+        
+        // 嘗試尋找對應的 Setter
+        String name = m.getName();
+        if (name.startsWith("get") || name.startsWith("is")) {
+            String baseName = name.startsWith("get") ? name.substring(3) : name.substring(2);
+            String setterName = "set" + baseName;
+            try {
+                Method setter = provider.getClass().getMethod(setterName, returnType);
+                setter.setAccessible(true);
+                bindMethod(provider, m, setter, returnType);
+                return;
+            } catch (NoSuchMethodException ignored) {}
+        }
+
+        // 沒找到 Setter 則作為唯讀
+        bindMethod(provider, m, null, returnType);
+    }
+
+    private void bindMethod(Object provider, Method getter, Method setter, Class<?> type) {
+        if (type == int.class || type == Integer.class) {
+            trackInt(() -> {
+                try { return (Integer) getter.invoke(provider); } catch (Exception e) { return 0; }
+            }, v -> {
+                if (setter != null) try { setter.invoke(provider, v); } catch (Exception ignored) {}
+            });
+        } else if (type == boolean.class || type == Boolean.class) {
+            trackBoolean(() -> {
+                try { return (Boolean) getter.invoke(provider); } catch (Exception e) { return false; }
+            }, v -> {
+                if (setter != null) try { setter.invoke(provider, v); } catch (Exception ignored) {}
+            });
+        }
+    }
+
+    private void registerField(Object provider, Field f) {
+        Class<?> type = f.getType();
+        
+        try {
+            Object value = f.get(provider);
+            if (value == null && !type.isPrimitive()) return;
+
+            if (type == int.class || type == Integer.class) {
+                trackInt(() -> {
+                    try { return f.getInt(provider); } catch (Exception e) { return 0; }
+                }, v -> {
+                    try { f.set(provider, v); } catch (Exception e) {}
+                });
+            } else if (type == boolean.class || type == Boolean.class) {
+                trackBoolean(() -> {
+                    try { return f.getBoolean(provider); } catch (Exception e) { return false; }
+                }, v -> {
+                    try { f.set(provider, v); } catch (Exception e) {}
+                });
+            } else if (type == float.class || type == Float.class) {
+                trackFloat(() -> {
+                    try { return f.getFloat(provider); } catch (Exception e) { return 0f; }
+                }, v -> {
+                    try { f.set(provider, v); } catch (Exception e) {}
+                });
+            } else if (type == long.class || type == Long.class) {
+                trackLong(() -> {
+                    try { return f.getLong(provider); } catch (Exception e) { return 0L; }
+                }, v -> {
+                    try { f.set(provider, v); } catch (Exception e) {}
+                });
+            } else if (type.isEnum()) {
+                Object[] constants = type.getEnumConstants();
+                trackInt(() -> {
+                    try {
+                        Object val = f.get(provider);
+                        return val instanceof Enum<?> e ? e.ordinal() : 0;
+                    } catch (Exception e) { return 0; }
+                }, v -> {
+                    try {
+                        if (v >= 0 && v < constants.length) {
+                            f.set(provider, constants[v]);
+                        }
+                    } catch (Exception e) {}
+                });
+            } else if (type == ManaStorage.class) {
+                ManaStorage storage = (ManaStorage) value;
+                trackInt(storage::getManaStored, storage::setMana);
+                trackInt(storage::getMaxManaStored, storage::setCapacity);
+            } else if (type == ModNeoNalaEnergyStorage.class) {
+                ModNeoNalaEnergyStorage storage = (ModNeoNalaEnergyStorage) value;
+                trackInt(storage::getEnergyStored, v -> storage.setEnergyStored(BigInteger.valueOf(v)));
+                trackInt(storage::getMaxEnergyStored, v -> {});
+            }
+        } catch (IllegalAccessException e) {
+            // Should not happen
+        }
     }
 
     // --- 註冊方法 ---
@@ -84,7 +236,6 @@ public class MachineSyncManager implements ContainerData {
 
     @Override
     public int get(int index) {
-        // 找到負責這個 index 的 syncable
         for (ISyncableData data : syncables) {
             if (index >= data.getStartIndex() && index < data.getStartIndex() + data.getSize()) {
                 return data.get(index - data.getStartIndex());
@@ -207,8 +358,8 @@ public class MachineSyncManager implements ContainerData {
         @Override 
         public int get(int i) { 
             long val = getter.get();
-            if (i == 0) return (int)(val & 0xFFFFFFFFL); // 低位
-            else return (int)((val >>> 32) & 0xFFFFFFFFL); // 高位
+            if (i == 0) return (int)(val & 0xFFFFFFFFL);
+            else return (int)((val >>> 32) & 0xFFFFFFFFL);
         }
         
         @Override 
@@ -234,7 +385,6 @@ public class MachineSyncManager implements ContainerData {
         @Override public int getSize() { return 2; }
     }
 
-    // 保留舊方法以相容（如果需要的話），但建議使用新方法
     @Deprecated
     public void addEnergySlot(int[] energyValueHolder) {
         trackInt(() -> energyValueHolder[0], v -> energyValueHolder[0] = v);

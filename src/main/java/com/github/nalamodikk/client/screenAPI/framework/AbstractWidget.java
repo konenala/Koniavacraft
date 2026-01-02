@@ -65,7 +65,10 @@ public abstract class AbstractWidget implements Widget {
     @Override
     public boolean mouseClicked(int mouseX, int mouseY, int button) {
         if (!visible || !isMouseOver(mouseX, mouseY)) return false;
-        return onMouseClicked(mouseX - x, mouseY - y, button);
+        // mouseX/mouseY 是絕對座標，需要轉換為相對於此 Widget 的座標
+        int screenX = getScreenX();
+        int screenY = getScreenY();
+        return onMouseClicked(mouseX - screenX, mouseY - screenY, button);
     }
     
     protected boolean onMouseClicked(int localMouseX, int localMouseY, int button) {
@@ -75,7 +78,10 @@ public abstract class AbstractWidget implements Widget {
     @Override
     public void mouseReleased(int mouseX, int mouseY, int button) {
         if (visible) {
-            onMouseReleased(mouseX - x, mouseY - y, button);
+            // mouseX/mouseY 是絕對座標，需要轉換為相對於此 Widget 的座標
+            int screenX = getScreenX();
+            int screenY = getScreenY();
+            onMouseReleased(mouseX - screenX, mouseY - screenY, button);
         }
     }
     
